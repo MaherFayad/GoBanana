@@ -35,6 +35,7 @@ function ContrastRow({ hex, against, name }: { hex: string; against: string; nam
       {/* Live "Aa" sample (CSS content) of the color as text on the background. Decorative. */}
       <span className="bn-contrast-sample" style={{ "--sample-bg": against, "--sample-fg": hex } as CSSProperties} aria-hidden="true" />
       <span className="bn-contrast-ratio">
+        <span className="st-visually-hidden">On </span>
         {name} {ratio.toFixed(2)}:1
       </span>
       <span className="st-chip" data-tone={v.pass ? "success" : "danger"}>
@@ -87,8 +88,8 @@ export function SwatchNode({ id, data, parentId }: NodeProps<SwatchFlowNode>) {
         <span className="bn-swatch-code">{data.hex}</span>
         {data.oklch && <span className="bn-swatch-code">{data.oklch}</span>}
         <ul className="bn-contrast" aria-label="Contrast">
-          <ContrastRow hex={data.hex} against="#ffffff" name="On white" />
-          <ContrastRow hex={data.hex} against="#000000" name="On black" />
+          <ContrastRow hex={data.hex} against="#ffffff" name="White" />
+          <ContrastRow hex={data.hex} against="#000000" name="Black" />
         </ul>
       </div>
       <div className="bn-node-bar bn-node-bar-static">

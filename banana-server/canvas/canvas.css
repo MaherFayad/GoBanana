@@ -439,7 +439,8 @@
 }
 
 .bn-rail-item.st-btn[aria-pressed="true"]::after {
-  inset-inline: auto calc(-1 * var(--st-space-2xs) - 1px);
+  /* Outer edge: away from the panel, in the rail's padding. */
+  inset-inline: calc(-1 * var(--st-space-2xs) - 1px) auto;
   inset-block: 7px;
   inline-size: 2px;
   block-size: 14px;
@@ -964,7 +965,7 @@
   flex-direction: column;
   gap: var(--st-space-4xs);
   padding-block: var(--st-space-s) var(--st-space-3xs);
-  padding-inline: var(--st-space-m);
+  padding-inline: var(--st-space-s);
   font-size: var(--st-text-s);
 }
 
@@ -994,7 +995,15 @@
 .bn-contrast li {
   display: flex;
   align-items: center;
-  gap: var(--st-space-xs);
+  gap: var(--st-space-3xs);
+}
+
+/* Compact verdict chip so the row fits the 180px default swatch. */
+.bn-contrast .st-chip {
+  flex: none;
+  gap: 2px;
+  min-block-size: 20px;
+  padding-inline: var(--st-space-3xs) var(--st-space-2xs);
 }
 
 /* Live "Aa" sample of the color as text on white or black (user content, not tokens). */
@@ -1002,7 +1011,7 @@
   flex: none;
   display: inline-grid;
   place-items: center;
-  inline-size: 26px;
+  inline-size: 22px;
   block-size: 19px;
   border: 1px solid var(--st-border-control);
   border-radius: var(--st-radius-sm);
@@ -1018,8 +1027,8 @@
 
 .bn-contrast-ratio {
   flex: 1 1 auto;
+  min-inline-size: 0;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 .bn-node-bar.bn-node-bar-static {
@@ -1215,6 +1224,11 @@
 }
 
 /* ------------------------------------------------------------------ shortcut sheet */
+
+.bn-sheet [role="group"]:focus-visible {
+  border-radius: var(--st-radius-field);
+  box-shadow: 0 0 0 2px var(--st-focus-ring-color);
+}
 
 .bn-sheet-intro {
   margin: 0 0 var(--st-space-xl);
