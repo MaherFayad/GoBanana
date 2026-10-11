@@ -38,7 +38,10 @@ export { MOVES } from "./types";
 export {
   MAX_FOCUSED_QUERY_WORDS,
   MAX_LANE_WORDS,
+  briefComponents,
   bridgeQuery,
+  componentAppText,
+  componentQueries,
   fidelityCoreQuery,
   fidelityQuery,
   heroQuery,
@@ -456,14 +459,17 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       rule.hint,
     ].join(" ");
 
-    // Inspiration lane: the lead headline ingredient, raw (stacked ideas return tag and search pages).
+    // The direction's idea: the lead headline ingredient, raw. It is never searched raw (search is
+    // UI only); it feeds the bridge lane and the notes.
     const lead = headline[0] ?? moves[0]!;
     const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
     const lanes = laneTexts(input.brief, searchQuery, taste, id);
     const searchQueries = [
       ...new Set(
-        [lanes.inspiration, lanes.taste, lanes.fidelity, lanes.bridge, lanes.hero, lanes.locale].filter((q): q is string => Boolean(q)),
+        [lanes.fidelity, lanes.taste, ...(lanes.component ?? []), lanes.hero, lanes.bridge, lanes.locale].filter((q): q is string =>
+          Boolean(q),
+        ),
       ),
     ];
 

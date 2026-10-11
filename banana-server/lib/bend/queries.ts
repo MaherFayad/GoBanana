@@ -1,20 +1,27 @@
 /**
- * Lane words for a direction search (pure, deterministic). The grammar was verified on 386 live
- * queries (docs/search-quality-experiment.md, "The grammar"; DECISIONS.md, 2026-10-11):
+ * Lane words for a direction search (pure, deterministic). Search returns UI images only (owner
+ * decision, DECISIONS.md 2026-10-11; docs/search-quality-experiment.md rounds 11a and 11b), so
+ * every lane is a UI form. The grammar was verified on 386 live queries ("The grammar") and the
+ * UI-only audit (about 460 results):
  *
- * - inspiration: the direction's lead ingredient, raw ("Sadu weaving", "crushed velvet"). Stacking
- *   ideas, or adding UI words or "poster" to a niche idea, returns tag pages or nothing.
+ * - idea: the direction's lead ingredient, raw ("Sadu weaving", "crushed velvet"). It is never
+ *   searched raw; it feeds the bridge lane only.
  * - fidelity: "{domain} {surface}" ("flight app ui"): real product UI for the brief.
  * - taste: "{style} {domain} {component} ui design" ("big typography flight checkout ui design").
  *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21.
+ * - component: "{core} {component} ui" ("banking quick actions ui", "flight seat selection ui"),
+ *   up to 2, from the components the brief names.
  * - bridge: "{ingredient} ui design" (UI briefs): the idea already applied to UI. Kept only when
  *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
  * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
  * - locale: "arabic {surface}" when the brief is Arabic or right to left.
  *
+ * A brief that names no UI ("a poster for a jazz festival") still gets UI forms: fidelity
+ * "{subject} app ui", taste "{style} {subject} ui design".
+ *
  * Site operators and negatives are added by lib/sources/plan.ts; these are the plain words.
  */
-import { bridgeHead, type LaneTexts } from "@/lib/sources/plan";
+import { bridgeHead, MAX_COMPONENT_LANES, type LaneTexts } from "@/lib/sources/plan";
 import { DEFAULT_TASTE } from "@/lib/taste";
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
 import { MOVE_DEFS } from "./moves";
@@ -24,12 +31,12 @@ import { MOVES, type ListEntry, type MoveId } from "./types";
 
 /** Hard cap on any lane query, in words (before negatives and the site operator). */
 export const MAX_FOCUSED_QUERY_WORDS = 7;
-/** The inspiration lane is a raw ingredient: at most 5 words. */
+/** The direction's idea is a raw ingredient: at most 5 words. */
 export const MAX_LANE_WORDS = 5;
 
 const words = (s: string) => s.split(/\s+/).filter(Boolean);
 
-/** The raw ingredient for one move ("Sadu weaving", "oversized numerals"). */
+/** The raw ingredient (the direction's idea) for one move ("Sadu weaving", "oversized numerals"). */
 export function inspirationQuery(move: MoveId, entryQuery: string): string {
   const def = MOVE_DEFS[move];
   return words(def.prefix ? `${def.prefix} ${entryQuery}` : entryQuery)
@@ -63,7 +70,7 @@ function allEntries(): IndexedEntry[] {
 }
 
 /**
- * The inspiration lane for a saved direction, from its stored search text. Older directions
+ * The idea of a saved direction, from its stored search text. Older directions
  * stored a stacked query ("crushed velvet texture ui design garment care label packaging"): the
  * ingredient that comes first is the direction's lead idea, so it becomes "crushed velvet".
  * New directions already store the raw ingredient, and this returns it unchanged.
@@ -102,6 +109,26 @@ const COMPONENTS = [
   "footer", "dashboard", "card",
 ];
 
+/**
+ * Components for the component lanes: COMPONENTS plus parts that real product briefs name (round
+ * 11a: "{core} {component} ui" on Dribbble shots was UI by eye on 8 briefs). Matched as whole
+ * phrases, singular or plural.
+ */
+const LANE_COMPONENTS = [
+  ...COMPONENTS,
+  "quick actions", "recent transactions", "transactions", "balance", "seat selection", "seat map", "boarding pass",
+  "flight search", "fare calendar", "itinerary", "property listing", "property detail", "search filters", "filters",
+  "cart", "order history", "menu", "product card", "portfolio", "swap", "price chart", "order book", "watchlist",
+  "fleet map", "route map", "live tracking", "delivery tracking", "shipment tracking", "data table", "kpi cards",
+  "chart", "leaderboard", "progress", "workout", "meal plan", "habit tracker", "sleep tracker", "streak",
+  "playlist", "now playing", "send money", "transfer", "payment method", "receipt", "budget", "goals",
+  "sidebar", "navigation", "date picker", "pricing table", "testimonials", "feature section", "gallery",
+  "inbox", "messages", "reviews", "virtual tour", "floor plan", "mortgage calculator", "course", "quiz",
+].filter((c, i, all) => all.indexOf(c) === i);
+
+/** Components that only repeat the surface: never a component lane of their own. */
+const SURFACE_COMPONENTS = new Set(["dashboard", "saas dashboard", "analytics dashboard", "landing page", "card", "widget"]);
+
 /** Screen nouns: never part of the domain ("flight checkout" names the flight domain). */
 const SCREEN_NOUNS = new Set([
   "checkout", "booking", "onboarding", "dashboard", "login", "signup", "registration", "profile", "cart", "search",
@@ -122,6 +149,9 @@ const BOUNDARY = new Set([
   "for", "about", "of", "with", "that", "which", "where", "who", "aimed", "targeting", "so",
   "using", "like", "to", "in", "on", "at", "by", "from", "featuring", "including", "inspired",
 ]);
+
+/** Words after which a brief's component list ends ("..., recent transactions, into bold territory"). */
+const LIST_END = new Set([...BOUNDARY, "into", "toward", "towards", "but", "while", "make", "making", "feel", "feels"]);
 
 const TOKEN = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 
@@ -157,6 +187,8 @@ type BriefParts = {
   /** Up to two domain words ("flight", "fleet management"). */
   domain: string[];
   component: string;
+  /** Components the brief names, in brief order (its list first), for the component lanes. */
+  components: string[];
   arabic: boolean;
   /** Brief text without bracketed asides. */
   main: string;
@@ -218,7 +250,67 @@ function briefParts(brief: string): BriefParts {
       .slice(-2);
   }
 
-  return { ui: isUiBrief(brief), surface, domain, component, arabic: isArabicBrief(brief), main };
+  return { ui: isUiBrief(brief), surface, domain, component, components: briefComponents(main), arabic: isArabicBrief(brief), main };
+}
+
+/** A known component at the start of `ws` (longest first), as its list form, or undefined. */
+function knownAt(ws: readonly string[], i: number): { phrase: string; len: number } | undefined {
+  let best: { phrase: string; len: number } | undefined;
+  for (const c of LANE_COMPONENTS) {
+    const cw = c.split(" ");
+    if (i + cw.length > ws.length) continue;
+    const ok = cw.every((w, j) => {
+      const t = ws[i + j]!;
+      return t === w || (j === cw.length - 1 && (t === `${w}s` || t === `${w}es`));
+    });
+    if (ok && (!best || cw.length > best.len)) best = { phrase: c, len: cw.length };
+  }
+  return best;
+}
+
+/** Content word for an unknown list item ("loyalty points"): no stop, layout or generic word. */
+function listWord(t: Token): boolean {
+  return domainWord(t) || SCREEN_NOUNS.has(t.word);
+}
+
+/**
+ * Components the brief names, in order: first its list (after a colon, or after "with",
+ * "showing", "including" or "featuring"), each item as the known component it contains or as
+ * its own words (1 to 3 content words); the list stops at the first item that is neither. Then
+ * known components anywhere else in the brief. "Retail banking app homepage: balance, quick
+ * actions, recent transactions, into bold, unexpected territory." gives balance, quick actions,
+ * recent transactions.
+ */
+export function briefComponents(main: string): string[] {
+  const out: string[] = [];
+  const push = (c: string) => {
+    if (!out.includes(c)) out.push(c);
+  };
+  const lead = /:|\b(?:with|showing|including|featuring)\b/i.exec(main);
+  if (lead) {
+    const rest = main.slice(lead.index + lead[0].length).split(/[.!?;\n]/)[0] ?? "";
+    for (const item of rest.split(/,|\band\b|&|\/|\+/i)) {
+      const toks: Token[] = [];
+      for (const t of tokens(item)) {
+        if (LIST_END.has(t.word)) break;
+        toks.push(t);
+      }
+      const ws = toks.map((t) => t.word);
+      let known: string | undefined;
+      for (let i = 0; i < ws.length && !known; i++) known = knownAt(ws, i)?.phrase;
+      if (known) push(known);
+      else if (toks.length >= 1 && toks.length <= 3 && toks.every(listWord)) push(ws.join(" "));
+      else break;
+    }
+  }
+  const ws = tokens(main).map((t) => t.word);
+  for (let i = 0; i < ws.length; i++) {
+    const hit = knownAt(ws, i);
+    if (!hit) continue;
+    push(hit.phrase);
+    i += hit.len - 1;
+  }
+  return out;
 }
 
 const capWords = (text: string, max = MAX_FOCUSED_QUERY_WORDS) => {
@@ -235,10 +327,13 @@ function styleWords(style: string): string {
     .join(" ");
 }
 
-/** Fidelity lane: "{domain} {surface}" for UI briefs ("flight app ui"), "{subject} design" otherwise. */
+/**
+ * Fidelity lane: "{domain} {surface}" for UI briefs ("flight app ui"); "{subject} app ui" for a
+ * brief that names no UI ("jazz festival app ui"), since search returns UI only.
+ */
 export function fidelityQuery(brief: string): string {
   const p = briefParts(brief);
-  if (!p.ui) return capWords(`${extractSubject(p.main, 1).full} design`, MAX_LANE_WORDS);
+  if (!p.ui) return capWords(`${extractSubject(p.main, 1).full} app ui`, MAX_LANE_WORDS + 1);
   return capWords(`${p.domain.join(" ")} ${SURFACE_WORDS[p.surface]}`);
 }
 
@@ -273,13 +368,13 @@ function tasteUiQuery(p: BriefParts, style: string, domain: readonly string[], t
 
 /**
  * Taste lane: "{style} {domain} {component} ui design" ("big typography flight checkout ui design");
- * "{style} {subject}" for other briefs. The domain keeps results on topic (live test 2026-10-11:
+ * "{style} {subject} ui design" for a brief that names no UI. The domain keeps results on topic (live test 2026-10-11:
  * 20 of 21 on topic against 1 of 24 for "{style} {component} ui", and 19 of 21 still new against
  * the fidelity lane).
  */
 export function tasteQuery(brief: string, style: string): string {
   const p = briefParts(brief);
-  if (!p.ui) return capWords(`${styleWords(style)} ${extractSubject(p.main, 2).title}`);
+  if (!p.ui) return capWords(`${styleWords(style)} ${extractSubject(p.main, 2).title} ui design`);
   return tasteUiQuery(p, style, p.domain);
 }
 
@@ -320,6 +415,33 @@ export function bridgeQuery(brief: string, ingredient: string): string | null {
   return capWords(`${ingredient} ui design`);
 }
 
+/**
+ * Component lanes: "{core} {component} ui" for up to 2 components the brief names ("banking quick
+ * actions ui", "flight seat selection ui"). The taste lane's component goes last, so the lanes
+ * differ from taste when the brief names more. A component that only repeats the surface
+ * (dashboard, card, widget, landing page) gets no lane. Empty for briefs that name no UI.
+ */
+export function componentQueries(brief: string): string[] {
+  const p = briefParts(brief);
+  if (!p.ui) return [];
+  const core = coreNoun(p.domain) ?? "";
+  const named = p.components.filter((c) => !SURFACE_COMPONENTS.has(c));
+  const ordered = [...named.filter((c) => c !== p.component), ...named.filter((c) => c === p.component)];
+  const fidelity = fidelityQuery(brief);
+  const out: string[] = [];
+  for (const c of ordered) {
+    const q = capWords(`${core} ${c} ui`);
+    if (q !== fidelity && !out.includes(q)) out.push(q);
+    if (out.length >= MAX_COMPONENT_LANES) break;
+  }
+  return out;
+}
+
+/** Component lane words for the `app` arm: "{core} {component} app ui". */
+export function componentAppText(text: string): string {
+  return / app ui$/.test(text) ? text : text.replace(/ ui$/, " app ui");
+}
+
 /** Locale lane: "arabic {surface}" when the brief is Arabic or right to left, or null. */
 export function localeQuery(brief: string): string | null {
   const p = briefParts(brief);
@@ -344,43 +466,20 @@ export function directionTasteVariants(
 
 /**
  * Every lane's words for one direction. `key` (the direction id) picks the styles: taste gets
- * one, hero the next, so a direction shows two looks from the list. Without a brief there is
- * only the inspiration lane.
+ * one, hero the next, so a direction shows two looks from the list. Without a brief there are no
+ * UI lanes, only the idea (search_references then searches the idea in UI forms).
  */
-/** Last words that already name a visual surface, so "pattern" would only narrow the search. */
-const INSPIRATION_SURFACE_WORDS = new Set([
-  "pattern", "patterns", "weave", "weaving", "motif", "motifs", "textile", "textiles", "embroidery",
-  "tile", "tiles", "mosaic", "architecture", "geometry", "tessellation", "lattice", "calligraphy",
-  "print", "prints", "poster", "posters", "rug", "rugs", "carpet", "facade", "door", "doors",
-  "window", "windows", "ceramics", "pottery", "grid", "screen", "screens", "wall", "walls",
-]);
-
-/**
- * Pinterest wording for the inspiration lane. For a craft tradition ("Uzbek suzani") the raw words
- * pull clothes and home decor on Pinterest (3 of 8 were jackets and pillows); "{tradition} pattern"
- * pulls the pattern itself (0 of 8). Behance keeps the raw words: modifiers zero it out there.
- * Returns undefined when the raw words should stay (not a tradition, or already a surface word).
- */
-export function inspirationPinterestQuery(inspiration: string): string | undefined {
-  const w = words(inspiration);
-  const last = w[w.length - 1]?.toLowerCase();
-  if (!last || INSPIRATION_SURFACE_WORDS.has(last) || w.length >= MAX_LANE_WORDS) return undefined;
-  const needle = ` ${w.join(" ").toLowerCase()} `;
-  const isTradition = allEntries().some((e) => e.move === "lens" && e.needle === needle);
-  return isTradition ? `${w.join(" ")} pattern` : undefined;
-}
-
-export function laneTexts(brief: string | null | undefined, inspiration: string, taste: readonly string[], key: string): LaneTexts {
-  const lanes: LaneTexts = { inspiration };
-  const pin = inspirationPinterestQuery(inspiration);
-  if (pin) lanes.inspirationPinterest = pin;
+export function laneTexts(brief: string | null | undefined, idea: string, taste: readonly string[], key: string): LaneTexts {
+  const lanes: LaneTexts = { idea };
   const b = brief?.trim();
   if (!b) return lanes;
   lanes.taste = tasteQuery(b, pickStyle(taste, key));
   lanes.fidelity = fidelityQuery(b);
   const core = fidelityCoreQuery(b);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
-  const bridge = bridgeQuery(b, inspiration);
+  const components = componentQueries(b);
+  if (components.length > 0) lanes.component = components;
+  const bridge = bridgeQuery(b, idea);
   if (bridge) lanes.bridge = bridge;
   const hero = heroQuery(b, pickStyle(taste, key, 1));
   if (hero) lanes.hero = hero;

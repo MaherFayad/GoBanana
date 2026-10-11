@@ -51,8 +51,6 @@ export type SourceQuery = {
   maxPages?: number;
   /** Most search provider requests (one credit each) this query may send in total. Defaults to the adapter's cap. */
   maxRequests?: number;
-  /** When maxRequests is below the number of sources, which source to start from (lanes rotate it). */
-  sourceOffset?: number;
   /** Item keys (lib/sources/web-search.ts itemKey) never to return: the user's blocklist. */
   excludeKeys?: readonly string[];
   /** Normalized creator names (lib/learning/creator.ts) the user rated great: nudged up within each source. */

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_IMAGE_HOSTS,
   NOTES,
+  PLAIN_MAX_REQUESTS,
   SERPER_IMAGES_ENDPOINT,
   allowlistFromEnv,
   allowlistToCspDomains,
@@ -135,7 +136,7 @@ describe("Serper response mapping", () => {
       imageUrl: "https://i.pinimg.com/originals/aa/bb/cc/aabbcc0011.jpg",
       sourceUrl: "https://www.pinterest.com/pin/123456789012345678/",
       sourceSite: "pinterest.com",
-      title: "Brutalist bakery menu poster",
+      title: "Brutalist bakery menu app UI",
       width: 736,
       height: 1104,
     });
@@ -155,7 +156,7 @@ describe("Serper response mapping", () => {
     expect(JSON.stringify(refs)).not.toContain("someblog.example");
     // Without a known size the thumbnail stands in.
     const [kept] = mapSerperImages(
-      [{ link: "https://uk.pinterest.com/pin/999/", imageUrl: "https://images.someblog.example/menu.jpg", thumbnailUrl: "https://encrypted-tbn3.gstatic.com/images?q=5" }],
+      [{ title: "Menu app UI", link: "https://uk.pinterest.com/pin/999/", imageUrl: "https://images.someblog.example/menu.jpg", thumbnailUrl: "https://encrypted-tbn3.gstatic.com/images?q=5" }],
       base,
     );
     expect(kept?.imageUrl).toBe("https://encrypted-tbn3.gstatic.com/images?q=5");
@@ -164,7 +165,7 @@ describe("Serper response mapping", () => {
 
   it("uses the image as the thumb when only the image host is allowlisted", () => {
     const refs = mapSerperImages(
-      [{ link: "https://dribbble.com/shots/1", imageUrl: "https://cdn.dribbble.com/u/1.png", thumbnailUrl: "https://x.example/t.png" }],
+      [{ title: "Menu app UI", link: "https://dribbble.com/shots/1", imageUrl: "https://cdn.dribbble.com/u/1.png", thumbnailUrl: "https://x.example/t.png" }],
       base,
     );
     expect(refs[0]?.thumbUrl).toBe("https://cdn.dribbble.com/u/1.png");
@@ -182,7 +183,7 @@ describe("Serper response mapping", () => {
       "https://dribbble.com/shots/777-Taken-down",
     );
     // Blocked original image is checked even when we would swap in the thumbnail.
-    const swap = [{ link: "https://uk.pinterest.com/pin/999/", imageUrl: "https://images.someblog.example/menu.jpg", thumbnailUrl: "https://encrypted-tbn3.gstatic.com/images?q=5" }];
+    const swap = [{ title: "Menu app UI", link: "https://uk.pinterest.com/pin/999/", imageUrl: "https://images.someblog.example/menu.jpg", thumbnailUrl: "https://encrypted-tbn3.gstatic.com/images?q=5" }];
     expect(mapSerperImages(swap, base)).toHaveLength(1);
     const byImage = compileTakedowns(["images.someblog.example"]);
     expect(mapSerperImages(swap, { ...base, takedowns: byImage })).toHaveLength(0);
@@ -210,20 +211,22 @@ describe("web_search adapter", () => {
   it("sends one POST per source to Serper with the key header and { q, num: 10 }", async () => {
     const fetchMock = vi.fn<FetchLike>(async () => jsonResponse(serperFixture));
     const adapter = createWebSearchAdapter({ apiKey: "test-key", fetch: fetchMock, allowlist });
-    const result = await adapter.run({ query: "brutalist bakery menu", count: 12, userId: "u1" });
+    const result = await adapter.run({ query: "brutalist bakery menu app", count: 12, userId: "u1" });
 
     // The fixture page is full (11 images), so a second page is asked for too; page 1 is checked here.
+    // Only 3 results pass every filter (fewer than 4), so the short form is tried once as well.
     const firstPage = fetchMock.mock.calls.filter(([, init]) => JSON.parse(String(init?.body)).page === undefined);
-    expect(firstPage).toHaveLength(2);
+    expect(firstPage).toHaveLength(3);
+    expect(JSON.parse(String(firstPage[2]![1]?.body)).q).toBe("bakery menu ui design -template -kit -free -wireframe site:pinterest.com/pin");
     for (const [url, init] of firstPage) {
       expect(url).toBe(SERPER_IMAGES_ENDPOINT);
       expect(url).toBe("https://google.serper.dev/images");
       expect(init?.method).toBe("POST");
       expect((init?.headers as Record<string, string>)["X-API-KEY"]).toBe("test-key");
     }
-    expect(firstPage.map(([, init]) => JSON.parse(String(init?.body)))).toEqual([
-      { q: "brutalist bakery menu site:pinterest.com/pin", num: 10 },
-      { q: "brutalist bakery menu site:dribbble.com/shots", num: 10 },
+    expect(firstPage.slice(0, 2).map(([, init]) => JSON.parse(String(init?.body)))).toEqual([
+      { q: "brutalist bakery menu app site:pinterest.com/pin", num: 10 },
+      { q: "brutalist bakery menu app site:dribbble.com/shots", num: 10 },
     ]);
     expect(result.ok).toBe(true);
     expect(result.references).toHaveLength(3);
@@ -264,7 +267,7 @@ describe("web_search adapter", () => {
   function fullPage(page: number) {
     return {
       images: Array.from({ length: 10 }, (_, i) => ({
-        title: `Shot ${page}-${i}`,
+        title: `App UI shot ${page}-${i}`,
         imageUrl: `https://cdn.dribbble.com/userupload/${page}-${i}.png`,
         imageWidth: 800,
         imageHeight: 600,
@@ -282,18 +285,18 @@ describe("web_search adapter", () => {
       return jsonResponse(fullPage(body.page ?? 1));
     });
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    const result = await adapter.run({ query: "q", count: 12, userId: "u", sources: ["dribbble"] });
+    const result = await adapter.run({ query: "q app", count: 12, userId: "u", sources: ["dribbble"] });
 
     const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init?.body)));
     expect(bodies.every((b) => b.num === 10)).toBe(true);
-    expect(bodies.every((b) => b.q === "q site:dribbble.com/shots")).toBe(true);
+    expect(bodies.every((b) => b.q === "q app site:dribbble.com/shots")).toBe(true);
     expect(bodies.map((b) => b.page ?? 1)).toEqual([1, 2]);
     expect(result.references).toHaveLength(12);
     expect(result.note).toBeUndefined();
     expect(result.requests).toBe(2);
   });
 
-  it("keeps at most 4 requests in flight and 8 in total, even with every source and a big count", async () => {
+  it("keeps a plain query at 4 requests in all, even with every source and a big count", async () => {
     let inFlight = 0;
     let peak = 0;
     const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
@@ -305,19 +308,20 @@ describe("web_search adapter", () => {
       return jsonResponse(fullPage(body.page ?? 1));
     });
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    const result = await adapter.run({ query: "q", count: 50, userId: "u", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
+    const result = await adapter.run({ query: "q app", count: 50, userId: "u", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
     expect(peak).toBeLessThanOrEqual(4);
-    expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(8);
+    expect(fetchMock.mock.calls.length).toBe(PLAIN_MAX_REQUESTS);
     expect(result.requests).toBe(fetchMock.mock.calls.length);
     const scopes = fetchMock.mock.calls.map(([, init]) => String(JSON.parse(String(init?.body)).q).split(" site:")[1]);
     expect(new Set(scopes)).toEqual(new Set(["pinterest.com/pin", "dribbble.com/shots", "behance.net/gallery", "awwwards.com/sites"]));
   });
 
-  it("rotates sources when the request budget is smaller than the sources", async () => {
+  it("keeps to a smaller request budget", async () => {
     const fetchMock = vi.fn<FetchLike>(async () => jsonResponse(fullPage(1)));
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    await adapter.run({ query: "q", count: 4, userId: "u", maxRequests: 1, sourceOffset: 1 });
-    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]?.body)).q).toBe("q site:dribbble.com/shots");
+    const result = await adapter.run({ query: "q app", count: 24, userId: "u", maxRequests: 1 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result.requests).toBe(1);
   });
 
   it("a 429 on one source keeps what the other source found", async () => {
@@ -326,7 +330,7 @@ describe("web_search adapter", () => {
       return String(body.q).includes("pinterest") ? jsonResponse({ message: "You are allowed to submit up to 5 requests per second" }, 429) : jsonResponse(fullPage(1));
     });
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    const result = await adapter.run({ query: "q", count: 8, userId: "u" });
+    const result = await adapter.run({ query: "q app", count: 8, userId: "u" });
     expect(result.ok).toBe(true);
     expect(result.references).toHaveLength(8);
     expect(result.references.every((r) => r.sourceSite === "dribbble.com")).toBe(true);
@@ -349,7 +353,7 @@ describe("web_search adapter", () => {
       return body.page ? jsonResponse({ message: "nope" }, 400) : jsonResponse(fullPage(1));
     });
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    const result = await adapter.run({ query: "q", count: 12, userId: "u", sources: ["dribbble"] });
+    const result = await adapter.run({ query: "q app", count: 12, userId: "u", sources: ["dribbble"] });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.references).toHaveLength(10);
     expect(result.note).toBe("Found 10 of 12 requested references.");
@@ -357,7 +361,7 @@ describe("web_search adapter", () => {
 });
 
 describe("web_search failure paths", () => {
-  const q = { query: "q", count: 12, userId: "u" };
+  const q = { query: "q app", count: 12, userId: "u" };
 
   it.each([
     [500, NOTES.unavailable],
@@ -422,7 +426,15 @@ describe("web_search failure paths", () => {
 
   it("returns a plain note when nothing survives filtering", async () => {
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: async () => jsonResponse({ images: [] }), allowlist });
-    expect(await adapter.run(q)).toEqual({ references: [], note: NOTES.noResults, ok: true, requests: 2 });
+    // Both sources answered with nothing, so the short form was tried once too (3 requests).
+    const result = await adapter.run(q);
+    expect(result).toEqual({
+      references: [],
+      note: NOTES.noResults,
+      ok: true,
+      requests: 3,
+      queries: ["q app site:pinterest.com/pin", "q app site:dribbble.com/shots", "q ui design -template -kit -free -wireframe site:pinterest.com/pin"],
+    });
   });
 });
 

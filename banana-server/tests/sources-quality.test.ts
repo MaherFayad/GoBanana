@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_IMAGE_HOSTS,
   bigEnough,
+  hasUiWord,
+  isUiResult,
   isItemPage,
   isJunk,
   mapSerperImagesWithStats,
@@ -127,9 +129,9 @@ describe("image upgrades", () => {
     const { references, dropped } = mapSerperImagesWithStats(
       [
         { title: "11 Care Label Design ideas | labels", link: "https://www.pinterest.com/someone/care-labels/", imageUrl: "https://i.pinimg.com/236x/aa/board.jpg", imageWidth: 236, imageHeight: 236, thumbnailUrl: thumb },
-        { title: "Woven care label", link: "https://es.pinterest.com/pin/42/", imageUrl: "https://i.pinimg.com/236x/aa/pin.jpg", imageWidth: 236, imageHeight: 300, thumbnailUrl: thumb },
-        { title: "Shot", link: "https://dribbble.com/shots/7-x", imageUrl: "https://cdn.dribbble.com/u/7.png?resize=400x300", imageWidth: 400, imageHeight: 300, thumbnailUrl: "https://encrypted-tbn1.gstatic.com/images?q=7" },
-        { title: "Tiny", link: "https://dribbble.com/shots/8-x", imageUrl: "https://cdn.dribbble.com/u/8.png", imageWidth: 300, imageHeight: 200 },
+        { title: "Woven care label app", link: "https://es.pinterest.com/pin/42/", imageUrl: "https://i.pinimg.com/236x/aa/pin.jpg", imageWidth: 236, imageHeight: 300, thumbnailUrl: thumb },
+        { title: "Laundry app shot", link: "https://dribbble.com/shots/7-x", imageUrl: "https://cdn.dribbble.com/u/7.png?resize=400x300", imageWidth: 400, imageHeight: 300, thumbnailUrl: "https://encrypted-tbn1.gstatic.com/images?q=7" },
+        { title: "Tiny app UI", link: "https://dribbble.com/shots/8-x", imageUrl: "https://cdn.dribbble.com/u/8.png", imageWidth: 300, imageHeight: 200 },
         { title: "Gold boarding pass | Zazzle", link: "https://www.pinterest.com/pin/9/", imageUrl: "https://i.pinimg.com/736x/aa/z.jpg", imageWidth: 736, imageHeight: 900 },
       ],
       { sources: ["pinterest", "dribbble"], allowlist, takedowns: EMPTY_TAKEDOWNS, count: 10 },
@@ -143,6 +145,80 @@ describe("image upgrades", () => {
     expect(shot.imageUrl).toBe("https://cdn.dribbble.com/u/7.png");
     expect(shot.thumbUrl).toBe("https://encrypted-tbn1.gstatic.com/images?q=7");
     expect(shot.width).toBeUndefined();
+  });
+});
+
+describe("UI title gate", () => {
+  it("keeps titles that name a UI", () => {
+    for (const title of [
+      "Flight Booking App UI by X on Dribbble",
+      "Banking Dashboard",
+      "Real Estate Website Design",
+      "Meditation app onboarding",
+      "Crypto wallet widget",
+      "Food delivery checkout screen",
+      "SaaS landing page",
+      "Fitness tracker",
+    ]) {
+      expect(isUiResult(title, "https://dribbble.com/shots/1-x"), title).toBe(true);
+    }
+  });
+
+  it("drops titles that name no UI, or other design work without app, ui, dashboard or website", () => {
+    for (const title of [
+      "Uzbek suzani jacket",
+      "Gas station sign",
+      "Teletext 1980s",
+      "Delta airline logo",
+      "Coffee branding",
+      "Movie poster",
+      "Bakery identity mobile mockup",
+      "Character illustration for onboarding screens",
+    ]) {
+      expect(isUiResult(title, "https://dribbble.com/shots/1-x"), title).toBe(false);
+    }
+  });
+
+  it("keeps a title with a non-UI word when it also says app, ui, dashboard or website", () => {
+    expect(isUiResult("Coffee shop branding app UI", "https://dribbble.com/shots/1-x")).toBe(true);
+    expect(isUiResult("Logo and website for a bakery", "https://dribbble.com/shots/1-x")).toBe(true);
+    expect(isUiResult("Poster app", "https://dribbble.com/shots/1-x")).toBe(true);
+  });
+
+  it("drops untitled results and matches whole words only", () => {
+    expect(isUiResult(undefined, "https://www.pinterest.com/pin/1/")).toBe(false);
+    expect(isUiResult("", "https://www.pinterest.com/pin/1/")).toBe(false);
+    expect(isUiResult("   ", "https://www.pinterest.com/pin/1/")).toBe(false);
+    expect(isUiResult("Happy guide", "https://dribbble.com/shots/1-x")).toBe(false);
+    expect(isUiResult("Build a web site", "https://dribbble.com/shots/1-x")).toBe(true);
+    expect(isUiResult("Sign up flow", "https://dribbble.com/shots/1-x")).toBe(true);
+    expect(isUiResult("APP", "https://dribbble.com/shots/1-x")).toBe(true);
+  });
+
+  it("keeps a titled Awwwards site page: it is a website", () => {
+    expect(isUiResult("Lusion", "https://www.awwwards.com/sites/lusion")).toBe(true);
+    expect(isUiResult("", "https://www.awwwards.com/sites/lusion")).toBe(false);
+    expect(isUiResult("Logo reveal", "https://www.awwwards.com/inspiration/logo-reveal")).toBe(false);
+  });
+
+  it("knows a UI word in a query", () => {
+    expect(hasUiWord("banking app home")).toBe(true);
+    expect(hasUiWord("teletext 1980s")).toBe(false);
+    expect(hasUiWord(undefined)).toBe(false);
+  });
+
+  it("drops non-UI titles in mapping and counts them", () => {
+    const { references, dropped } = mapSerperImagesWithStats(
+      [
+        { title: "Uzbek suzani jacket", link: "https://www.pinterest.com/pin/1/", imageUrl: "https://i.pinimg.com/736x/a.jpg", imageWidth: 736, imageHeight: 900 },
+        { title: "", link: "https://www.pinterest.com/pin/2/", imageUrl: "https://i.pinimg.com/736x/b.jpg", imageWidth: 736, imageHeight: 900 },
+        { link: "https://www.pinterest.com/pin/3/", imageUrl: "https://i.pinimg.com/736x/c.jpg", imageWidth: 736, imageHeight: 900 },
+        { title: "Banking Dashboard", link: "https://www.pinterest.com/pin/4/", imageUrl: "https://i.pinimg.com/736x/d.jpg", imageWidth: 736, imageHeight: 900 },
+      ],
+      { sources: ["pinterest"], allowlist, takedowns: EMPTY_TAKEDOWNS, count: 10 },
+    );
+    expect(references.map((r) => r.title)).toEqual(["Banking Dashboard"]);
+    expect(dropped).toBe(3);
   });
 });
 

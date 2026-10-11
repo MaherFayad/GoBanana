@@ -23,10 +23,9 @@ import {
 } from "@/lib/learning/arms";
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
-import { planRequests, type LaneTexts } from "@/lib/sources/plan";
+import { forceUi, hasUiLanes, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import {
-  DEFAULT_MIX,
   DEFAULT_SOURCES,
   LANE_NAMES,
   MIXES,
@@ -52,15 +51,20 @@ import { lenient, toolMessage, type RegisterTool } from "./types";
 export const TOOL_NAME = "search_references";
 
 export const TOOL_DESCRIPTION =
-  "Find design references on Pinterest and Dribbble (add Behance or Awwwards in sources). " +
-  "Pass a directionId from bend_brief (best: it searches the direction's idea, the user's taste and real screens for the brief), or a query. " +
-  "Every result carries its source link: always show it next to the image. " +
+  "Find UI references (app screens, web pages, dashboards, components) on Dribbble, Pinterest and Behance. " +
+  "Every result links to its source: always show the source link next to the image. " +
+  "Results are always UI, whatever the words: a wild idea belongs in the direction notes, not in the images. " +
+  "Pass a directionId from bend_brief (best: real screens and components for the brief, in the user's taste), or a query. " +
   "Pass canvasId to add the results to that canvas tray. " +
-  "Pass taste with a few style words that describe the user's references (for example from their mood boards), such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. " +
-  'mix sets how much of a direction search is raw idea against UI: "ui" (default, mostly UI screens), "balanced" or "wild" (mostly the raw idea). ' +
+  "Pass taste with a few style words that describe the user's references, such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. " +
   "To redo one lane of a direction with better words, pass directionId, lane and query. " +
   "Rate results with rate_references so later searches improve. " +
-  "Results are links to the source pages only.";
+  "mix is ignored (always UI). Results are links to the source pages only.";
+
+/** Plain message for the removed inspiration lane (older agents may still ask for it). */
+export const UI_ONLY_LANE_MESSAGE =
+  `Search is UI only, so there is no inspiration lane. Pass lane as one of ${LANE_NAMES.join(", ")}, ` +
+  "and keep the wild idea in the direction notes.";
 
 export const inputSchema = z.object({
   directionId: z.string().min(1).max(100).optional(),
@@ -72,11 +76,8 @@ export const inputSchema = z.object({
   lane: z
     .enum(LANE_NAMES)
     .optional()
-    .describe("With directionId and query: search only this lane of the direction, with the query as its words."),
-  mix: z
-    .enum(MIXES)
-    .optional()
-    .describe('Direction searches: "ui" (default) puts UI screens first with about 20% raw idea, "balanced" 40%, "wild" 60%.'),
+    .describe('With directionId and query: search only this lane of the direction, with the query as its words ("app ui" is added when they name no UI).'),
+  mix: z.enum(MIXES).optional().describe("Ignored: results are always UI. Kept so older calls still work."),
 });
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
@@ -137,7 +138,7 @@ export type SearchReferencesOutput = {
   learned?: boolean;
   /** Lane-only re-search: the lane that was searched. */
   lane?: LaneName;
-  /** Inspiration's share and the order of the results (lib/sources/plan.ts). */
+  /** Always "ui": results are UI only, whatever mix the call passed. */
   mix: Mix;
   sources: SourceSite[];
   references: Reference[];
@@ -168,8 +169,8 @@ function resultText(out: SearchReferencesOutput): string {
     ? `the ${out.lane} lane "${out.query}"`
     : lanes
     ? Object.entries(lanes)
-        .filter(([k]) => k !== "fidelityCore")
-        .map(([k, v]) => `${k} "${v}"`)
+        .filter(([k]) => k !== "fidelityCore" && k !== "idea")
+        .map(([k, v]) => (Array.isArray(v) ? v.map((t) => `${k} "${t}"`).join(", ") : `${k} "${v}"`))
         .join(", ")
     : `"${out.query}"`;
   lines.push(`Found ${out.references.length} references for ${searched}. Show each source link with its image.`);
@@ -185,9 +186,9 @@ function resultText(out: SearchReferencesOutput): string {
 }
 
 /**
- * Lane words for a saved direction (lib/bend/queries.ts). Inspiration comes from the stored search
- * text (older directions stored a stacked query; the lead ingredient is pulled out of it). Taste,
- * fidelity, hero and locale come from the canvas brief; without one there is only inspiration.
+ * Lane words for a saved direction (lib/bend/queries.ts). The idea comes from the stored search
+ * text (older directions stored a stacked query; the lead ingredient is pulled out of it). The UI
+ * lanes come from the canvas brief; without one there is only the idea, searched in UI forms.
  */
 export function directionLanes(direction: Direction, taste: readonly string[]): LaneTexts {
   return laneTexts(direction.brief, inspirationFromQuery(direction.searchQuery), taste, direction.bendId ?? direction.id);
@@ -202,11 +203,12 @@ type Searched = {
   termKeys?: Partial<Record<LaneName, string>>;
 };
 
-/** Term key of every lane a direction has. */
+/** Term key of every lane a direction has (the component lanes share one: their texts joined by " + "). */
 export function laneTermKeys(lanes: LaneTexts): Partial<Record<LaneName, string>> {
   const out: Partial<Record<LaneName, string>> = {};
   for (const lane of LANE_NAMES) {
-    const text = lanes[lane];
+    const value = lanes[lane];
+    const text = Array.isArray(value) ? value.join(" + ") : value;
     if (text) out[lane] = termKey(lane, text);
   }
   return out;
@@ -258,10 +260,14 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
   ): Promise<SearchReferencesResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
 
+    // The inspiration lane was removed (search is UI only): say so plainly instead of a schema error.
+    if (rawInput && typeof rawInput === "object" && (rawInput as { lane?: unknown }).lane === "inspiration") {
+      return toolMessage(UI_ONLY_LANE_MESSAGE);
+    }
     const parsed = inputSchema.safeParse(rawInput);
     if (!parsed.success) {
       return toolMessage(
-        `Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, lane as one of ${LANE_NAMES.join(", ")}, and mix as one of ${MIXES.join(", ")}.`,
+        `Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, and lane as one of ${LANE_NAMES.join(", ")}.`,
       );
     }
     const input = parsed.data;
@@ -273,6 +279,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
     }
     const laneWords = input.lane ? cleanQuery(input.query!) : undefined;
     if (input.lane && !laneWords) return toolMessage("Pass a few words in query for that lane.");
+    // Results are UI only: the agent's lane words get "app ui" when they name no UI.
+    const laneUiWords = laneWords ? forceUi(laneWords) : undefined;
     if (input.canvasId && !plausibleId(input.canvasId)) {
       return toolMessage("That canvas was not found. Call open_canvas to create one, or check the canvasId.");
     }
@@ -280,7 +288,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
     const inputTaste = cleanTaste(input.taste);
     try {
       // A lane re-search uses the direction; its query is the lane's new words.
-      const query = input.lane ? undefined : input.query;
+      let query = input.lane ? undefined : input.query;
       let directionKey: string | undefined;
       let directionCanvasId: string | undefined;
       let lanes: LaneTexts | undefined;
@@ -298,7 +306,17 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         directionCanvasId = direction.canvasId ?? undefined;
         const v = directionTasteVariants(direction.brief, taste.length > 0 ? taste : DEFAULT_TASTE, directionKey);
         variants = { ...(v.app ? { tasteApp: v.app } : {}), ...(v.core ? { tasteCore: v.core } : {}) };
-        if (input.lane && !lanes[input.lane]) {
+        if (!hasUiLanes(lanes)) {
+          // No brief, so no UI lanes: search the direction's idea on the plain path (UI forms, gated).
+          if (input.lane) {
+            return toolMessage(
+              "That direction has no lanes to redo because its canvas has no brief. Search it without lane, or pass a query.",
+            );
+          }
+          query = lanes.idea;
+          lanes = undefined;
+          variants = {};
+        } else if (input.lane && !lanes[input.lane]) {
           const has = LANE_NAMES.filter((l) => lanes![l]).join(", ");
           return toolMessage(`That direction has no ${input.lane} lane. Its lanes: ${has}.`);
         }
@@ -322,7 +340,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       }
 
       const sources = input.sources ? SOURCE_SITES.filter((s) => input.sources!.includes(s)) : [...DEFAULT_SOURCES];
-      const mix: Mix = input.mix ?? DEFAULT_MIX;
+      // mix is accepted for older clients and ignored: results are always UI.
+      const mix: Mix = "ui";
       // What the user taught search: blocked items never come back, liked creators move up.
       const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
       const preferCreators = preferredCreators(learning.creatorRatings);
@@ -335,8 +354,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         let learned = false;
         if (input.lane) {
           // Only this lane, with the agent's words; they become an arm of the lane's term.
-          arms = { [input.lane]: agentArm(laneWords!) };
-          plan = planLane(input.lane, queryWords(laneWords!), picked, lanes.inspiration);
+          arms = { [input.lane]: agentArm(laneUiWords!) };
+          plan = planLane(input.lane, queryWords(laneUiWords!), picked, lanes.idea);
         } else {
           arms = await pickArms(deps, userId, lanes, termKeys, variants, deps.now?.() ?? new Date());
           learned = Object.entries(arms).some(([lane, arm]) => arm !== defaultArm(lane as LaneName));
@@ -348,7 +367,6 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         const result = await deps.adapter.runPlan(plan, {
           count: input.count,
           userId,
-          mix,
           exclude,
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
@@ -364,7 +382,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
         });
-        searched = { result, queries: [query!] };
+        searched = { result, queries: result.queries ?? [query!] };
       }
       const { result } = searched;
 
@@ -373,7 +391,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (result.ok) await deps.usage.addSearches(userId, quota.period, 1);
 
       const out: SearchReferencesOutput = {
-        query: input.lane ? queryWords(laneWords!) : lanes ? lanes.inspiration : query!,
+        query: input.lane ? queryWords(laneUiWords!) : lanes ? lanes.idea : query!,
         queries: searched.queries,
         sources,
         references: result.references,

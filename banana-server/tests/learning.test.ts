@@ -7,9 +7,10 @@ import { mulberry32 } from "@/lib/bend/prng";
 import {
   agentArm,
   builtInArms,
+  defaultArm,
   globalLearningOn,
-  INSPIRATION_DEFAULT,
   K_ANON,
+  UI_DEFAULT,
   pickArm,
   planLane,
   planWithArms,
@@ -23,7 +24,7 @@ import { queryWords, termKey } from "@/lib/learning/terms";
 import { buildSourceQuery, UI_NEG, type LaneTexts } from "@/lib/sources";
 
 const LANES: LaneTexts = {
-  inspiration: "oversized film frames",
+  idea: "oversized film frames",
   taste: "big typography saudi fintech card ui design",
   fidelity: "saudi fintech app ui",
   fidelityCore: "fintech app ui",
@@ -31,7 +32,7 @@ const LANES: LaneTexts = {
 };
 const VARIANTS = { tasteApp: "big typography saudi fintech app card ui", tasteCore: "big typography fintech card ui design" };
 
-const stat = (arm: string, over: Partial<ArmStat> = {}, tk = "inspiration|oversized film frames"): ArmStat => ({
+const stat = (arm: string, over: Partial<ArmStat> = {}, tk = "taste|big typography saudi fintech card ui design"): ArmStat => ({
   termKey: tk,
   arm,
   great: 0,
@@ -44,7 +45,7 @@ const stat = (arm: string, over: Partial<ArmStat> = {}, tk = "inspiration|oversi
 
 describe("term keys", () => {
   it("normalizes lane words: lowercase, no negatives, no site operators, no quotes or OR", () => {
-    expect(termKey("inspiration", "  Oversized   Film Frames ")).toBe("inspiration|oversized film frames");
+    expect(termKey("bridge", "  Oversized   Film Frames ")).toBe("bridge|oversized film frames");
     expect(termKey("fidelity", `Saudi Fintech app ui ${UI_NEG} site:dribbble.com/shots`)).toBe("fidelity|saudi fintech app ui");
     expect(queryWords('"film strip" OR (macro) -stock site:pinterest.com/pin')).toBe("film strip macro");
     expect(termKey("taste", "x")).not.toBe(termKey("hero", "x"));
@@ -90,12 +91,9 @@ describe("creator affinity", () => {
 
 describe("rewrite arms", () => {
   it("lists built-in arms per lane, default first", () => {
-    expect(builtInArms("inspiration", LANES)).toEqual([
-      INSPIRATION_DEFAULT,
-      "raw@behance",
-      "graphic design@pinterest+behance",
-      "poster@pinterest+behance",
-    ]);
+    // Every lane is a UI lane with the same default; the inspiration arms are gone.
+    expect(defaultArm("fidelity")).toBe(UI_DEFAULT);
+    expect(defaultArm("component")).toBe(UI_DEFAULT);
     expect(builtInArms("fidelity", LANES)).toEqual(["default", "core"]);
     expect(builtInArms("fidelity", { ...LANES, fidelityCore: undefined })).toEqual(["default"]);
     expect(builtInArms("taste", LANES, VARIANTS)).toEqual(["default", "app", "core"]);
@@ -103,6 +101,8 @@ describe("rewrite arms", () => {
     expect(builtInArms("hero", LANES)).toEqual(["default"]);
     expect(builtInArms("bridge", LANES)).toEqual(["default"]);
     expect(builtInArms("bridge", { ...LANES, bridge: "oversized film frames ui design" })).toEqual(["default", "app"]);
+    expect(builtInArms("component", LANES)).toEqual(["default"]);
+    expect(builtInArms("component", { ...LANES, component: ["fintech balance ui"] })).toEqual(["default", "app"]);
     expect(agentArm("35mm Film strip -stock site:pinterest.com macro")).toBe("agent:35mm film strip macro");
   });
 
@@ -111,42 +111,43 @@ describe("rewrite arms", () => {
       planWithArms(LANES, arms, undefined, VARIANTS).map((r) => `${r.lane}:${r.site}:${r.page ?? 1}:${r.query}${r.fallback ? ` > ${r.fallback}` : ""}`);
     // Default arms: the base plan.
     expect(show({})).toEqual([
-      "inspiration:pinterest:1:oversized film frames",
       `fidelity:dribbble:1:saudi fintech app ui ${UI_NEG} > fintech app ui ${UI_NEG}`,
-      `taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`,
-      "inspiration:behance:1:oversized film frames",
-      "hero:dribbble:1:minimal fintech app single screen",
       `fidelity:pinterest:1:saudi fintech app ui ${UI_NEG} > fintech app ui ${UI_NEG}`,
+      `taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`,
+      "hero:dribbble:1:minimal fintech app single screen",
     ]);
-    const b = show({ inspiration: "raw@behance", fidelity: "core", taste: "app" });
-    expect(b[0]).toBe("inspiration:behance:1:oversized film frames");
-    expect(b[3]).toBe("inspiration:behance:2:oversized film frames");
-    expect(b[1]).toBe(`fidelity:dribbble:1:fintech app ui ${UI_NEG}`);
+    const b = show({ fidelity: "core", taste: "app" });
+    expect(b[0]).toBe(`fidelity:dribbble:1:fintech app ui ${UI_NEG}`);
     expect(b[2]).toBe(`taste:dribbble:1:big typography saudi fintech app card ui ${UI_NEG}`);
-    expect(show({ inspiration: "poster@pinterest+behance" })[0]).toBe("inspiration:pinterest:1:oversized film frames poster");
-    expect(show({ inspiration: "graphic design@pinterest+behance" })[3]).toBe("inspiration:behance:1:oversized film frames graphic design");
     expect(show({ taste: "core" })[2]).toBe(`taste:dribbble:1:big typography fintech card ui design ${UI_NEG}`);
-    expect(show({ inspiration: "agent:35mm film strip macro", hero: "agent:one floating phone" })).toEqual(
-      expect.arrayContaining(["inspiration:pinterest:1:35mm film strip macro", "hero:dribbble:1:one floating phone"]),
-    );
+    expect(show({ hero: "agent:one floating phone" })).toEqual(expect.arrayContaining(["hero:dribbble:1:one floating phone"]));
+    // Old inspiration arms (from earlier ratings) change nothing.
+    expect(show({ ["inspiration" as never]: "raw@behance" })).toEqual(show({}));
     // Unknown arms fall back to the default wording.
     expect(show({ taste: "nonsense" })[2]).toBe(`taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`);
   });
 
-  it("applies the bridge arms and keeps the idea's title word whatever the inspiration arm", () => {
+  it("applies the component arms: app adds 'app' before 'ui'", () => {
+    const lanes = { ...LANES, component: ["fintech balance ui", "fintech quick actions ui"] };
+    const comps = (arms: Parameters<typeof planWithArms>[1]) => planWithArms(lanes, arms).filter((r) => r.lane === "component").map((r) => r.query);
+    expect(comps({})).toEqual([`fintech balance ui ${UI_NEG}`, `fintech quick actions ui ${UI_NEG}`]);
+    expect(comps({ component: "app" })).toEqual([`fintech balance app ui ${UI_NEG}`, `fintech quick actions app ui ${UI_NEG}`]);
+    expect(comps({ component: "agent:fintech card stack ui" })).toEqual([`fintech card stack ui ${UI_NEG}`]);
+  });
+
+  it("applies the bridge arms and keeps the idea's title word", () => {
     const lanes = { ...LANES, bridge: "oversized film frames ui design" };
     const bridgeOf = (arms: Parameters<typeof planWithArms>[1]) => planWithArms(lanes, arms, undefined, VARIANTS).find((r) => r.lane === "bridge");
     expect(bridgeOf({})).toEqual({ lane: "bridge", query: `oversized film frames ui design ${UI_NEG}`, site: "dribbble", titleWord: "frames" });
     expect(bridgeOf({ bridge: "app" })?.query).toBe(`oversized film frames app ui ${UI_NEG}`);
-    expect(bridgeOf({ bridge: "app", inspiration: "poster@pinterest+behance" })?.titleWord).toBe("frames");
-    expect(bridgeOf({ bridge: "agent:film strip checkout ui" })?.query).toBe(`film strip checkout ui ${UI_NEG}`);
-    expect(planWithArms(lanes, {}).map((r) => r.lane)).toEqual(["inspiration", "fidelity", "taste", "bridge", "inspiration", "hero", "fidelity"]);
+    expect(bridgeOf({ bridge: "app" })?.titleWord).toBe("frames");
+    expect(bridgeOf({ bridge: "agent:film strip checkout ui" })).toMatchObject({ query: `film strip checkout ui ${UI_NEG}`, titleWord: "frames" });
+    expect(planWithArms(lanes, {}).map((r) => r.lane)).toEqual(["fidelity", "fidelity", "taste", "hero", "bridge"]);
   });
 
   it("plans one lane with the agent's words", () => {
-    expect(planLane("inspiration", "35mm film strip macro").map((r) => buildSourceQuery(r.query, r.site))).toEqual([
-      "35mm film strip macro site:pinterest.com/pin",
-      "35mm film strip macro site:behance.net/gallery",
+    expect(planLane("component", "fintech balance app ui").map((r) => buildSourceQuery(r.query, r.site))).toEqual([
+      `fintech balance app ui ${UI_NEG} site:dribbble.com/shots`,
     ]);
     expect(planLane("taste", "editorial checkout ui").map((r) => buildSourceQuery(r.query, r.site))).toEqual([
       `editorial checkout ui ${UI_NEG} site:dribbble.com/shots`,
@@ -162,20 +163,20 @@ describe("rewrite arms", () => {
 });
 
 describe("arm picker", () => {
-  const candidates = builtInArms("inspiration", LANES);
-  const TK = "inspiration|oversized film frames";
+  const candidates = builtInArms("taste", LANES, VARIANTS);
+  const TK = "taste|big typography saudi fintech card ui design";
   const pick = (stats: ArmStat[], seed = "u1|2026-10-15", global = true) => pickArm({ termKey: TK, candidates, stats, global, seed });
 
   it("uses the default for a term with no data", () => {
-    expect(pick([])).toEqual({ arm: INSPIRATION_DEFAULT, learned: false });
-    expect(pick([stat("poster@pinterest+behance", { great: 9, users: 9 }, "inspiration|something else")])).toEqual({
-      arm: INSPIRATION_DEFAULT,
+    expect(pick([])).toEqual({ arm: UI_DEFAULT, learned: false });
+    expect(pick([stat("app", { great: 9, users: 9 }, "taste|something else")])).toEqual({
+      arm: UI_DEFAULT,
       learned: false,
     });
   });
 
   it("is deterministic for a seed", () => {
-    const stats = [stat("agent:35mm film strip macro", { great: 3, bad: 1, users: 4 }), stat(INSPIRATION_DEFAULT, { great: 2, bad: 2, users: 4 })];
+    const stats = [stat("agent:35mm film strip macro", { great: 3, bad: 1, users: 4 }), stat(UI_DEFAULT, { great: 2, bad: 2, users: 4 })];
     for (const seed of ["a", "b", "c", "u1|2026-10-15"]) expect(pick(stats, seed)).toEqual(pick(stats, seed));
     const picks = new Set(Array.from({ length: 40 }, (_, i) => pick(stats, `s${i}`).arm));
     expect(picks.size).toBeGreaterThan(1); // it explores
@@ -183,9 +184,9 @@ describe("arm picker", () => {
 
   it("lets an arm reach other users only after K_ANON distinct users rated it", () => {
     expect(K_ANON).toBe(3);
-    const strong = (users: number) => [stat("agent:35mm film strip macro", { great: users, users }), stat(INSPIRATION_DEFAULT, { bad: users, users })];
+    const strong = (users: number) => [stat("agent:35mm film strip macro", { great: users, users }), stat(UI_DEFAULT, { bad: users, users })];
     // Two users: nobody else sees it, whatever the seed.
-    for (let i = 0; i < 50; i++) expect(pick(strong(2), `s${i}`).arm).toBe(INSPIRATION_DEFAULT);
+    for (let i = 0; i < 50; i++) expect(pick(strong(2), `s${i}`).arm).toBe(UI_DEFAULT);
     // Twenty users: it now wins for others almost always.
     const wins = Array.from({ length: 100 }, (_, i) => pick(strong(20), `s${i}`).arm).filter((a) => a === "agent:35mm film strip macro").length;
     expect(wins).toBeGreaterThan(80);
@@ -194,16 +195,16 @@ describe("arm picker", () => {
   });
 
   it("applies a rater's own ratings to them below the threshold", () => {
-    const own = [stat("agent:35mm film strip macro", { great: 1, users: 1, ownGreat: 12 }), stat(INSPIRATION_DEFAULT, { bad: 1, users: 1, ownBad: 8 })];
+    const own = [stat("agent:35mm film strip macro", { great: 1, users: 1, ownGreat: 12 }), stat(UI_DEFAULT, { bad: 1, users: 1, ownBad: 8 })];
     const wins = Array.from({ length: 100 }, (_, i) => pick(own, `s${i}`)).filter((p) => p.arm === "agent:35mm film strip macro" && p.learned).length;
     expect(wins).toBeGreaterThan(80);
   });
 
   it("with GLOBAL_LEARNING off, only the user's own ratings count", () => {
-    const crowd = [stat("agent:35mm film strip macro", { great: 50, users: 50 }), stat(INSPIRATION_DEFAULT, { bad: 50, users: 50 })];
-    for (let i = 0; i < 30; i++) expect(pick(crowd, `s${i}`, false).arm).toBe(INSPIRATION_DEFAULT);
+    const crowd = [stat("agent:35mm film strip macro", { great: 50, users: 50 }), stat(UI_DEFAULT, { bad: 50, users: 50 })];
+    for (let i = 0; i < 30; i++) expect(pick(crowd, `s${i}`, false).arm).toBe(UI_DEFAULT);
     const mine = crowd.map((s) => ({ ...s, ownGreat: s.great > 0 ? 10 : 0, ownBad: s.bad > 0 ? 10 : 0 }));
-    expect(Array.from({ length: 50 }, (_, i) => pick(mine, `s${i}`, false).arm).filter((a) => a !== INSPIRATION_DEFAULT).length).toBeGreaterThan(40);
+    expect(Array.from({ length: 50 }, (_, i) => pick(mine, `s${i}`, false).arm).filter((a) => a !== UI_DEFAULT).length).toBeGreaterThan(40);
     expect(globalLearningOn(undefined)).toBe(true);
     expect(globalLearningOn("on")).toBe(true);
     expect(globalLearningOn(" OFF ")).toBe(false);
@@ -232,9 +233,8 @@ describe("arm picker", () => {
 
 describe("hints for bad ratings", () => {
   it("tells the agent how to re-search the lane", () => {
-    expect(badHint("inspiration", ["off_topic"])).toContain('lane "inspiration"');
-    expect(badHint("inspiration", ["off_topic"])).toContain("describe the visual, not the object");
-    expect(badHint("inspiration", ["stock_or_shop"])).toContain("poster");
+    expect(badHint("component", ["off_topic"])).toContain('lane "component"');
+    expect(badHint("component", ["off_topic"])).toContain("quick actions ui");
     expect(badHint("taste", ["not_ui"])).toContain("ui design");
     expect(badHint("bridge", ["off_topic"])).toContain('lane "bridge"');
     expect(badHint("bridge", ["off_topic"])).toContain("main word");

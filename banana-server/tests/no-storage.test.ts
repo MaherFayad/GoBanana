@@ -146,12 +146,11 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
       allowlist,
       loadTakedowns: async () => compileTakedowns(["https://dribbble.com/shots/777-Taken-down"]),
     });
-    const result = await adapter.run({ query: "brutalist bakery", count: 24, userId: "u1", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
+    const result = await adapter.run({ query: "brutalist bakery app", count: 24, userId: "u1", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
 
     expect(result.references.length).toBeGreaterThan(0);
-    // One request per source and page of 10 (Serper free plan), never more than 8 per call.
-    expect(requests.length).toBeGreaterThanOrEqual(4);
-    expect(requests.length).toBeLessThanOrEqual(8);
+    // One request per source and page of 10 (Serper free plan), never more than 4 for a plain query.
+    expect(requests.length).toBe(4);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
@@ -180,8 +179,8 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     });
     const result = await adapter.run({ query: "q", count: 12, userId: "u1" });
     expect(result.references).toEqual([]);
-    // Page 1 for each default source, nothing more.
-    expect(requests).toHaveLength(2);
+    // Page 1 of each planned UI form ("q app ui" and "q ui design" on Dribbble, "q app ui" on Pinterest), nothing more.
+    expect(requests).toHaveLength(3);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
@@ -216,7 +215,9 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     expect(requests.length).toBeLessThanOrEqual(8);
     const queries = (res.structuredContent as { queries: string[] }).queries;
     expect(queries.every((q) => / site:(pinterest\.com\/pin|dribbble\.com\/shots|behance\.net\/gallery)$/.test(q))).toBe(true);
-    expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(true);
+    // The raw idea is never searched; it reaches results only through the title-filtered bridge lane.
+    expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(false);
+    expect(queries.some((q) => q.startsWith("melted chrome ui design"))).toBe(true);
     expect(queries.some((q) => q.startsWith("arabic app ui"))).toBe(true);
     expect((await usage.get("u1", currentPeriod())).searches).toBe(1);
     assertOnlySerper(requests);
@@ -244,14 +245,14 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
         ],
       }),
       getArmStats: async (_u, keys) => [
-        { termKey: keys[0]!, arm: "raw@behance", great: 9, bad: 0, users: 9, ownGreat: 0, ownBad: 0 },
-        { termKey: keys[0]!, arm: "raw@pinterest+behance", great: 0, bad: 9, users: 9, ownGreat: 0, ownBad: 0 },
+        { termKey: keys[0]!, arm: "agent:flight booking app ui", great: 9, bad: 0, users: 9, ownGreat: 0, ownBad: 0 },
+        { termKey: keys[0]!, arm: "default", great: 0, bad: 9, users: 9, ownGreat: 0, ownBad: 0 },
       ],
       upgradeUrl: () => "https://example.test/pricing",
     });
     const full = await tool({ directionId: "d1", canvasId: "c1" }, "u1");
     expect(full.isError).toBeUndefined();
-    const lane = await tool({ directionId: "d1", canvasId: "c1", lane: "inspiration", query: "chrome macro" }, "u1");
+    const lane = await tool({ directionId: "d1", canvasId: "c1", lane: "bridge", query: "chrome macro" }, "u1");
     expect(lane.isError).toBeUndefined();
     expect(tray.length).toBeGreaterThan(0);
     for (const item of tray) {

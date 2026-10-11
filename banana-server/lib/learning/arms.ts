@@ -4,12 +4,12 @@
  * (lib/learning/terms.ts) and arm; planning picks an arm by Thompson sampling with a seeded RNG
  * (cyrb53 + mulberry32, the same as lib/bend).
  *
- * Arms:
- *   inspiration  raw@pinterest+behance (default), raw@behance (Behance pages 1 and 2),
- *                graphic design@pinterest+behance, poster@pinterest+behance
+ * Arms (every lane is a UI lane; the inspiration lane and its arms were removed, and old ratings
+ * of it are ignored: its term keys are never asked for):
  *   fidelity     default (with the core noun fallback), core (core noun up front)
  *   taste        default "{style} {domain} {component} ui design",
  *                app "{style} {domain} app {component} ui" (app briefs), core (core domain noun)
+ *   component    default "{core} {component} ui", app "{core} {component} app ui"
  *   bridge       default "{ingredient} ui design", app "{ingredient} app ui"
  *   hero, locale default
  *   any lane     agent:{words}, recorded when an agent re-searches one lane with its own words
@@ -21,6 +21,7 @@
  *   and only for them. With GLOBAL_LEARNING=off only the user's own ratings apply.
  */
 import { cyrb53, mulberry32, type Rng } from "../bend/prng";
+import { componentAppText } from "../bend/queries";
 import { bridgeHead, planRequests, type LaneTexts, type PlannedRequest } from "../sources/plan";
 import type { LaneName, SourceSite } from "../sources/types";
 import { MAX_KEY_LENGTH, queryWords } from "./terms";
@@ -28,12 +29,12 @@ import { MAX_KEY_LENGTH, queryWords } from "./terms";
 /** Distinct users who must rate a term and arm before it influences anyone else. */
 export const K_ANON = 3;
 
-export const INSPIRATION_DEFAULT = "raw@pinterest+behance";
 export const UI_DEFAULT = "default";
 export const AGENT_PREFIX = "agent:";
 
-export function defaultArm(lane: LaneName): string {
-  return lane === "inspiration" ? INSPIRATION_DEFAULT : UI_DEFAULT;
+/** Every lane's default arm (all lanes are UI lanes). */
+export function defaultArm(_lane: LaneName): string {
+  return UI_DEFAULT;
 }
 
 /** Lane texts for the taste arms that are not in LaneTexts (lib/bend/queries.ts tasteVariants). */
@@ -42,12 +43,12 @@ export type ArmVariants = { tasteApp?: string; tasteCore?: string };
 /** Built-in arms a lane can use, default first. */
 export function builtInArms(lane: LaneName, lanes: LaneTexts, variants: ArmVariants = {}): string[] {
   switch (lane) {
-    case "inspiration":
-      return [INSPIRATION_DEFAULT, "raw@behance", "graphic design@pinterest+behance", "poster@pinterest+behance"];
     case "fidelity":
       return lanes.fidelityCore ? [UI_DEFAULT, "core"] : [UI_DEFAULT];
     case "taste":
       return [UI_DEFAULT, ...(variants.tasteApp ? ["app"] : []), ...(variants.tasteCore ? ["core"] : [])];
+    case "component":
+      return lanes.component?.length ? [UI_DEFAULT, "app"] : [UI_DEFAULT];
     case "bridge":
       return lanes.bridge ? [UI_DEFAULT, "app"] : [UI_DEFAULT];
     default:
@@ -85,12 +86,6 @@ export function planWithArms(
     return arm && isAgentArm(arm) ? arm.slice(AGENT_PREFIX.length) : undefined;
   };
 
-  const insp = arms.inspiration;
-  const inspAgent = agentWords("inspiration");
-  if (inspAgent) out.inspiration = inspAgent;
-  else if (insp === "graphic design@pinterest+behance") out.inspiration = `${lanes.inspiration} graphic design`;
-  else if (insp === "poster@pinterest+behance") out.inspiration = `${lanes.inspiration} poster`;
-
   if (lanes.fidelity) {
     const agent = agentWords("fidelity");
     if (agent) {
@@ -107,22 +102,23 @@ export function planWithArms(
     else if (arms.taste === "app" && variants.tasteApp) out.taste = variants.tasteApp;
     else if (arms.taste === "core" && variants.tasteCore) out.taste = variants.tasteCore;
   }
+  if (lanes.component?.length) {
+    const agent = agentWords("component");
+    if (agent) out.component = [agent];
+    else if (arms.component === "app") out.component = lanes.component.map(componentAppText);
+  }
   if (lanes.bridge) {
     const agent = agentWords("bridge");
     if (agent) out.bridge = agent;
-    else if (arms.bridge === "app") out.bridge = bridgeAppText(lanes.inspiration);
+    else if (arms.bridge === "app") out.bridge = bridgeAppText(lanes.idea);
   }
   for (const lane of ["hero", "locale"] as const) {
     const agent = agentWords(lane);
     if (agent && lanes[lane]) out[lane] = agent;
   }
 
-  // The bridge filter keeps the direction's own idea, whatever words the inspiration arm used.
-  const plan = planRequests(out, sources, { bridgeWord: bridgeHead(lanes.inspiration) });
-  if (insp !== "raw@behance" || inspAgent) return plan;
-  // Both inspiration requests on Behance galleries: page 1 where Pinterest was, then page 2.
-  let n = 0;
-  return plan.map((r) => (r.lane === "inspiration" ? { ...r, site: "behance" as const, ...(n++ === 0 ? {} : { page: 2 }) } : r));
+  // The bridge filter keeps the direction's own idea, whatever words the bridge arm used.
+  return planRequests(out, sources, { bridgeWord: bridgeHead(lanes.idea) });
 }
 
 /**
@@ -130,8 +126,9 @@ export function planWithArms(
  * re-search keeps the title filter of the direction's `ingredient` (no ingredient, no request).
  */
 export function planLane(lane: LaneName, text: string, sources?: readonly SourceSite[], ingredient?: string): PlannedRequest[] {
-  const lanes: LaneTexts = { inspiration: lane === "inspiration" ? text : "" };
-  if (lane !== "inspiration") lanes[lane] = text;
+  const lanes: LaneTexts = { idea: ingredient ?? "" };
+  if (lane === "component") lanes.component = [text];
+  else lanes[lane] = text;
   return planRequests(lanes, sources, { bridgeWord: bridgeHead(ingredient) }).filter((r) => r.lane === lane);
 }
 

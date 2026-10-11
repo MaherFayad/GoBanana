@@ -56,17 +56,17 @@ export interface Direction {
    */
   twist: string;
   /**
-   * Inspiration query: the lead headline ingredient, raw (at most 5 words), for
-   * search_references `query`. Same as searchQueries[0].
+   * The direction's idea: the lead headline ingredient, raw (at most 5 words). Search returns UI
+   * only, so search_references with this as `query` searches it in UI forms ("{idea} app ui").
    */
   searchQuery: string;
   /**
-   * Lane words search_references uses for a directionId (lib/bend/queries.ts): inspiration (same as
-   * searchQuery), taste ("{style} {domain} {component} ui design"), fidelity ("{domain} app ui", shared by every
-   * direction of a brief), then bridge ("{ingredient} ui design", UI briefs), hero
-   * ("{style} {domain} app single screen", app briefs) and locale
-   * ("arabic app ui", Arabic briefs) when they apply. Plain words: the server adds negatives and
-   * site operators when it searches. At most 7 words each.
+   * Lane words search_references uses for a directionId (lib/bend/queries.ts), all UI forms:
+   * fidelity ("{domain} app ui", shared by every direction of a brief), taste ("{style} {domain}
+   * {component} ui design"), then the component lanes ("{core} {component} ui"), hero ("{style}
+   * {domain} app single screen", app briefs), bridge ("{ingredient} ui design", UI briefs) and
+   * locale ("arabic app ui", Arabic briefs) when they apply. Plain words: the server adds negatives
+   * and site operators when it searches. At most 7 words each.
    */
   searchQueries: string[];
   /** The full combined idea (every move and the twist) for the agent to riff on. */

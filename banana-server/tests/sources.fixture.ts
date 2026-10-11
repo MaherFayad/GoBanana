@@ -1,7 +1,8 @@
 /**
  * Realistic Serper images response, shaped like a live reply
  * (fields: title, imageUrl, imageWidth, imageHeight, thumbnailUrl, thumbnailWidth,
- * thumbnailHeight, source, domain, link, position). URLs are made up.
+ * thumbnailHeight, source, domain, link, position). URLs are made up. Titles name a UI so the
+ * UI gate (lib/sources/quality.ts isUiResult) keeps them; other tests cover the gate.
  */
 export const serperFixture = {
   searchParameters: {
@@ -12,7 +13,7 @@ export const serperFixture = {
   },
   images: [
     {
-      title: "Brutalist bakery menu poster",
+      title: "Brutalist bakery menu app UI",
       imageUrl: "https://i.pinimg.com/originals/aa/bb/cc/aabbcc0011.jpg",
       imageWidth: 736,
       imageHeight: 1104,
@@ -25,7 +26,7 @@ export const serperFixture = {
       position: 1,
     },
     {
-      title: "Bakery identity, raw grid",
+      title: "Bakery website, raw grid",
       imageUrl: "https://cdn.dribbble.com/userupload/1234567/file/original-abc.png?resize=1600x1200",
       imageWidth: 1600,
       imageHeight: 1200,
@@ -39,7 +40,7 @@ export const serperFixture = {
     },
     {
       // Behance is not selected in the default sources: dropped.
-      title: "Bakery brand on Behance",
+      title: "Bakery app on Behance",
       imageUrl: "https://mir-s3-cdn-cf.behance.net/project_modules/1400/abc.jpg",
       imageWidth: 1400,
       imageHeight: 1050,
@@ -62,7 +63,7 @@ export const serperFixture = {
     },
     {
       // Image host not allowlisted, thumb host allowlisted: kept with the thumb as image.
-      title: "Menu board on a personal blog, pinned",
+      title: "Menu board app on a personal blog, pinned",
       imageUrl: "https://images.someblog.example/menu.jpg",
       imageWidth: 1200,
       imageHeight: 900,
@@ -106,7 +107,7 @@ export const serperFixture = {
     },
     {
       // Same image as result 1 pinned again: deduped.
-      title: "Brutalist bakery menu poster (repin)",
+      title: "Brutalist bakery menu app UI (repin)",
       imageUrl: "https://i.pinimg.com/originals/aa/bb/cc/aabbcc0011.jpg",
       imageWidth: 736,
       imageHeight: 1104,
@@ -118,7 +119,7 @@ export const serperFixture = {
     },
     {
       // On the takedown list in tests: dropped when the matcher blocks it.
-      title: "Taken down shot",
+      title: "Taken down checkout screen",
       imageUrl: "https://cdn.dribbble.com/userupload/777/file/original-down.png",
       imageWidth: 800,
       imageHeight: 600,

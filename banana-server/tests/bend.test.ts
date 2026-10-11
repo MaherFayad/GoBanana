@@ -116,15 +116,15 @@ describe("wildness rules", () => {
     expect(new Set(moves)).toEqual(new Set(MOVES));
   });
 
-  it("keeps the brief out of the inspiration query and puts it only in the brief lanes", () => {
+  it("keeps the brief out of the idea and puts it only in the UI lanes, which never search the raw idea", () => {
     for (const w of LEVELS) {
       for (const brief of SAMPLE_BRIEFS) {
         for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
           const briefLayout = words(brief.toLowerCase()).filter((x) => LAYOUT_WORDS.has(x));
           for (const lw of briefLayout) expect(words(d.searchQuery.toLowerCase())).not.toContain(lw);
-          expect(d.searchQueries[0]).toBe(d.searchQuery);
-          expect(d.searchQueries).toContain(fidelityQuery(brief));
-          expect(d.searchQueries.length).toBeGreaterThanOrEqual(3);
+          expect(d.searchQueries).not.toContain(d.searchQuery);
+          expect(d.searchQueries[0]).toBe(fidelityQuery(brief));
+          expect(d.searchQueries.length).toBeGreaterThanOrEqual(2);
         }
       }
     }

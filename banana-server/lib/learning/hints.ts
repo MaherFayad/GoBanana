@@ -29,9 +29,8 @@ export function badHint(lane: LaneName | null, reasons: readonly FeedbackReason[
   const has = (r: FeedbackReason) => reasons.includes(r);
   if (has("duplicate")) return "Duplicate: it is blocked now, nothing else to do.";
   if (!lane) return "It will not come back. To steer the next search, try other words or a directionId.";
-  if (lane === "inspiration") {
-    if (has("stock_or_shop")) return `Try ${RETRY(lane)}: add a craft word such as "poster" or "graphic design".`;
-    return `Try ${RETRY(lane)}: describe the visual, not the object, for example "35mm film strip macro" instead of "oversized film frames".`;
+  if (lane === "component") {
+    return `Try ${RETRY(lane)}: name the product and one part of the screen, for example "banking quick actions ui".`;
   }
   if (lane === "bridge") {
     return `Try ${RETRY(lane)}: keep the idea's main word and name a screen, for example "vending machine checkout ui". Titles without the idea's main word are left out.`;

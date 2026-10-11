@@ -22,18 +22,28 @@
  * - neither allowed: drop.
  *
  * Quality (see item-page.ts and quality.ts): only single-item source pages, no stock or shop
- * listings, Pinterest and Dribbble image URLs upgraded to their larger files, nothing under
- * 600 px when the size is known, then ranked best first.
+ * listings, only titles that name a UI (the UI gate, isUiResult: search returns UI images only),
+ * Pinterest and Dribbble image URLs upgraded to their larger files, nothing under 600 px when the
+ * size is known, then ranked best first.
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
-import { bigEnough, isJunk, rankReferences, sizeRuleApplies, upgradeImage } from "./quality";
-import { FALLBACK_MIN_GOOD, laneOrder, laneQuotas, mergeLanes, titleHasWord, type LaneName, type PlannedRequest } from "./plan";
+import { bigEnough, isJunk, isUiResult, rankReferences, sizeRuleApplies, upgradeImage } from "./quality";
+import {
+  FALLBACK_MIN_GOOD,
+  PLAIN_MAX_REQUESTS,
+  PLAIN_MIN_GOOD,
+  laneQuotas,
+  mergeLanes,
+  plainQueryPlan,
+  plainRetryQuery,
+  titleHasWord,
+  type LaneName,
+  type PlannedRequest,
+} from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import {
-  DEFAULT_MIX,
   SOURCE_DOMAINS,
-  type Mix,
   type Reference,
   type SourceAdapter,
   type SourceQuery,
@@ -80,17 +90,25 @@ export type WebSearchConfig = {
 export type WebSearchResult = SourceSearchResult & {
   /** True when Serper answered with 200. Callers count quota only then. */
   ok: boolean;
-  /** Results dropped as list pages or low quality (stock, shop listings, small images). Set when above 0. */
+  /** Results dropped as list pages, low quality (stock, shop listings, small images) or not UI. Set when above 0. */
   dropped?: number;
   /** Serper requests sent (one credit each). Set once the adapter got as far as searching. */
   requests?: number;
+  /** Plain query path: what was searched, in order, each with its site operator. */
+  queries?: string[];
 };
 
 export type WebSearchAdapter = SourceAdapter & {
   id: "web_search";
-  /** Same as `search`, plus a plain note and whether the search provider answered. */
+  /**
+   * A plain query, forced into UI forms (lib/sources/plan.ts plainQueryPlan), at most 4 requests,
+   * plus a plain note and whether the search provider answered.
+   */
   run(q: SourceQuery): Promise<WebSearchResult>;
-  /** Run a direction's search plan (lib/sources/plan.ts): one page per request, lanes merged by quota. */
+  /**
+   * Run a direction's search plan (lib/sources/plan.ts): one page per request, lanes merged by
+   * quota. Every result passes the UI gate; the bridge lane also needs the idea in its titles.
+   */
   runPlan(plan: readonly PlannedRequest[], opts: RunPlanOptions): Promise<PlanSearchResult>;
 };
 
@@ -103,8 +121,6 @@ export type RunPlanOptions = {
   excludeKeys?: readonly string[];
   /** Normalized creators the user rated great (lib/learning/creator.ts): nudged up within each lane. */
   preferCreators?: readonly string[];
-  /** Inspiration's share and the merge order (lib/sources/plan.ts laneQuotas). Default "ui". */
-  mix?: Mix;
 };
 
 /** What one planned request brought back. */
@@ -127,7 +143,7 @@ export const NOTES = {
   unavailable: "Image search is not available right now. Try again in a few minutes.",
   rateLimited: "Image search is busy right now. Try again in a few minutes.",
   takedownsUnavailable: "Search is paused because the blocked sources list could not be loaded. Try again in a minute.",
-  noResults: "No references found. Try other words or add more sources.",
+  noResults: "No UI references found for that. Try naming the screen or product, for example 'banking app home'.",
 } as const;
 
 const MAX_TITLE = 200;
@@ -238,7 +254,7 @@ export type MapOptions = {
 export type MapResult = {
   /** Best first, at most `count`. */
   references: Reference[];
-  /** List pages and low-quality results dropped (not counting off-site, unsafe or blocked ones). */
+  /** List pages, low-quality and non-UI results dropped (not counting off-site, unsafe or blocked ones). */
   dropped: number;
 };
 
@@ -295,6 +311,13 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
       continue;
     }
 
+    // The UI gate: every result of every search names a UI in its title (untitled ones go too).
+    const title = cleanTitle(raw.title);
+    if (!isUiResult(title, sourceUrl)) {
+      dropped++;
+      continue;
+    }
+
     let imageUrl: string;
     let thumbUrl: string;
     let width: number | undefined;
@@ -336,7 +359,6 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
       sourceUrl,
       sourceSite: SOURCE_DOMAINS[site],
     };
-    const title = cleanTitle(raw.title);
     if (title) ref.title = title;
     if (width && height) {
       ref.width = width;
@@ -434,6 +456,12 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
   }
 
+  /**
+   * The plain query path: the query forced into UI forms (plainQueryPlan), page 1 of each; when
+   * fewer than PLAIN_MIN_GOOD results survive, one retry with the short form (plainRetryQuery,
+   * "teletext 1980s" to "teletext ui design"); then page 2 of full answers while results are short.
+   * At most PLAIN_MAX_REQUESTS requests. Every result passes the UI gate.
+   */
   async function run(q: SourceQuery): Promise<WebSearchResult> {
     const count = Math.min(50, Math.max(1, Math.floor(q.count)));
     const selected = normalizeSources(q.sources);
@@ -454,71 +482,82 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
 
     const excludedKeys = new Set(q.excludeKeys ?? []);
     const prefer = q.preferCreators ?? [];
-    const budget = requestBudget(q.maxRequests);
-    // With fewer requests than sources, search a rotating subset so lanes cover different sources.
-    const offset = Math.max(0, Math.floor(q.sourceOffset ?? 0));
-    const sources =
-      budget >= selected.length ? selected : Array.from({ length: budget }, (_, i) => selected[(offset + i) % selected.length]!);
-    const lanes = sources.map((site) => ({
-      site,
-      query: buildSourceQuery(q.query, site),
-      images: [] as unknown[],
-      full: true,
-      refs: [] as Reference[],
-      dropped: 0,
-    }));
-    const pages = serperPages(q.maxPages);
+    const budget = Math.min(requestBudget(q.maxRequests), PLAIN_MAX_REQUESTS);
+    const planned = plainQueryPlan(q.query, selected).slice(0, budget);
+    if (planned.length === 0) return failure(NOTES.noResults);
+
+    type Slot = { site: SourceSite; query: string; images: unknown[]; full: boolean; page: number; refs: Reference[]; dropped: number };
+    const slots: Slot[] = [];
+    const sent: string[] = [];
     let requests = 0;
-    let references: Reference[] = [];
     let anyAnswered = false;
     let rateLimited = false;
+    let references: Reference[] = [];
 
-    for (let page = 1; page <= pages && requests < budget; page++) {
-      // Page 1 for every source; later pages only where the last page was full, fewest results first.
-      const due = lanes
-        .filter((l) => l.full)
-        .sort((a, b) => a.refs.length - b.refs.length)
-        .slice(0, budget - requests);
-      if (due.length === 0) break;
+    /** Fetch the next page of each slot, keep what passes every filter, and re-merge. */
+    const fetchRound = async (due: Slot[]) => {
       requests += due.length;
-      const outcomes = await mapLimit(due, SERPER_MAX_IN_FLIGHT, (l) => fetchPage(apiKey, l.query, page));
-      due.forEach((lane, i) => {
+      const outcomes = await mapLimit(due, SERPER_MAX_IN_FLIGHT, (slot) => fetchPage(apiKey, slot.query, slot.page));
+      due.forEach((slot, i) => {
         const out = outcomes[i]!;
         if (!out.ok) {
           // A failed or rate limited request keeps what the other requests found.
-          lane.full = false;
+          slot.full = false;
           if (out.status === 429) rateLimited = true;
           return;
         }
         anyAnswered = true;
-        lane.full = out.images.length >= SERPER_PAGE_SIZE;
+        slot.full = out.images.length >= SERPER_PAGE_SIZE;
         if (out.images.length === 0) return;
-        lane.images.push(...out.images);
-        const mapped = mapSerperImagesWithStats(lane.images, {
-          sources: [lane.site],
+        slot.images.push(...out.images);
+        const mapped = mapSerperImagesWithStats(slot.images, {
+          sources: [slot.site],
           allowlist,
           takedowns,
           count: excludedKeys.size > 0 ? 50 : count,
         });
         const kept = excludedKeys.size > 0 ? mapped.references.filter((r) => !excludedKeys.has(itemKey(r.sourceUrl))) : mapped.references;
-        lane.refs = nudgeByCreator(kept.slice(0, count), prefer);
-        lane.dropped = mapped.dropped;
+        slot.refs = nudgeByCreator(kept.slice(0, count), prefer);
+        slot.dropped = mapped.dropped;
       });
-      if (!anyAnswered) break;
       references = interleaveReferences(
-        lanes.map((l) => l.refs),
+        slots.map((s) => s.refs),
         count,
       );
-      if (references.length >= count) break;
-    }
+    };
+    const addSlot = (query: string, site: SourceSite): Slot => {
+      const slot: Slot = { site, query: buildSourceQuery(query, site), images: [], full: true, page: 1, refs: [], dropped: 0 };
+      slots.push(slot);
+      sent.push(slot.query);
+      return slot;
+    };
 
+    await fetchRound(planned.map((r) => addSlot(r.query, r.site)));
     if (!anyAnswered) {
       return { ...failure(rateLimited ? NOTES.rateLimited : NOTES.unavailable), requests };
     }
-    const result: WebSearchResult = { references, ok: true, requests };
+
+    // Too few UI results: retry once with the short form on the first planned site.
+    if (references.length < PLAIN_MIN_GOOD && requests < budget) {
+      const retry = plainRetryQuery(q.query, planned.map((r) => r.query));
+      if (retry) await fetchRound([addSlot(retry, planned[0]!.site)]);
+    }
+
+    // Page 2 of full answers while results are short, fewest results first, within the budget.
+    for (let page = 2; page <= serperPages(q.maxPages) && requests < budget && references.length < count; page++) {
+      const due = slots
+        .filter((s) => s.full && s.page === page - 1)
+        .sort((a, b) => a.refs.length - b.refs.length)
+        .slice(0, budget - requests);
+      if (due.length === 0) break;
+      for (const slot of due) slot.page = page;
+      await fetchRound(due);
+    }
+
+    const result: WebSearchResult = { references, ok: true, requests, queries: sent };
     const note = countNote(references.length, count);
     if (note) result.note = note;
-    const dropped = lanes.reduce((n, l) => n + l.dropped, 0);
+    const dropped = slots.reduce((n, s) => n + s.dropped, 0);
     if (dropped > 0) result.dropped = dropped;
     return result;
   }
@@ -632,8 +671,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     });
 
     // Per lane: its requests interleaved, preferred creators nudged up, then lanes merged by quota
-    // in mix order (the "ui" mix puts the UI lanes first). An empty lane's quota goes to the others.
-    const mix = opts.mix ?? DEFAULT_MIX;
+    // in plan order. An empty lane's quota goes to the others.
     const byLane = new Map<LaneName, Reference[]>();
     for (const slot of slots) {
       const prev = byLane.get(slot.req.lane);
@@ -641,14 +679,9 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
     const prefer = opts.preferCreators ?? [];
     const lists = new Map<LaneName, Reference[]>();
-    for (const lane of laneOrder([...byLane.keys()], mix)) {
-      const list = byLane.get(lane)!;
-      lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
-    }
-    const quotas = laneQuotas(count, [...lists.keys()], mix);
-    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], {
-      uiFirst: mix === "ui",
-    });
+    for (const [lane, list] of byLane) lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
+    const quotas = laneQuotas(count, [...lists.keys()]);
+    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]);
 
     const result: PlanSearchResult = {
       references,
