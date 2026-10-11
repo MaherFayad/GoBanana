@@ -62,7 +62,7 @@
   box-shadow: var(--st-focus-ring);
 }
 
-.bn-canvas .react-flow__node :where(a, button, input, textarea):focus-visible {
+.bn-canvas .react-flow .react-flow__node :where(a, button, input, textarea):focus-visible {
   box-shadow: var(--st-focus-ring-halo);
 }
 
@@ -647,14 +647,14 @@
   box-shadow: var(--st-shadow-panel-drop);
 }
 
-.bn-canvas .react-flow__node {
+.bn-canvas .react-flow .react-flow__node {
   border-radius: var(--st-radius);
   outline: 2px solid transparent;
   outline-offset: 6px;
 }
 
 /* Hover: an inset 1px ring drawn over the content. */
-.bn-canvas .react-flow__node::after {
+.bn-canvas .react-flow .react-flow__node::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -663,27 +663,29 @@
   pointer-events: none;
 }
 
-.bn-canvas .react-flow__node:hover::after {
+.bn-canvas .react-flow .react-flow__node:hover::after {
   box-shadow: inset 0 0 0 1px var(--st-canvas-hover-ring-color);
 }
 
 /* Selected: a 2px outline in selection green, 2px off the edge, with an ink halo in light. */
-.bn-canvas .react-flow__node.selected {
+.bn-canvas .react-flow .react-flow__node.selected {
   outline: var(--st-canvas-selection-width) solid var(--st-canvas-selection-ring-color);
   outline-offset: var(--st-canvas-selection-offset);
   box-shadow: 0 0 0 calc(var(--st-canvas-selection-offset) + var(--st-canvas-selection-width) + 1px) var(--st-canvas-selection-halo);
 }
 
-.bn-canvas .react-flow__node.selected:hover::after {
+.bn-canvas .react-flow .react-flow__node.selected:hover::after {
   box-shadow: none;
 }
 
 /* Keyboard focus: the halo ring, kept outside the selection outline so both show. */
-.bn-canvas .react-flow__node:focus-visible {
+.bn-canvas .react-flow .react-flow__node:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 6px;
   box-shadow: 0 0 0 6px var(--st-focus-halo-color), 0 0 0 8px var(--st-focus-ring-color);
 }
 
-.bn-canvas .react-flow__node.selected:focus-visible {
+.bn-canvas .react-flow .react-flow__node.selected:focus-visible {
   box-shadow:
     0 0 0 5px var(--st-canvas-selection-halo),
     0 0 0 6px var(--st-focus-halo-color),
@@ -848,11 +850,11 @@
 .bn-note[data-color="green"] { background: var(--st-note-green); }
 .bn-note[data-color="gray"] { background: var(--st-note-gray); }
 
-.bn-canvas .react-flow__node-note {
+.bn-canvas .react-flow .react-flow__node-note {
   border-radius: var(--st-radius-sm);
 }
 
-.bn-canvas .react-flow__node-note.selected {
+.bn-canvas .react-flow .react-flow__node-note.selected {
   outline-color: var(--st-annotation-selection-ring);
   box-shadow: none;
 }
@@ -1305,10 +1307,10 @@
 }
 
 @media (forced-colors: active) {
-  .bn-canvas .react-flow__node.selected {
+  .bn-canvas .react-flow .react-flow__node.selected {
     outline-color: Highlight;
   }
-  .bn-canvas .react-flow__node:focus-visible {
+  .bn-canvas .react-flow .react-flow__node:focus-visible {
     outline-color: CanvasText;
   }
   .bn-snap-guide {

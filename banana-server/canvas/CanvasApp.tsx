@@ -233,6 +233,8 @@ function CanvasEditor({
   const notchRef = useRef<HTMLDivElement>(null);
   /** Ctrl or Cmd held during a drag: move freely, no snapping (Studio "free place"). */
   const freeMove = useRef(false);
+  /** True from a pointer drag's start until just after it stops. */
+  const dragSession = useRef(false);
   // Latest nodes and tray for event handlers (kept in sync after each commit).
   const nodesRef = useRef(nodes);
   const trayRef = useRef(tray);
@@ -339,7 +341,11 @@ function CanvasEditor({
       }
       // Removals go through `remove` so sections keep their contents.
       let list = changes.filter((c) => c.type !== "remove");
-      const drags = list.filter((c) => c.type === "position" && c.dragging && c.position);
+      // Position changes from a pointer drag, including the last one (dragging: false) that
+      // React Flow sends when the drag ends: it carries the unsnapped spot, so snap it too.
+      const inDrag = (c: NodeChange<CanvasFlowNode>) =>
+        c.type === "position" && !!c.position && (c.dragging === true || (c.dragging === false && dragSession.current));
+      const drags = list.filter(inDrag);
       if (drags.length > 0) {
         const current = nodesRef.current;
         const ids = new Set(drags.map((c) => (c as { id: string }).id));
@@ -361,12 +367,14 @@ function CanvasEditor({
         }
         if (snap.dx || snap.dy) {
           list = list.map((c) =>
-            c.type === "position" && c.dragging && c.position
+            inDrag(c) && c.type === "position" && c.position
               ? { ...c, position: { x: c.position.x + snap.dx, y: c.position.y + snap.dy } }
               : c,
           );
         }
-        setGuides((prev) => (guidesEqual(prev, snap.guides) ? prev : snap.guides));
+        const live = drags.some((c) => c.type === "position" && c.dragging);
+        const next = live ? snap.guides : [];
+        setGuides((prev) => (guidesEqual(prev, next) ? prev : next));
       }
       onNodesChangeBase(list);
     },
@@ -521,11 +529,23 @@ function CanvasEditor({
   }, [announce, setNodes, viewportCenter]);
 
   // ------------------------------------------------------------------ viewport
-  const zoom = useMemo(
-    () => ({
-      zoomIn: () => void rf.zoomTo(nextZoomStep(rf.getZoom(), 1), { duration: zoomDuration() }),
-      zoomOut: () => void rf.zoomTo(nextZoomStep(rf.getZoom(), -1), { duration: zoomDuration() }),
-      zoomTo100: () => void rf.zoomTo(1, { duration: zoomDuration() }),
+  // While a discrete zoom animates, the next step counts from where it is going, not from
+  // the frame in between (pressing - twice goes 125% to 100% to 75%).
+  const zoomTarget = useRef<{ zoom: number; until: number } | null>(null);
+  const zoom = useMemo(() => {
+    const stepTo = (z: number) => {
+      const duration = zoomDuration();
+      zoomTarget.current = { zoom: z, until: performance.now() + duration + 50 };
+      void rf.zoomTo(z, { duration });
+    };
+    const base = () => {
+      const t = zoomTarget.current;
+      return t && performance.now() < t.until ? t.zoom : rf.getZoom();
+    };
+    return {
+      zoomIn: () => stepTo(nextZoomStep(base(), 1)),
+      zoomOut: () => stepTo(nextZoomStep(base(), -1)),
+      zoomTo100: () => stepTo(1),
       zoomToFit: () => void rf.fitView({ padding: FIT_PADDING, duration: zoomDuration() }),
       zoomToSelection: () => {
         const sel = selectedIds(nodesRef.current);
@@ -536,9 +556,8 @@ function CanvasEditor({
         }
         void rf.fitView({ nodes: sel.map((id) => ({ id })), padding: FIT_PADDING, duration: zoomDuration() });
       },
-    }),
-    [announce, rf],
-  );
+    };
+  }, [announce, rf]);
 
   const arrangeAll = useCallback(
     (layout: LayoutKind) => {
@@ -734,6 +753,7 @@ function CanvasEditor({
   const onNodeDragStart: OnNodeDrag<CanvasFlowNode> = useCallback(
     (e, _node, dragged) => {
       freeMove.current = e.ctrlKey || e.metaKey;
+      dragSession.current = true;
       if (readOnly || !e.altKey) return;
       // Alt + drag: a copy stays where the items were, the originals move.
       const ids = dragged.map((d) => d.id);
@@ -751,7 +771,11 @@ function CanvasEditor({
   const onNodeDragStop: OnNodeDrag<CanvasFlowNode> = useCallback(
     (_e, _node, dragged) => {
       setGuides([]);
-      freeMove.current = false;
+      // The final position change may come right after this callback; end the session after it.
+      requestAnimationFrame(() => {
+        dragSession.current = false;
+        freeMove.current = false;
+      });
       setNodes((nds) =>
         settleIntoSection(
           nds,

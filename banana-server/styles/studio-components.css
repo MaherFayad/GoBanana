@@ -1319,14 +1319,9 @@ textarea.st-input[data-autogrow] {
 
 /* ------------------------------------------------------------------ Step 0 font bridge */
 
-/* Until WP-A (canvas.css) and WP-B (site.css) move their own font stacks to --st-font-sans,
-   these two rules make the existing surfaces use Inter and IBM Plex Sans Arabic with no other
-   visual change. Safe to delete once both stylesheets read var(--st-font-sans). */
-html .site {
-  --font: var(--st-font-sans);
-  --font-ar: var(--st-font-sans);
-}
-
+/* Until WP-A (canvas.css) moves its own font stack to --st-font-sans, this rule makes the
+   canvas use Inter and IBM Plex Sans Arabic. Safe to delete once canvas.css reads
+   var(--st-font-sans). (The site rule went when WP-B adopted the token.) */
 html .bn-canvas {
   font-family: var(--st-font-sans);
 }

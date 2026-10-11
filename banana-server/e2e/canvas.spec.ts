@@ -97,7 +97,7 @@ const node = (page: Page, id: string) => page.locator(`.react-flow__node[data-id
 /** The board's viewport transform: pan in screen px and zoom. */
 async function viewport(page: Page): Promise<{ x: number; y: number; zoom: number }> {
   const t = await page.locator(".react-flow__viewport").evaluate((el) => (el as HTMLElement).style.transform);
-  const m = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)\s*scale\((-?[\d.]+)\)/.exec(t);
+  const m = /translate\((-?[\d.e+-]+)px,\s*(-?[\d.e+-]+)px\)\s*scale\((-?[\d.e+-]+)\)/.exec(t);
   if (!m) throw new Error(`no viewport transform: ${t}`);
   return { x: Number(m[1]), y: Number(m[2]), zoom: Number(m[3]) };
 }
@@ -194,8 +194,13 @@ test.describe("moodboard canvas", () => {
       });
     }
     expect(reached).toBe("img-broken");
-    const outline = await node(page, "img-broken").evaluate((el) => getComputedStyle(el).outlineStyle);
-    expect(outline).not.toBe("none");
+    // A box-shadow halo ring, plus a transparent outline that forced-colors mode draws.
+    const ring = await node(page, "img-broken").evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { outline: cs.outlineStyle, shadow: cs.boxShadow };
+    });
+    expect(ring.outline).not.toBe("none");
+    expect(ring.shadow).not.toBe("none");
   });
 
   test("focused node is not hidden under the toolbar or tray (SC 2.4.11)", async ({ page }) => {
@@ -452,9 +457,9 @@ test.describe("moodboard canvas", () => {
     await expect(page.getByTestId("zoom-value")).toHaveText("100%");
     const before = await viewport(page);
     await page.keyboard.press("ArrowRight");
-    await expect.poll(async () => (await viewport(page)).x).toBe(before.x - 40);
+    await expect.poll(async () => (await viewport(page)).x).toBeCloseTo(before.x - 40, 3);
     await page.keyboard.press("Shift+ArrowDown");
-    await expect.poll(async () => (await viewport(page)).y).toBe(before.y - 160);
+    await expect.poll(async () => (await viewport(page)).y).toBeCloseTo(before.y - 160, 3);
 
     await page.keyboard.press("Shift+Digit1");
     // Fit: every item is inside the board.
@@ -499,7 +504,7 @@ test.describe("moodboard canvas", () => {
     await page.mouse.down();
     // Move down so the note's left edge stays aligned with the image below it (x = 0): a guide.
     await page.mouse.move(box.x + 63, box.y + 40 + 500, { steps: 12 });
-    await expect(page.getByTestId("snap-guides")).toBeVisible();
+    await expect(page.locator(".bn-snap-guide").first()).toBeVisible();
     await page.mouse.up();
     await page.keyboard.up("Alt");
     await expect(page.getByTestId("snap-guides")).toHaveCount(0);
