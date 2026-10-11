@@ -387,5 +387,9 @@ test.describe("inline canvas in an MCP Apps host", () => {
     await expect(frame.locator(".react-flow__node")).toHaveCount(3);
     await expect(frame.locator(".bn-inline")).toHaveAttribute("data-compact", "");
     await expect(frame.getByRole("link", { name: "Open on the web" })).toBeVisible();
+    // CanvasApp compact: the results panel starts closed behind a "Results (N)" toggle.
+    const results = frame.getByRole("button", { name: /^Results \(\d+\)$/ });
+    await expect(results).toBeVisible();
+    await expect(results).toHaveAttribute("aria-pressed", "false");
   });
 });

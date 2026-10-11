@@ -158,7 +158,7 @@ function Root() {
 
   let body: ReactNode;
   if (opened?.ok) {
-    body = <InlineCanvas key={opened.canvas.id} canvas={opened.canvas} theme={theme} host={host} />;
+    body = <InlineCanvas key={opened.canvas.id} canvas={opened.canvas} theme={theme} host={host} compact={compact} />;
   } else if (opened && !opened.ok) {
     body = <Message role="alert" text={opened.message} />;
   } else if (host.cancelled) {
@@ -217,7 +217,17 @@ function mountPersistence(p: BridgePersistence): CanvasPersistence & { retire():
   };
 }
 
-function InlineCanvas({ canvas, theme, host }: { canvas: OpenedCanvas; theme?: "light" | "dark"; host: HostState }) {
+function InlineCanvas({
+  canvas,
+  theme,
+  host,
+  compact,
+}: {
+  canvas: OpenedCanvas;
+  theme?: "light" | "dark";
+  host: HostState;
+  compact: boolean;
+}) {
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
@@ -365,6 +375,7 @@ function InlineCanvas({ canvas, theme, host }: { canvas: OpenedCanvas; theme?: "
         initialState={session.state}
         persistence={session.persistence}
         theme={theme}
+        compact={compact}
         onSaved={onSaved}
       />
     </>

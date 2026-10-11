@@ -78,8 +78,8 @@ body {
   gap: var(--st-space-m);
 }
 
-/* Compact (frame under 720px): the top bar keeps one tight row. CanvasApp gets the same
-   signal from data-compact for its rail and panel. */
+/* Compact (frame under 720px): main.tsx also passes compact to CanvasApp, which hides the
+   rail and starts with the results panel closed. */
 .bn-inline[data-compact] .bn-inline-bar {
   padding-inline: var(--st-space-2xs);
 }

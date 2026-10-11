@@ -94,6 +94,24 @@ async function openCanvas(page: Page): Promise<Api> {
 
 const node = (page: Page, id: string) => page.locator(`.react-flow__node[data-id="${id}"]`);
 
+/** The board's viewport transform: pan in screen px and zoom. */
+async function viewport(page: Page): Promise<{ x: number; y: number; zoom: number }> {
+  const t = await page.locator(".react-flow__viewport").evaluate((el) => (el as HTMLElement).style.transform);
+  const m = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)\s*scale\((-?[\d.]+)\)/.exec(t);
+  if (!m) throw new Error(`no viewport transform: ${t}`);
+  return { x: Number(m[1]), y: Number(m[2]), zoom: Number(m[3]) };
+}
+
+/** A point on the empty board (below the notch, right of the initial items). */
+async function emptyBoardPoint(page: Page): Promise<{ x: number; y: number }> {
+  const box = await page.locator(".bn-flow").boundingBox();
+  if (!box) throw new Error("no board");
+  return { x: box.x + box.width - 120, y: box.y + box.height - 120 };
+}
+
+const selectedIds = (page: Page) =>
+  page.locator(".react-flow__node.selected").evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.id).sort());
+
 /** Node position in canvas units, read from React Flow's transform. */
 async function position(locator: Locator): Promise<{ x: number; y: number }> {
   const t = await locator.evaluate((el) => (el as HTMLElement).style.transform);
@@ -167,7 +185,8 @@ test.describe("moodboard canvas", () => {
     await openCanvas(page);
     await node(page, "note1").focus();
     let reached: string | null = null;
-    for (let i = 0; i < 6 && !reached; i++) {
+    // The note's menu button and its five color swatches come first.
+    for (let i = 0; i < 12 && !reached; i++) {
       await page.keyboard.press("Tab");
       reached = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
@@ -217,7 +236,8 @@ test.describe("moodboard canvas", () => {
 
   test("arrange buttons lay items out without overlaps", async ({ page }) => {
     await openCanvas(page);
-    await page.getByRole("button", { name: "Grid", exact: true }).click();
+    await page.getByRole("toolbar", { name: "Canvas tools" }).getByRole("button", { name: "Arrange" }).click();
+    await page.getByRole("menuitem", { name: "Grid", exact: true }).click();
     await expect.poll(async () => (await size(node(page, "note1"))).w).toBe(280);
     const ids = ["note1", "img-broken", "sw1"];
     const boxes = await Promise.all(ids.map(async (id) => ({ ...(await position(node(page, id))), ...(await size(node(page, id))) })));
@@ -355,5 +375,202 @@ test.describe("moodboard canvas", () => {
     await page.keyboard.press("m");
     await expect(page.getByRole("menu")).toBeVisible();
     await check("node menu open");
+  });
+
+  test("wheel pans the board and Ctrl + wheel zooms it", async ({ page }) => {
+    await openCanvas(page);
+    const p = await emptyBoardPoint(page);
+    await page.mouse.move(p.x, p.y);
+    const before = await viewport(page);
+    await page.mouse.wheel(0, 200);
+    await expect.poll(async () => (await viewport(page)).y).toBeLessThan(before.y - 50);
+    expect((await viewport(page)).zoom).toBeCloseTo(before.zoom, 5);
+
+    await page.keyboard.down("Control");
+    await page.mouse.wheel(0, -300);
+    await page.keyboard.up("Control");
+    await expect.poll(async () => (await viewport(page)).zoom).toBeGreaterThan(before.zoom + 0.05);
+  });
+
+  test("drag on the empty board draws a marquee that selects what it touches", async ({ page }) => {
+    await openCanvas(page);
+    const note = await node(page, "note1").boundingBox();
+    const sw = await node(page, "sw1").boundingBox();
+    if (!note || !sw) throw new Error("no nodes");
+    // From empty space above-left of the note, across to the middle of the swatch.
+    const start = { x: note.x - 20, y: note.y + note.height + 8 };
+    await page.mouse.move(start.x, start.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(sw.x + sw.width / 2, note.y + 10, { steps: 10 });
+    await page.mouse.up();
+    await expect.poll(() => selectedIds(page)).toEqual(expect.arrayContaining(["note1", "sw1"]));
+    // Escape clears the selection.
+    await page.keyboard.press("Escape");
+    await expect.poll(() => selectedIds(page)).toEqual([]);
+  });
+
+  test("Space + drag pans, and the hand tool (H) pans with a plain drag", async ({ page }) => {
+    await openCanvas(page);
+    const p = await emptyBoardPoint(page);
+    await page.mouse.click(p.x, p.y);
+    const before = await viewport(page);
+    await page.keyboard.down("Space");
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(p.x - 100, p.y - 60, { steps: 6 });
+    await page.mouse.up();
+    await page.keyboard.up("Space");
+    await expect.poll(async () => (await viewport(page)).x).toBeLessThan(before.x - 50);
+    expect(await selectedIds(page)).toEqual([]);
+
+    await page.keyboard.press("h");
+    await expect(page.getByRole("button", { name: "Hand tool" })).toHaveAttribute("aria-pressed", "true");
+    const mid = await viewport(page);
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(p.x + 80, p.y + 80, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(async () => (await viewport(page)).x).toBeGreaterThan(mid.x + 40);
+    await page.keyboard.press("v");
+    await expect(page.getByRole("button", { name: "Select tool" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("zoom keys: + steps the ladder, Mod+0 resets, Shift+1 fits, arrows pan the focused board", async ({ page }) => {
+    await openCanvas(page);
+    const board = page.getByRole("main", { name: "Canvas" });
+    await board.focus();
+    await page.keyboard.press("+");
+    await expect(page.getByTestId("zoom-value")).toHaveText("125%");
+    await page.keyboard.press("-");
+    await page.keyboard.press("-");
+    await expect(page.getByTestId("zoom-value")).toHaveText("75%");
+    await page.keyboard.press("ControlOrMeta+0");
+    await expect(page.getByTestId("zoom-value")).toHaveText("100%");
+    const before = await viewport(page);
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(async () => (await viewport(page)).x).toBe(before.x - 40);
+    await page.keyboard.press("Shift+ArrowDown");
+    await expect.poll(async () => (await viewport(page)).y).toBe(before.y - 160);
+
+    await page.keyboard.press("Shift+Digit1");
+    // Fit: every item is inside the board.
+    await expect
+      .poll(async () => {
+        const b = await page.locator(".bn-flow").boundingBox();
+        const boxes = await Promise.all(["note1", "sec1", "sw1", "img-broken"].map((id) => node(page, id).boundingBox()));
+        return boxes.every((n) => n && b && n.x >= b.x && n.x + n.width <= b.x + b.width && n.y >= b.y && n.y + n.height <= b.y + b.height);
+      })
+      .toBe(true);
+
+    // Zoom menu offers the same commands with their keys.
+    await page.getByTestId("zoom-value").click();
+    await expect(page.getByRole("menuitem", { name: /Zoom to 100%/ })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("zoom-value")).toBeFocused();
+  });
+
+  test("Mod+D duplicates the focused item and selects the copy", async ({ page }) => {
+    await openCanvas(page);
+    const note = node(page, "note1");
+    await note.focus();
+    const start = await position(note);
+    await page.keyboard.press("ControlOrMeta+d");
+    await expect(page.locator(".react-flow__node")).toHaveCount(INITIAL_STATE.nodes.length + 1);
+    const copy = page.locator(".react-flow__node-note.selected");
+    await expect(copy).toHaveCount(1);
+    await expect(copy).not.toHaveAttribute("data-id", "note1");
+    await expect.poll(() => position(copy)).toEqual({ x: start.x + 16, y: start.y + 16 });
+    await expect(copy).toBeFocused();
+    await expect(copy).toHaveAccessibleName(/Note: Make it feel cold, selected/);
+  });
+
+  test("Alt + drag leaves a copy behind, and snapping shows a guide", async ({ page }) => {
+    await openCanvas(page);
+    const note = node(page, "note1");
+    const box = await note.boundingBox();
+    if (!box) throw new Error("no note");
+    const start = await position(note);
+    await page.mouse.move(box.x + 60, box.y + 40);
+    await page.keyboard.down("Alt");
+    await page.mouse.down();
+    // Move down so the note's left edge stays aligned with the image below it (x = 0): a guide.
+    await page.mouse.move(box.x + 63, box.y + 40 + 500, { steps: 12 });
+    await expect(page.getByTestId("snap-guides")).toBeVisible();
+    await page.mouse.up();
+    await page.keyboard.up("Alt");
+    await expect(page.getByTestId("snap-guides")).toHaveCount(0);
+    await expect(page.locator(".react-flow__node")).toHaveCount(INITIAL_STATE.nodes.length + 1);
+    // The original moved and snapped back onto x = 0; a copy stays at the start.
+    const moved = await position(note);
+    expect(moved.x).toBe(start.x);
+    expect(moved.y).toBeGreaterThan(start.y + 100);
+    const copies = page.locator(".react-flow__node-note").filter({ hasNot: page.locator(`[data-id="note1"]`) });
+    const ids = await page.locator(".react-flow__node-note").evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.id));
+    const copyId = ids.find((id) => id !== "note1");
+    expect(copyId).toBeTruthy();
+    await expect(copies.first()).toBeVisible();
+    expect(await position(node(page, copyId!))).toEqual(start);
+  });
+
+  test("right click opens the item menu at the pointer; Mod+A selects everything", async ({ page }) => {
+    await openCanvas(page);
+    const box = await node(page, "sw1").boundingBox();
+    if (!box) throw new Error("no swatch");
+    await page.mouse.click(box.x + 40, box.y + 30, { button: "right" });
+    const menu = page.getByRole("menu", { name: /Options for color/ });
+    await expect(menu).toBeVisible();
+    const m = await menu.boundingBox();
+    expect(m && Math.abs(m.x - (box.x + 40)) < 4).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(menu).toHaveCount(0);
+    await page.getByRole("main", { name: "Canvas" }).focus();
+    await page.keyboard.press("ControlOrMeta+a");
+    await expect.poll(() => selectedIds(page)).toEqual(["img-broken", "note1", "sec1", "sw1"]);
+  });
+
+  test("? opens the shortcut sheet from one registry", async ({ page }) => {
+    await openCanvas(page);
+    await page.getByRole("main", { name: "Canvas" }).focus();
+    await page.keyboard.press("?");
+    const sheet = page.getByRole("dialog", { name: "Keyboard shortcuts" });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByText("Zoom to fit")).toBeVisible();
+    await expect(sheet.getByText("Move the item 8 px")).toBeVisible();
+    await expect(sheet.getByText("Drag a copy")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(sheet).toBeHidden();
+  });
+
+  test("the results panel resizes with the keyboard splitter", async ({ page }) => {
+    await openCanvas(page);
+    const splitter = page.getByRole("separator", { name: "Resize search results" });
+    await expect(splitter).toHaveAttribute("aria-valuenow", "320");
+    await splitter.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "336");
+    await page.keyboard.press("Home");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "260");
+    await page.keyboard.press("End");
+    await expect(splitter).toHaveAttribute("aria-valuenow", "520");
+    const rail = page.getByRole("button", { name: /Search results, 3 waiting/ });
+    await rail.click();
+    await expect(rail).toHaveAttribute("aria-pressed", "false");
+    await expect(splitter).toHaveCount(0);
+  });
+
+  test("axe is clean right to left, with the menu and the sheet open @a11y", async ({ page }) => {
+    await openCanvas(page);
+    await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
+    const check = async (label: string) => {
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+      const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(serious, `${label}: ${JSON.stringify(serious.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), null, 2)}`).toEqual([]);
+    };
+    await check("rtl canvas");
+    await node(page, "note1").click({ position: { x: 30, y: 30 } });
+    await check("rtl note selected");
+    await page.getByRole("button", { name: "Keyboard shortcuts" }).click();
+    await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+    await check("shortcut sheet");
   });
 });
