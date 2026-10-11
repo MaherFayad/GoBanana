@@ -1,0 +1,139 @@
+[
+  {
+    "id": "sadu",
+    "name": { "en": "Sadu weaving", "ar": "نسيج السدو" },
+    "region": "gcc",
+    "terms": [
+      "Sadu weaving",
+      "Sadu textile pattern",
+      "Bedouin tent weaving",
+      "Sadu red stripes",
+      "woven triangle motifs",
+      "Sadu geometric bands",
+      "camel wool weave",
+      "Sadu rug",
+      "hand loom stripes",
+      "diamond weave motif"
+    ]
+  },
+  {
+    "id": "najdi",
+    "name": { "en": "Najdi architecture", "ar": "العمارة النجدية" },
+    "region": "gcc",
+    "terms": [
+      "Najdi mud architecture",
+      "Najdi triangle windows",
+      "Najdi painted doors",
+      "Diriyah mud brick",
+      "adobe wall texture",
+      "Najdi crenellations",
+      "earth plaster wall",
+      "palm trunk ceiling",
+      "Najdi courtyard",
+      "triangular wall openings"
+    ]
+  },
+  {
+    "id": "kufic",
+    "name": { "en": "Square Kufic geometry", "ar": "الزخرفة الكوفية الهندسية" },
+    "region": "gcc",
+    "terms": [
+      "square Kufic pattern",
+      "Kufic grid pattern",
+      "Kufic maze geometry",
+      "square Kufic geometry",
+      "Kufic pixel pattern",
+      "Kufic tessellation",
+      "Kufic labyrinth pattern",
+      "angular Kufic pattern",
+      "Kufic block pattern",
+      "Kufic grid poster"
+    ]
+  },
+  {
+    "id": "mashrabiya",
+    "name": { "en": "Mashrabiya", "ar": "المشربية" },
+    "region": "gcc",
+    "terms": [
+      "mashrabiya screen",
+      "mashrabiya pattern",
+      "wooden lattice screen",
+      "lattice shadow pattern",
+      "mashrabiya facade",
+      "light through lattice",
+      "turned wood screen",
+      "geometric lattice panel",
+      "Jeddah rawasheen",
+      "perforated screen facade"
+    ]
+  },
+  {
+    "id": "desert-modern",
+    "name": { "en": "Desert modern", "ar": "الحداثة الصحراوية" },
+    "region": "gcc",
+    "terms": [
+      "desert modernism architecture",
+      "sand dune gradient",
+      "rammed earth wall",
+      "sunbaked terracotta",
+      "desert sunset palette",
+      "mirrored desert architecture",
+      "dune ridge shadows",
+      "sandstone texture",
+      "palm shadow pattern",
+      "desert minimalism",
+      "salt flat horizon"
+    ]
+  },
+  {
+    "id": "memphis",
+    "name": { "en": "Memphis design", "ar": "تصميم ممفيس" },
+    "region": "global",
+    "terms": [
+      "Memphis Group design",
+      "squiggle pattern",
+      "terrazzo confetti pattern",
+      "Sottsass furniture",
+      "Memphis 1980s pattern",
+      "primary color geometry",
+      "zigzag pattern",
+      "postmodern furniture",
+      "bacterio print",
+      "Memphis Milano poster"
+    ]
+  },
+  {
+    "id": "swiss-international",
+    "name": { "en": "Swiss International Style", "ar": "الأسلوب السويسري الدولي" },
+    "region": "global",
+    "terms": [
+      "Swiss grid poster",
+      "Muller-Brockmann poster",
+      "Helvetica poster",
+      "International Typographic Style",
+      "asymmetric grid layout",
+      "flush left typography",
+      "Swiss concert poster",
+      "Akzidenz Grotesk poster",
+      "modular grid layout",
+      "objective photography poster"
+    ]
+  },
+  {
+    "id": "japanese-ma",
+    "name": { "en": "Japanese ma", "ar": "الفراغ الياباني" },
+    "region": "global",
+    "terms": [
+      "Japanese negative space",
+      "ma negative space",
+      "shoji screen light",
+      "wabi sabi interior",
+      "Japanese minimal poster",
+      "tatami room proportions",
+      "sumi ink brushwork",
+      "washi paper texture",
+      "Japanese editorial layout",
+      "asymmetric Japanese layout"
+    ]
+  }
+]

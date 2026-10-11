@@ -27,9 +27,9 @@ export function mdText(text: string | null | undefined, max = 400): string {
   return oneLine(text, max).replace(/([\\`*_[\]<>#|~])/g, "\\$1");
 }
 
-/** Markdown link that survives spaces and parentheses in URLs. */
-export function mdLink(label: string, url: string): string {
-  return `[${mdText(label) || "link"}](<${url.replace(/[<>\s]/g, encodeURIComponent)}>)`;
+/** Markdown autolink: shows the URL itself and survives parentheses in it. */
+export function mdAutolink(url: string): string {
+  return `<${url.replace(/[<>\s]/g, encodeURIComponent)}>`;
 }
 
 /** Escape text for HTML element content and quoted attribute values. */
@@ -52,7 +52,8 @@ export function safeUrl(url: string | null | undefined): string | null {
   try {
     const parsed = new URL(trimmed);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
-    if (/[\s<>"'`]/.test(trimmed)) return parsed.href;
+    // Non-ASCII, spaces and quote-like chars come back percent-encoded.
+    if (/[^\x21-\x7e]|[<>"'`\\]/.test(trimmed)) return parsed.href;
     return trimmed;
   } catch {
     return null;

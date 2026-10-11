@@ -130,6 +130,8 @@ export interface CanvasSnapshot {
   sections: CanvasSection[];
   items: CanvasItem[];
   palettes: CanvasPalette[];
+  /** Link to the canvas on the web. Used as the source of notes and swatches in exports. */
+  webUrl?: string | null;
   updatedAt?: string | null;
 }
 

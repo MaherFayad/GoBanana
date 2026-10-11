@@ -1,0 +1,275 @@
+{
+  "tools": [
+    {
+      "name": "bend_brief",
+      "title": "Bend a brief",
+      "description": "Turn a design brief into unexpected directions (bend moves). Rule-based, free and unlimited. Use first when the user wants wild or fresh design ideas.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "brief",
+          "wildness"
+        ],
+        "properties": {
+          "brief": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "wildness": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "1 Fresh, 2 Bold, 3 Weird, 4 Wild, 5 Bananas"
+          },
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "transplant",
+                "material",
+                "era",
+                "constraint",
+                "scale",
+                "lens"
+              ]
+            }
+          },
+          "lens": {
+            "type": "string",
+            "description": "Culture lens preset id, for example sadu, najdi, kufic, mashrabiya, desert-modern"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8,
+            "default": 6
+          }
+        }
+      }
+    },
+    {
+      "name": "search_references",
+      "title": "Search references",
+      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "directionId": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pinterest",
+                "dribbble",
+                "behance",
+                "awwwards"
+              ]
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 24,
+            "default": 12
+          },
+          "canvasId": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "extract_palette",
+      "title": "Extract palette",
+      "description": "Pull a color palette from references on a canvas, with roles and WCAG contrast checks. Pairs are tagged ship or explore.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "itemIds"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 9,
+            "default": 6
+          },
+          "addSwatches": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "open_canvas",
+      "title": "Open moodboard canvas",
+      "description": "Open or create a moodboard canvas. Shows it inline when the client supports it, and always returns a web link.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "brief": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    {
+      "name": "add_to_canvas",
+      "title": "Add to canvas",
+      "description": "Add references, notes, swatches or sections to a canvas.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "items"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "sectionId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "reference",
+                    "note",
+                    "swatch",
+                    "section"
+                  ]
+                },
+                "referenceId": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "hex": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "arrange_canvas",
+      "title": "Arrange canvas",
+      "description": "Lay out canvas items: by_direction, masonry, grid or hero.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "layout"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "by_direction",
+              "masonry",
+              "grid",
+              "hero"
+            ]
+          },
+          "sectionId": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_canvas",
+      "title": "Get canvas",
+      "description": "Read a canvas: sections, items with source links and notes, palettes and the brief.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "export_kit",
+      "title": "Export kit",
+      "description": "Export a canvas as text files: design_md, agents_md, tokens, tailwind, figjam_spec, html_board, brief. Free plan: design_md and brief. You write the files.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "formats"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "formats": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "design_md",
+                "agents_md",
+                "tokens",
+                "tailwind",
+                "figjam_spec",
+                "html_board",
+                "brief"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "banana-server",
+  "main": ".open-next/worker.js",
+  // Must not be later than the bundled workerd release (1.20261006).
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+  // User uploads and export files only (never third-party images).
+  // Create first: npx wrangler r2 bucket create banana-uploads
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "banana-uploads"
+    }
+  ],
+  // Non-secret config. Replace the placeholders with your workers.dev URL and
+  // AuthKit domain before deploying. Secrets (WORKOS_API_KEY, DATABASE_URL, ...)
+  // go in .dev.vars locally and `npx wrangler secret put <NAME>` in production.
+  "vars": {
+    "APP_NAME": "Banana",
+    "APP_URL": "https://banana-server.<your-subdomain>.workers.dev",
+    "MCP_RESOURCE_URL": "https://banana-server.<your-subdomain>.workers.dev/api/mcp",
+    "WORKOS_CLIENT_ID": "client_REPLACE_ME",
+    "WORKOS_AUTHKIT_DOMAIN": "https://REPLACE-ME.authkit.app",
+    "IMAGE_HOST_ALLOWLIST": ""
+  }
+}

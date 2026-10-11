@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    name: banana-server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: banana-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: banana-server/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npx vitest run
+      - name: Migrations are consistent
+        run: npx drizzle-kit check
+      - name: Schema has a migration
+        run: |
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain -- db/migrations)" ]; then
+            echo "db/schema.ts changed without a migration. Run: npm run db:generate"
+            git status --porcelain -- db/migrations
+            exit 1
+          fi

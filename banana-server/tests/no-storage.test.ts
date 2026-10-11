@@ -1,0 +1,213 @@
+/**
+ * No-storage test (spec section 13, blocks CI).
+ *
+ * The web_search adapter and the search_references tool must never fetch image bytes
+ * and never write anything to disk. Every network request is recorded; every node:fs
+ * write API is replaced with a spy that records the call and refuses it.
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const writes: string[] = [];
+
+const WRITE_APIS = [
+  "writeFile",
+  "writeFileSync",
+  "appendFile",
+  "appendFileSync",
+  "createWriteStream",
+  "write",
+  "writeSync",
+  "writev",
+  "writevSync",
+  "copyFile",
+  "copyFileSync",
+  "cp",
+  "cpSync",
+  "rename",
+  "renameSync",
+  "mkdir",
+  "mkdirSync",
+  "mkdtemp",
+  "mkdtempSync",
+  "open",
+  "openSync",
+  "truncate",
+  "truncateSync",
+  "symlink",
+  "symlinkSync",
+  "link",
+  "linkSync",
+] as const;
+
+/**
+ * Spy on the write APIs of the real fs module objects (callback, sync and promises),
+ * then sync the ESM named exports so `import { writeFile } from "node:fs"` sees the spies too.
+ */
+function spyOnWrites() {
+  const targets: [Record<string, unknown>, string][] = [
+    [fs as unknown as Record<string, unknown>, "fs"],
+    [fs.promises as unknown as Record<string, unknown>, "fs.promises"],
+  ];
+  for (const [mod, label] of targets) {
+    for (const name of WRITE_APIS) {
+      if (typeof mod[name] !== "function") continue;
+      const spy = vi.spyOn(mod as Record<string, (...a: unknown[]) => unknown>, name);
+      spy.mockImplementation(function (this: unknown, ...args: unknown[]) {
+        writes.push(`${label}.${name}(${String(args[0])})`);
+        const error = new Error(`no-storage: ${label}.${name} called`);
+        if (label === "fs.promises") return Promise.reject(error);
+        throw error;
+      });
+    }
+  }
+  syncBuiltinESMExports();
+}
+
+import { DEFAULT_IMAGE_HOSTS, createWebSearchAdapter, parseAllowlist, type FetchLike } from "@/lib/sources";
+import { createSearchReferencesTool } from "@/lib/mcp/tools/search_references";
+import { createMemoryUsageStore } from "@/lib/quota";
+import { compileTakedowns } from "@/lib/takedown";
+import { serperFixture } from "./sources.fixture";
+
+const allowlist = parseAllowlist(DEFAULT_IMAGE_HOSTS);
+const IMAGE_HOSTS = [
+  ...DEFAULT_IMAGE_HOSTS,
+  "pinimg.com",
+  "dribbble.com",
+  "behance.net",
+  "awwwards.com",
+  "pinterest.com",
+  "gstatic.com",
+  "someblog.example",
+  "random.example",
+];
+
+type Recorded = { url: string; method: string };
+
+function recordingFetch(requests: Recorded[]): FetchLike {
+  return async (input, init) => {
+    requests.push({ url: String(input), method: init?.method ?? "GET" });
+    if (new URL(String(input)).hostname !== "google.serper.dev") {
+      throw new Error(`unexpected request to ${String(input)}`);
+    }
+    return new Response(JSON.stringify(serperFixture), { status: 200, headers: { "Content-Type": "application/json" } });
+  };
+}
+
+function assertOnlySerper(requests: Recorded[]) {
+  expect(requests.length).toBeGreaterThan(0);
+  for (const r of requests) {
+    const host = new URL(r.url).hostname;
+    expect(host).toBe("google.serper.dev");
+    expect(r.method).toBe("POST");
+    for (const imageHost of IMAGE_HOSTS) {
+      expect(host === imageHost || host.endsWith(`.${imageHost}`)).toBe(false);
+    }
+  }
+}
+
+describe("no-storage: web_search never fetches or writes image bytes", () => {
+  let globalRequests: Recorded[];
+
+  beforeEach(() => {
+    writes.length = 0;
+    spyOnWrites();
+    globalRequests = [];
+    // Any request that bypasses the injected fetch lands here and is recorded too.
+    vi.stubGlobal("fetch", recordingFetch(globalRequests));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    syncBuiltinESMExports();
+  });
+
+  it("the fs spies are live (sanity check)", async () => {
+    const named = await import("node:fs");
+    const promises = await import("node:fs/promises");
+    expect(() => named.writeFileSync("/tmp/no-storage-sanity", "")).toThrow("no-storage");
+    await expect(promises.writeFile("/tmp/no-storage-sanity", "")).rejects.toThrow("no-storage");
+    expect(writes).toEqual([
+      "fs.writeFileSync(/tmp/no-storage-sanity)",
+      "fs.promises.writeFile(/tmp/no-storage-sanity)",
+    ]);
+    writes.length = 0;
+  });
+
+  it("adapter with injected fetch: one Serper call, no image hosts, no writes", async () => {
+    const requests: Recorded[] = [];
+    const adapter = createWebSearchAdapter({
+      apiKey: "k",
+      fetch: recordingFetch(requests),
+      allowlist,
+      loadTakedowns: async () => compileTakedowns(["https://dribbble.com/shots/777-Taken-down"]),
+    });
+    const result = await adapter.run({ query: "brutalist bakery", count: 24, userId: "u1", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
+
+    expect(result.references.length).toBeGreaterThan(0);
+    expect(requests).toHaveLength(1);
+    assertOnlySerper(requests);
+    expect(globalRequests).toEqual([]);
+    expect(writes).toEqual([]);
+    // Results are URLs and metadata only: no inline bytes.
+    expect(JSON.stringify(result)).not.toMatch(/data:|base64/i);
+  });
+
+  it("adapter with the global fetch: still only Serper, no writes", async () => {
+    const adapter = createWebSearchAdapter({ apiKey: "k", allowlist });
+    await adapter.run({ query: "q", count: 12, userId: "u1" });
+    assertOnlySerper(globalRequests);
+    expect(globalRequests).toHaveLength(1);
+    expect(writes).toEqual([]);
+  });
+
+  it("failure path makes no extra requests and writes nothing", async () => {
+    const requests: Recorded[] = [];
+    const adapter = createWebSearchAdapter({
+      apiKey: "k",
+      allowlist,
+      fetch: async (input, init) => {
+        requests.push({ url: String(input), method: init?.method ?? "GET" });
+        return new Response("down", { status: 503 });
+      },
+    });
+    const result = await adapter.run({ query: "q", count: 12, userId: "u1" });
+    expect(result.references).toEqual([]);
+    expect(requests).toHaveLength(1);
+    assertOnlySerper(requests);
+    expect(globalRequests).toEqual([]);
+    expect(writes).toEqual([]);
+  });
+
+  it("search_references tool end to end: only Serper, no writes", async () => {
+    const requests: Recorded[] = [];
+    const tray: unknown[] = [];
+    const tool = createSearchReferencesTool({
+      adapter: createWebSearchAdapter({ apiKey: "k", fetch: recordingFetch(requests), allowlist }),
+      usage: createMemoryUsageStore(),
+      getPlan: async () => "free",
+      getDirection: async () => ({ id: "d1", searchQuery: "melted chrome" }),
+      addToTray: async (_u, _c, refs) => {
+        tray.push(...refs);
+        return true;
+      },
+      upgradeUrl: () => "https://example.test/pricing",
+    });
+    const res = await tool({ directionId: "d1", canvasId: "c1" }, "u1");
+    expect(res.isError).toBeUndefined();
+    expect(tray.length).toBeGreaterThan(0);
+    // What goes to the tray is URLs and metadata only.
+    for (const item of tray) {
+      for (const value of Object.values(item as Record<string, unknown>)) {
+        expect(typeof value === "string" || typeof value === "number").toBe(true);
+      }
+    }
+    assertOnlySerper(requests);
+    expect(globalRequests).toEqual([]);
+    expect(writes).toEqual([]);
+  });
+});

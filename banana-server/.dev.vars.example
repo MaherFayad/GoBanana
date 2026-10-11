@@ -1,0 +1,16 @@
+# Local secrets for `wrangler dev` / `npm run preview`. Copy to .dev.vars (git-ignored).
+# In production set each with: npx wrangler secret put <NAME>
+# Non-secret values live in wrangler.jsonc "vars"; values here override them locally.
+NEXTJS_ENV=development
+
+WORKOS_API_KEY=
+DATABASE_URL=
+SERPER_API_KEY=
+PADDLE_API_KEY=
+PADDLE_WEBHOOK_SECRET=
+
+# Local overrides of wrangler.jsonc vars
+APP_URL=http://localhost:8787
+MCP_RESOURCE_URL=http://localhost:8787/api/mcp
+WORKOS_AUTHKIT_DOMAIN=
+WORKOS_CLIENT_ID=
