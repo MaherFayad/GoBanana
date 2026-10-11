@@ -16,7 +16,8 @@ import {
   parseAllowlist,
   pinterestOwnAdapter,
   referenceId,
-  serperNum,
+  serperPages,
+  SERPER_PAGE_SIZE,
   type FetchLike,
 } from "@/lib/sources";
 import { EMPTY_TAKEDOWNS, compileTakedowns } from "@/lib/takedown";
@@ -193,12 +194,13 @@ describe("Serper response mapping", () => {
 });
 
 describe("web_search adapter", () => {
-  it("sends one POST to Serper with the key header and { q, num }", async () => {
+  it("sends one POST to Serper with the key header and { q, num: 10 }", async () => {
     const fetchMock = vi.fn<FetchLike>(async () => jsonResponse(serperFixture));
     const adapter = createWebSearchAdapter({ apiKey: "test-key", fetch: fetchMock, allowlist });
     const result = await adapter.run({ query: "brutalist bakery menu", count: 12, userId: "u1" });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // The fixture fills a page, so later pages are asked for too; the first request is checked here.
+    expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(3);
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe(SERPER_IMAGES_ENDPOINT);
     expect(url).toBe("https://google.serper.dev/images");
@@ -206,7 +208,7 @@ describe("web_search adapter", () => {
     expect((init?.headers as Record<string, string>)["X-API-KEY"]).toBe("test-key");
     expect(JSON.parse(String(init?.body))).toEqual({
       q: "brutalist bakery menu (site:pinterest.com OR site:dribbble.com)",
-      num: 30,
+      num: 10,
     });
     expect(result.ok).toBe(true);
     expect(result.references).toHaveLength(4);
@@ -228,10 +230,65 @@ describe("web_search adapter", () => {
     expect(r1.references.every((r) => r.sourceSite === "pinterest.com")).toBe(true);
   });
 
-  it("asks Serper for more than count, within limits", () => {
-    expect(serperNum(4)).toBe(10);
-    expect(serperNum(12)).toBe(30);
-    expect(serperNum(24)).toBe(50);
+  it("plans about twice the count in pages of 10, at most 3 pages", () => {
+    expect(SERPER_PAGE_SIZE).toBe(10);
+    expect(serperPages(4)).toBe(1);
+    expect(serperPages(12)).toBe(3);
+    expect(serperPages(24)).toBe(3);
+  });
+
+  // Serper's free plan rejects site: queries above num 10 ("Query pattern not allowed for free accounts").
+  function fullPage(page: number) {
+    return {
+      images: Array.from({ length: 10 }, (_, i) => ({
+        title: `Shot ${page}-${i}`,
+        imageUrl: `https://cdn.dribbble.com/userupload/${page}-${i}.png`,
+        imageWidth: 800,
+        imageHeight: 600,
+        thumbnailUrl: `https://encrypted-tbn0.gstatic.com/images?q=${page}-${i}`,
+        source: "Dribbble",
+        domain: "dribbble.com",
+        link: `https://dribbble.com/shots/${page}${i}`,
+      })),
+    };
+  }
+
+  it("never asks for more than 10 results per request and pages until it has enough", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      return jsonResponse(fullPage(body.page ?? 1));
+    });
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const result = await adapter.run({ query: "q", count: 12, userId: "u" });
+
+    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init?.body)));
+    expect(bodies.every((b) => b.num === 10)).toBe(true);
+    expect(bodies.map((b) => b.page ?? 1)).toEqual([1, 2]);
+    expect(result.references).toHaveLength(12);
+    expect(result.note).toBeUndefined();
+  });
+
+  it("a plan error on page 1 returns no results with a plain note", async () => {
+    const adapter = createWebSearchAdapter({
+      apiKey: "k",
+      fetch: async () => jsonResponse({ message: "Query pattern not allowed for free accounts.", statusCode: 400 }, 400),
+      allowlist,
+    });
+    const result = await adapter.run({ query: "q", count: 12, userId: "u" });
+    expect(result.references).toEqual([]);
+    expect(result.note).toBe(NOTES.unavailable);
+  });
+
+  it("a failure on a later page keeps the results already found", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      return body.page ? jsonResponse({ message: "nope" }, 400) : jsonResponse(fullPage(1));
+    });
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const result = await adapter.run({ query: "q", count: 12, userId: "u" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.references).toHaveLength(10);
+    expect(result.note).toBe("Found 10 of 12 requested references.");
   });
 });
 

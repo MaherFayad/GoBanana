@@ -149,7 +149,9 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     const result = await adapter.run({ query: "brutalist bakery", count: 24, userId: "u1", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
 
     expect(result.references.length).toBeGreaterThan(0);
-    expect(requests).toHaveLength(1);
+    // One request per page of 10 (Serper free plan), never more than 3 pages.
+    expect(requests.length).toBeGreaterThanOrEqual(1);
+    expect(requests.length).toBeLessThanOrEqual(3);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
@@ -161,7 +163,8 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     const adapter = createWebSearchAdapter({ apiKey: "k", allowlist });
     await adapter.run({ query: "q", count: 12, userId: "u1" });
     assertOnlySerper(globalRequests);
-    expect(globalRequests).toHaveLength(1);
+    expect(globalRequests.length).toBeGreaterThanOrEqual(1);
+    expect(globalRequests.length).toBeLessThanOrEqual(3);
     expect(writes).toEqual([]);
   });
 

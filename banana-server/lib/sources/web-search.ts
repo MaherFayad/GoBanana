@@ -87,10 +87,15 @@ export const NOTES = {
 
 const MAX_TITLE = 200;
 
-/** Ask for more than we need because filtering drops some results. Serper accepts 10 to 100. */
-export function serperNum(count: number): number {
-  const wanted = Math.ceil((Math.max(1, count) * 2) / 10) * 10;
-  return Math.min(50, Math.max(10, wanted));
+/**
+ * Serper's free plan rejects `site:` queries that ask for more than 10 results
+ * ("Query pattern not allowed for free accounts"), so we ask page by page, 10 at a time.
+ */
+export const SERPER_PAGE_SIZE = 10;
+
+/** Pages to fetch: about twice what we need (filtering drops some), at most 3 (one credit each). */
+export function serperPages(count: number): number {
+  return Math.min(3, Math.max(1, Math.ceil((Math.max(1, count) * 2) / SERPER_PAGE_SIZE)));
 }
 
 /** FNV-1a 64-bit, hex. Sync and dependency free so it runs the same on Workers and Node. */
@@ -247,29 +252,46 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       }
     }
 
-    const body = JSON.stringify({ q: buildSearchQuery(q.query, sources), num: serperNum(count) });
-    const init: RequestInit = {
-      method: "POST",
-      headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-      body,
-    };
-    if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
-      init.signal = AbortSignal.timeout(timeoutMs);
+    const searchQuery = buildSearchQuery(q.query, sources);
+    const pages = serperPages(count);
+    const images: unknown[] = [];
+    let references: Reference[] = [];
+
+    for (let page = 1; page <= pages; page++) {
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify(
+          page === 1 ? { q: searchQuery, num: SERPER_PAGE_SIZE } : { q: searchQuery, num: SERPER_PAGE_SIZE, page },
+        ),
+      };
+      if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+        init.signal = AbortSignal.timeout(timeoutMs);
+      }
+
+      let json: unknown;
+      try {
+        const res = await doFetch(SERPER_IMAGES_ENDPOINT, init);
+        if (res.status !== 200) {
+          // Status code only: the body or headers may echo request details.
+          console.warn(`[search] serper page ${page} status ${res.status}`);
+          if (page > 1) break; // keep what earlier pages found
+          return failure(res.status === 429 ? NOTES.rateLimited : NOTES.unavailable);
+        }
+        json = await res.json();
+      } catch {
+        // Network error, timeout or bad JSON. Never surface the raw error (it may echo request details).
+        if (page > 1) break;
+        return failure(NOTES.unavailable);
+      }
+
+      const pageImages = json && typeof json === "object" ? (json as { images?: unknown }).images : undefined;
+      if (!Array.isArray(pageImages) || pageImages.length === 0) break;
+      images.push(...pageImages);
+      references = mapSerperImages(images, { sources, allowlist, takedowns, count });
+      if (references.length >= count || pageImages.length < SERPER_PAGE_SIZE) break;
     }
 
-    let json: unknown;
-    try {
-      const res = await doFetch(SERPER_IMAGES_ENDPOINT, init);
-      if (res.status === 429) return failure(NOTES.rateLimited);
-      if (res.status !== 200) return failure(NOTES.unavailable);
-      json = await res.json();
-    } catch {
-      // Network error, timeout or bad JSON. Never surface the raw error (it may echo request details).
-      return failure(NOTES.unavailable);
-    }
-
-    const images = json && typeof json === "object" ? (json as { images?: unknown }).images : undefined;
-    const references = mapSerperImages(images, { sources, allowlist, takedowns, count });
     const result: WebSearchResult = { references, ok: true };
     if (references.length === 0) result.note = NOTES.noResults;
     else if (references.length < count) {
