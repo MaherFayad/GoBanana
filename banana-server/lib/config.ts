@@ -8,7 +8,7 @@
  * can use it.
  */
 
-export const APP_NAME: string = process.env.APP_NAME?.trim() || "Banana";
+export const APP_NAME: string = process.env.APP_NAME?.trim() || "GoBanana";
 
 /** Path of the RFC 9728 protected resource metadata document. */
 export const RESOURCE_METADATA_PATH = "/.well-known/oauth-protected-resource";

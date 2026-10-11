@@ -31,7 +31,7 @@
   // AuthKit domain before deploying. Secrets (WORKOS_API_KEY, DATABASE_URL, ...)
   // go in .dev.vars locally and `npx wrangler secret put <NAME>` in production.
   "vars": {
-    "APP_NAME": "Banana",
+    "APP_NAME": "GoBanana",
     "APP_URL": "https://banana-server.maherfayad55.workers.dev",
     "MCP_RESOURCE_URL": "https://banana-server.maherfayad55.workers.dev/api/mcp",
     "WORKOS_CLIENT_ID": "client_01M4NBKJEZYVMTKFEG0Y7WXFBZ",
