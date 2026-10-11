@@ -29,6 +29,8 @@ export type SourceQuery = {
    * adapters fall back to DEFAULT_SOURCES.
    */
   sources?: readonly SourceSite[];
+  /** Most search provider pages (one credit each) this query may use. Defaults to the adapter's cap. */
+  maxPages?: number;
 };
 
 export interface SourceAdapter {

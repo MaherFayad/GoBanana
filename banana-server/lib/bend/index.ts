@@ -2,7 +2,8 @@ import { BendInputError, parseBendInput } from "./input";
 import { getLens, lensEntries, LISTS, STOP_WORDS } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53, mulberry32, shuffle, stableId, type Rng } from "./prng";
-import { extractSubject, type Subject } from "./subject";
+import { fidelityQuery, inspirationQuery } from "./queries";
+import { extractSubject } from "./subject";
 import {
   LEGACY_TEMPLATE_SIZES,
   PAIR_TEMPLATES,
@@ -31,9 +32,10 @@ export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COU
 export { LENSES, LENS_IDS, LISTS } from "./lists";
 export { WILDNESS } from "./wildness";
 export { MOVES } from "./types";
+export { MAX_FOCUSED_QUERY_WORDS, fidelityQuery, inspirationFromQuery, inspirationQuery, isUiBrief } from "./queries";
 export type { BendInput, BendResult, Direction, MoveId, Wildness } from "./types";
 
-/** Hard cap on search query length, in words. */
+/** Hard cap on any search query length, in words (focused queries are capped lower, at MAX_FOCUSED_QUERY_WORDS). */
 export const MAX_QUERY_WORDS = 9;
 /** Hard cap on title length, in words. */
 export const MAX_TITLE_WORDS = 10;
@@ -143,73 +145,6 @@ class TemplatePicker {
     this.cursors.set(key, cursor + 1);
     return order[cursor % order.length] ?? 0;
   }
-}
-
-interface QueryPiece {
-  text: string;
-  order: number;
-  priority: number;
-  required: boolean;
-}
-
-function buildQuery(
-  moves: readonly MoveId[],
-  entries: readonly ListEntry[],
-  mood: string,
-  subject: Subject,
-  wildness: Wildness,
-  twistWord: string | null,
-): string {
-  const pieces: QueryPiece[] = [];
-  moves.forEach((move, i) => {
-    const def = MOVE_DEFS[move];
-    const entry = entries[i];
-    if (!entry) return;
-    const core = def.prefix ? `${def.prefix} ${entry.query}` : entry.query;
-    pieces.push({ text: core, order: i * 2, priority: 0, required: true });
-    const tail = i === 0 ? def.fullTail : def.shortTail;
-    if (tail) pieces.push({ text: tail, order: i * 2 + 1, priority: i === 0 ? 1 : 4 + i, required: false });
-  });
-
-  // Subject: always at 1 and 2 (layout words kept at 1), when it fits at 3,
-  // and at 4 and 5 only where the era pattern asks for it.
-  if (wildness <= 2) {
-    pieces.push({ text: subject.query, order: 10, priority: 0, required: true });
-  } else if (wildness === 3 || moves.includes("era")) {
-    pieces.push({ text: subject.query, order: 10, priority: 2, required: false });
-  }
-  // Mood rides along only on a lone transplant ("neon-lit matchbook packaging design").
-  if (moves[0] === "transplant" && moves.length === 1 && wildness >= 2) {
-    pieces.push({ text: mood, order: -1, priority: 3, required: false });
-  }
-  // At most one word from the twist, last, and only when there is room.
-  if (twistWord) pieces.push({ text: twistWord, order: 20, priority: 9, required: false });
-
-  const chosen = pieces.filter((p) => p.required);
-  let words = chosen.reduce((n, p) => n + wordCount(p.text), 0);
-  const taken = new Set(chosen.flatMap((p) => p.text.toLowerCase().split(/\s+/)));
-  for (const p of pieces.filter((x) => !x.required).sort((a, b) => a.priority - b.priority)) {
-    const w = wordCount(p.text);
-    const parts = p.text.toLowerCase().split(/\s+/);
-    // Skip a piece that would echo words already in the query ("design design").
-    if (words + w <= MAX_QUERY_WORDS && !parts.some((x) => taken.has(x))) {
-      for (const x of parts) taken.add(x);
-      chosen.push(p);
-      words += w;
-    }
-  }
-
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const p of chosen.sort((a, b) => a.order - b.order)) {
-    for (const w of p.text.split(/\s+/)) {
-      const k = w.toLowerCase();
-      if (!w || seen.has(k)) continue;
-      seen.add(k);
-      out.push(w);
-    }
-  }
-  return out.slice(0, MAX_QUERY_WORDS).join(" ");
 }
 
 function seedKey(input: BendInput): string {
@@ -387,6 +322,8 @@ export function bendBrief(raw: BendInput): BendResult {
   const garnishUse = new Map<MoveId, number>();
   const titles = new Set<string>();
   const directions: Direction[] = [];
+  // Shared by every direction of this brief: real product UI for the brief's domain and screen type.
+  const fidelity = fidelityQuery(input.brief);
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -468,10 +405,10 @@ export function bendBrief(raw: BendInput): BendResult {
       rule.hint,
     ].join(" ");
 
-    const twistQuery = twistEntry?.query;
-    const twistWord = twistQuery && wordCount(twistQuery) === 1 ? twistQuery : null;
-    const headEntries = headline.map((m) => picked[moves.indexOf(m)]!);
-    const searchQuery = buildQuery(headline, headEntries, mood.label, subject, wildness, twistWord);
+    // Inspiration lane: the lead headline ingredient alone (stacked ideas return tag and search pages).
+    const lead = headline[0] ?? moves[0]!;
+    const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
+    const searchQueries = searchQuery === fidelity ? [searchQuery] : [searchQuery, fidelity];
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
 
     directions.push({
@@ -481,6 +418,7 @@ export function bendBrief(raw: BendInput): BendResult {
       title,
       twist,
       searchQuery,
+      searchQueries,
       prompt,
       ingredients,
     });
@@ -513,7 +451,7 @@ export function formatDirections(result: BendResult): string {
   });
   lines.push(
     "",
-    "Next: call search_references with a direction's query to pull image references. Pick the directions that excite the user, or bend again at a different wildness.",
+    "Next: call search_references with a direction id (after saving to a canvas) or a direction's query to pull image references. Pick the directions that excite the user, or bend again at a different wildness.",
   );
   return lines.join("\n");
 }

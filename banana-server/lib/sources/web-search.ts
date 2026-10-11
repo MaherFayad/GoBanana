@@ -20,8 +20,14 @@
  * - only the image host allowed: use the image URL as the thumb too.
  * - only the thumb host allowed: keep the result and use the thumb URL as the image too.
  * - neither allowed: drop.
+ *
+ * Quality (see item-page.ts and quality.ts): only single-item source pages, no stock or shop
+ * listings, Pinterest and Dribbble image URLs upgraded to their larger files, nothing under
+ * 600 px when the size is known, then ranked best first.
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
+import { isItemPage } from "./item-page";
+import { bigEnough, isJunk, rankReferences, upgradeImage } from "./quality";
 import { buildSearchQuery, normalizeSources } from "./query";
 import {
   SOURCE_DOMAINS,
@@ -69,6 +75,8 @@ export type WebSearchConfig = {
 export type WebSearchResult = SourceSearchResult & {
   /** True when Serper answered with 200. Callers count quota only then. */
   ok: boolean;
+  /** Results dropped as list pages or low quality (stock, shop listings, small images). Set when above 0. */
+  dropped?: number;
 };
 
 export type WebSearchAdapter = SourceAdapter & {
@@ -93,9 +101,16 @@ const MAX_TITLE = 200;
  */
 export const SERPER_PAGE_SIZE = 10;
 
-/** Pages to fetch: about twice what we need (filtering drops some), at most 3 (one credit each). */
-export function serperPages(count: number): number {
-  return Math.min(3, Math.max(1, Math.ceil((Math.max(1, count) * 2) / SERPER_PAGE_SIZE)));
+/**
+ * Most pages one query may fetch (one Serper credit each). The quality filters drop a lot, so a
+ * query keeps paging until it has `count` references, a page comes back short, or this cap.
+ */
+export const SERPER_MAX_PAGES = 3;
+
+/** Pages a query may fetch: `maxPages` when given, never more than SERPER_MAX_PAGES. */
+export function serperPages(maxPages?: number): number {
+  if (maxPages === undefined || !Number.isFinite(maxPages)) return SERPER_MAX_PAGES;
+  return Math.min(SERPER_MAX_PAGES, Math.max(1, Math.floor(maxPages)));
 }
 
 /** FNV-1a 64-bit, hex. Sync and dependency free so it runs the same on Workers and Node. */
@@ -128,7 +143,8 @@ function cleanTitle(value: unknown): string | undefined {
   return t.length > MAX_TITLE ? `${t.slice(0, MAX_TITLE - 3).trimEnd()}...` : t;
 }
 
-function dedupeKey(url: string): string {
+/** Key used to spot the same source page or image twice. */
+export function dedupeKey(url: string): string {
   const u = new URL(url);
   u.hash = "";
   return u.toString().toLowerCase().replace(/\/+$/, "");
@@ -149,24 +165,35 @@ export type MapOptions = {
   count: number;
 };
 
+export type MapResult = {
+  /** Best first, at most `count`. */
+  references: Reference[];
+  /** List pages and low-quality results dropped (not counting off-site, unsafe or blocked ones). */
+  dropped: number;
+};
+
 /**
- * Map Serper `images` to references. Pure: no network, no storage.
- * Keeps only title, image URL, thumb URL, size, source page link and site.
+ * Map Serper `images` to references and count what the quality rules dropped. Pure: no network,
+ * no storage. Keeps only title, image URL, thumb URL, size, source page link and site.
  */
-export function mapSerperImages(images: unknown, opts: MapOptions): Reference[] {
-  if (!Array.isArray(images)) return [];
+export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): MapResult {
+  if (!Array.isArray(images)) return { references: [], dropped: 0 };
   const out: Reference[] = [];
   const seenSource = new Set<string>();
   const seenImage = new Set<string>();
+  let dropped = 0;
 
   for (const raw of images as SerperImage[]) {
-    if (out.length >= opts.count) break;
     if (!raw || typeof raw !== "object") continue;
 
     const link = parseHttpUrl(raw.link);
     if (!link) continue; // no source link, no reference (spec section 2 rule 3)
     const site = matchSourceSite(link, opts.sources);
     if (!site) continue; // source page is not on a selected site
+    if (!isItemPage(link, site)) {
+      dropped++; // search, tag, board, profile or collection page
+      continue;
+    }
 
     const image = parseHttpUrl(raw.imageUrl);
     const thumb = parseHttpUrl(raw.thumbnailUrl);
@@ -184,21 +211,46 @@ export function mapSerperImages(images: unknown, opts: MapOptions): Reference[] 
       continue;
     }
 
+    if (
+      isJunk({
+        title: raw.title,
+        source: raw.source,
+        domain: raw.domain,
+        sourceUrl,
+        imageUrl: image?.toString(),
+        thumbUrl: thumb?.toString(),
+      })
+    ) {
+      dropped++; // stock, shop listing or list page title
+      continue;
+    }
+
     let imageUrl: string;
     let thumbUrl: string;
     let width: number | undefined;
     let height: number | undefined;
     if (imageOk && image) {
-      imageUrl = image.toString();
-      thumbUrl = thumbOk && thumb ? thumb.toString() : imageUrl;
-      width = positiveInt(raw.imageWidth);
-      height = positiveInt(raw.imageHeight);
+      // Larger file on the same host: Pinterest 736x, Dribbble 1600x1200. The thumb stays as is.
+      const up = upgradeImage(image, positiveInt(raw.imageWidth), positiveInt(raw.imageHeight));
+      if (up.url !== image.toString() && (!isAllowedImageUrl(up.url, opts.allowlist) || opts.takedowns.isBlocked(up.url))) {
+        continue;
+      }
+      imageUrl = up.url;
+      thumbUrl = thumbOk && thumb ? thumb.toString() : image.toString();
+      width = up.width;
+      height = up.height;
     } else {
       // Only the thumbnail host is allowlisted: the thumbnail stands in for the image.
       thumbUrl = (thumb as URL).toString();
       imageUrl = thumbUrl;
       width = positiveInt(raw.thumbnailWidth) ?? positiveInt(raw.imageWidth);
       height = positiveInt(raw.thumbnailHeight) ?? positiveInt(raw.imageHeight);
+    }
+
+    // The size rule looks at the image the canvas will show.
+    if (!bigEnough(width, height)) {
+      dropped++;
+      continue;
     }
 
     const sourceKey = dedupeKey(sourceUrl);
@@ -222,7 +274,43 @@ export function mapSerperImages(images: unknown, opts: MapOptions): Reference[] 
     }
     out.push(ref);
   }
+  return { references: rankReferences(out).slice(0, Math.max(0, opts.count)), dropped };
+}
+
+/** Same as mapSerperImagesWithStats, references only. */
+export function mapSerperImages(images: unknown, opts: MapOptions): Reference[] {
+  return mapSerperImagesWithStats(images, opts).references;
+}
+
+/**
+ * Merge result lists round robin (first list first), dropping repeats of a source page or an
+ * image, up to `count`. Used to interleave the two lanes of a direction search.
+ */
+export function interleaveReferences(lists: readonly (readonly Reference[])[], count: number): Reference[] {
+  const out: Reference[] = [];
+  const seenSource = new Set<string>();
+  const seenImage = new Set<string>();
+  const longest = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < longest && out.length < count; i++) {
+    for (const list of lists) {
+      const ref = list[i];
+      if (!ref || out.length >= count) continue;
+      const sourceKey = dedupeKey(ref.sourceUrl);
+      const imageKey = dedupeKey(ref.imageUrl);
+      if (seenSource.has(sourceKey) || seenImage.has(imageKey)) continue;
+      seenSource.add(sourceKey);
+      seenImage.add(imageKey);
+      out.push(ref);
+    }
+  }
   return out;
+}
+
+/** Plain note for a search that found `found` of `count` references. */
+export function countNote(found: number, count: number): string | undefined {
+  if (found === 0) return NOTES.noResults;
+  if (found < count) return `Found ${found} of ${count} requested references.`;
+  return undefined;
 }
 
 function failure(note: string): WebSearchResult {
@@ -253,9 +341,10 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
 
     const searchQuery = buildSearchQuery(q.query, sources);
-    const pages = serperPages(count);
+    const pages = serperPages(q.maxPages);
     const images: unknown[] = [];
     let references: Reference[] = [];
+    let dropped = 0;
 
     for (let page = 1; page <= pages; page++) {
       const init: RequestInit = {
@@ -288,15 +377,14 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       const pageImages = json && typeof json === "object" ? (json as { images?: unknown }).images : undefined;
       if (!Array.isArray(pageImages) || pageImages.length === 0) break;
       images.push(...pageImages);
-      references = mapSerperImages(images, { sources, allowlist, takedowns, count });
+      ({ references, dropped } = mapSerperImagesWithStats(images, { sources, allowlist, takedowns, count }));
       if (references.length >= count || pageImages.length < SERPER_PAGE_SIZE) break;
     }
 
     const result: WebSearchResult = { references, ok: true };
-    if (references.length === 0) result.note = NOTES.noResults;
-    else if (references.length < count) {
-      result.note = `Found ${references.length} of ${count} requested references.`;
-    }
+    const note = countNote(references.length, count);
+    if (note) result.note = note;
+    if (dropped > 0) result.dropped = dropped;
     return result;
   }
 

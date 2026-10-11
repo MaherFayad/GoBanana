@@ -53,8 +53,16 @@ export interface Direction {
    * shown after "Twist:". Empty at wildness 1 and 2.
    */
   twist: string;
-  /** Short image search query (at most 9 words) for search_references. */
+  /**
+   * Inspiration query: the lead ingredient alone with one anchor word (at most 5 words), for
+   * search_references `query`. Same as searchQueries[0].
+   */
   searchQuery: string;
+  /**
+   * Focused queries search_references runs for a directionId: the inspiration query, then the
+   * fidelity query (the brief's domain and screen type, shared by every direction of a brief).
+   */
+  searchQueries: string[];
   /** The full combined idea (every move and the twist) for the agent to riff on. */
   prompt: string;
   ingredients: Ingredients;
