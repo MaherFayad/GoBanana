@@ -414,6 +414,8 @@
   --st-explore-bg: var(--st-accent-4-10);
   /* Banana yellow identity mark (logo dot, favicon). The primary button uses --st-primary-* below. */
   --st-brand: var(--st-accent-7);
+  /* The Bend mark: yellow on dark, ink on light. */
+  --st-brand-mark: var(--st-brand);
 
   /* Owner decision 2026-10-11 (DECISIONS.md): the primary call to action is Banana yellow with
      ink text, on top of Studio's achromatic chrome. Nothing else in the chrome is yellow.
@@ -586,6 +588,8 @@
   --st-explore-fg: var(--st-accent-4);
   --st-explore-bg: var(--st-accent-4-10);
   --st-brand: var(--st-accent-7);
+  /* The Bend mark: yellow on dark, ink on light. */
+  --st-brand-mark: var(--st-text-bright);
   /* Yellow primary (owner decision). Light: the fill is only 1.38:1 on white, so a 1px dark gold
      border carries SC 1.4.11 (5.04:1 or more on every surface). Focus: a 2px ink ring against the
      fill (12.82:1) and the surface (14.29:1 or more), then a 2px white halo. */
@@ -746,6 +750,8 @@
     --st-explore-fg: var(--st-accent-4);
     --st-explore-bg: var(--st-accent-4-10);
     --st-brand: var(--st-accent-7);
+    /* The Bend mark: yellow on dark, ink on light. */
+    --st-brand-mark: var(--st-text-bright);
     /* Yellow primary (owner decision). Light: the fill is only 1.38:1 on white, so a 1px dark gold
        border carries SC 1.4.11 (5.04:1 or more on every surface). Focus: a 2px ink ring against the
        fill (12.82:1) and the surface (14.29:1 or more), then a 2px white halo. */

@@ -135,15 +135,23 @@ body:has(> .site) {
   unicode-bidi: isolate;
 }
 
-/* Brand mark: the only place the brand yellow appears outside the primary button. */
-.site .brand::before,
-.site .footer-logo::before {
-  content: "";
+/* Brand mark (The Bend): ink on light, the brand yellow on dark. The header shows the mark
+   alone; the footer adds the name. */
+.site .brand {
+  min-inline-size: var(--st-control-h-lg);
+  justify-content: center;
+}
+
+.site .brand-mark {
   flex: none;
-  inline-size: 7px;
-  block-size: 7px;
-  border-radius: 3px;
-  background: var(--st-brand);
+  inline-size: auto;
+  block-size: 1.5rem;
+  aspect-ratio: 710 / 536.3;
+  color: var(--st-brand-mark);
+}
+
+.site .footer-logo .brand-mark {
+  block-size: 1.375rem;
 }
 
 .site .site-nav {

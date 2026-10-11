@@ -15,13 +15,30 @@ type VerifyToken = (req: Request, bearerToken?: string) => Promise<AuthInfo | un
 /** MCP resources: the inline canvas UI (`ui://banana/canvas`, MCP Apps). */
 export const defaultResources: RegisterTool[] = [(server) => registerCanvasResource(server)];
 
+/**
+ * Icons for clients that show one next to the connector (MCP `Implementation.icons`). Absolute
+ * URLs on APP_URL; left out when APP_URL is not set (tests, local dev without it).
+ */
+function serverIcons() {
+  const appUrl = process.env.APP_URL?.trim().replace(/\/+$/, "");
+  if (!appUrl) return undefined;
+  return [
+    { src: `${appUrl}/brand/app-icon-192.png`, mimeType: "image/png", sizes: ["192x192"] },
+    { src: `${appUrl}/brand/mark-ink.svg`, mimeType: "image/svg+xml", sizes: ["any"], theme: "light" as const },
+    { src: `${appUrl}/brand/mark-yellow.svg`, mimeType: "image/svg+xml", sizes: ["any"], theme: "dark" as const },
+  ];
+}
+
 export function buildMcpHandler(tools: RegisterTool[] = defaultTools, resources: RegisterTool[] = defaultResources) {
+  // mcp-handler types serverInfo as name and version only, but hands the object to McpServer
+  // as is, and the SDK's Implementation takes icons.
+  const serverInfo = { name: APP_NAME, version: "0.1.0", icons: serverIcons() };
   return createMcpHandler(
     (server) => {
       for (const register of tools) register(server);
       for (const register of resources) register(server);
     },
-    { serverInfo: { name: APP_NAME, version: "0.1.0" } },
+    { serverInfo },
   );
 }
 

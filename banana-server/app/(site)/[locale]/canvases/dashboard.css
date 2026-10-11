@@ -66,10 +66,10 @@
 
 .site .lab-brand-mark {
   flex: none;
-  inline-size: 7px;
-  block-size: 7px;
-  border-radius: 3px;
-  background: var(--st-brand);
+  inline-size: auto;
+  block-size: 1.5rem;
+  aspect-ratio: 710 / 536.3;
+  color: var(--st-brand-mark);
 }
 
 .site .lab-group {
@@ -163,7 +163,6 @@
 /* Collapsed: icons only. Labels stay in the accessibility tree and show as tooltips. */
 .site .lab[data-collapsed] .lab-nav-label,
 .site .lab[data-collapsed] .lab-nav-count,
-.site .lab[data-collapsed] .lab-brand-name,
 .site .lab[data-collapsed] .lab-group {
   position: absolute;
   inline-size: 1px;
@@ -582,8 +581,7 @@
 
   /* On a phone the sidebar never collapses: undo the icon-only rules. */
   .site .lab[data-collapsed] .lab-nav-label,
-  .site .lab[data-collapsed] .lab-nav-count,
-  .site .lab[data-collapsed] .lab-brand-name {
+  .site .lab[data-collapsed] .lab-nav-count {
     position: static;
     inline-size: auto;
     block-size: auto;

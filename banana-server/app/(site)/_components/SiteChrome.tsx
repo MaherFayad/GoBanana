@@ -3,11 +3,12 @@
  *
  * Structure after pryzm.design (logo at the start, nav links with one "Beta" chip, two compact
  * buttons at the end; a footer with a brand blurb, link columns and a fine print row), in the
- * Studio skin: --st-bg-body, the 7px brand dot, ghost nav items, the yellow primary button.
+ * Studio skin: --st-bg-body, the Bend mark, ghost nav items, the yellow primary button.
  * The header is never sticky, so it can not cover a focused element (SC 2.4.11). On the landing
  * page it sits over the hero field (site.css, `.site:has(.hero)`).
  */
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { APP_NAME } from "@/lib/config";
 import type { Dict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
@@ -15,10 +16,15 @@ import { SIGN_IN_PATH } from "@/lib/site/session";
 import { bt } from "./Bidi";
 import { LanguageSwitch, SiteNav } from "./SiteNav";
 
-export function Brand({ locale, className = "brand" }: { locale: Locale; className?: string }) {
+/**
+ * The header shows the mark alone; the footer keeps the name next to it, the one place the
+ * wordmark stays. The link's accessible name is the product name either way.
+ */
+export function Brand({ locale, className = "brand", withName = false }: { locale: Locale; className?: string; withName?: boolean }) {
   return (
-    <Link className={className} href={href(locale)} dir="ltr">
-      {APP_NAME}
+    <Link className={className} href={href(locale)} dir="ltr" aria-label={withName ? undefined : APP_NAME}>
+      <BrandMark />
+      {withName ? <span className="brand-name">{APP_NAME}</span> : null}
     </Link>
   );
 }
@@ -99,7 +105,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
       <div className="wrap">
         <div className="footer-top">
           <div className="footer-brand">
-            <Brand locale={locale} className="footer-logo" />
+            <Brand locale={locale} className="footer-logo" withName />
             <p>{bt(f.blurb)}</p>
           </div>
           <nav className="footer-columns" aria-label={t.common.footerLabel}>

@@ -16,6 +16,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import {
   AccountIcon,
   ArrowEndIcon,
@@ -187,8 +188,8 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
       {/* ------------------------------------------------------------ sidebar */}
       <aside className="lab-side" aria-label={t.sidebarLabel}>
         <Link className="lab-brand" href={links.home} dir="ltr">
-          <span className="lab-brand-mark" aria-hidden="true" />
-          <span className="lab-brand-name">{appName}</span>
+          <BrandMark className="lab-brand-mark" />
+          <span className="st-visually-hidden">{appName}</span>
           <span className="st-visually-hidden" lang={locale}>
             {" "}
             ({t.home})
