@@ -26,18 +26,33 @@ const ref: Reference = {
 function setup(over: Partial<SearchReferencesDeps> = {}, result: WebSearchResult = { references: [ref], ok: true }, plan: Plan = "free") {
   const usage = createMemoryUsageStore();
   const run = vi.fn(async () => result);
+  const runPlan = vi.fn(async () => result);
   const addToTray = vi.fn(async () => true);
+  const saveTaste = vi.fn(async () => true);
   const deps: SearchReferencesDeps = {
-    adapter: { run },
+    adapter: { run, runPlan },
     usage,
     getPlan: async () => plan,
-    getDirection: async (_u, id) => (id === "dir_1" ? { id, searchQuery: "melted chrome type" } : null),
+    getDirection: async (_u, id) =>
+      id === "dir_1"
+        ? { id, searchQuery: "melted chrome type" }
+        : id === "bd-8dti7s7c"
+          ? {
+              id: "uuid-1",
+              bendId: "bd-8dti7s7c",
+              canvasId: "c1",
+              // Stacked query stored by the first live board, and that canvas's brief.
+              searchQuery: "crushed velvet texture ui design garment care label packaging",
+              brief: "Flight checkout screen for a GCC travel OTA (mobile, bilingual Arabic/English)",
+            }
+          : null,
     addToTray,
+    saveTaste,
     upgradeUrl: () => "https://example.test/pricing",
     now: () => NOW,
     ...over,
   };
-  return { tool: createSearchReferencesTool(deps), usage, run, addToTray };
+  return { tool: createSearchReferencesTool(deps), usage, run, runPlan, addToTray, saveTaste };
 }
 
 function text(res: { content: { type: string; text?: string }[] }): string {
@@ -56,7 +71,7 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "query", "sources"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "query", "sources", "taste"]);
   });
 
   it("validates count and sources", () => {
@@ -78,13 +93,75 @@ describe("search_references tool", () => {
     expect((await tool({ query: "x" }, undefined)).isError).toBe(true);
   });
 
-  it("looks up the direction query and counts the search", async () => {
-    const { tool, run, usage } = setup();
+  it("searches a direction without a canvas brief in the inspiration lane only, and counts one search", async () => {
+    const { tool, run, runPlan, usage } = setup();
     const res = await tool({ directionId: "dir_1", sources: ["dribbble", "pinterest"] }, "u1");
-    expect(run).toHaveBeenCalledWith({ query: "melted chrome type", count: 12, userId: "u1", sources: ["pinterest", "dribbble"] });
-    expect(res.structuredContent).toMatchObject({ query: "melted chrome type", references: [ref], addedToTray: false });
+    expect(run).not.toHaveBeenCalled();
+    expect(runPlan).toHaveBeenCalledTimes(1);
+    const [plan, opts] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[], { count: number }];
+    expect(plan).toEqual([
+      { lane: "inspiration", query: "melted chrome type", site: "pinterest" },
+      { lane: "inspiration", query: "melted chrome type", site: "behance" },
+    ]);
+    expect(opts.count).toBe(12);
+    expect(res.structuredContent).toMatchObject({
+      query: "melted chrome type",
+      queries: ["melted chrome type site:pinterest.com/pin", "melted chrome type site:behance.net/gallery"],
+      lanes: { inspiration: "melted chrome type" },
+      references: [ref],
+      addedToTray: false,
+    });
     expect(text(res)).toContain("https://www.pinterest.com/pin/1/");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(1);
+  });
+
+  it("searches every lane of a saved direction and shows the lanes, counting one search", async () => {
+    const { tool, runPlan, usage } = setup();
+    const res = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1" }, "u1");
+    const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
+    expect(plan.length).toBeLessThanOrEqual(8);
+    expect(plan.map((r) => r.lane)).toEqual(["inspiration", "fidelity", "taste", "inspiration", "hero", "locale"]);
+    const out = res.structuredContent as { lanes: Record<string, string>; queries: string[]; query: string };
+    expect(out.query).toBe("crushed velvet");
+    expect(out.lanes).toMatchObject({ inspiration: "crushed velvet", fidelity: "flight app ui", locale: "arabic app ui" });
+    expect(out.lanes.taste).toMatch(/ checkout ui$/);
+    expect(out.lanes.hero).toMatch(/ flight app single screen$/);
+    expect(out.queries[0]).toBe("crushed velvet site:pinterest.com/pin");
+    expect(out.queries[1]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
+    expect(text(res)).toContain('inspiration "crushed velvet"');
+    expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(1);
+  });
+
+  it("uses and saves the taste words it is given", async () => {
+    const { tool, runPlan, saveTaste } = setup();
+    const res = await tool({ directionId: "bd-8dti7s7c", taste: ["Monochrome"] }, "u1");
+    expect(saveTaste).toHaveBeenCalledWith("u1", "c1", ["monochrome"]);
+    const out = res.structuredContent as { lanes: Record<string, string>; taste: string[]; tasteSaved: boolean };
+    expect(out.lanes.taste).toBe("monochrome checkout ui");
+    expect(out.lanes.hero).toBe("monochrome flight app single screen");
+    expect(out).toMatchObject({ taste: ["monochrome"], tasteSaved: true });
+    expect(runPlan).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the canvas taste when the call gives none", async () => {
+    const { tool } = setup({
+      getDirection: async () => ({ id: "d", searchQuery: "crushed velvet", brief: "banking app", taste: ["luxury"] }),
+    });
+    const res = await tool({ directionId: "d" }, "u1");
+    expect((res.structuredContent as { lanes: Record<string, string> }).lanes.taste).toBe("luxury card ui");
+  });
+
+  it("rejects too many taste words with a plain message", async () => {
+    const { tool, runPlan } = setup();
+    const res = await tool({ directionId: "dir_1", taste: ["a", "b", "c", "d", "e", "f"] }, "u1");
+    expect(res.isError).toBe(true);
+    expect(runPlan).not.toHaveBeenCalled();
+  });
+
+  it("does not count a direction search when the first lane fails", async () => {
+    const { tool, usage } = setup({}, { references: [], note: "Image search is busy right now.", ok: false });
+    await tool({ directionId: "bd-8dti7s7c" }, "u1");
+    expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(0);
   });
 
   it("returns a plain message for an unknown direction", async () => {
@@ -108,6 +185,14 @@ describe("search_references tool", () => {
     expect(res.isError).toBeUndefined();
     expect(text(res)).toContain("not available");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(0);
+  });
+
+  it("searches a plain query on each selected source as before", async () => {
+    const { tool, run, runPlan } = setup();
+    const res = await tool({ query: "melted chrome type", sources: ["dribbble", "pinterest"] }, "u1");
+    expect(run).toHaveBeenCalledWith({ query: "melted chrome type", count: 12, userId: "u1", sources: ["pinterest", "dribbble"] });
+    expect(runPlan).not.toHaveBeenCalled();
+    expect(res.structuredContent).toMatchObject({ query: "melted chrome type", queries: ["melted chrome type"] });
   });
 
   it("adds results to the canvas tray when canvasId is given", async () => {

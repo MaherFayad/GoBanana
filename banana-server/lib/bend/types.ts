@@ -56,14 +56,16 @@ export interface Direction {
    */
   twist: string;
   /**
-   * Inspiration query: the lead ingredient alone with one anchor word (at most 5 words), for
+   * Inspiration query: the lead headline ingredient, raw (at most 5 words), for
    * search_references `query`. Same as searchQueries[0].
    */
   searchQuery: string;
   /**
-   * Focused queries search_references runs for a directionId, one per lane: inspiration (same as
-   * searchQuery), taste (brief domain and component plus one style word) and fidelity (the brief's
-   * domain and screen type, shared by every direction of a brief). At most 6 words each.
+   * Lane words search_references uses for a directionId (lib/bend/queries.ts): inspiration (same as
+   * searchQuery), taste ("{style} {component} ui"), fidelity ("{domain} app ui", shared by every
+   * direction of a brief), then hero ("{style} {domain} app single screen", app briefs) and locale
+   * ("arabic app ui", Arabic briefs) when they apply. Plain words: the server adds negatives and
+   * site operators when it searches. At most 7 words each.
    */
   searchQueries: string[];
   /** The full combined idea (every move and the twist) for the agent to riff on. */

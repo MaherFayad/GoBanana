@@ -44,6 +44,15 @@
             "minimum": 1,
             "maximum": 8,
             "default": 6
+          },
+          "taste": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "minItems": 1,
+            "maxItems": 5
           }
         }
       }
@@ -82,6 +91,15 @@
           },
           "canvasId": {
             "type": "string"
+          },
+          "taste": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "minItems": 1,
+            "maxItems": 5
           }
         }
       }
@@ -135,6 +153,15 @@
           "brief": {
             "type": "string",
             "maxLength": 500
+          },
+          "taste": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "minItems": 1,
+            "maxItems": 5
           }
         }
       }

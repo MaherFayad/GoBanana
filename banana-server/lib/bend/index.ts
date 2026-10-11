@@ -3,7 +3,7 @@ import { getLens, lensEntries, LISTS, STOP_WORDS } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53, mulberry32, shuffle, stableId, type Rng } from "./prng";
 import { cleanTaste, DEFAULT_TASTE } from "@/lib/taste";
-import { fidelityQuery, inspirationQuery, pickStyle, tasteQuery } from "./queries";
+import { inspirationQuery, laneTexts } from "./queries";
 import { extractSubject } from "./subject";
 import {
   LEGACY_TEMPLATE_SIZES,
@@ -36,10 +36,15 @@ export { MOVES } from "./types";
 export {
   MAX_FOCUSED_QUERY_WORDS,
   MAX_LANE_WORDS,
+  fidelityCoreQuery,
   fidelityQuery,
+  heroQuery,
   inspirationFromQuery,
   inspirationQuery,
+  isArabicBrief,
   isUiBrief,
+  laneTexts,
+  localeQuery,
   pickStyle,
   tasteQuery,
 } from "./queries";
@@ -335,8 +340,6 @@ export function bendBrief(raw: BendInput): BendResult {
   const garnishUse = new Map<MoveId, number>();
   const titles = new Set<string>();
   const directions: Direction[] = [];
-  // Shared by every direction of this brief: real product UI for the brief's domain and screen type.
-  const fidelity = fidelityQuery(input.brief);
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -418,11 +421,14 @@ export function bendBrief(raw: BendInput): BendResult {
       rule.hint,
     ].join(" ");
 
-    // Inspiration lane: the lead headline ingredient alone (stacked ideas return tag and search pages).
+    // Inspiration lane: the lead headline ingredient, raw (stacked ideas return tag and search pages).
     const lead = headline[0] ?? moves[0]!;
     const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
-    const searchQueries = [...new Set([searchQuery, tasteQuery(input.brief, pickStyle(taste, id)), fidelity])];
+    const lanes = laneTexts(input.brief, searchQuery, taste, id);
+    const searchQueries = [
+      ...new Set([lanes.inspiration, lanes.taste, lanes.fidelity, lanes.hero, lanes.locale].filter((q): q is string => Boolean(q))),
+    ];
 
     directions.push({
       id,

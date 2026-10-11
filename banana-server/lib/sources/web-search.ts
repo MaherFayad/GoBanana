@@ -27,7 +27,8 @@
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
-import { bigEnough, isJunk, rankReferences, upgradeImage } from "./quality";
+import { bigEnough, isJunk, rankReferences, sizeRuleApplies, upgradeImage } from "./quality";
+import { FALLBACK_MIN_GOOD, laneQuotas, mergeLanes, type LaneName, type PlannedRequest } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import {
   SOURCE_DOMAINS,
@@ -85,7 +86,22 @@ export type WebSearchAdapter = SourceAdapter & {
   id: "web_search";
   /** Same as `search`, plus a plain note and whether the search provider answered. */
   run(q: SourceQuery): Promise<WebSearchResult>;
+  /** Run a direction's search plan (lib/sources/plan.ts): one page per request, lanes merged by quota. */
+  runPlan(plan: readonly PlannedRequest[], opts: { count: number; userId: string }): Promise<PlanSearchResult>;
 };
+
+/** What one planned request brought back. */
+export type PlanRequestReport = {
+  lane: LaneName;
+  site: SourceSite;
+  query: string;
+  /** Good results (item pages that passed every filter). */
+  good: number;
+  /** Set when the request was retried with its fallback query. */
+  retried?: string;
+};
+
+export type PlanSearchResult = WebSearchResult & { report?: PlanRequestReport[] };
 
 export const NOTES = {
   notConfigured: "Image search is not set up yet, so no references were found.",
@@ -158,7 +174,27 @@ function cleanTitle(value: unknown): string | undefined {
   return t.length > MAX_TITLE ? `${t.slice(0, MAX_TITLE - 3).trimEnd()}...` : t;
 }
 
-/** Key used to spot the same source page or image twice. */
+/**
+ * Key for one piece of work: Dribbble shot id, Pinterest pin id (the same on every country
+ * subdomain), Behance gallery id, else the normalized URL.
+ */
+export function itemKey(sourceUrl: string): string {
+  try {
+    const u = new URL(sourceUrl);
+    const host = u.hostname.toLowerCase();
+    const shot = /^\/shots\/(\d+)/.exec(u.pathname);
+    if (shot && hostMatchesDomain(host, "dribbble.com")) return `dribbble:${shot[1]}`;
+    const pin = /^\/pin\/([A-Za-z0-9_-]+)/.exec(u.pathname);
+    if (pin && hostMatchesDomain(host, "pinterest.com")) return `pinterest:${pin[1]}`;
+    const gallery = /^\/gallery\/(\d+)/.exec(u.pathname);
+    if (gallery && hostMatchesDomain(host, "behance.net")) return `behance:${gallery[1]}`;
+  } catch {
+    // fall through
+  }
+  return dedupeKey(sourceUrl);
+}
+
+/** Key used to spot the same image twice. */
 export function dedupeKey(url: string): string {
   const u = new URL(url);
   u.hash = "";
@@ -245,7 +281,7 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     let width: number | undefined;
     let height: number | undefined;
     if (imageOk && image) {
-      // Larger file on the same host: Pinterest 736x, Dribbble 1600x1200. The thumb stays as is.
+      // Larger file on the same host: Pinterest 736x, Dribbble original. The thumb stays as is.
       const up = upgradeImage(image, positiveInt(raw.imageWidth), positiveInt(raw.imageHeight));
       if (up.url !== image.toString() && (!isAllowedImageUrl(up.url, opts.allowlist) || opts.takedowns.isBlocked(up.url))) {
         continue;
@@ -262,13 +298,13 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
       height = positiveInt(raw.thumbnailHeight) ?? positiveInt(raw.imageHeight);
     }
 
-    // The size rule looks at the image the canvas will show.
-    if (!bigEnough(width, height)) {
+    // The size rule looks at the image the canvas will show (not Dribbble: its sizes are of resized variants).
+    if (sizeRuleApplies(imageUrl) && !bigEnough(width, height)) {
       dropped++;
       continue;
     }
 
-    const sourceKey = dedupeKey(sourceUrl);
+    const sourceKey = itemKey(sourceUrl);
     const imageKey = dedupeKey(imageUrl);
     if (seenSource.has(sourceKey) || seenImage.has(imageKey)) continue;
     seenSource.add(sourceKey);
@@ -310,7 +346,7 @@ export function interleaveReferences(lists: readonly (readonly Reference[])[], c
     for (const list of lists) {
       const ref = list[i];
       if (!ref || out.length >= count) continue;
-      const sourceKey = dedupeKey(ref.sourceUrl);
+      const sourceKey = itemKey(ref.sourceUrl);
       const imageKey = dedupeKey(ref.imageUrl);
       if (seenSource.has(sourceKey) || seenImage.has(imageKey)) continue;
       seenSource.add(sourceKey);
@@ -460,9 +496,88 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     return result;
   }
 
+  async function runPlan(plan: readonly PlannedRequest[], opts: { count: number; userId: string }): Promise<PlanSearchResult> {
+    const count = Math.min(50, Math.max(1, Math.floor(opts.count)));
+    const allowlist = config.allowlist ?? allowlistFromEnv();
+    const apiKey = config.apiKey?.trim();
+    if (!apiKey || !doFetch) return failure(NOTES.notConfigured);
+    if (plan.length === 0) return failure(NOTES.noResults);
+
+    let takedowns: TakedownMatcher = EMPTY_TAKEDOWNS;
+    if (config.loadTakedowns) {
+      try {
+        takedowns = await config.loadTakedowns();
+      } catch {
+        return failure(NOTES.takedownsUnavailable);
+      }
+    }
+
+    type Slot = { req: PlannedRequest; refs: Reference[]; dropped: number; ok: boolean; status: number; retried?: string };
+    const mapPage = (site: SourceSite, images: unknown[]) =>
+      mapSerperImagesWithStats(images, { sources: [site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
+
+    const base = plan.slice(0, SERPER_MAX_REQUESTS);
+    let requests = base.length;
+    const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, (r) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), 1));
+    const slots: Slot[] = base.map((req, i) => {
+      const out = outcomes[i]!;
+      if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status };
+      const mapped = mapPage(req.site, out.images);
+      return { req, refs: mapped.references, dropped: mapped.dropped, ok: true, status: 200 };
+    });
+    if (!slots.some((s) => s.ok)) {
+      const limited = slots.some((s) => s.status === 429);
+      return { ...failure(limited ? NOTES.rateLimited : NOTES.unavailable), requests };
+    }
+
+    // Fallback ladder: a thin answer is retried once with its fallback query, within the budget.
+    // A failed request (429, timeout) is not retried: that would only add load.
+    const retry = slots
+      .filter((s) => s.ok && s.req.fallback && s.refs.length < FALLBACK_MIN_GOOD)
+      .slice(0, SERPER_MAX_REQUESTS - requests);
+    requests += retry.length;
+    const retried = await mapLimit(retry, SERPER_MAX_IN_FLIGHT, (s) => fetchPage(apiKey, buildSourceQuery(s.req.fallback!, s.req.site), 1));
+    retry.forEach((slot, i) => {
+      const out = retried[i]!;
+      slot.retried = slot.req.fallback;
+      if (!out.ok) return;
+      const mapped = mapPage(slot.req.site, out.images);
+      slot.refs = interleaveReferences([slot.refs, mapped.references], SERPER_PAGE_SIZE * 2);
+      slot.dropped += mapped.dropped;
+    });
+
+    // Per lane: its requests interleaved, then lanes merged by quota.
+    const lists = new Map<LaneName, Reference[]>();
+    for (const slot of slots) {
+      const prev = lists.get(slot.req.lane);
+      lists.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SERPER_PAGE_SIZE * 4) : slot.refs);
+    }
+    const quotas = laneQuotas(count, [...lists.keys()]);
+    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]);
+
+    const result: PlanSearchResult = {
+      references,
+      ok: true,
+      requests,
+      report: slots.map((s) => ({
+        lane: s.req.lane,
+        site: s.req.site,
+        query: s.req.query,
+        good: s.refs.length,
+        ...(s.retried ? { retried: s.retried } : {}),
+      })),
+    };
+    const note = countNote(references.length, count);
+    if (note) result.note = note;
+    const dropped = slots.reduce((n, s) => n + s.dropped, 0);
+    if (dropped > 0) result.dropped = dropped;
+    return result;
+  }
+
   return {
     id: "web_search",
     run,
+    runPlan,
     async search(q) {
       return (await run(q)).references;
     },

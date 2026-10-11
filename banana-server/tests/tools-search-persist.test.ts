@@ -13,8 +13,9 @@ import { ALICE, APP, BOB, makeDeps, ref, seedCanvas, text } from "./tools-fixtur
 function setup(result: WebSearchResult = { references: [ref(1), ref(2)], ok: true }, takedowns: string[] = []) {
   const { repos } = makeDeps({ takedowns });
   const run = vi.fn(async () => result);
-  const deps = { ...createDbDeps(repos, () => APP), adapter: { run }, now: () => new Date("2026-10-15T12:00:00Z") };
-  return { repos, run, search: createSearchReferencesTool(deps), bend: createBendBriefTool(() => ({ repos })) };
+  const runPlan = vi.fn(async () => result);
+  const deps = { ...createDbDeps(repos, () => APP), adapter: { run, runPlan }, now: () => new Date("2026-10-15T12:00:00Z") };
+  return { repos, run, runPlan, search: createSearchReferencesTool(deps), bend: createBendBriefTool(() => ({ repos })) };
 }
 
 type Dir = { id: string; searchQuery: string };
@@ -52,16 +53,43 @@ describe("bend_brief with a canvas", () => {
   });
 });
 
+describe("taste on the canvas", () => {
+  it("is saved by search_references and bend_brief, reused, and kept when the canvas UI saves without it", async () => {
+    const { repos, bend, search, runPlan } = setup();
+    const c = await seedCanvas(repos, ALICE);
+    const bent = await bend({ brief: "flight checkout screen", wildness: 3, canvasId: c.id, taste: ["Monochrome", "luxury"] }, ALICE);
+    const dirs = (bent.structuredContent as { directions: { id: string; searchQueries: string[] }[] }).directions;
+    expect(dirs.every((d) => /^(monochrome|luxury) checkout ui$/.test(d.searchQueries[1]!))).toBe(true);
+    const stateOf = async () => (await repos.canvases.getOwned(ALICE, c.id))!.state as CanvasState;
+    expect((await stateOf()).taste).toEqual(["monochrome", "luxury"]);
+
+    // The canvas UI saves state without `taste`: the stored taste stays.
+    const { taste: _taste, ...uiState } = await stateOf();
+    await repos.canvases.saveState(ALICE, c.id, uiState);
+    expect((await stateOf()).taste).toEqual(["monochrome", "luxury"]);
+
+    // A later search with no taste uses the canvas taste; one with taste replaces it.
+    await search({ directionId: dirs[0]!.id, canvasId: c.id }, ALICE);
+    const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
+    expect(plan.find((r) => r.lane === "taste")!.query).toMatch(/^(monochrome|luxury) checkout ui /);
+    await search({ directionId: dirs[0]!.id, canvasId: c.id, taste: ["editorial"] }, ALICE);
+    expect((await stateOf()).taste).toEqual(["editorial"]);
+  });
+});
+
 describe("search_references with the database", () => {
   it("resolves a bend direction id, saves results and tags the tray with the direction", async () => {
-    const { repos, bend, search, run } = setup();
+    const { repos, bend, search, runPlan } = setup();
     const c = await seedCanvas(repos, ALICE);
     const bent = await bend({ brief: "flight checkout screen", wildness: 3, canvasId: c.id }, ALICE);
     const dir = (bent.structuredContent as { directions: Dir[] }).directions[0]!;
 
     const res = await search({ directionId: dir.id, canvasId: c.id }, ALICE);
     expect(res.isError).toBeFalsy();
-    expect(run).toHaveBeenCalledWith(expect.objectContaining({ query: dir.searchQuery }));
+    // Lane 1 is the direction's raw ingredient; the brief lanes come from the canvas brief.
+    const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
+    expect(plan[0]).toMatchObject({ lane: "inspiration", query: dir.searchQuery });
+    expect(plan.some((r) => r.lane === "fidelity")).toBe(true);
     expect((res.structuredContent as { addedToTray: boolean }).addedToTray).toBe(true);
 
     const s = (await repos.canvases.getOwned(ALICE, c.id))!.state as CanvasState;

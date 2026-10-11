@@ -119,6 +119,15 @@ describe("drizzle repositories", () => {
     expect(res.ok).toBe(true);
   });
 
+  it("keeps the stored taste when a save does not set it, in the same statement", async () => {
+    const { db, calls } = fakeDb([[[CANVAS]], [[CANVAS]]]);
+    await saveCanvasState(db, ALICE, CANVAS, { nodes: [] });
+    expect(calls[0]!.sql).toMatch(/CASE WHEN "canvases"\."state" \? 'taste' THEN \$\d+::jsonb \|\| jsonb_build_object\('taste', "canvases"\."state" -> 'taste'\)/);
+    // A save that sets taste (even to an empty list) writes it as given.
+    await saveCanvasState(db, ALICE, CANVAS, { nodes: [], taste: [] });
+    expect(calls[1]!.sql).not.toContain("CASE");
+  });
+
   it("counts canvases", async () => {
     const { db } = fakeDb([[["2"]]]);
     expect(await countCanvases(db, ALICE)).toBe(2);

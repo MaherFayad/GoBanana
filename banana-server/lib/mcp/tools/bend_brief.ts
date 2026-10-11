@@ -75,7 +75,7 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
     const canvasId = rawCanvasId as string | undefined;
     const rawTaste = (args as { taste?: unknown }).taste;
     if (rawTaste !== undefined && !tasteInputSchema.safeParse(rawTaste).success) {
-      return toolMessage("taste must be 1 to 5 short style words, for example soft 3d or minimal.");
+      return toolMessage("taste must be 1 to 5 short style words, for example minimal or dark mode.");
     }
     const newTaste = cleanTaste(rawTaste);
     if (canvasId && !userId) return toolMessage("You are not signed in. Reconnect to sign in again.");

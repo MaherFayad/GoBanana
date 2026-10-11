@@ -40,7 +40,7 @@ const JUNK_PATTERNS: readonly RegExp[] = [
   /\b(digital|instant)\s+download\b/i,
   /\bprintables?\b/i,
   /\broyalty[\s-]+free\b/i,
-  /\b(editable|printable|downloadable|instant)\s+(\w+\s+)?templates?\b/i,
+  /\b(editable|printable|downloadable|instant)\s+(\w+\s+){0,3}templates?\b/i,
   /\btemplates?\s+(download|for sale)\b/i,
   // List pages that slip past the URL check: Pinterest board titles and Dribbble search titles.
   /^\d+\+?\s.*\bideas\b/i,
@@ -97,25 +97,28 @@ export function upgradePinterestImage(url: URL, width?: number, height?: number)
   return { url: next.toString(), width, height };
 }
 
-export const DRIBBBLE_UPGRADE_SIZE = "1600x1200";
-
 /**
- * cdn.dribbble.com resizes on the fly with `?resize=WxH` (Serper often returns 400x300 or 752x).
- * Below 1600 wide, ask for 1600x1200 instead. The real size of that file is not known (the CDN
- * never upscales past the original), so width and height are dropped and the size rule skips it.
+ * cdn.dribbble.com resizes on the fly with `?resize=WxH` (Serper often returns 400x300 or 752x);
+ * without it the CDN serves the original upload. Strip it. The reported size was the resized
+ * variant's, so width and height are dropped, and the size rule skips Dribbble images.
  */
 export function upgradeDribbbleImage(url: URL, width?: number, height?: number): ImageUpgrade {
-  if (url.hostname !== "cdn.dribbble.com") return { url: url.toString(), width, height };
-  const resize = url.searchParams.get("resize");
-  if (resize === null) return { url: url.toString(), width, height };
-  const w = Number(/^(\d+)/.exec(resize)?.[1] ?? 0);
-  if (w >= 1600) return { url: url.toString(), width, height };
+  if (url.hostname !== "cdn.dribbble.com" || !url.searchParams.has("resize")) return { url: url.toString(), width, height };
   const next = new URL(url.toString());
-  next.searchParams.set("resize", DRIBBBLE_UPGRADE_SIZE);
+  next.searchParams.delete("resize");
   return { url: next.toString() };
 }
 
-/** Both upgrades; a URL on any other host passes through unchanged. */
+/** True when the size rule applies to this image host (Dribbble's reported sizes are of resized variants). */
+export function sizeRuleApplies(url: string): boolean {
+  try {
+    return new URL(url).hostname !== "cdn.dribbble.com";
+  } catch {
+    return true;
+  }
+}
+
+/** Both upgrades (Pinterest 736x, Dribbble original); a URL on any other host passes through unchanged. */
 export function upgradeImage(url: URL, width?: number, height?: number): ImageUpgrade {
   if (url.hostname === "i.pinimg.com") return upgradePinterestImage(url, width, height);
   if (url.hostname === "cdn.dribbble.com") return upgradeDribbbleImage(url, width, height);

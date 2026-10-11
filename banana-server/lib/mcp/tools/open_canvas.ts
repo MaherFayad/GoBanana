@@ -44,7 +44,7 @@ const MESSAGES: Record<string, string> = {
   canvasId: "canvasId must be an id from open_canvas.",
   title: "title must be 1 to 80 characters.",
   brief: "brief must be 1 to 500 characters.",
-  taste: "taste must be 1 to 5 short style words, for example soft 3d or minimal.",
+  taste: "taste must be 1 to 5 short style words, for example minimal or dark mode.",
 };
 
 export type OpenCanvasOutput = {

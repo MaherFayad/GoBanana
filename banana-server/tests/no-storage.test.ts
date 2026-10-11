@@ -68,7 +68,7 @@ function spyOnWrites() {
 
 import { DEFAULT_IMAGE_HOSTS, createWebSearchAdapter, parseAllowlist, type FetchLike } from "@/lib/sources";
 import { createSearchReferencesTool } from "@/lib/mcp/tools/search_references";
-import { createMemoryUsageStore } from "@/lib/quota";
+import { createMemoryUsageStore, currentPeriod } from "@/lib/quota";
 import { compileTakedowns } from "@/lib/takedown";
 import { serperFixture } from "./sources.fixture";
 
@@ -149,9 +149,9 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     const result = await adapter.run({ query: "brutalist bakery", count: 24, userId: "u1", sources: ["pinterest", "dribbble", "behance", "awwwards"] });
 
     expect(result.references.length).toBeGreaterThan(0);
-    // One request per page of 10 (Serper free plan), never more than 3 pages.
-    expect(requests.length).toBeGreaterThanOrEqual(1);
-    expect(requests.length).toBeLessThanOrEqual(3);
+    // One request per source and page of 10 (Serper free plan), never more than 8 per call.
+    expect(requests.length).toBeGreaterThanOrEqual(4);
+    expect(requests.length).toBeLessThanOrEqual(8);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
@@ -163,8 +163,8 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     const adapter = createWebSearchAdapter({ apiKey: "k", allowlist });
     await adapter.run({ query: "q", count: 12, userId: "u1" });
     assertOnlySerper(globalRequests);
-    expect(globalRequests.length).toBeGreaterThanOrEqual(1);
-    expect(globalRequests.length).toBeLessThanOrEqual(3);
+    expect(globalRequests.length).toBeGreaterThanOrEqual(2);
+    expect(globalRequests.length).toBeLessThanOrEqual(8);
     expect(writes).toEqual([]);
   });
 
@@ -180,7 +180,8 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     });
     const result = await adapter.run({ query: "q", count: 12, userId: "u1" });
     expect(result.references).toEqual([]);
-    expect(requests).toHaveLength(1);
+    // Page 1 for each default source, nothing more.
+    expect(requests).toHaveLength(2);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
@@ -189,11 +190,12 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
   it("search_references tool end to end: only Serper, no writes", async () => {
     const requests: Recorded[] = [];
     const tray: unknown[] = [];
+    const usage = createMemoryUsageStore();
     const tool = createSearchReferencesTool({
       adapter: createWebSearchAdapter({ apiKey: "k", fetch: recordingFetch(requests), allowlist }),
-      usage: createMemoryUsageStore(),
+      usage,
       getPlan: async () => "free",
-      getDirection: async () => ({ id: "d1", searchQuery: "melted chrome" }),
+      getDirection: async () => ({ id: "d1", searchQuery: "melted chrome", brief: "Flight checkout screen (mobile, Arabic)" }),
       addToTray: async (_u, _c, refs) => {
         tray.push(...refs);
         return true;
@@ -209,6 +211,14 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
         expect(typeof value === "string" || typeof value === "number").toBe(true);
       }
     }
+    // Every lane is a path-scoped Serper request, at most 8 per call; one search for the quota.
+    expect(requests.length).toBeGreaterThanOrEqual(4);
+    expect(requests.length).toBeLessThanOrEqual(8);
+    const queries = (res.structuredContent as { queries: string[] }).queries;
+    expect(queries.every((q) => / site:(pinterest\.com\/pin|dribbble\.com\/shots|behance\.net\/gallery)$/.test(q))).toBe(true);
+    expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(true);
+    expect(queries.some((q) => q.startsWith("arabic app ui"))).toBe(true);
+    expect((await usage.get("u1", currentPeriod())).searches).toBe(1);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);

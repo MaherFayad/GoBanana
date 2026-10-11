@@ -48,6 +48,20 @@ describe("open_canvas", () => {
     expect(await repos.usage.get(ALICE, "2026-10")).toEqual({ searches: 0, canvases: 1 });
   });
 
+  it("saves taste words on a new or opened canvas", async () => {
+    const { deps, repos } = makeDeps();
+    const open = createOpenCanvasTool(deps);
+    const res = await open({ brief: "banking app", taste: ["Dark Mode", "editorial"] }, ALICE);
+    const canvas = (res.structuredContent as { canvas: { id: string; taste: string[] } }).canvas;
+    expect(canvas.taste).toEqual(["dark mode", "editorial"]);
+    expect((await stored(repos, canvas.id)).taste).toEqual(["dark mode", "editorial"]);
+    expect(text(res)).toContain("Taste for searches: dark mode, editorial.");
+    const again = await open({ canvasId: canvas.id, taste: ["luxury"] }, ALICE);
+    expect((again.structuredContent as { canvas: { taste: string[] } }).canvas.taste).toEqual(["luxury"]);
+    expect((await stored(repos, canvas.id)).taste).toEqual(["luxury"]);
+    expect((await open({ taste: ["a", "b", "c", "d", "e", "f"] }, ALICE)).isError).toBe(true);
+  });
+
   it("stops free users at 3 canvases with the upgrade link", async () => {
     const { deps } = makeDeps();
     const open = createOpenCanvasTool(deps);

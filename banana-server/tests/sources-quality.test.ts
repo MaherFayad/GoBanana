@@ -10,6 +10,8 @@ import {
   rankReferences,
   upgradeDribbbleImage,
   upgradePinterestImage,
+  sizeRuleApplies,
+  itemKey,
   type Reference,
   type SourceSite,
 } from "@/lib/sources";
@@ -110,17 +112,14 @@ describe("image upgrades", () => {
     );
   });
 
-  it("asks cdn.dribbble.com for 1600x1200 and forgets the small size", () => {
+  it("strips ?resize from cdn.dribbble.com and forgets the resized size", () => {
     expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/userupload/1/file/original-a.png?resize=400x300&vertical=center"), 400, 300)).toEqual({
-      url: "https://cdn.dribbble.com/userupload/1/file/original-a.png?resize=1600x1200&vertical=center",
+      url: "https://cdn.dribbble.com/userupload/1/file/original-a.png?vertical=center",
     });
-    expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/u/a.png?resize=752x"), 752, 564).width).toBeUndefined();
-    expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/u/a.png?resize=1600x1200"), 1600, 1200)).toEqual({
-      url: "https://cdn.dribbble.com/u/a.png?resize=1600x1200",
-      width: 1600,
-      height: 1200,
-    });
-    expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/u/a.png"), 500, 400).width).toBe(500);
+    expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/u/a.png?resize=752x"), 752, 564)).toEqual({ url: "https://cdn.dribbble.com/u/a.png" });
+    expect(upgradeDribbbleImage(new URL("https://cdn.dribbble.com/u/a.png"), 500, 400)).toEqual({ url: "https://cdn.dribbble.com/u/a.png", width: 500, height: 400 });
+    expect(sizeRuleApplies("https://cdn.dribbble.com/u/a.png")).toBe(false);
+    expect(sizeRuleApplies("https://i.pinimg.com/736x/a.jpg")).toBe(true);
   });
 
   it("applies upgrades in mapping, keeps the thumb, and drops board pages with 236x images", () => {
@@ -135,13 +134,24 @@ describe("image upgrades", () => {
       ],
       { sources: ["pinterest", "dribbble"], allowlist, takedowns: EMPTY_TAKEDOWNS, count: 10 },
     );
-    expect(dropped).toBe(3);
+    // Board page, Zazzle listing. The 300 px Dribbble shot stays: Dribbble sizes are of resized variants.
+    expect(dropped).toBe(2);
+    expect(references.some((r) => r.sourceUrl === "https://dribbble.com/shots/8-x")).toBe(true);
     const pin = references.find((r) => r.sourceUrl === "https://es.pinterest.com/pin/42/")!;
-    expect(pin).toMatchObject({ imageUrl: "https://i.pinimg.com/736x/aa/pin.jpg", thumbUrl: thumb, width: 736, height: 935 });
+    expect(pin).toMatchObject({ imageUrl: "https://i.pinimg.com/736x/aa/pin.jpg", thumbUrl: thumb, width: 736, height: 936 });
     const shot = references.find((r) => r.sourceUrl === "https://dribbble.com/shots/7-x")!;
-    expect(shot.imageUrl).toBe("https://cdn.dribbble.com/u/7.png?resize=1600x1200");
+    expect(shot.imageUrl).toBe("https://cdn.dribbble.com/u/7.png");
     expect(shot.thumbUrl).toBe("https://encrypted-tbn1.gstatic.com/images?q=7");
     expect(shot.width).toBeUndefined();
+  });
+});
+
+describe("dedupe keys", () => {
+  it("names one piece of work the same on every subdomain and slug", () => {
+    expect(itemKey("https://es.pinterest.com/pin/42/")).toBe(itemKey("https://www.pinterest.com/pin/42/"));
+    expect(itemKey("https://dribbble.com/shots/7-a")).toBe(itemKey("https://dribbble.com/shots/7-b-c"));
+    expect(itemKey("https://www.behance.net/gallery/9/x")).toBe("behance:9");
+    expect(itemKey("https://www.awwwards.com/sites/a")).not.toBe(itemKey("https://www.awwwards.com/sites/b"));
   });
 });
 
@@ -164,7 +174,7 @@ describe("ranking", () => {
   });
 
   it("nudges uncluttered single components up and multi-screen kits down", () => {
-    const card = ref({ sourceUrl: "a", title: "Wallet card minimal", width: 1200, height: 900 });
+    const card = ref({ sourceUrl: "a", title: "Wallet card UI, minimal", width: 1200, height: 900 });
     const kit = ref({ sourceUrl: "b", title: "Wallet app UI kit, 60 screens", width: 1200, height: 900 });
     expect(qualityScore(card)).toBeGreaterThan(qualityScore(kit));
     expect(rankReferences([kit, card]).map((r) => r.sourceUrl)).toEqual(["a", "b"]);

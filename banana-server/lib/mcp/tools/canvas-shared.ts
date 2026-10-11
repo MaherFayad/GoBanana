@@ -38,7 +38,7 @@ export const tasteInputSchema = z
   .min(1)
   .max(MAX_TASTE_TERMS)
   .describe(
-    'Up to 5 short style words for the look the user likes, for example ["soft 3d", "minimal", "dark with one accent"]. Describe their reference boards in words. Saved on the canvas for later searches.',
+    'Up to 5 short style words for the look the user likes, for example ["glassmorphism", "big typography", "dark mode"]. Describe their reference boards in words. Saved on the canvas for later searches.',
   );
 
 /** Pricing page for upgrade messages (app/(site)/[locale]/pricing). */

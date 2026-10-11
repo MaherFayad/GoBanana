@@ -140,7 +140,9 @@ describe("Serper response mapping", () => {
       height: 1104,
     });
     expect(shot?.sourceSite).toBe("dribbble.com");
-    expect(shot?.width).toBe(1600);
+    // Dribbble ?resize is stripped for the original upload; the reported size was the variant's.
+    expect(shot?.imageUrl).toBe("https://cdn.dribbble.com/userupload/1234567/file/original-abc.png");
+    expect(shot?.width).toBeUndefined();
     expect(Object.keys(pin!).sort()).toEqual(
       ["id", "thumbUrl", "imageUrl", "sourceUrl", "sourceSite", "title", "width", "height"].sort(),
     );

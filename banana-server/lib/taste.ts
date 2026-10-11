@@ -1,5 +1,5 @@
 /**
- * Taste: a few style words that describe the look a user wants ("soft 3d", "glassmorphism").
+ * Taste: a few style words that describe the look a user wants ("glassmorphism", "big typography").
  * The server never looks at images (hard rule 1), so taste only ever arrives as words, usually
  * from the user's own agent describing their boards. Stored on the canvas state as `taste`.
  * Dependency free: the canvas UI bundle imports this through canvas/state.ts. The tool input
@@ -11,8 +11,13 @@ export const MAX_TASTE_TERM_LENGTH = 40;
 /** Words kept per style term (a search query uses at most 3 of them, without filler words). */
 export const MAX_TASTE_TERM_WORDS = 4;
 
-/** Used when neither the call nor the canvas gives a taste. */
-export const DEFAULT_TASTE: readonly string[] = ["minimal", "soft 3d", "glassmorphism", "dark"];
+/**
+ * Used when neither the call nor the canvas gives a taste. Verified live (round 5): these show
+ * their style on Dribbble and Pinterest. Avoid "soft 3d" (busy 3D illustration apps), "aurora
+ * gradient" (logos), claymorphism, isometric and playful. Other verified words: liquid glass,
+ * monochrome, luxury, neumorphism, swiss style, bento grid, editorial, grainy, skeuomorphic.
+ */
+export const DEFAULT_TASTE: readonly string[] = ["minimal", "glassmorphism", "big typography", "dark mode"];
 
 /**
  * Clean style terms: plain letters, digits, spaces and hyphens, lowercase, at most 4 words each,

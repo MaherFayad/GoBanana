@@ -116,15 +116,15 @@ describe("wildness rules", () => {
     expect(new Set(moves)).toEqual(new Set(MOVES));
   });
 
-  it("keeps the brief out of the inspiration query and puts it only in the taste and fidelity lanes", () => {
+  it("keeps the brief out of the inspiration query and puts it only in the brief lanes", () => {
     for (const w of LEVELS) {
       for (const brief of SAMPLE_BRIEFS) {
         for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
           const briefLayout = words(brief.toLowerCase()).filter((x) => LAYOUT_WORDS.has(x));
           for (const lw of briefLayout) expect(words(d.searchQuery.toLowerCase())).not.toContain(lw);
           expect(d.searchQueries[0]).toBe(d.searchQuery);
-          expect(d.searchQueries.at(-1)).toBe(fidelityQuery(brief));
-          expect(d.searchQueries).toHaveLength(3);
+          expect(d.searchQueries).toContain(fidelityQuery(brief));
+          expect(d.searchQueries.length).toBeGreaterThanOrEqual(3);
         }
       }
     }
@@ -224,7 +224,7 @@ describe("output quality", () => {
       for (const w of LEVELS) {
         for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
           expect(words(d.searchQuery).length).toBeLessThanOrEqual(MAX_LANE_WORDS);
-          expect(words(d.searchQuery).length).toBeGreaterThanOrEqual(2);
+          expect(words(d.searchQuery).length).toBeGreaterThanOrEqual(1);
           for (const q of d.searchQueries) expect(words(q).length, q).toBeLessThanOrEqual(MAX_FOCUSED_QUERY_WORDS);
           expect(d.title.length).toBeGreaterThan(5);
           expect(d.prompt).toMatch(/^Redesign the /);

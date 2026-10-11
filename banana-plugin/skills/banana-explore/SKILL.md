@@ -46,11 +46,19 @@ Read the user's words: "a bit fresher" or "subtle" is 1 or 2. "Push this", "go w
 - **Lens** (`lens`): a culture preset. Offer it when the user mentions Saudi, Gulf, Arabic or regional heritage. Ids: `sadu` (Sadu weaving), `najdi` (Najdi mud architecture), `kufic` (Kufic geometric patterns), `mashrabiya`, `desert-modern`. Never ask for or use sacred text or religious verses.
 - **Moves** (`moves`): only when the user asks for a kind of bend. `transplant` (another object or industry), `material` (a physical material), `era` (another design period), `constraint` (remove a default), `scale` (size and density), `lens` (a visual tradition).
 
-### 4. Bend the brief
+### 4. Ask for taste, once
 
-Call `bend_brief` with `brief`, `wildness`, `count: 6`, plus `lens` and `moves` if chosen. It is free and unlimited, so it is fine to run it again with a different wildness.
+Ask one short question: "Any 2 to 5 style words for the look you like, or a board or images I can look at?" Skip it if the user already said "just go".
 
-### 5. Present the directions: short and punchy
+- **Style words** that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, neumorphism, swiss style, bento grid, editorial, grainy, skeuomorphic. Avoid soft 3d, aurora gradient, claymorphism, isometric and playful: they pull in busy or off-topic results.
+- **Boards or images:** if the user shares a board link or images and you can see them, describe the style in 2 to 5 of the words above (for example "minimal, dark mode, big typography"). The server never looks at images, so taste only reaches it as words. Never download or save the images.
+- Pass them as `taste` to `open_canvas` or `bend_brief` (with the `canvasId`). They are saved on the canvas, and every later search on it uses them. Without taste the server uses minimal, glassmorphism, big typography and dark mode.
+
+### 5. Bend the brief
+
+Call `bend_brief` with `brief`, `wildness`, `count: 6`, plus `lens`, `moves` and `taste` if chosen. It is free and unlimited, so it is fine to run it again with a different wildness.
+
+### 6. Present the directions: short and punchy
 
 A numbered list. One line each: a bold title, the move in brackets, and a half-sentence on why it is interesting for this brief. No paragraphs. Example:
 
@@ -60,20 +68,20 @@ A numbered list. One line each: a bold title, the move in brackets, and a half-s
 
 Then recommend 2 or 3 to search: one that could ship soon and one or two that stretch. Ask the user to pick, or to say "go" to take your picks. If they already said "just go", take your picks and say which.
 
-### 6. Open a canvas
+### 7. Open a canvas
 
-Call `open_canvas` with a short `title` (max 80) and the `brief`. If a canvas already exists in this conversation, pass its `canvasId` instead of making a new one (free plans have 3 canvases).
+Call `open_canvas` with a short `title` (max 80), the `brief` and `taste` if you have it. Open the canvas before you save directions to it, so pass its `canvasId` to `bend_brief` (run it again with the `canvasId` if you bent before the canvas existed). If a canvas already exists in this conversation, pass its `canvasId` instead of making a new one (free plans have 3 canvases).
 
 - If the client shows the canvas inline, say it is open above.
 - **Always** give the web link too (`webUrl`), because many clients cannot show the inline canvas. If you cannot tell whether it rendered, say: "Open the board here: <webUrl>".
 
-### 7. Search references into the tray
+### 8. Search references into the tray
 
-For each picked direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards, for example for web and brand work. To steer, pass `query` with your own wording instead of `directionId`.
+For each picked direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). Prefer `directionId` whenever the directions are saved on a canvas: one call searches several lanes at once (the direction's raw idea, the user's taste, real screens for the brief and, for Arabic briefs, Arabic UI) and counts as one search. Do not pass a direction's `searchQuery` as `query` when you have its id. Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards. Use `query` with your own wording only to steer a single extra search.
 
-Then report per direction: how many references landed in the tray, and 2 or 3 highlights as `[title](sourceUrl) (site)`. If a direction returns few results, say so and offer a reworded `query` or other sources. Do not call search again on your own more than once per direction; each search counts toward the user's quota.
+Then report per direction: how many references landed in the tray, what each lane searched (the `lanes` field), and 2 or 3 highlights as `[title](sourceUrl) (site)`. If a direction returns few results, say so and offer a reworded `query` or other sources. Do not call search again on your own more than once per direction; each search counts toward the user's quota.
 
-### 8. Offer next steps
+### 9. Offer next steps
 
 End with a short menu, for example:
 
@@ -81,6 +89,7 @@ End with a short menu, for example:
 - **Palette:** pull colors from the references you like, with WCAG checks (banana-palette).
 - **DESIGN.md:** turn the board into a design system file your coding agent can follow (banana-design-md).
 - **Turn it up or down:** rerun at wildness N+1 or N-1, or try a lens.
+- **Change the look:** search again with other `taste` words.
 
 ## When things go wrong
 
