@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "banana": {
+      "type": "http",
+      "url": "https://banana.example/api/mcp"
+    }
+  }
+}

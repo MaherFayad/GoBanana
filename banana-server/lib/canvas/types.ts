@@ -1,0 +1,138 @@
+/**
+ * Plain data snapshot of a canvas, as consumed by exports (`lib/export/`) and
+ * returned by `get_canvas`. No DB or React Flow imports here on purpose: the
+ * code that loads a canvas maps rows and nodes into this shape.
+ *
+ * Coordinates: every `x`, `y`, `w`, `h` is in canvas pixels and absolute
+ * (React Flow child positions must be converted from parent-relative first).
+ */
+
+/** `ship` passed WCAG 2.2 contrast and may go to production. `explore` is concept only. */
+export type Tag = "ship" | "explore";
+
+/** Bend moves from spec section 7. Kept as string so new moves do not break old canvases. */
+export type BendMove = "transplant" | "material" | "era" | "constraint" | "scale" | "lens" | (string & {});
+
+export interface CanvasDirection {
+  id: string;
+  /** One move, or several joined with "+" (for example "transplant+material"). */
+  move: BendMove;
+  title: string;
+  searchQuery: string;
+}
+
+export interface CanvasSection {
+  id: string;
+  title: string;
+  /** Direction this section was made for, when it came from `bend_brief`. */
+  directionId?: string | null;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface ItemBase {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** Section the item sits in. When missing, exports place it by geometry. */
+  sectionId?: string | null;
+}
+
+/** A web reference. URLs and metadata only, never image bytes. */
+export interface ImageItem extends ItemBase {
+  type: "image";
+  imageUrl: string;
+  thumbUrl?: string | null;
+  sourceUrl: string;
+  /** Site the reference came from, for example "pinterest" or "dribbble". */
+  sourceSite: string;
+  title?: string | null;
+  note?: string | null;
+  tag?: Tag | null;
+}
+
+/** The user's own image (stored in R2). `sourceUrl` points at the upload or its origin. */
+export interface UploadItem extends Omit<ImageItem, "type"> {
+  type: "upload";
+}
+
+export interface NoteItem extends ItemBase {
+  type: "note";
+  text: string;
+  color?: string | null;
+}
+
+export interface SwatchItem extends ItemBase {
+  type: "swatch";
+  hex: string;
+  /** CSS oklch() string, for example "oklch(0.62 0.19 35)". */
+  oklch?: string | null;
+  role?: string | null;
+  tag: Tag;
+}
+
+export interface TypeSampleItem extends ItemBase {
+  type: "typeSample";
+  /** Id from `lib/kit/fonts.json`. */
+  pairingId: string;
+  sample?: string | null;
+}
+
+export interface SectionItem extends ItemBase {
+  type: "section";
+  title: string;
+  directionId?: string | null;
+}
+
+export type CanvasItem = ImageItem | UploadItem | NoteItem | SwatchItem | TypeSampleItem | SectionItem;
+export type CanvasItemType = CanvasItem["type"];
+export type ReferenceItem = ImageItem | UploadItem;
+
+export interface PaletteColor {
+  hex: string;
+  oklch?: string | null;
+  role?: string | null;
+  tag: Tag;
+}
+
+export interface ContrastResult {
+  /** Foreground hex. */
+  fg: string;
+  /** Background hex. */
+  bg: string;
+  ratio: number;
+  /** At least 4.5:1 (SC 1.4.3). */
+  passesText: boolean;
+  /** At least 3:1 (SC 1.4.11). */
+  passesUi: boolean;
+  tag: Tag;
+}
+
+export interface CanvasPalette {
+  id?: string;
+  colors: PaletteColor[];
+  contrast: ContrastResult[];
+}
+
+export interface CanvasSnapshot {
+  id?: string;
+  title: string;
+  brief: string;
+  /** 1 to 5 (Fresh, Bold, Weird, Wild, Bananas). */
+  wildness: number;
+  /** Culture lens preset id, for example "sadu". */
+  lens?: string | null;
+  directions: CanvasDirection[];
+  sections: CanvasSection[];
+  items: CanvasItem[];
+  palettes: CanvasPalette[];
+  updatedAt?: string | null;
+}
+
+export function isReference(item: CanvasItem): item is ReferenceItem {
+  return item.type === "image" || item.type === "upload";
+}

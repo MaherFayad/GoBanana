@@ -1,0 +1,146 @@
+/**
+ * Data model, spec section 11. URLs and metadata only: no image bytes are
+ * ever stored here (hard rule 2). Deleting a user cascades to every row they own;
+ * their R2 objects are removed separately by the account deletion flow.
+ */
+import {
+  index,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+export const planEnum = pgEnum("plan", ["free", "pro_monthly", "pro_yearly", "founding"]);
+export type Plan = (typeof planEnum.enumValues)[number];
+
+const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workosId: text("workos_id").notNull().unique(),
+  /** Null only if the WorkOS lookup failed on first sight; filled in on a later request. */
+  email: text("email"),
+  plan: planEnum("plan").notNull().default("free"),
+  paddleCustomerId: text("paddle_customer_id"),
+  createdAt: createdAt(),
+});
+
+export const canvases = pgTable(
+  "canvases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    brief: text("brief"),
+    wildness: smallint("wildness"),
+    lens: text("lens"),
+    /** React Flow nodes + viewport. */
+    state: jsonb("state").notNull().default({}),
+    shareToken: text("share_token").unique(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("canvases_user_id_idx").on(t.userId)],
+);
+
+export const directions = pgTable(
+  "directions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    canvasId: uuid("canvas_id")
+      .notNull()
+      .references(() => canvases.id, { onDelete: "cascade" }),
+    move: text("move").notNull(),
+    title: text("title").notNull(),
+    searchQuery: text("search_query").notNull(),
+  },
+  (t) => [index("directions_canvas_id_idx").on(t.canvasId)],
+);
+
+/** Reference images: URLs only. Rows not placed on a canvas are purged after 30 days. */
+export const references = pgTable(
+  "references",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    canvasId: uuid("canvas_id")
+      .notNull()
+      .references(() => canvases.id, { onDelete: "cascade" }),
+    sourceSite: text("source_site").notNull(),
+    sourceUrl: text("source_url").notNull(),
+    imageUrl: text("image_url").notNull(),
+    thumbUrl: text("thumb_url").notNull(),
+    title: text("title"),
+    width: integer("width"),
+    height: integer("height"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("references_canvas_id_idx").on(t.canvasId),
+    index("references_created_at_idx").on(t.createdAt),
+  ],
+);
+
+export const palettes = pgTable(
+  "palettes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    canvasId: uuid("canvas_id")
+      .notNull()
+      .references(() => canvases.id, { onDelete: "cascade" }),
+    colors: jsonb("colors").notNull(),
+    contrast: jsonb("contrast").notNull(),
+  },
+  (t) => [index("palettes_canvas_id_idx").on(t.canvasId)],
+);
+
+/** The user's own images, stored in R2. */
+export const uploads = pgTable(
+  "uploads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    r2Key: text("r2_key").notNull().unique(),
+    mime: text("mime").notNull(),
+    bytes: integer("bytes").notNull(),
+  },
+  (t) => [index("uploads_user_id_idx").on(t.userId)],
+);
+
+export const usage = pgTable(
+  "usage",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** YYYY-MM */
+    period: text("period").notNull(),
+    searches: integer("searches").notNull().default(0),
+    canvases: integer("canvases").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.period] })],
+);
+
+export const takedowns = pgTable("takedowns", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  urlOrDomain: text("url_or_domain").notNull().unique(),
+  reason: text("reason"),
+  createdAt: createdAt(),
+});
+
+export type User = typeof users.$inferSelect;
+export type Canvas = typeof canvases.$inferSelect;
+export type Direction = typeof directions.$inferSelect;
+export type ReferenceRow = typeof references.$inferSelect;
+export type Palette = typeof palettes.$inferSelect;
+export type Upload = typeof uploads.$inferSelect;
+export type Usage = typeof usage.$inferSelect;
+export type Takedown = typeof takedowns.$inferSelect;

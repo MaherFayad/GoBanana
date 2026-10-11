@@ -1,0 +1,203 @@
+{
+  "default": "space-grotesk-inter",
+  "pairings": [
+    {
+      "id": "space-grotesk-inter",
+      "name": "Space Grotesk and Inter",
+      "display": { "family": "Space Grotesk", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Inter", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["tech", "clean", "confident"],
+      "sample": "Bold ideas, clear screens",
+      "url": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;700&display=swap"
+    },
+    {
+      "id": "fraunces-work-sans",
+      "name": "Fraunces and Work Sans",
+      "display": { "family": "Fraunces", "weight": 700, "fallback": "serif" },
+      "body": { "family": "Work Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["warm", "editorial", "playful"],
+      "sample": "Soft serifs with a wink",
+      "url": "https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Work+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "playfair-source-sans",
+      "name": "Playfair Display and Source Sans 3",
+      "display": { "family": "Playfair Display", "weight": 700, "fallback": "serif" },
+      "body": { "family": "Source Sans 3", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["luxury", "editorial", "classic"],
+      "sample": "Quiet luxury, sharp contrast",
+      "url": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;700&display=swap"
+    },
+    {
+      "id": "syne-dm-sans",
+      "name": "Syne and DM Sans",
+      "display": { "family": "Syne", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "DM Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["art", "experimental", "gallery"],
+      "sample": "Wide shapes for loud headlines",
+      "url": "https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "bricolage-instrument-sans",
+      "name": "Bricolage Grotesque and Instrument Sans",
+      "display": { "family": "Bricolage Grotesque", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Instrument Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["quirky", "friendly", "startup"],
+      "sample": "Odd corners, easy reading",
+      "url": "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Instrument+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "dm-serif-dm-sans",
+      "name": "DM Serif Display and DM Sans",
+      "display": { "family": "DM Serif Display", "weight": 400, "fallback": "serif" },
+      "body": { "family": "DM Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["elegant", "hospitality", "calm"],
+      "sample": "A serif made for big sizes",
+      "url": "https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "archivo-black-archivo",
+      "name": "Archivo Black and Archivo",
+      "display": { "family": "Archivo Black", "weight": 400, "fallback": "sans-serif" },
+      "body": { "family": "Archivo", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["poster", "brutal", "sport"],
+      "sample": "Heavy type for short words",
+      "url": "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;700&display=swap"
+    },
+    {
+      "id": "unbounded-manrope",
+      "name": "Unbounded and Manrope",
+      "display": { "family": "Unbounded", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Manrope", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["futuristic", "crypto", "wide"],
+      "sample": "Round, wide and very loud",
+      "url": "https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Manrope:wght@400;700&display=swap"
+    },
+    {
+      "id": "instrument-serif-inter-tight",
+      "name": "Instrument Serif and Inter Tight",
+      "display": { "family": "Instrument Serif", "weight": 400, "fallback": "serif" },
+      "body": { "family": "Inter Tight", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["fashion", "editorial", "minimal"],
+      "sample": "Condensed serif, tight grid",
+      "url": "https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter+Tight:wght@400;700&display=swap"
+    },
+    {
+      "id": "anton-work-sans",
+      "name": "Anton and Work Sans",
+      "display": { "family": "Anton", "weight": 400, "fallback": "sans-serif" },
+      "body": { "family": "Work Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["poster", "loud", "condensed"],
+      "sample": "Tall letters for big claims",
+      "url": "https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "space-mono-space-grotesk",
+      "name": "Space Mono and Space Grotesk",
+      "display": { "family": "Space Mono", "weight": 700, "fallback": "monospace" },
+      "body": { "family": "Space Grotesk", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["retro", "terminal", "developer"],
+      "sample": "Monospace headings, calm body",
+      "url": "https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&family=Space+Grotesk:wght@400;700&display=swap"
+    },
+    {
+      "id": "ibm-plex-arabic-plex-sans",
+      "name": "IBM Plex Sans Arabic and IBM Plex Sans",
+      "display": { "family": "IBM Plex Sans Arabic", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "IBM Plex Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["corporate", "fintech", "bilingual"],
+      "sample": "تصميم واضح للخليج / Clear design for the Gulf",
+      "url": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@700&family=IBM+Plex+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "noto-kufi-noto-sans-arabic",
+      "name": "Noto Kufi Arabic and Noto Sans Arabic",
+      "display": { "family": "Noto Kufi Arabic", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Noto Sans Arabic", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["geometric", "government", "heritage"],
+      "sample": "خط كوفي حديث / Modern Kufi lines",
+      "url": "https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@700&family=Noto+Sans+Arabic:wght@400;700&display=swap"
+    },
+    {
+      "id": "readex-pro-plex-arabic",
+      "name": "Readex Pro and IBM Plex Sans Arabic",
+      "display": { "family": "Readex Pro", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "IBM Plex Sans Arabic", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["friendly", "app", "bilingual"],
+      "sample": "واجهة مريحة للقراءة / Easy reading interface",
+      "url": "https://fonts.googleapis.com/css2?family=Readex+Pro:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap"
+    },
+    {
+      "id": "cairo-tajawal",
+      "name": "Cairo and Tajawal",
+      "display": { "family": "Cairo", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Tajawal", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["retail", "travel", "modern"],
+      "sample": "عروض السفر هذا الأسبوع / Travel deals this week",
+      "url": "https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@400;700&display=swap"
+    },
+    {
+      "id": "alexandria-almarai",
+      "name": "Alexandria and Almarai",
+      "display": { "family": "Alexandria", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Almarai", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["bold", "lifestyle", "youthful"],
+      "sample": "أفكار جريئة بلمسة محلية / Bold ideas, local touch",
+      "url": "https://fonts.googleapis.com/css2?family=Alexandria:wght@700&family=Almarai:wght@400;700&display=swap"
+    },
+    {
+      "id": "el-messiri-noto-naskh",
+      "name": "El Messiri and Noto Naskh Arabic",
+      "display": { "family": "El Messiri", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Noto Naskh Arabic", "weight": 400, "fallback": "serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["heritage", "editorial", "hospitality"],
+      "sample": "ضيافة بروح الصحراء / Desert hospitality",
+      "url": "https://fonts.googleapis.com/css2?family=El+Messiri:wght@700&family=Noto+Naskh+Arabic:wght@400;700&display=swap"
+    },
+    {
+      "id": "reem-kufi-tajawal",
+      "name": "Reem Kufi and Tajawal",
+      "display": { "family": "Reem Kufi", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Tajawal", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["arabic", "latin"],
+      "mood": ["geometric", "cultural", "signage"],
+      "sample": "زخارف هندسية معاصرة / Contemporary geometric patterns",
+      "url": "https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@700&family=Tajawal:wght@400;700&display=swap"
+    }
+  ]
+}

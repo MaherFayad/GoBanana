@@ -1,0 +1,18 @@
+{
+  "name": "banana",
+  "displayName": "Banana",
+  "version": "0.1.0",
+  "description": "Wild design exploration for your agent. Bend a brief into unexpected directions, pull linked references into a moodboard canvas, extract a palette, and export DESIGN.md, AGENTS.md, tokens and a FigJam board. Mobbin shows what works. Banana shows what's next.",
+  "author": {
+    "name": "Maher Fayad",
+    "url": "https://banana.example"
+  },
+  "homepage": "https://banana.example",
+  "license": "MIT",
+  "keywords": ["design", "moodboard", "inspiration", "design-system", "design-md", "palette", "figma", "mcp"],
+  "icon": "./assets/icon.png",
+  "documentationUrl": "https://banana.example/docs",
+  "supportUrl": "https://banana.example/support",
+  "privacyPolicyUrl": "https://banana.example/privacy",
+  "termsOfServiceUrl": "https://banana.example/terms"
+}
