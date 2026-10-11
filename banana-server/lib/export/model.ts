@@ -230,29 +230,11 @@ function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): R
   return out;
 }
 
+const TEXT_LIKE = /^(on-|text|ink|white|black|foreground|fg)/;
+const SURFACE_LIKE = /(surface|neutral|background|paper|base|canvas)/;
+
 function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
   type Raw = { hex: string; oklch: string | null; role: string | null; tag: Tag; from: "palette" | "swatch" };
-  const raw: Raw[] = [];
-  for (const p of snapshot.palettes ?? []) {
-    for (const c of p.colors ?? []) {
-      const hex = normalizeHex(c.hex);
-      if (hex) raw.push({ hex, oklch: oneLine(c.oklch, 80) || null, role: oneLine(c.role, 40) || null, tag: c.tag === "ship" ? "ship" : "explore", from: "palette" });
-    }
-  }
-  for (const item of swatchOrder) {
-    if (item.type !== "swatch") continue;
-    const hex = normalizeHex(item.hex);
-    if (hex) raw.push({ hex, oklch: oneLine(item.oklch, 80) || null, role: oneLine(item.role, 40) || null, tag: item.tag === "ship" ? "ship" : "explore", from: "swatch" });
-  }
-
-  const shipRaw: Raw[] = [];
-  const seen = new Set<string>();
-  for (const c of raw) {
-    if (c.tag !== "ship" || seen.has(c.hex)) continue;
-    seen.add(c.hex);
-    shipRaw.push(c);
-  }
-  const known = new Set(raw.map((c) => c.hex));
 
   const contrast: ContrastResult[] = [];
   for (const p of snapshot.palettes ?? []) {
@@ -264,6 +246,37 @@ function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
     }
   }
   contrast.sort((a, b) => (a.tag === b.tag ? b.ratio - a.ratio : a.tag === "ship" ? -1 : 1));
+  const inShipPair = new Set(contrast.filter((r) => r.tag === "ship").flatMap((r) => [r.fg, r.bg]));
+
+  const raw: Raw[] = [];
+  for (const p of snapshot.palettes ?? []) {
+    for (const c of p.colors ?? []) {
+      const hex = normalizeHex(c.hex);
+      if (!hex) continue;
+      const tag: Tag = c.tag === "ship" || c.tag === "explore" ? c.tag : inShipPair.has(hex) ? "ship" : "explore";
+      raw.push({ hex, oklch: oneLine(c.oklch, 80) || null, role: oneLine(c.role, 40) || null, tag, from: "palette" });
+    }
+  }
+  // The user's ship/explore toggle on a swatch wins over the palette (last swatch in reading order).
+  const swatchTag = new Map<string, Tag>();
+  for (const item of swatchOrder) {
+    if (item.type !== "swatch") continue;
+    const hex = normalizeHex(item.hex);
+    if (!hex) continue;
+    const tag: Tag = item.tag === "ship" ? "ship" : "explore";
+    swatchTag.set(hex, tag);
+    raw.push({ hex, oklch: oneLine(item.oklch, 80) || null, role: oneLine(item.role, 40) || null, tag, from: "swatch" });
+  }
+  for (const c of raw) c.tag = swatchTag.get(c.hex) ?? c.tag;
+
+  const shipRaw: Raw[] = [];
+  const seen = new Set<string>();
+  for (const c of raw) {
+    if (c.tag !== "ship" || seen.has(c.hex)) continue;
+    seen.add(c.hex);
+    shipRaw.push(c);
+  }
+  const known = new Set(raw.map((c) => c.hex));
 
   // Pure text colors (usually white or black) checked in a ship pair but not on the canvas.
   const extra: { hex: string }[] = [];
@@ -285,9 +298,14 @@ function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
   };
 
   const ship: ColorToken[] = [];
+  // Lint wants a primary. When none is named, promote the first ship color that is not a
+  // surface or text role (or the first one when all are).
   const hasPrimary = shipRaw.some((c) => tokenName(c.role) === "primary");
+  const promoteAt = hasPrimary
+    ? -1
+    : Math.max(0, shipRaw.findIndex((c) => !TEXT_LIKE.test(tokenName(c.role)) && !SURFACE_LIKE.test(tokenName(c.role))));
   shipRaw.forEach((c, i) => {
-    const wanted = !hasPrimary && i === 0 ? "primary" : tokenName(c.role) || `color-${i + 1}`;
+    const wanted = i === promoteAt ? "primary" : tokenName(c.role) || `color-${i + 1}`;
     const name = unique(wanted);
     ship.push({ name, hex: c.hex, oklch: c.oklch, canvasRole: c.role && tokenName(c.role) !== name ? c.role : null, from: c.from });
   });
@@ -316,8 +334,6 @@ function buildTypography(pairing: FontPairing, arabic: boolean): TypographyToken
   ];
 }
 
-const TEXT_LIKE = /^(on-|text|ink|white|black|foreground|fg)/;
-const SURFACE_LIKE = /(surface|neutral|background|paper|base|canvas)/;
 
 function bestPartner(token: ColorToken, ship: ColorToken[]): { token: ColorToken; ratio: number } | null {
   let best: { token: ColorToken; ratio: number } | null = null;

@@ -96,7 +96,12 @@ export interface PaletteColor {
   hex: string;
   oklch?: string | null;
   role?: string | null;
-  tag: Tag;
+  /**
+   * Optional: `extract_palette` tags contrast pairs, not colors. When missing, exports
+   * treat a color as ship if it is in a ship contrast pair. A swatch on the canvas with
+   * the same hex overrides this (the user's toggle wins).
+   */
+  tag?: Tag | null;
 }
 
 export interface ContrastResult {

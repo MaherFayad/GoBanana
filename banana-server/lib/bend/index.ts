@@ -158,15 +158,20 @@ function buildQuery(
   } else if (wildness === 3 || moves.includes("era")) {
     pieces.push({ text: subject.query, order: 10, priority: 2, required: false });
   }
-  if (moves[0] === "transplant" && wildness >= 2) {
-    pieces.push({ text: mood, order: 11, priority: 3, required: false });
+  // Mood rides along only on a lone transplant ("neon-lit matchbook packaging design").
+  if (moves[0] === "transplant" && moves.length === 1 && wildness >= 2) {
+    pieces.push({ text: mood, order: -1, priority: 3, required: false });
   }
 
   const chosen = pieces.filter((p) => p.required);
   let words = chosen.reduce((n, p) => n + wordCount(p.text), 0);
+  const taken = new Set(chosen.flatMap((p) => p.text.toLowerCase().split(/\s+/)));
   for (const p of pieces.filter((x) => !x.required).sort((a, b) => a.priority - b.priority)) {
     const w = wordCount(p.text);
-    if (words + w <= MAX_QUERY_WORDS) {
+    const parts = p.text.toLowerCase().split(/\s+/);
+    // Skip a piece that would echo words already in the query ("design design").
+    if (words + w <= MAX_QUERY_WORDS && !parts.some((x) => taken.has(x))) {
+      for (const x of parts) taken.add(x);
       chosen.push(p);
       words += w;
     }
@@ -319,7 +324,9 @@ export function bendBrief(raw: BendInput): BendResult {
       for (let j = 1; j < moves.length; j++) {
         const m = moves[j]!;
         const mList = MODIFIER_TEMPLATES[m];
-        t += render(mList[templates.next(`m:${m}`, mList.length)] ?? mList[0]!, vars(j));
+        const mod = render(mList[templates.next(`m:${m}`, mList.length)] ?? mList[0]!, vars(j));
+        // After the first modifier, every phrase starts with a comma so long titles stay readable.
+        t += j >= 2 && !mod.startsWith(",") ? `,${mod}` : mod;
       }
       title = t;
       if (!titles.has(title.toLowerCase())) break;
@@ -327,7 +334,7 @@ export function bendBrief(raw: BendInput): BendResult {
     titles.add(title.toLowerCase());
 
     const prompt = [
-      render(PROMPT_OPENING, vars(0)),
+      render(PROMPT_OPENING, { ...vars(0), subj: subject.full }),
       ...moves.map((m, j) => render(PROMPT_CLAUSES[m], vars(j))),
       `Mood: ${mood}.`,
       rule.hint,

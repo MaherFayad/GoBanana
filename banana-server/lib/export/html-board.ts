@@ -42,7 +42,7 @@ function referenceTile(item: CanvasItem & { type: "image" | "upload" }, ref: Ref
   return `<div class="tile ref" style="${style}">${media}${caption}<span class="cap bad">Source: ${e(raw || "missing")}</span></div>`;
 }
 
-function itemHtml(item: CanvasItem, origin: { x: number; y: number }, refs: Map<string, Reference>, m: KitModel): string {
+function itemHtml(item: CanvasItem, origin: { x: number; y: number }, refs: Map<string, Reference>): string {
   const style = box(item, origin);
   if (isReference(item)) return referenceTile(item, refs.get(item.id), style);
   switch (item.type) {
@@ -113,8 +113,8 @@ export function htmlBoard(m: KitModel): string {
   for (const s of m.sections) {
     parts.push(`<div class="section" style="${box(s, origin)}"><h2 dir="auto">${e(s.title)}</h2></div>`);
   }
-  for (const s of m.sections) for (const item of s.items) parts.push(itemHtml(item, origin, refs, m));
-  for (const item of m.unsorted) parts.push(itemHtml(item, origin, refs, m));
+  for (const s of m.sections) for (const item of s.items) parts.push(itemHtml(item, origin, refs));
+  for (const item of m.unsorted) parts.push(itemHtml(item, origin, refs));
 
   const sources = m.references.map((r) => {
     const link = r.url ? `<a href="${e(r.url)}" ${LINK_ATTRS} dir="auto">${e(r.title)}</a> (${e(r.site)})<br><span class="muted">${e(r.url)}</span>` : `<span dir="auto">${e(r.title)}</span> (${e(r.site)})<br><span class="muted">Source link not usable: ${e(r.rawUrl || "missing")}</span>`;

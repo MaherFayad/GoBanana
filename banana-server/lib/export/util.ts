@@ -1,11 +1,10 @@
 /** Small pure helpers shared by the export generators. */
 
-const EM_DASH = /\s*—\s*/g;
+const EM_DASH = /\s*\u2014\s*/g;
 
 /** One line of plain text: no line breaks, no control chars, no em dashes. */
 export function oneLine(text: string | null | undefined, max = 400): string {
   if (!text) return "";
-  // eslint-disable-next-line no-control-regex
   let out = text.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(EM_DASH, ", ").replace(/\s+/g, " ").trim();
   if (out.length > max) out = `${out.slice(0, max - 3).trimEnd()}...`;
   return out;

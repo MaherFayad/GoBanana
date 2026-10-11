@@ -24,11 +24,11 @@
   "Talavera tiles",
   "Japanese sashiko",
   "ukiyo-e prints",
-  "blue and white porcelain",
+  { "label": "blue and white porcelain", "query": "blue white porcelain" },
   "Malian mudcloth",
   "mashrabiya screens",
   "Najdi painted doors",
-  "Al Qatt Al Asiri",
+  { "label": "Al Qatt Al Asiri", "query": "Qatt Asiri painting" },
   "girih tiles",
   "Celtic knotwork",
   "Swiss paper cutting",
@@ -44,7 +44,7 @@
   "lucha libre posters",
   "hand-painted Bollywood posters",
   "Ghanaian movie posters",
-  "Hong Kong neon signs",
+  { "label": "Hong Kong neon signs", "query": "Hong Kong neon" },
   "Cuban film posters",
   "Japanese matchbox labels"
 ]

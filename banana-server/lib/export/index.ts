@@ -43,7 +43,7 @@ export function exportKit(snapshot: CanvasSnapshot, formats: readonly ExportForm
   return wanted.map((f) => {
     const g = GENERATORS[f];
     // Last guard for the plain-words rule: no em dashes in any output.
-    return { name: g.name, mime: g.mime, content: g.build(model).replace(/—/g, "-") };
+    return { name: g.name, mime: g.mime, content: g.build(model).replace(/\u2014/g, "-") };
   });
 }
 

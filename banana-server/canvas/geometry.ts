@@ -3,6 +3,7 @@
  * React Flow are relative to their parent; these helpers convert both ways.
  */
 import type { CanvasFlowNode } from "./types";
+import { SECTION_HEADER_HEIGHT } from "./state";
 import { DEFAULT_SIZE } from "./types";
 
 export interface Rect {
@@ -102,4 +103,23 @@ export function cascade(p: { x: number; y: number }, nodes: readonly CanvasFlowN
     y += step;
   }
   return { x, y };
+}
+
+/** Collapse or expand a section. Its contents are hidden while it is collapsed. */
+export function toggleCollapsed(nodes: readonly CanvasFlowNode[], sectionId: string): CanvasFlowNode[] {
+  const s = nodes.find((n) => n.id === sectionId);
+  if (!s || s.type !== "section") return [...nodes];
+  const collapse = !s.data.collapsed;
+  const currentH = nodeSize(s).h;
+  return nodes.map((n): CanvasFlowNode => {
+    if (n.id === sectionId && n.type === "section") {
+      return {
+        ...n,
+        height: collapse ? SECTION_HEADER_HEIGHT : (n.data.expandedHeight ?? DEFAULT_SIZE.section.h),
+        data: { ...n.data, collapsed: collapse, expandedHeight: collapse ? currentH : n.data.expandedHeight },
+      };
+    }
+    if (n.parentId === sectionId) return { ...n, hidden: collapse };
+    return n;
+  });
 }

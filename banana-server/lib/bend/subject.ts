@@ -7,8 +7,10 @@ export interface Subject {
   query: string;
   /** Subject used in titles and prompts, never with layout words. */
   title: string;
-  /** Last word of the title subject, for templates like "What if the checkout were...". */
+  /** Last two words of the title subject, for templates like "What if the checkout were...". */
   head: string;
+  /** Subject with layout words kept, for prompts: "coffee shop landing page". */
+  full: string;
   /** Every content word, for avoiding list entries that echo the brief. */
   words: string[];
 }
@@ -86,7 +88,8 @@ export function extractSubject(brief: string, wildness: Wildness): Subject {
   return {
     query: query.join(" "),
     title: title.join(" "),
-    head: title[title.length - 1] ?? "interface",
+    head: title.slice(-2).join(" "),
+    full: (build(true, 4).length ? build(true, 4) : title).join(" "),
     words: clean(tokens, { keepLayout: true, stripUsability: false }),
   };
 }

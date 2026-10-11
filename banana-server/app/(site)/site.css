@@ -1,0 +1,483 @@
+/*
+ * Public site styles. Everything is scoped under .site so it never leaks into the
+ * canvas or other routes. Logical properties only (margin-inline, padding-block,
+ * inset-inline-start) so the same rules work for English (ltr) and Arabic (rtl).
+ *
+ * Contrast (WCAG 2.2 AA): text tokens are at least 4.5:1 on --bg and --surface,
+ * --border and --focus are at least 3:1 against both backgrounds.
+ */
+.site {
+  --bg: #ffffff;
+  --surface: #f6f5f1;
+  --text: #1a1a1a;
+  --muted: #4d4d4d;
+  --link: #1d4ed8;
+  --border: #767676;
+  --focus: #1d4ed8;
+  --accent: #ffd84d;
+  --on-accent: #1a1a1a;
+  --danger: #b42318;
+  --on-danger: #ffffff;
+  --success: #146c2e;
+  --radius: 10px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+  --measure: 68ch;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-ar: "Noto Sans Arabic", "Segoe UI", Tahoma, "Geeza Pro", system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  color-scheme: light dark;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-color-scheme: dark) {
+  .site {
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --text: #f2f2f2;
+    --muted: #bdbdbd;
+    --link: #8ab4ff;
+    --border: #8f8f8f;
+    --focus: #8ab4ff;
+    --accent: #ffd84d;
+    --on-accent: #121212;
+    --danger: #ff8a80;
+    --on-danger: #121212;
+    --success: #7ee2a0;
+  }
+}
+
+.site[dir="rtl"] {
+  font-family: var(--font-ar);
+  line-height: 1.8;
+}
+
+.site *,
+.site *::before,
+.site *::after {
+  box-sizing: border-box;
+}
+
+.site a {
+  color: var(--link);
+  text-underline-offset: 0.2em;
+}
+
+.site :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.site code,
+.site pre {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+/* Skip link: hidden until focused. */
+.site .skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-3);
+  inset-block-start: -100px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  z-index: 10;
+  border-radius: var(--radius);
+}
+.site .skip-link:focus {
+  inset-block-start: var(--space-3);
+}
+
+.site .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site .wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+
+/* Header and footer. Not sticky, so nothing covers focused elements (SC 2.4.11). */
+.site .site-header {
+  border-block-end: 1px solid var(--border);
+}
+.site .site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+}
+.site .brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text);
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.site .nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site .nav-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-2);
+  color: var(--text);
+}
+.site .nav-list a[aria-current="page"] {
+  font-weight: 700;
+  text-decoration-thickness: 3px;
+}
+
+.site main {
+  flex: 1;
+  padding-block: var(--space-5);
+}
+.site main:focus {
+  outline: none;
+}
+
+.site .site-footer {
+  border-block-start: 1px solid var(--border);
+  padding-block: var(--space-4);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.site .site-footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.site .site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* Typography */
+.site h1,
+.site h2,
+.site h3 {
+  line-height: 1.25;
+  margin-block: 0 var(--space-3);
+}
+.site h1 {
+  font-size: clamp(2rem, 1.4rem + 2.5vw, 3.25rem);
+}
+.site h2 {
+  font-size: 1.6rem;
+  margin-block-start: var(--space-5);
+}
+.site h3 {
+  font-size: 1.2rem;
+}
+.site p,
+.site li {
+  max-width: var(--measure);
+}
+.site .lead {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+/* Buttons and links styled as buttons: 44px targets (above the 24px minimum). */
+.site .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  min-width: 44px;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius);
+  border: 2px solid var(--text);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.site .button.secondary {
+  background: transparent;
+  color: var(--text);
+}
+.site .button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--on-danger);
+}
+.site .button:disabled,
+.site .button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.site .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+}
+
+/* Cards and grids */
+.site .grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  padding: 0;
+  list-style: none;
+}
+.site .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+.site .card.highlight {
+  border: 3px solid var(--text);
+}
+.site .steps {
+  counter-reset: step;
+}
+.site .steps > li {
+  counter-increment: step;
+}
+.site .steps > li h3::before {
+  content: counter(step) ". ";
+}
+
+.site .price {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-block: var(--space-2);
+}
+.site .price small {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.site .feature-list {
+  padding-inline-start: 1.25rem;
+}
+.site .note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Video slot */
+.site .video-slot {
+  margin: 0;
+}
+.site .video-frame {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 48rem;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+.site figcaption {
+  margin-block-start: var(--space-2);
+  color: var(--muted);
+}
+
+/* Code blocks always read left to right, even on Arabic pages. */
+.site pre {
+  direction: ltr;
+  text-align: left;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  max-width: 100%;
+}
+
+/* Tables */
+.site table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.site .table-scroll {
+  overflow-x: auto;
+}
+.site caption {
+  text-align: start;
+  font-weight: 700;
+  padding-block-end: var(--space-2);
+}
+.site th,
+.site td {
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+  vertical-align: top;
+}
+.site thead th {
+  background: var(--surface);
+}
+
+/* Forms */
+.site .field {
+  margin-block-end: var(--space-4);
+  max-width: 40rem;
+}
+.site label,
+.site legend {
+  display: block;
+  font-weight: 600;
+  margin-block-end: var(--space-1);
+}
+.site fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin: 0 0 var(--space-4);
+  max-width: 40rem;
+}
+.site .hint {
+  display: block;
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-block-end: var(--space-2);
+}
+.site input[type="text"],
+.site input[type="email"],
+.site input[type="url"],
+.site select,
+.site textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+}
+.site textarea {
+  min-height: 8rem;
+}
+.site [aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.site .choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-weight: 400;
+}
+.site .choice input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--link);
+}
+.site .error {
+  display: block;
+  color: var(--danger);
+  font-weight: 600;
+  margin-block-start: var(--space-1);
+}
+.site .error::before {
+  content: "! ";
+}
+.site .error-summary {
+  border: 3px solid var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+}
+.site .status {
+  border-inline-start: 6px solid var(--success);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+}
+.site .status.bad {
+  border-inline-start-color: var(--danger);
+}
+
+/* Draft banner on legal pages */
+.site .draft {
+  border: 2px dashed var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  margin-block-end: var(--space-4);
+}
+.site .toc ol {
+  padding-inline-start: 1.25rem;
+}
+.site .toc a {
+  display: inline-block;
+  min-height: 24px;
+}
+
+/* Delete account dialog */
+.site dialog {
+  max-width: min(32rem, calc(100vw - 2rem));
+  border: 2px solid var(--text);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  padding: var(--space-4);
+}
+.site dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+.site .danger-zone {
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin-block-start: var(--space-5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site .button {
+    transition: transform 120ms ease;
+  }
+  .site .button:active {
+    transform: translateY(1px);
+  }
+}

@@ -142,8 +142,8 @@ export const qahwaCanvas: CanvasSnapshot = {
 
 /** Edge cases: hostile strings, bad URLs, no palette, unknown pairing, out of range wildness. */
 export const hostileCanvas: CanvasSnapshot = {
-  title: '<script>alert("t")</script> Board — test',
-  brief: "Landing page — make it pop\n## Colors\n---\nname: hacked",
+  title: '<script>alert("t")</script> Board \u2014 test',
+  brief: "Landing page \u2014 make it pop\n## Colors\n---\nname: hacked",
   wildness: 9,
   lens: "<b>lens</b>",
   directions: [],
@@ -173,7 +173,7 @@ export const hostileCanvas: CanvasSnapshot = {
       sourceUrl: "https://dribbble.com/shots/1-Same-Link",
       sourceSite: "dribbble", title: "Second copy",
     },
-    { id: "h5", type: "note", x: 0, y: 220, w: 300, h: 120, text: "## Colors\n</div><img src=x onerror=alert(5)> — note" },
+    { id: "h5", type: "note", x: 0, y: 220, w: 300, h: 120, text: "## Colors\n</div><img src=x onerror=alert(5)> \u2014 note" },
     { id: "h6", type: "swatch", x: 320, y: 220, w: 100, h: 100, hex: "#C62828", role: "Brand Red!!", tag: "ship" },
     { id: "h7", type: "swatch", x: 440, y: 220, w: 100, h: 100, hex: "red;background:url(x)", role: "bad", tag: "ship" },
     { id: "h8", type: "swatch", x: 560, y: 220, w: 100, h: 100, hex: "#00FF88", role: "neon", tag: "explore" },

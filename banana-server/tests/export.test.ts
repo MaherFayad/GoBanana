@@ -66,7 +66,7 @@ describe.each(fixtures)("fixture %s", (_name, snapshot) => {
   const model = buildKitModel(snapshot);
 
   it("has no em dashes in any output", () => {
-    for (const f of files) expect(f.content, f.name).not.toMatch(/—/);
+    for (const f of files) expect(f.content, f.name).not.toMatch(/\u2014/);
   });
 
   it("puts only ship colors in the DESIGN.md front matter", () => {
@@ -196,6 +196,36 @@ describe("content details", () => {
     const h = buildKitModel(hostileCanvas);
     expect(h.ship).toHaveLength(1);
     expect(h.ship[0]).toMatchObject({ name: "primary", hex: "#c62828", canvasRole: "Brand Red!!" });
+  });
+
+  it("derives ship from contrast pairs for untagged palette colors, and lets a swatch toggle win", () => {
+    const snap = {
+      ...checkoutCanvas,
+      items: [
+        ...checkoutCanvas.items.filter((i) => i.type !== "swatch"),
+        { id: "sw", type: "swatch" as const, x: 0, y: 600, w: 80, h: 80, hex: "#3A5A40", tag: "explore" as const },
+      ],
+      palettes: [
+        {
+          colors: [
+            { hex: "#F5F0E6", oklch: "oklch(0.95 0.02 85)", role: "surface" },
+            { hex: "#3A5A40", oklch: "oklch(0.42 0.06 145)", role: "primary" },
+            { hex: "#E9C46A", oklch: "oklch(0.83 0.12 85)", role: "accent" },
+          ],
+          contrast: [
+            { fg: "#3a5a40", bg: "#f5f0e6", ratio: 6.9, passesText: true, passesUi: true, tag: "ship" as const },
+            { fg: "#f5f0e6", bg: "#000000", ratio: 18.1, passesText: true, passesUi: true, tag: "ship" as const },
+            { fg: "#e9c46a", bg: "#f5f0e6", ratio: 1.5, passesText: false, passesUi: false, tag: "explore" as const },
+          ],
+        },
+      ],
+    };
+    const m = buildKitModel(snap);
+    // #3a5a40 is in a ship pair, but the swatch on the canvas says explore.
+    expect(m.ship.map((c) => c.hex)).toEqual(["#f5f0e6", "#000000"]);
+    expect(m.explore.map((c) => c.hex).sort()).toEqual(["#3a5a40", "#e9c46a"]);
+    const fm = frontMatter(exportKit(snap, ["design_md"])[0]?.content ?? "");
+    expect(Object.values(fm.colors as Record<string, string>)).not.toContain("#3a5a40");
   });
 
   it("uses the canvas type sample, or the default pairing", () => {
