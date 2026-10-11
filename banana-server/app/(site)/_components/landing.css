@@ -2537,6 +2537,11 @@
     padding-block-start: var(--st-space-11xl);
   }
 
+  /* Small tiles on a phone: the credit stays, the move line goes (it is in the idea card). */
+  .site .hero-tile-link .hero-caption-move {
+    display: none;
+  }
+
   .site .graph {
     padding: var(--st-space-5xl) var(--st-space-xl);
   }

@@ -350,13 +350,13 @@ body:has(> .site) {
 
 /* Hidden start state only once Reveal.tsx has put .reveal-on on <html> (after hydration), and
    never under reduced motion: without JS everything is simply visible. */
-html.reveal-on .site [data-reveal]:not([data-revealed]) {
+html.reveal-on .site [data-reveal][data-reveal-armed]:not([data-revealed]) {
   opacity: 0;
   translate: 0 24px;
 }
 
-html.reveal-on .site [data-reveal]:not([data-revealed]) :is(h1, h2),
-html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
+html.reveal-on .site [data-reveal][data-reveal-armed]:not([data-revealed]) :is(h1, h2),
+html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]) {
   filter: blur(10px);
 }
 
@@ -374,8 +374,8 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.reveal-on .site [data-reveal]:not([data-revealed]),
-  html.reveal-on .site [data-reveal]:not([data-revealed]) :is(h1, h2) {
+  html.reveal-on .site [data-reveal][data-reveal-armed]:not([data-revealed]),
+  html.reveal-on .site [data-reveal][data-reveal-armed]:not([data-revealed]) :is(h1, h2) {
     opacity: 1;
     translate: none;
     filter: none;

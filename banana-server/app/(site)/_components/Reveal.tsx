@@ -7,8 +7,9 @@
  * Content is never hidden without JS or under reduced motion:
  * - The hidden start state only applies under `html.reveal-on`, which this module sets after
  *   hydration. Server HTML, a failed script and a crawler all see the content.
- * - Elements already on screen when the class goes on are marked revealed first, in the same
- *   synchronous pass, so nothing on screen blinks out.
+ * - Each element arms itself (data-reveal-armed) only when it is off screen as it hydrates;
+ *   elements on screen are marked revealed instead. React can hydrate parts of the page in
+ *   separate passes, so a page-wide hidden state would blink content that hydrates later.
  * - site.css drops the hidden state under prefers-reduced-motion, and the motion tokens are 0ms.
  * - Revealed is final: scrolling back up never hides anything again.
  */
@@ -60,7 +61,12 @@ export function Reveal({ children, as: Tag = "div", index = 0, blur = false, cla
     const io = getObserver();
     if (!el || !io) return;
     if (inView(el)) reveal(el);
-    else io.observe(el);
+    else {
+      // Only an element that is off screen when it hydrates is ever hidden (data-reveal-armed),
+      // so content that hydrates in a later pass never blinks out.
+      el.setAttribute("data-reveal-armed", "");
+      io.observe(el);
+    }
     document.documentElement.classList.add("reveal-on");
     return () => io.unobserve(el);
   }, []);
