@@ -4,6 +4,8 @@
  * from canvas/canvas.css. Tokens only, logical properties only.
  *
  * Theme: dark only (owner decision); main.tsx puts data-theme="dark" on <html> and .bn-inline.
+ * No window chrome here (Claude frames the view); the chrome only shares the GoBanana desktop
+ * tokens and Instrument Sans (the bar below, and the notch and sidebar from canvas.css).
  */
 
 html,
@@ -43,6 +45,8 @@ body {
   padding-block: var(--st-space-4xs);
   padding-inline: var(--st-space-s);
   background: var(--st-bg-body);
+  --st-font-sans: var(--st-font-desk);
+  font-family: var(--st-font-sans);
 }
 
 /* Conflict choice: a warning alert in a strip above the canvas. */

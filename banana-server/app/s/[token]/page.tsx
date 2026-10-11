@@ -11,8 +11,9 @@
  *   checked on load (hard rule 5), failing closed.
  * - The page says "View only" twice: an info alert above the board and the top bar label
  *   (canvas/SharedCanvas.tsx).
- * - Site chrome (share.css): a slim bar above the canvas with the brand and "Add to Claude",
- *   in the same structure as the site header. The canvas itself is unchanged.
+ * - Site chrome (share.css): a slim glass menu bar above the canvas with the brand and "Add to
+ *   Claude", like the site's desktop menu bar. The canvas is a read-only app window on the
+ *   desk, and a dismissible "Made with {app}" notification card links to the landing page.
  * - Test-only: under the E2E sign-in bypass (never in a production build) the demo token
  *   renders lib/site/share-demo.ts, so the page can be screenshot without a database.
  */
@@ -29,6 +30,8 @@ import { getDict } from "@/lib/site/dict";
 import { fmt, href } from "@/lib/site/i18n";
 import { compileTakedowns } from "@/lib/takedown";
 import { e2eAuthBypass } from "@/lib/web-auth";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { MadeWithCard } from "./MadeWithCard";
 import "@/canvas/overlays.css";
 import "./share.css";
 
@@ -50,6 +53,7 @@ function ShareBar() {
     // A nav landmark, not a banner: the canvas below already has its own top bar header.
     <nav className="share-bar" aria-label={fmt(t.share.homeLabel)}>
       <a className="share-brand" href={href("en")} dir="ltr">
+        <BrandMark />
         {APP_NAME}
       </a>
       <p className="share-made">{fmt(t.share.madeWith)}</p>
@@ -98,7 +102,17 @@ export default async function SharedCanvasPage({ params }: Props) {
   return (
     <div className="share-shell">
       <ShareBar />
-      <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state} />
+      <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state}>
+        <MadeWithCard
+          appName={APP_NAME}
+          label={fmt(t.share.noteLabel)}
+          title={fmt(t.share.noteTitle)}
+          body={t.share.noteBody}
+          link={t.share.noteLink}
+          href={href("en")}
+          dismiss={t.share.noteDismiss}
+        />
+      </SharedCanvas>
     </div>
   );
 }

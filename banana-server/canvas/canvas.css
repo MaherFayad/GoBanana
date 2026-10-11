@@ -354,10 +354,11 @@
 
 /* ------------------------------------------------------------------ notch (spec 3) */
 
-/* Floating insert toolbar hanging from the top edge of the board. */
+/* Floating insert toolbar near the top edge of the board: a glass bar in the GoBanana desktop
+   style (desk tokens, backdrop blur), on the web, shared and inline canvas alike. */
 .bn-notch {
   position: absolute;
-  inset-block-start: 0;
+  inset-block-start: var(--st-space-s);
   inset-inline-start: 50%;
   z-index: var(--st-z-canvas-notch);
   translate: -50% 0;
@@ -365,50 +366,21 @@
   align-items: center;
   gap: var(--st-space-3xs);
   padding: var(--st-space-3xs);
-  padding-block-start: var(--st-space-4xs);
-  border-end-start-radius: var(--st-radius-card);
-  border-end-end-radius: var(--st-radius-card);
-  background: var(--st-bg-body);
-  box-shadow: var(--st-shadow-canvas-chrome);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
+  box-shadow: var(--st-desk-shadow-soft);
   /* Narrow boards (phones, small inline frames): wrap onto a second row instead of being
      clipped by the board edge. */
   flex-wrap: wrap;
   justify-content: center;
   inline-size: max-content;
-  max-inline-size: calc(100% - 2 * var(--st-radius-card));
+  max-inline-size: calc(100% - 2 * var(--st-space-l));
 }
 
 :where([dir="rtl"]) .bn-notch {
   translate: 50% 0;
-}
-
-/* Inverted outer corners, so the notch reads as part of the shell. */
-.bn-notch::before,
-.bn-notch::after {
-  content: "";
-  position: absolute;
-  inset-block-start: 0;
-  inline-size: var(--st-radius-card);
-  block-size: var(--st-radius-card);
-  pointer-events: none;
-}
-
-.bn-notch::before {
-  inset-inline-end: 100%;
-  background: radial-gradient(circle at 0 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
-}
-
-.bn-notch::after {
-  inset-inline-start: 100%;
-  background: radial-gradient(circle at 100% 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
-}
-
-:where([dir="rtl"]) .bn-notch::before {
-  background: radial-gradient(circle at 100% 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
-}
-
-:where([dir="rtl"]) .bn-notch::after {
-  background: radial-gradient(circle at 0 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
 }
 
 .bn-notch-sep {
@@ -430,15 +402,39 @@
   background: var(--st-bg-body);
 }
 
+/* The rail is a small dock: a glass column of app tiles (desk tokens), standing at the top of
+   the sidebar. Tiles lift a little on hover and focus (no motion under reduced motion, where
+   --st-desk-roll is 0ms). */
 .bn-rail {
   flex: none;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--st-space-s);
   inline-size: var(--st-rail-w);
-  padding-block: var(--st-space-s);
-  padding-inline: var(--st-space-2xs);
+  margin-block: var(--st-space-s);
+  margin-inline: var(--st-space-s) 0;
+  padding-block: var(--st-space-2xs);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-dock);
+  backdrop-filter: blur(var(--st-desk-blur-strong)) saturate(1.4);
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+.bn-rail-item.st-btn {
+  --st-btn-bg: var(--st-desk-glass-solid);
+  --st-btn-bg-hover: var(--st-desk-glass-solid);
+
+  border-radius: 0.75rem;
+  transition:
+    scale var(--st-desk-roll) var(--st-desk-ease),
+    background-color var(--st-duration-base) var(--st-ease);
+}
+
+.bn-rail-item.st-btn:is(:hover, :focus-visible) {
+  scale: 1.08;
 }
 
 /* Rail item: accent-3 tint with a soft glow; active gets a 16% tint and a 2px by 14px bar
@@ -1620,13 +1616,25 @@
   }
 }
 
-/* Full-screen web page wrapper (/c/:id, /s/:token). */
+/* Full-screen web page wrapper (/c/:id, /s/:token). With data-desk it is the GoBanana desktop:
+   the black desk with the canvas window standing on it. */
 .bn-page {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
   background: var(--st-bg-body);
+}
+
+.bn-page[data-desk] {
+  gap: var(--st-space-s);
+  padding: var(--st-space-s);
+  background: var(--st-desk-bg);
+}
+
+.bn-page[data-desk] > .bn-banner {
+  padding: 0;
+  background: none;
 }
 
 .bn-page > .bn-canvas {
@@ -1854,4 +1862,167 @@
 .bn-type .bn-node-bar .bn-menu-button.st-btn {
   scale: min(1, var(--bn-chrome));
   transform-origin: bottom right;
+}
+
+/* ------------------------------------------------------------------ window chrome (GoBanana desktop)
+
+   The web and shared canvas are app windows on the desk (DECISIONS 2026-10-12): glass panel,
+   1rem radius, a title bar with traffic lights, the board name, save state and Share. Instrument
+   Sans is the chrome's font (title bar, notch, sidebar, inline bar); board content (notes,
+   sections, type samples) keeps --st-font-sans and the notes' fixed board-pixel type. */
+
+.bn-toolbar,
+.bn-notch,
+.bn-tray {
+  --st-font-sans: var(--st-font-desk);
+
+  font-family: var(--st-font-sans);
+}
+
+.bn-toolbar:lang(ar),
+.bn-notch:lang(ar),
+.bn-tray:lang(ar) {
+  --st-font-sans: var(--st-font-desk-arabic);
+}
+
+.bn-canvas[data-window] {
+  /* Inside the window the shell surfaces (sidebar, panels) take the window glass. */
+  --st-bg-body: var(--st-desk-glass-solid);
+
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-solid);
+  box-shadow: var(--st-desk-shadow);
+  overflow: clip;
+}
+
+.bn-canvas[data-window] .bn-toolbar {
+  gap: var(--st-space-2xs);
+  min-block-size: 2.75rem;
+  padding-inline: var(--st-space-xl) var(--st-space-s);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: var(--st-desk-titlebar);
+}
+
+.bn-canvas[data-window] .bn-toolbar-title {
+  font-weight: var(--st-weight-semibold);
+  color: var(--st-desk-heading);
+}
+
+.bn-canvas[data-window] .bn-toolbar-app {
+  color: var(--st-desk-meta);
+  font-weight: var(--st-weight-medium);
+}
+
+.bn-canvas[data-window] .bn-status {
+  color: var(--st-desk-meta);
+  font-weight: var(--st-weight-medium);
+}
+
+.bn-canvas[data-window] .bn-toolbar-sep {
+  background: var(--st-desk-glass-border);
+}
+
+/* The board meets the sidebar on a soft rounded corner; with no sidebar (the shared canvas) it
+   runs straight to the window edge, and the window clips the rest. */
+.bn-canvas[data-window] .bn-body > .bn-flow:first-child {
+  border-start-start-radius: 0;
+}
+
+.bn-canvas[data-window] .bn-panel-header {
+  border-block-end-color: var(--st-desk-glass-edge);
+}
+
+.bn-canvas[data-window] .bn-notice {
+  padding-block: var(--st-space-s);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+}
+
+/* Traffic lights: 12px dots, centres 24px apart, each with a 24px target (SC 2.5.8). A light
+   with no action is a picture (aria-hidden) and is drawn dimmed. */
+.bn-lights {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.75rem;
+  margin-inline-end: var(--st-space-l);
+}
+
+.bn-light {
+  position: relative;
+  flex: none;
+  display: block;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--st-desk-light-close);
+  color: var(--st-desk-light-ink);
+}
+
+.bn-light[data-light="min"] {
+  background: var(--st-desk-light-min);
+}
+
+.bn-light[data-light="zoom"] {
+  background: var(--st-desk-light-zoom);
+}
+
+.bn-light[data-inert] {
+  opacity: 0.45;
+}
+
+:is(a, button).bn-light {
+  cursor: pointer;
+}
+
+:is(a, button).bn-light::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+/* The light's glyph shows on hover and focus, as on a desktop (x to close, a plus for full screen). */
+:is(a, button).bn-light::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  opacity: 0;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.5px 100% no-repeat;
+  transition: opacity var(--st-duration-base) var(--st-ease);
+}
+
+a.bn-light::before {
+  rotate: 45deg;
+}
+
+.bn-lights:is(:hover, :focus-within) :is(a, button).bn-light::before {
+  opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .bn-page[data-desk] {
+    gap: 0;
+    padding: 0;
+  }
+
+  .bn-canvas[data-window] {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .bn-canvas[data-window] .bn-toolbar {
+    padding-inline: var(--st-space-l) var(--st-space-2xs);
+  }
+}
+
+@media (forced-colors: active) {
+  .bn-light {
+    border: 1px solid CanvasText;
+  }
 }

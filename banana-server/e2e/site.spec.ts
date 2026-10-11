@@ -77,12 +77,12 @@ test("copy buttons copy the code and show a Copied toast", async ({ page, contex
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await visit(page, "/en");
   const block = page.getByTestId("code-claude");
-  await block.getByRole("button", { name: "Copy command" }).click();
-  const toast = page.locator(".st-toast", { hasText: "Copied" });
+  await block.getByRole("button").click();
+  const toast = page.locator(".st-toast");
   await expect(toast).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   expect(copied).toMatch(/^claude mcp add --transport http /);
-  await expect(page.getByRole("status").filter({ hasText: "Copied" })).toHaveCount(1);
+  await expect(toast).toHaveCount(1);
 });
 
 test("Arabic pages are rtl with the Arabic font, while code and the logo stay ltr", async ({ page }) => {
@@ -97,11 +97,11 @@ test("Arabic pages are rtl with the Arabic font, while code and the logo stay lt
     expect(await block.locator("pre").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   }
   // The server address is an ltr code run inside an rtl block, so the block still sits at the start.
-  const address = page.getByTestId("code-server-url").locator("code");
+  const address = page.getByTestId("code-server-url").first().locator("code");
   await expect(address).toHaveAttribute("dir", "ltr");
   expect(await page.locator(".brand").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   // The primary call to action is the yellow Studio primary button.
-  const cta = page.locator('.hero .st-btn[data-variant="primary"]');
+  const cta = page.locator('.callout.is-hero .st-btn[data-variant="primary"]');
   await expect(cta).toHaveCount(1);
 });
 
@@ -145,6 +145,11 @@ for (const url of ["/en", "/ar", "/en/pricing", "/ar/takedown"]) {
       for (const el of document.querySelectorAll<HTMLElement>(".site button, .site input:not([type=hidden]), .site textarea, .site .st-btn, .site .nav-link")) {
         const r = el.getBoundingClientRect();
         if (r.width === 0 && r.height === 0) continue;
+        // Window traffic lights are 12px dots with a 24px ::after hit area (desktop.css).
+        if (el.matches(".dwin-light")) {
+          const hit = getComputedStyle(el, "::after");
+          if (parseFloat(hit.width) >= 24 && parseFloat(hit.height) >= 24) continue;
+        }
         if (r.width < 24 || r.height < 24) out.push(`${el.tagName}.${el.className} ${r.width}x${r.height}`);
       }
       return out;

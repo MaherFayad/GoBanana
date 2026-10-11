@@ -7,6 +7,9 @@
  *
  * Mounts the Studio toast stack once for the whole page (share, upload and canvas toasts).
  * Dark only: the root layout sets data-theme="dark" on <html>.
+ *
+ * Drawn as the main app window on the GoBanana desktop: the red traffic light goes back to the
+ * canvases dashboard (`dashboardHref`).
  */
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { WarningIcon } from "@/components/studio/icons";
@@ -32,6 +35,8 @@ export interface WebCanvasProps {
   shareToken?: string | null;
   /** Pricing page link for upgrade notes. */
   pricingHref?: string;
+  /** Where the window's close light goes. */
+  dashboardHref?: string;
 }
 
 /** Same rule as the inline view (ui/canvas/main.tsx): under 720px the canvas goes compact. */
@@ -61,6 +66,7 @@ export function WebCanvas({
   plan = null,
   shareToken = null,
   pricingHref = "/en/pricing",
+  dashboardHref = "/en/canvases",
 }: WebCanvasProps) {
   const [conflict, setConflict] = useState(false);
   const compact = useNarrow();
@@ -81,7 +87,7 @@ export function WebCanvas({
 
   return (
     <ToastProvider>
-      <div className="bn-page">
+      <div className="bn-page" data-desk="">
         {conflict && (
           <div className="bn-banner">
             <div className="st-alert" data-tone="warning" role="alert">
@@ -112,6 +118,7 @@ export function WebCanvas({
           readOnly={readOnly}
           compact={compact}
           web={{ plan, shareToken, pricingHref }}
+          windowChrome={{ closeHref: dashboardHref }}
         />
       </div>
     </ToastProvider>

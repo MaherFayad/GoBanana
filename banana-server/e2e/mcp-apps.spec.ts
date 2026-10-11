@@ -227,7 +227,7 @@ test.describe("inline canvas in an MCP Apps host", () => {
     const { frame, cspErrors } = await openInHost(page);
     await expect(frame.locator(".react-flow__node")).toHaveCount(3);
     await expect(frame.getByText("Cold checkout").first()).toBeVisible();
-    const pin = node(frame, "img-pin").locator("img");
+    const pin = node(frame, "img-pin").locator("img").first(); // the thumbnail; the full image may mount next to it (zoom swap)
     await expect(pin).toHaveAttribute("src", /^https:\/\/i\.pinimg\.com\//);
     await expect.poll(() => pin.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBe(1);
     const card = node(frame, "img-broken").getByTestId("link-card");

@@ -20,6 +20,8 @@
  *   checklist -> checkbox-on   swatch -> colors-swatch   code -> braces   sticky -> sticky-note
  *   brief -> clipboard-note   shield -> shield   send -> send   plug -> plug   image -> image
  *   chat -> message (a neutral mark for ChatGPT: simple-icons dropped the OpenAI logo in v16)
+ *   Dashboard and account: grid -> grid-2x2-2   list -> bulletlist   trash -> trash   chart -> chart-bar-big
+ *   card -> credit-card
  */
 import { ArrowBarLeft } from "pixelarticons/react/ArrowBarLeft.js";
 import { ArrowBarRight } from "pixelarticons/react/ArrowBarRight.js";
@@ -71,6 +73,11 @@ import { Send } from "pixelarticons/react/Send.js";
 import { Shield } from "pixelarticons/react/Shield.js";
 import { StickyNote } from "pixelarticons/react/StickyNote.js";
 import { Terminal } from "pixelarticons/react/Terminal.js";
+import { Bulletlist } from "pixelarticons/react/Bulletlist.js";
+import { ChartBarBig } from "pixelarticons/react/ChartBarBig.js";
+import { CreditCard } from "pixelarticons/react/CreditCard.js";
+import { Grid2x22 } from "pixelarticons/react/Grid2x22.js";
+import { Trash } from "pixelarticons/react/Trash.js";
 import { createIcon } from "./Icon";
 import { ImageOffGlyph } from "./glyphs";
 
@@ -137,3 +144,8 @@ export const ImageIcon = createIcon("image", Image);
 export const ChatIcon = createIcon("chat", Message);
 /** Open the image preview (canvas tiles and search results): a magnifier with a plus. */
 export const PreviewIcon = createIcon("preview", ZoomIn);
+export const GridIcon = createIcon("grid", Grid2x22);
+export const ListIcon = createIcon("list", Bulletlist, { mirror: true });
+export const TrashIcon = createIcon("trash", Trash);
+export const ChartIcon = createIcon("chart", ChartBarBig);
+export const CardIcon = createIcon("card", CreditCard);

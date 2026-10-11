@@ -122,7 +122,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
                 <ul>
                   {col.links.map((l) => (
                     <li key={l.label}>
-                      <Link href={l.href}>{l.label}</Link>
+                      {l.href.startsWith("/docs/") ? <a href={l.href}>{l.label}</a> : <Link href={l.href}>{l.label}</Link>}
                     </li>
                   ))}
                 </ul>

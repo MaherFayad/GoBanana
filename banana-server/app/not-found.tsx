@@ -3,8 +3,8 @@
  * /c/:id still answers 404, now with this page). The locale comes from the `x-site-locale`
  * header proxy.ts sets on /en/* and /ar/*; anything else is English.
  *
- * Rendered inside the root layout only, so it brings the site shell itself: header, the inset
- * 404 panel (NotFoundView) and footer.
+ * Rendered inside the root layout only, so it brings the site shell itself: the menu bar, the
+ * Trash window (NotFoundView), the footer and the dock.
  */
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -13,6 +13,7 @@ import { APP_NAME } from "@/lib/config";
 import { getDict } from "@/lib/site/dict";
 import { DEFAULT_LOCALE, dirOf, isLocale, LOCALE_HEADER } from "@/lib/site/i18n";
 import { isSignedIn } from "@/lib/site/session";
+import { Dock } from "./(site)/_components/desktop/Dock";
 import { NotFoundView } from "./(site)/_components/NotFoundView";
 import { SiteFooter, SiteHeader } from "./(site)/_components/SiteChrome";
 import "./(site)/site.css";
@@ -38,6 +39,7 @@ export default async function NotFound() {
         <NotFoundView locale={locale} t={t.notFound} />
       </main>
       <SiteFooter locale={locale} t={t} />
+      <Dock locale={locale} t={t} />
       <ToastViewport labels={t.common.toast} />
     </div>
   );

@@ -42,6 +42,7 @@ import {
   type KeyboardEvent,
   type CSSProperties,
   type PointerEvent,
+  type ReactNode,
   type RefObject,
 } from "react";
 import { dismissToast, pushToast } from "@/components/studio/toastBus";
@@ -125,6 +126,13 @@ export interface CanvasAppProps {
   trayCollapsedByDefault?: boolean;
   /** Filled with the live-refresh handle (the inline canvas polls the server and offers newer states). */
   refreshRef?: RefObject<CanvasRefreshHandle | null>;
+  /**
+   * Web and shared canvas: the canvas is drawn as an app window on the GoBanana desktop (title
+   * bar with traffic lights, glass chrome). Leave unset inline, where the host frames the view.
+   */
+  windowChrome?: ToolbarProps["windowChrome"];
+  /** A notice under the title bar, inside the window (the shared canvas's view-only alert). */
+  notice?: ReactNode;
 }
 
 /** A newer state from the server, offered by a live refresh. */
@@ -205,7 +213,7 @@ export function CanvasApp(props: CanvasAppProps) {
   }, [load.status, attempt, persistence, isBlocked]);
 
   return (
-    <div className="bn-canvas" data-theme={props.theme}>
+    <div className="bn-canvas" data-theme={props.theme} data-window={props.windowChrome ? "" : undefined}>
       {load.status === "ready" ? (
         <ReactFlowProvider>
           <CanvasEditor {...props} initial={load.data} />
@@ -312,6 +320,8 @@ function CanvasEditor({
   trayCollapsedByDefault = false,
   refreshRef,
   isBlocked,
+  windowChrome,
+  notice,
 }: CanvasAppProps & { initial: Deserialized }) {
   const rf = useReactFlow<CanvasFlowNode>();
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<CanvasFlowNode>(initial.nodes);
@@ -1145,7 +1155,9 @@ function CanvasEditor({
               : undefined
           }
           {...(web && !readOnly ? { canvasId, ...web } : {})}
+          windowChrome={windowChrome}
         />
+        {notice && <div className="bn-notice">{notice}</div>}
         {initial.removed > 0 && (
           <div className="bn-notice">
             <p className="st-alert" data-tone="info" role="status">

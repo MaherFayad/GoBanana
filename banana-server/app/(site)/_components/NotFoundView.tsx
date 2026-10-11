@@ -1,35 +1,52 @@
 /**
- * The 404 page, after pryzm.design's: one inset rounded panel with a big muted "404", a
- * headline, two short lines and two buttons. Studio skin, both languages.
+ * The 404 page on the GoBanana desktop (docs/site-redesign-spec.md): one glass "Trash" window
+ * saying the file has moved to the Trash, with a way home and a way to the docs, plus a quiet
+ * link to the canvases list. Both languages; Arabic mirrors through logical CSS.
  */
 import Link from "next/link";
-import { ArrowEndIcon } from "@/components/studio/icons";
+import { ArrowEndIcon, DocsIcon, TrashIcon } from "@/components/studio/icons";
 import type { Dict } from "@/lib/site/dict";
 import { href, type Locale } from "@/lib/site/i18n";
+import { docsHref } from "./desktop/Dock";
+import { RollButton } from "./desktop/RollButton";
+import { TwoToneHeading } from "./desktop/TwoToneHeading";
+import { Window } from "./desktop/Window";
 
 export function NotFoundView({ locale, t }: { locale: Locale; t: Dict["notFound"] }) {
   return (
     <div className="nf">
-      <div className="nf-panel">
-        <p className="nf-code" dir="ltr" aria-hidden="true">
-          {t.code}
-        </p>
-        <h1 className="nf-title">{t.title}</h1>
+      <Window
+        as="div"
+        title={t.windowTitle}
+        className="nf-window"
+        bodyClassName="nf-panel"
+        toolbar={
+          <span className="nf-code" dir="ltr">
+            {t.code}
+          </span>
+        }
+      >
+        <span className="nf-icon" aria-hidden="true">
+          <TrashIcon size={24} />
+        </span>
+        <TwoToneHeading as="h1" className="is-window nf-title" dim={t.titleDim} bright={t.titleBright} />
         <p className="nf-body">
           {t.body}
           <br />
           {t.body2}
         </p>
         <div className="actions nf-actions">
-          <Link className="st-btn" data-variant="primary" data-size="lg" href={href(locale, "canvases")}>
+          <RollButton href={href(locale)} variant="primary" icon={<ArrowEndIcon size={16} />}>
             {t.primary}
-            <ArrowEndIcon size={16} />
-          </Link>
-          <Link className="st-btn" data-variant="secondary" data-size="lg" href={href(locale)}>
+          </RollButton>
+          <RollButton href={docsHref(locale)} plain icon={<DocsIcon size={16} />}>
             {t.secondary}
-          </Link>
+          </RollButton>
         </div>
-      </div>
+        <p className="nf-more">
+          <Link href={href(locale, "canvases")}>{t.canvases}</Link>
+        </p>
+      </Window>
     </div>
   );
 }

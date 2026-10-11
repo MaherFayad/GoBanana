@@ -18,10 +18,17 @@ export function SiteNav({ label, items }: { label: string; items: NavItem[] }) {
       <ul className="nav-list">
         {items.map((item) => (
           <li key={item.href}>
-            <Link className="nav-link" href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
-              {item.label}
-              {item.badge ? <span className="nav-badge">{item.badge}</span> : null}
-            </Link>
+            {/* The docs are a separate static app: a plain link keeps its trailing slash and skips the router. */}
+            {item.href.startsWith("/docs/") ? (
+              <a className="nav-link" href={item.href}>
+                {item.label}
+              </a>
+            ) : (
+              <Link className="nav-link" href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
+                {item.label}
+                {item.badge ? <span className="nav-badge">{item.badge}</span> : null}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

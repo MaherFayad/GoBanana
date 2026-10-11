@@ -31,7 +31,7 @@ export default async function TakedownPage({ params, searchParams }: Props) {
   const status = STATUSES.find((s) => s === raw) ?? "idle";
 
   return (
-    <div className="wrap page">
+    <div className="wrap page takedown-page">
       <h1>{t.title}</h1>
       <p className="lead">{bt(t.lead)}</p>
 

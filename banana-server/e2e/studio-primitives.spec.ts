@@ -265,7 +265,8 @@ test("Inter and IBM Plex Sans Arabic load from this origin", async ({ page }) =>
 });
 
 for (const [path, family] of [
-  ["/en", "Inter Variable"],
+  // The site uses the desk font (Instrument Sans) since the desktop redesign (DECISIONS.md 2026-10-12).
+  ["/en", "Instrument Sans"],
   ["/ar", "IBM Plex Sans Arabic"],
 ] as const) {
   test(`site page ${path} renders in ${family}`, async ({ page }) => {

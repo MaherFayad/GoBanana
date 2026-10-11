@@ -107,9 +107,10 @@ export function Window({
     return () => mq.removeEventListener("change", sync);
   }, [controls]);
 
+  // Runs again once the move handle replaces the plain title (canMove is known after mount).
   useEffect(() => {
     if (autoFocus) handleRef.current?.focus();
-  }, [autoFocus]);
+  }, [autoFocus, canMove]);
 
   useEffect(() => {
     if (focusAfter.current === "reopen") reopenRef.current?.focus();

@@ -3,10 +3,12 @@
 /**
  * View-only canvas for share links (`/s/:token`). Nothing is ever saved.
  *
- * An info alert above the board says so in words (the top bar also shows "View only"
+ * Same window chrome as the web canvas, read only: the traffic lights are a picture (a visitor
+ * has no dashboard to go back to), apart from full screen where the browser allows it. An info
+ * alert under the title bar says "View only" in words (the title bar also shows "View only"
  * instead of a save status). Every reference keeps its source link (hard rule 3).
  */
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { InfoIcon } from "@/components/studio/icons";
 import { ToastProvider } from "@/components/studio/Toast";
 import { CanvasApp } from "./CanvasApp";
@@ -19,24 +21,37 @@ export interface SharedCanvasProps {
   title: string;
   /** Already takedown filtered on the server, tray removed. */
   state: CanvasState;
+  /** Page-level extras drawn over the desk (the share page's "Made with" card). */
+  children?: ReactNode;
 }
 
-export function SharedCanvas({ appName, title, state }: SharedCanvasProps) {
+const VIEW_ONLY = (
+  <div className="st-alert" data-tone="info" data-testid="view-only-banner">
+    <span className="st-alert-icon">
+      <InfoIcon size={16} />
+    </span>
+    <div className="st-alert-content">
+      <p>View only. You cannot change this canvas.</p>
+    </div>
+  </div>
+);
+
+export function SharedCanvas({ appName, title, state, children }: SharedCanvasProps) {
   const persistence = useMemo(() => createMemoryPersistence(state), [state]);
   return (
     <ToastProvider>
-      <div className="bn-page">
-        <div className="bn-banner">
-          <div className="st-alert" data-tone="info" data-testid="view-only-banner">
-            <span className="st-alert-icon">
-              <InfoIcon size={16} />
-            </span>
-            <div className="st-alert-content">
-              <p>View only. You cannot change this canvas.</p>
-            </div>
-          </div>
-        </div>
-        <CanvasApp canvasId="shared" appName={appName} title={title} initialState={state} persistence={persistence} readOnly />
+      <div className="bn-page" data-desk="">
+        <CanvasApp
+          canvasId="shared"
+          appName={appName}
+          title={title}
+          initialState={state}
+          persistence={persistence}
+          readOnly
+          windowChrome={{}}
+          notice={VIEW_ONLY}
+        />
+        {children}
       </div>
     </ToastProvider>
   );

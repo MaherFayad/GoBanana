@@ -1,7 +1,7 @@
 /**
- * Canvases dashboard: /en/canvases and /ar/canvases. The signed-in user's canvases, in the
- * workspace structure of pryzm.design's "Lab" (a slim start sidebar, then rounded panels:
- * the canvas grid and a details panel at the end side), in the Studio skin.
+ * Canvases dashboard: /en/canvases and /ar/canvases. The signed-in user's canvases as a Finder
+ * window on the GoBanana desktop (docs/site-redesign-spec.md): the menu bar on top, then one
+ * glass window with a sidebar, a toolbar, the canvases and an Inspector (Dashboard.tsx).
  *
  * - Auth like /account and /c/:id: WorkOS AuthKit through getWebUser(); signed out goes to
  *   sign-in and comes back here (returnTo). The test-only E2E bypass shows demo cards.
@@ -19,6 +19,8 @@ import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
 import { e2eAuthBypass, SIGN_OUT_PATH, signInHref } from "@/lib/web-auth";
 import { getWebUser, type WebUser } from "@/lib/web-session";
+import { docsHref } from "../../_components/desktop/Dock";
+import { SiteHeader } from "../../_components/SiteChrome";
 import { Dashboard, type DashCard } from "./Dashboard";
 import "./dashboard.css";
 
@@ -74,25 +76,37 @@ export default async function CanvasesPage({ params, searchParams }: Props) {
   const cards = view === "shared" ? all.filter((c) => c.shared) : all;
 
   return (
-    <Dashboard
-      locale={locale}
-      appName={APP_NAME}
-      view={view === "shared" && sharedCount > 0 ? "shared" : "all"}
-      cards={view === "shared" && sharedCount === 0 ? all : cards}
-      total={all.length}
-      sharedCount={sharedCount}
-      failed={!load.ok}
-      email={user?.email ?? null}
-      links={{
-        home: href(locale),
-        all: self,
-        shared: `${self}?view=shared`,
-        docs: `${href(locale)}#install`,
-        account: href(locale, "account"),
-        signOut: SIGN_OUT_PATH,
-        feedback: feedbackAddress(),
-      }}
-      t={{ ...t, home: fmt(t.home), emptyBody: fmt(t.emptyBody), newCta: fmt(t.newCta), signOut: dict.common.signOut }}
-    />
+    <>
+      <SiteHeader locale={locale} t={dict} signedIn={user !== undefined} />
+      <main id="main" tabIndex={-1} className="dash-desk">
+        <Dashboard
+          locale={locale}
+          appName={APP_NAME}
+          view={view === "shared" && sharedCount > 0 ? "shared" : "all"}
+          cards={view === "shared" && sharedCount === 0 ? all : cards}
+          total={all.length}
+          sharedCount={sharedCount}
+          failed={!load.ok}
+          email={user?.email ?? null}
+          links={{
+            home: href(locale),
+            all: self,
+            shared: `${self}?view=shared`,
+            docs: docsHref(locale, "start/install/"),
+            account: href(locale, "account"),
+            signOut: SIGN_OUT_PATH,
+            feedback: feedbackAddress(),
+          }}
+          t={{
+            ...t,
+            home: fmt(t.home),
+            emptyBody: fmt(t.emptyBody),
+            newCta: fmt(t.newCta),
+            signOut: dict.common.signOut,
+            close: dict.common.close,
+          }}
+        />
+      </main>
+    </>
   );
 }

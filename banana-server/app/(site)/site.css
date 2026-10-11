@@ -774,7 +774,7 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   background: var(--st-overlay-5);
 }
 
-/* ------------------------------------------------------------------ account sections */
+/* ------------------------------------------------------------------ sections (takedown) */
 
 .site .section {
   margin-block-start: var(--st-space-8xl);
@@ -792,41 +792,305 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   font-size: var(--st-text-xl);
 }
 
-.site .section.danger > h2 {
+/* ------------------------------------------------------------------ account (System Settings) */
+
+/* One glass window (desktop.css .dwin): the list at the start, the settings pane beside it. */
+.site .settings-page {
+  max-inline-size: calc(64rem + 2 * var(--site-gutter));
+}
+
+.site .settings .dwin-body.settings-body {
+  display: grid;
+  grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+  padding: 0;
+}
+
+.site .settings-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-l);
+  padding: var(--st-space-l) var(--st-space-s);
+  border-inline-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: var(--st-desk-titlebar);
+}
+
+.site .settings-user {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-m);
+  min-inline-size: 0;
+  padding: var(--st-space-s);
+}
+
+.site .settings-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 50%;
+  background: var(--st-primary-fill);
+  color: var(--st-primary-text);
+  font-weight: 600;
+}
+
+.site .settings-avatar.is-empty {
+  background: var(--st-desk-glass-hover);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-border);
+}
+
+.site .settings-user-text {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.site .settings-user-name {
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.site .settings-user-email {
+  overflow: hidden;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .settings-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .settings-list li + li {
+  margin-block-start: 0;
+}
+
+.site .settings-signout {
+  margin: 0;
+  padding-block-start: var(--st-space-s);
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+}
+
+.site .settings-item {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-m);
+  inline-size: 100%;
+  min-block-size: 2.25rem;
+  padding-inline: var(--st-space-s);
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--st-desk-heading);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.site .settings-item:hover {
+  background: var(--st-desk-glass-hover);
+}
+
+.site .settings-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.6rem;
+  block-size: 1.6rem;
+  border-radius: 0.45rem;
+  background: var(--st-overlay-10);
+  color: var(--st-desk-heading);
+}
+
+.site .settings-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-5xl);
+  min-inline-size: 0;
+  padding: var(--st-space-5xl) var(--st-space-6xl) var(--st-space-6xl);
+}
+
+.site .settings-title {
+  margin: 0;
+  color: var(--st-desk-heading);
+  font-size: 1.85rem;
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+  line-height: 1;
+}
+
+.site .settings-title:lang(ar) {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.site .settings-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  margin: 0 0 var(--st-space-s);
+  padding-inline: var(--st-space-xs);
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.site .settings-section.is-danger > h2 {
   color: var(--st-danger-fg);
 }
 
-.site .facts {
-  display: grid;
-  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
-  gap: var(--st-space-s) var(--st-space-3xl);
-  margin: 0 0 var(--st-space-xl);
+/* A macOS-style group: rows on one glass card, split by hairlines. */
+.site .settings-group {
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: 0.8rem;
+  background: var(--st-desk-glass-hover);
 }
 
-.site .facts dt {
-  color: var(--st-text-muted);
-}
-
-.site .facts dd {
-  margin: 0;
-  color: var(--st-text-bright);
-  font-weight: var(--st-weight-semibold);
-}
-
-.site .account-head {
+.site .settings-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--st-space-m);
+  gap: var(--st-space-s) var(--st-space-2xl);
+  min-block-size: 3rem;
+  padding: var(--st-space-m) var(--st-space-xl);
 }
 
-.site .account-head h1 {
+.site .settings-row + .settings-row {
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+}
+
+.site .settings-row.is-stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.site .settings-row.is-note {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: var(--st-desk-body);
+}
+
+.site .settings-row.is-note .st-icon {
+  flex: none;
+  margin-block-start: 0.25em;
+  color: var(--st-desk-heading);
+}
+
+.site .settings-row.is-meter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--st-space-s) var(--st-space-xl);
+}
+
+.site .settings-row-end {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-l);
+}
+
+.site .settings-row-label {
+  color: var(--st-desk-heading);
+  font-weight: 500;
+}
+
+.site .settings-row-value {
+  color: var(--st-desk-heading);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.site .settings-row-strong {
+  color: var(--st-desk-heading);
+  font-weight: 600;
+}
+
+.site .settings-row-note {
+  max-inline-size: 60ch;
+  color: var(--st-desk-body);
+  font-size: 0.9375rem;
+}
+
+.site .settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-s);
+}
+
+.site .settings-actions .st-btn {
+  border-radius: var(--st-radius-pill);
+}
+
+.site .settings-actions .delete-status:empty {
+  display: none;
+}
+
+/* Signed out: the same window, a sign-in panel in the pane. */
+.site .settings-signin {
+  align-items: center;
+  justify-content: center;
+  gap: var(--st-space-l);
+  min-block-size: 26rem;
+  text-align: center;
+}
+
+.site .settings-signin > * {
   margin: 0;
 }
 
-.site .account-head p {
-  margin: 0;
+.site .settings-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  border-radius: 1.1rem;
+  background: var(--st-primary-fill);
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+.site .settings-mark .brand-mark {
+  inline-size: 68%;
+  block-size: auto;
+  color: var(--st-primary-text);
+}
+
+.site .settings-lead {
+  max-inline-size: 36ch;
+  color: var(--st-desk-body);
+}
+
+.site .settings-signin .st-btn {
+  border-radius: var(--st-radius-pill);
+}
+
+@media (max-width: 767.98px) {
+  .site .settings .dwin-body.settings-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site .settings-side {
+    border-inline-end: 0;
+    border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  }
+
+  .site .settings-pane {
+    gap: var(--st-space-3xl);
+    padding: var(--st-space-2xl) var(--st-space-l) var(--st-space-3xl);
+  }
+
+  .site .settings-signin {
+    min-block-size: 0;
+  }
 }
 
 /* ------------------------------------------------------------------ takedown process */
@@ -934,12 +1198,12 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   }
 }
 
-/* Usage bars on the account page (decorative; the numbers are in the text). */
+/* Usage meters on the account page (role="meter"; the numbers are also in the row). */
 .site .usage-meter {
+  grid-column: 1 / -1;
   display: block;
-  inline-size: min(100%, 16rem);
+  inline-size: 100%;
   block-size: 6px;
-  margin-block-start: var(--st-space-xs);
   overflow: hidden;
   border-radius: var(--st-radius-pill);
   background: var(--st-overlay-10);
@@ -949,7 +1213,7 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   display: block;
   block-size: 100%;
   border-radius: inherit;
-  background: var(--st-text-bright);
+  background: var(--st-primary-fill);
 }
 
 .site .usage-meter[data-full] .usage-meter-fill {
@@ -1078,13 +1342,31 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   font-size: 1.0625rem;
 }
 
-.site .legal h1 {
-  font-size: var(--st-text-6xl);
+/* Desk heading style (desktop.css): weight 500, tight tracking and leading, white on black.
+   Arabic keeps normal tracking and a taller line. The reading column itself is unchanged. */
+.site :is(.legal, .takedown-page) h1 {
+  color: var(--st-desk-heading);
+  font-size: clamp(2.25rem, 1.6rem + 1.6vw, 3rem);
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+  line-height: 0.95;
+}
+
+.site :is(.legal, .takedown-page) h2 {
+  color: var(--st-desk-heading);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .site .legal h2 {
   margin-block-start: var(--st-space-9xl);
   font-size: var(--st-text-3xl);
+}
+
+.site :is(.legal, .takedown-page) :is(h1, h2):lang(ar) {
+  letter-spacing: 0;
+  line-height: 1.4;
 }
 
 .site .legal .table-scroll {
@@ -1184,29 +1466,28 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
     padding: var(--st-space-2xl);
   }
 
-  .site .facts {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 /* ------------------------------------------------------------------ 404 (NotFoundView) */
 
+/* The Trash window, centred on the desk. */
 .site .nf {
-  display: flex;
-  padding: var(--st-space-s);
+  display: grid;
+  place-items: center;
+  min-block-size: max(30rem, calc(100svh - 10rem));
+  padding: var(--st-space-7xl) var(--site-gutter);
 }
 
-.site .nf-panel {
+.site .nf-window {
+  inline-size: min(100%, 34rem);
+}
+
+.site .dwin-body.nf-panel {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-block-size: max(28rem, calc(100svh - 12rem));
-  padding: var(--st-space-10xl) var(--st-space-3xl);
-  border: var(--st-border-width) solid var(--st-border-muted);
-  border-radius: var(--st-radius-card);
-  background: var(--st-bg-surface);
+  gap: var(--st-space-l);
+  padding: var(--st-space-6xl) var(--st-space-3xl) var(--st-space-5xl);
   text-align: center;
 }
 
@@ -1215,31 +1496,39 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 }
 
 .site .nf-code {
-  color: var(--st-text-subtle);
-  font-size: clamp(4rem, 2.6rem + 5vw, 7rem);
-  font-weight: var(--st-weight-semibold);
-  letter-spacing: -0.02em;
-  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-.site .nf-title {
-  margin-block-start: var(--st-space-xl);
-  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
-  letter-spacing: -0.02em;
+.site .nf-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  margin-block-end: var(--st-space-s);
+  border-radius: 1.1rem;
+  background: var(--st-desk-glass-hover);
+  box-shadow:
+    inset 0 0 0 1px var(--st-desk-glass-border),
+    var(--st-desk-shadow-soft);
+  color: var(--st-desk-heading);
 }
 
-.site .nf-title:lang(ar) {
-  letter-spacing: 0;
+.site .nf-icon .st-icon {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
 }
 
 .site .nf-body {
-  margin-block-start: var(--st-space-xl);
-  color: var(--st-text-muted);
-  font-size: 1.125rem;
+  max-inline-size: 36ch;
+  color: var(--st-desk-body);
 }
 
 .site .nf-panel > .nf-actions {
   justify-content: center;
-  margin-block-start: var(--st-space-7xl);
+  margin-block-start: var(--st-space-l);
+}
+
+.site .nf-more {
+  color: var(--st-desk-meta);
+  font-size: 0.875rem;
 }

@@ -1,32 +1,69 @@
 /**
- * Account: plan, usage this month, billing note, sign out, delete account. Data loaders:
- * lib/site/session.ts. Studio look: sections with a hairline and a title; the beta state is an
- * info alert; deleting goes through the danger-tone dialog (DeleteAccount.tsx).
+ * Account as a System Settings window on the GoBanana desktop (docs/site-redesign-spec.md): a
+ * glass window with a list at the start (who is signed in, then Plan, Usage, Shared links and
+ * Sign out) and the settings pane: grouped rows for the plan and billing, usage as meters, the
+ * shared links note, and deleting the account (the danger-tone dialog in DeleteAccount.tsx).
+ * Signed out, the same window shows a sign-in panel. Data loaders: lib/site/session.ts.
+ *
+ * The list items are in-page links to the groups, so everything works without JavaScript and
+ * every group stays in the reading order.
  */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowEndIcon, InfoIcon } from "@/components/studio/icons";
+import type { ReactNode } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { ArrowEndIcon, CardIcon, ChartIcon, InfoIcon, ShareIcon, SignOutIcon, WarningIcon } from "@/components/studio/icons";
 import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
-import { getAccountUsage, getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
-import { SIGN_OUT_PATH } from "@/lib/web-auth";
+import { getAccountUsage, getSiteUser, SIGN_IN_PATH, type AccountUsage } from "@/lib/site/session";
+import { e2eAuthBypass, SIGN_OUT_PATH } from "@/lib/web-auth";
 import { bidi, bt } from "../../../_components/Bidi";
+import { TwoToneHeading } from "../../../_components/desktop/TwoToneHeading";
+import { Window } from "../../../_components/desktop/Window";
 import { DeleteAccount } from "./DeleteAccount";
 
-/** A usage bar under a limit line. Decorative: the words next to it carry the numbers. */
-function Meter({ used, limit }: { used: number; limit: number }) {
+/**
+ * A usage meter (role="meter"): named by its row, with the same "3 of 50" text the row shows as
+ * its value text. Unlimited plans get no meter, only the count.
+ */
+function Meter({ used, limit, label, text }: { used: number; limit: number; label: string; text: string }) {
   if (!Number.isFinite(limit) || limit <= 0) return null;
   const pct = Math.min(100, Math.round((used / limit) * 100));
   return (
-    <span className="usage-meter" aria-hidden="true" data-full={pct >= 100 ? "" : undefined}>
+    <span
+      className="usage-meter"
+      role="meter"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={limit}
+      aria-valuenow={Math.min(used, limit)}
+      aria-valuetext={text}
+      data-full={pct >= 100 ? "" : undefined}
+    >
       <span className="usage-meter-fill" style={{ inlineSize: `${pct}%` }} />
     </span>
   );
 }
 
+/** One item in the settings list: an icon tile and a label. */
+function SideItem({ to, icon, children }: { to: string; icon: ReactNode; children: ReactNode }) {
+  return (
+    <li>
+      <a className="settings-item" href={to}>
+        <span className="settings-icon" aria-hidden="true">
+          {icon}
+        </span>
+        {children}
+      </a>
+    </li>
+  );
+}
+
 export const dynamic = "force-dynamic";
+
+const DEMO_USAGE: AccountUsage = { period: "2026-10", searches: 37, canvases: 4 };
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -44,128 +81,211 @@ export default async function AccountPage({ params }: Props) {
   const user = await getSiteUser();
   if (!user) {
     return (
-      <div className="wrap page">
-        <h1>{t.title}</h1>
-        <p>{t.signedOut}</p>
-        <div className="actions">
-          <a
-            className="st-btn"
-            data-variant="primary"
-            data-size="lg"
-            href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "account"))}`}
-          >
-            {dict.common.signIn}
-          </a>
-        </div>
+      <div className="wrap page settings-page">
+        <Window as="div" title={t.windowTitle} className="settings" bodyClassName="settings-body">
+          <div className="settings-side">
+            <div className="settings-user">
+              <span className="settings-avatar is-empty" aria-hidden="true" />
+              <span className="settings-user-text">
+                <span className="settings-user-name">{t.signedOutTitle}</span>
+              </span>
+            </div>
+          </div>
+          <div className="settings-pane settings-signin">
+            <span className="settings-mark" aria-hidden="true">
+              <BrandMark />
+            </span>
+            <TwoToneHeading as="h1" className="is-window" dim={t.signedOutDim} bright={t.signedOutBright} />
+            <p className="settings-lead">{t.signedOut}</p>
+            <a
+              className="st-btn roll-btn"
+              data-variant="primary"
+              data-size="lg"
+              href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "account"))}`}
+            >
+              {dict.common.signIn}
+            </a>
+          </div>
+        </Window>
       </div>
     );
   }
 
-  const usage = await getAccountUsage(user.id);
+  // The test-only sign-in bypass has no database: it shows sample usage, like the dashboard's demo cards.
+  const usage = e2eAuthBypass() && !process.env.DATABASE_URL ? DEMO_USAGE : await getAccountUsage(user.id);
   // Payments are off during the beta: BETA_PLAN gives free users Pro limits (lib/quota.ts).
   const onBeta = user.plan === "free" && betaPlan() !== null;
   const limits = limitsFor(user.plan);
   const ofLimit = (used: number, limit: number) =>
     Number.isFinite(limit) ? fmt(t.ofLimit, { used, limit }) : fmt(t.unlimited, { used });
+  const planName = dict.pricing.plans[user.plan].name;
+  const canvases = href(locale, "canvases");
 
   return (
-    <div className="wrap page">
-      <div className="account-head">
-        <div>
-          <h1>{t.title}</h1>
-          {user.email ? (
-            <p className="note">
-              <bdi>{user.email}</bdi>
-            </p>
-          ) : null}
-        </div>
-        <form method="post" action={SIGN_OUT_PATH}>
-          <button type="submit" className="st-btn" data-variant="secondary" data-size="lg">
-            {dict.common.signOut}
-          </button>
-        </form>
-      </div>
-
-      <section className="section" aria-labelledby="canvases-title">
-        <h2 id="canvases-title">{t.canvasesTitle}</h2>
-        <p>{bt(t.canvasesBody)}</p>
-        <div className="actions flush-start">
-          <Link className="st-btn" data-variant="primary" data-size="lg" href={href(locale, "canvases")}>
-            {t.canvasesLink}
-            <ArrowEndIcon size={16} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="plan-title">
-        <h2 id="plan-title">{t.planTitle}</h2>
-        <dl className="facts">
-          <dt>{t.planLabel}</dt>
-          <dd>{bidi(dict.pricing.plans[user.plan].name)}</dd>
-        </dl>
-        {onBeta ? (
-          <div className="st-alert alert-gap" data-tone="info" role="note">
-            <span className="st-alert-icon">
-              <InfoIcon size={16} />
+    <div className="wrap page settings-page">
+      <Window as="div" title={t.windowTitle} className="settings" bodyClassName="settings-body">
+        <nav className="settings-side" aria-label={t.settingsLabel}>
+          <div className="settings-user">
+            <span className="settings-avatar" aria-hidden="true">
+              {(user.email ?? "?").slice(0, 1).toUpperCase()}
             </span>
-            <div className="st-alert-content">
-              <p className="st-alert-title">{bidi(t.betaPlan)}</p>
-              <p>{bidi(t.betaBody)}</p>
+            <span className="settings-user-text">
+              <span className="settings-user-name">{t.signedInAs}</span>
+              {user.email ? (
+                <span className="settings-user-email">
+                  <bdi>{user.email}</bdi>
+                </span>
+              ) : null}
+            </span>
+          </div>
+          <ul className="settings-list">
+            <SideItem to="#plan-title" icon={<CardIcon size={16} />}>
+              {t.planTitle}
+            </SideItem>
+            <SideItem to="#usage-title" icon={<ChartIcon size={16} />}>
+              {t.usageTitle}
+            </SideItem>
+            <SideItem to="#shared-title" icon={<ShareIcon size={16} />}>
+              {t.sharedTitle}
+            </SideItem>
+          </ul>
+          <form className="settings-signout" method="post" action={SIGN_OUT_PATH}>
+            <button type="submit" className="settings-item">
+              <span className="settings-icon" aria-hidden="true">
+                <SignOutIcon size={16} />
+              </span>
+              {dict.common.signOut}
+            </button>
+          </form>
+        </nav>
+
+        <div className="settings-pane">
+          <h1 className="settings-title">{t.title}</h1>
+
+          <section className="settings-section" aria-labelledby="plan-title">
+            <h2 id="plan-title" tabIndex={-1}>
+              {t.planTitle}
+            </h2>
+            <div className="settings-group">
+              <div className="settings-row">
+                <span className="settings-row-label">{t.planLabel}</span>
+                <span className="settings-row-end">
+                  <span className="settings-row-value">{bidi(planName)}</span>
+                  {onBeta ? null : (
+                    <Link className="st-btn" data-variant="secondary" data-size="md" href={href(locale, "pricing")}>
+                      {t.upgrade}
+                    </Link>
+                  )}
+                </span>
+              </div>
+              {onBeta ? (
+                <div className="settings-row is-note" role="note">
+                  <InfoIcon size={16} />
+                  <span>
+                    <span className="settings-row-strong">{bidi(t.betaPlan)}</span> {bidi(t.betaBody)}
+                  </span>
+                </div>
+              ) : null}
+              <div className="settings-row is-stack">
+                <span className="settings-row-label">{t.manageBilling}</span>
+                {/* TODO(billing): link to the Paddle customer portal once a portal session endpoint exists. */}
+                <span className="settings-row-note">{bidi(t.manageBillingNote)}</span>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="actions flush-start alert-gap">
-            <Link className="st-btn" data-variant="secondary" data-size="lg" href={href(locale, "pricing")}>
-              {t.upgrade}
-            </Link>
-          </div>
-        )}
-        <h3>{t.manageBilling}</h3>
-        {/* TODO(billing): link to the Paddle customer portal once a portal session endpoint exists. */}
-        <p>{bidi(t.manageBillingNote)}</p>
-      </section>
+          </section>
 
-      <section className="section" aria-labelledby="usage-title">
-        <h2 id="usage-title">{t.usageTitle}</h2>
-        {usage ? (
-          <dl className="facts">
-            <dt>{t.searches}</dt>
-            <dd>
-              {ofLimit(usage.searches, limits.searchesPerMonth)}
-              <Meter used={usage.searches} limit={limits.searchesPerMonth} />
-            </dd>
-            <dt>{t.canvases}</dt>
-            <dd>
-              {ofLimit(usage.canvases, limits.canvases)}
-              <Meter used={usage.canvases} limit={limits.canvases} />
-            </dd>
-          </dl>
-        ) : (
-          <p>{t.usageUnavailable}</p>
-        )}
-      </section>
+          <section className="settings-section" aria-labelledby="usage-title">
+            <h2 id="usage-title" tabIndex={-1}>
+              {t.usageTitle}
+            </h2>
+            <div className="settings-group">
+              {usage ? (
+                <>
+                  <div className="settings-row is-meter">
+                    <span className="settings-row-label">{t.searches}</span>
+                    <span className="settings-row-value">{ofLimit(usage.searches, limits.searchesPerMonth)}</span>
+                    <Meter
+                      used={usage.searches}
+                      limit={limits.searchesPerMonth}
+                      label={fmt(t.meterLabel, { name: t.searches })}
+                      text={ofLimit(usage.searches, limits.searchesPerMonth)}
+                    />
+                  </div>
+                  <div className="settings-row is-meter">
+                    <span className="settings-row-label">{t.canvases}</span>
+                    <span className="settings-row-value">{ofLimit(usage.canvases, limits.canvases)}</span>
+                    <Meter
+                      used={usage.canvases}
+                      limit={limits.canvases}
+                      label={fmt(t.meterLabel, { name: t.canvases })}
+                      text={ofLimit(usage.canvases, limits.canvases)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="settings-row">
+                  <span className="settings-row-note">{t.usageUnavailable}</span>
+                </div>
+              )}
+            </div>
+          </section>
 
-      <section className="section danger" aria-labelledby="delete-title">
-        <h2 id="delete-title">{t.deleteTitle}</h2>
-        <p>{bidi(t.deleteBody)}</p>
-        <DeleteAccount
-          afterDeleteHref={href(locale)}
-          labels={{
-            deleteButton: t.deleteButton,
-            confirmEyebrow: t.confirmEyebrow,
-            confirmTitle: t.confirmTitle,
-            confirmDeleted: t.confirmDeleted,
-            confirmKept: t.confirmKept,
-            confirmCheck: t.confirmCheck,
-            confirmButton: t.confirmButton,
-            cancel: t.cancel,
-            close: dict.common.close,
-            deleting: t.deleting,
-            deleteFailed: t.deleteFailed,
-            deleteDone: t.deleteDone,
-          }}
-        />
-      </section>
+          <section className="settings-section" aria-labelledby="shared-title">
+            <h2 id="shared-title" tabIndex={-1}>
+              {t.sharedTitle}
+            </h2>
+            <div className="settings-group">
+              <div className="settings-row is-stack">
+                <span className="settings-row-note">{bt(t.sharedBody)}</span>
+                <div className="settings-actions">
+                  <Link className="st-btn" data-variant="secondary" data-size="md" href={`${canvases}?view=shared`}>
+                    <ShareIcon size={16} />
+                    {t.sharedLink}
+                  </Link>
+                  <Link className="st-btn" data-variant="ghost" data-size="md" href={canvases}>
+                    {t.canvasesLink}
+                    <ArrowEndIcon size={16} />
+                  </Link>
+                </div>
+              </div>
+              <div className="settings-row is-stack">
+                <span className="settings-row-note">{bt(t.canvasesBody)}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="settings-section is-danger" aria-labelledby="delete-title">
+            <h2 id="delete-title">
+              <WarningIcon size={16} />
+              {t.deleteTitle}
+            </h2>
+            <div className="settings-group">
+              <div className="settings-row is-stack">
+                <span className="settings-row-note">{bidi(t.deleteBody)}</span>
+                <div className="settings-actions">
+                  <DeleteAccount
+                    afterDeleteHref={href(locale)}
+                    labels={{
+                      deleteButton: t.deleteButton,
+                      confirmEyebrow: t.confirmEyebrow,
+                      confirmTitle: t.confirmTitle,
+                      confirmDeleted: t.confirmDeleted,
+                      confirmKept: t.confirmKept,
+                      confirmCheck: t.confirmCheck,
+                      confirmButton: t.confirmButton,
+                      cancel: t.cancel,
+                      close: dict.common.close,
+                      deleting: t.deleting,
+                      deleteFailed: t.deleteFailed,
+                      deleteDone: t.deleteDone,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </Window>
     </div>
   );
 }

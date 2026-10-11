@@ -5,6 +5,10 @@
  * "on {appName}", the zoom group, the save status (dot plus words), Upload and Share on the
  * web, and the shortcut sheet button. It sits outside the board, so it never covers a
  * focused item (SC 2.4.11). Insert tools live in the notch on the board (canvas/Notch.tsx).
+ *
+ * On the web and shared canvas (`windowChrome`) the bar is the title bar of an app window:
+ * traffic lights first (canvas/WindowLights.tsx), then the same controls. Inline in chat the
+ * host frames the view, so there are no lights.
  */
 import type { Plan } from "@/lib/quota";
 import { ShortcutKeys } from "@/components/studio/Kbd";
@@ -13,6 +17,7 @@ import type { SaveStatus } from "./autosave";
 import { HelpIcon, SearchIcon, WarningIcon } from "./icons";
 import { ShareButton } from "./ShareButton";
 import { UploadButton } from "./UploadButton";
+import { WindowLights, type WindowLightsProps } from "./WindowLights";
 import { ZoomMenu, type ZoomActions } from "./ZoomMenu";
 
 export interface ToolbarProps {
@@ -40,6 +45,8 @@ export interface ToolbarProps {
   shareToken?: string | null;
   /** Link for upgrade notes, for example "/en/pricing". */
   pricingHref?: string;
+  /** Web and shared canvas: draw the bar as a window title bar with traffic lights. */
+  windowChrome?: WindowLightsProps;
 }
 
 const STATUS_TEXT: Record<SaveStatus, string> = {
@@ -53,6 +60,7 @@ const STATUS_TEXT: Record<SaveStatus, string> = {
 export function Toolbar(p: ToolbarProps) {
   return (
     <header className="bn-toolbar">
+      {p.windowChrome && <WindowLights {...p.windowChrome} />}
       <h1 className="bn-toolbar-title">
         <span className="bn-toolbar-title-text">{p.title}</span> <span className="bn-toolbar-app">on {p.appName}</span>
       </h1>

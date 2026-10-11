@@ -195,6 +195,11 @@ html:has(.site .menubar) {
   background: none;
 }
 
+/* The current page: weight 600 next to the 500 of the others (not color alone). */
+.site .menubar .nav-link[aria-current="page"] {
+  font-weight: 600;
+}
+
 .site .menubar .nav-link:hover,
 .site .menubar-link:hover,
 .site .menubar .lang-switch:hover {
@@ -359,6 +364,11 @@ button.dwin-light {
 .site .dwin-body {
   min-inline-size: 0;
   padding: var(--st-space-3xl);
+}
+
+/* Minimised: the body is hidden even where a window gives it display: flex or grid. */
+.site .dwin > .dwin-body[hidden] {
+  display: none;
 }
 
 .site .dwin-reopen {

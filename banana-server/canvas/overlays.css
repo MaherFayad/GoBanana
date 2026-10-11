@@ -182,12 +182,26 @@
 
 /* ------------------------------------------------------------------ /c/:id loading skeleton */
 
+/* The same desk and window as the loaded canvas (canvas.css "window chrome"). */
 .bn-skel {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: var(--st-bg-body);
+  padding: var(--st-space-s);
+  background: var(--st-desk-bg);
+}
+
+.bn-skel-window {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-solid);
+  box-shadow: var(--st-desk-shadow);
+  overflow: clip;
 }
 
 .bn-skel-bar {
@@ -195,8 +209,18 @@
   flex: none;
   align-items: center;
   gap: var(--st-space-s);
-  block-size: var(--st-topbar-h);
-  padding-inline: var(--st-space-s);
+  block-size: 2.75rem;
+  padding-inline: var(--st-space-xl) var(--st-space-s);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: var(--st-desk-titlebar);
+}
+
+.bn-skel-bar .bn-lights {
+  margin-inline-end: var(--st-space-s);
+}
+
+.bn-skel-bar .bn-light {
+  opacity: 0.45;
 }
 
 .bn-skel-spacer {
@@ -244,5 +268,17 @@
 @media (max-width: 760px) {
   .bn-skel-panel {
     display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .bn-skel {
+    padding: 0;
+  }
+
+  .bn-skel-window {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }

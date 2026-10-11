@@ -1,205 +1,302 @@
 /**
- * The site after the pryzm.design restructure (DECISIONS.md, 2026-10-11): the hero field
- * (drag, keyboard, sample cards), scroll reveals that never hide content without JS or under
- * reduced motion, the 404 page, the canvases dashboard (E2E sign-in bypass, demo cards) and the
- * share page chrome. axe runs on the new pages in light and dark.
+ * The GoBanana desktop landing page (docs/site-redesign-spec.md, DECISIONS.md 2026-10-12): the
+ * sticky menu bar, the "Add to Claude" window (copy, move with the keyboard, close and reopen),
+ * the dock, the Mail-style FAQ by keyboard, desktop icons with Quick Look, the phone home screen
+ * without sideways scroll, and Arabic mirroring. Runs against `next dev` with the E2E sign-in
+ * bypass (playwright.config.ts), which checks the showcase against an empty takedown list.
+ *
+ * Image CDN requests are answered with synthetic gradients, never anyone's image. Landing copy
+ * changes often, so landing elements are found by role and structure, not by their words.
  */
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { devices, expect, test, type Page } from "@playwright/test";
 import { gradientPng } from "./support/seed-canvas";
 
+// iPhone 13 metrics in Chromium (the device preset would switch the browser to WebKit).
+const { defaultBrowserType: _webkit, ...IPHONE } = devices["iPhone 13"];
+
+const CDN = /^https:\/\/(cdn\.dribbble\.com|mir-s3-cdn-cf\.behance\.net|i\.pinimg\.com)\//;
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-const DEMO_SHARE = "/s/e2e-share-demo-token-0000000000";
 
-async function axe(page: Page, include: string, label: string) {
-  const results = await new AxeBuilder({ page }).include(include).withTags(TAGS).analyze();
-  expect(results.violations, `${label}: ${JSON.stringify(results.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), null, 2)}`).toEqual([]);
-}
-
-async function mockThumbs(page: Page) {
-  await page.route(/^https:\/\/i\.pinimg\.com\//, (route) =>
-    route.fulfill({ status: 200, contentType: "image/png", body: gradientPng(240, 180, [200, 210, 240], [70, 100, 170]) }),
+async function mockCdn(page: Page) {
+  await page.route(CDN, (route) =>
+    route.fulfill({ status: 200, contentType: "image/png", body: gradientPng(160, 120, [200, 210, 230], [90, 70, 140]) }),
   );
 }
 
-const planeShift = (page: Page) =>
-  page.locator(".hero-plane").evaluate((el) => {
-    const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-    return { x: Math.round(m.m41), y: Math.round(m.m42) };
-  });
+/** Opens a page and waits for hydration (Reveal puts .reveal-on on <html> once React runs). */
+async function open(page: Page, url: string) {
+  await mockCdn(page);
+  await page.goto(url);
+  await expect(page.locator("html")).toHaveClass(/reveal-on/);
+}
 
-test.describe("hero field", () => {
-  test("arrow keys pan, Home recenters, and nothing moves on its own", async ({ page }) => {
-    await page.goto("/en");
-    const field = page.getByRole("region", { name: "Moves field" });
-    await expect(field).toHaveAttribute("aria-describedby", /.+/);
-    await field.focus();
-    const start = await planeShift(page);
-    await page.waitForTimeout(600);
-    expect(await planeShift(page)).toEqual(start);
-    await page.keyboard.press("ArrowRight");
-    await page.keyboard.press("ArrowDown");
-    const moved = await planeShift(page);
-    expect(moved.x).toBeLessThan(start.x);
-    expect(moved.y).toBeLessThan(start.y);
-    await page.keyboard.press("Home");
-    expect(await planeShift(page)).toEqual(start);
-  });
+async function axe(page: Page, include: string, label: string) {
+  const results = await new AxeBuilder({ page }).include(include).withTags(TAGS).analyze();
+  expect(results.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), label).toEqual([]);
+}
 
-  test("a drag pans the field and does not open a tile", async ({ page }) => {
-    await page.goto("/en");
-    const field = page.locator(".hero-field");
-    const box = (await field.boundingBox())!;
-    const start = await planeShift(page);
-    await page.mouse.move(box.x + box.width / 2, box.y + 120);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 - 200, box.y + 160, { steps: 8 });
-    await page.mouse.up();
-    const after = await planeShift(page);
-    expect(after.x).toBeLessThan(start.x - 100);
-    await expect(page.locator(".hero-card")).toHaveCount(0);
-  });
+const hrefs = (page: Page, selector: string) => page.locator(selector).evaluateAll((els) => els.map((el) => el.getAttribute("href")));
 
-  test("Enter on a tile's idea button opens its sample idea; Escape closes it and returns focus", async ({ page }) => {
-    await page.goto("/en");
-    const tile = page.locator(".hero-idea").first();
-    await tile.focus();
-    await page.keyboard.press("Enter");
-    const card = page.getByRole("dialog");
-    await expect(card).toBeVisible();
-    await expect(card).toBeFocused();
-    await expect(tile).toHaveAttribute("aria-expanded", "true");
-    await expect(card).toContainText("Twist:");
-    await axe(page, ".hero", "hero with a card open");
-    await page.keyboard.press("Escape");
-    await expect(card).toHaveCount(0);
-    await expect(tile).toBeFocused();
-  });
+test.describe("menu bar", () => {
+  test("stays at the top while scrolling, with the nav, language, Your canvases and Add to Claude", async ({ page }) => {
+    await open(page, "/en");
+    const bar = page.getByRole("banner");
+    expect(await hrefs(page, "header .site-nav a")).toEqual(["/en#how", "/en#gallery", "/docs/", "/en/pricing"]);
+    // Signed in through the E2E bypass, so the bar links to the canvases.
+    await expect(bar.locator(".menubar-link")).toHaveAttribute("href", "/en/canvases");
+    await expect(bar.locator(".menubar-pill")).toHaveAttribute("href", "/en#install");
+    await expect(bar.locator(".lang-switch")).toHaveAttribute("lang", "ar");
+    // The clock is client only and decorative.
+    await expect(bar.locator(".menubar-clock")).toHaveAttribute("aria-hidden", "true");
+    await expect(bar.locator(".menubar-clock")).not.toBeEmpty();
 
-  test("under reduced motion a fling does not keep moving", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/en");
-    const box = (await page.locator(".hero-field").boundingBox())!;
-    await page.mouse.move(box.x + 700, box.y + 150);
-    await page.mouse.down();
-    await page.mouse.move(box.x + 500, box.y + 150, { steps: 4 });
-    await page.mouse.up();
-    const a = await planeShift(page);
-    await page.waitForTimeout(300);
-    expect(await planeShift(page)).toEqual(a);
+    await page.evaluate(() => window.scrollTo(0, 2000));
+    await expect.poll(async () => (await bar.boundingBox())?.y).toBe(0);
+    await axe(page, ".menubar", "menu bar");
   });
 });
 
-test.describe("scroll reveals", () => {
-  test("below the fold content waits, then shows when scrolled to", async ({ page }) => {
-    await page.goto("/en");
-    const faq = page.locator(".faq-item").first();
-    await expect(page.locator("html")).toHaveClass(/reveal-on/);
-    expect(await faq.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
-    await faq.scrollIntoViewIfNeeded();
-    await expect(faq).toHaveAttribute("data-revealed", "");
-    await expect.poll(() => faq.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+test.describe("Add to Claude window", () => {
+  test("the copy button copies the server address and shows a Copied toast", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await open(page, "/en");
+    const win = page.locator("#add-window");
+    await expect(win).toHaveRole("region");
+    await expect(win).toHaveAccessibleName(/.+/);
+    await expect(win.getByRole("heading", { level: 2 })).toContainText("GoBanana");
+    await win.getByTestId("code-server-url").getByRole("button").click();
+    await expect(page.locator(".st-toast")).toHaveCount(1);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/api\/mcp$/);
   });
 
-  test("nothing is hidden under reduced motion", async ({ page }) => {
+  test("moves 16px per arrow key from its title, goes back with the green light, and closes and reopens", async ({ page }) => {
+    await open(page, "/en");
+    const win = page.locator("#add-window");
+    const handle = win.locator(".dwin-handle");
+    await expect(handle).toHaveRole("button");
+    await expect(handle).toHaveAccessibleName(/.+/);
+    await handle.focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowDown");
+    await expect(win).toHaveAttribute("data-moved", "");
+    expect(await win.evaluate((el) => (el as HTMLElement).style.translate)).toBe("16px 16px");
+
+    await win.locator(".dwin-light[data-light='zoom']").click();
+    await expect(win).not.toHaveAttribute("data-moved", "");
+
+    await win.locator(".dwin-light[data-light='close']").click();
+    const reopen = page.locator(".dwin-reopen");
+    await expect(reopen).toBeFocused();
+    await reopen.press("Enter");
+    await expect(page.locator("#add-window .dwin-handle")).toBeFocused();
+    // Escape anywhere in the window closes it too.
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".dwin-reopen")).toBeFocused();
+  });
+
+  test("does not move under reduced motion, and the lights still work", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
+    await open(page, "/en");
+    await expect(page.locator("#add-window .dwin-handle")).toHaveCount(0);
+    const min = page.locator("#add-window .dwin-light[data-light='min']");
+    await min.click();
+    await expect(min).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#add-window-body")).toBeHidden();
+  });
+});
+
+test.describe("dock", () => {
+  test("links home, to the sections, the docs and pricing, with a visible name on focus", async ({ page }) => {
+    await open(page, "/en");
+    const dock = page.locator("nav.dock");
+    await expect(dock).toHaveAccessibleName(/.+/);
+    expect(await hrefs(page, "nav.dock a")).toEqual(["/en", "/en#canvas", "/en#how", "/en#gallery", "/docs/", "/en/pricing"]);
+    const links = dock.getByRole("link");
+    // Every item has a real text name, shown over the icon on focus.
+    for (const name of await links.evaluateAll((els) => els.map((el) => el.textContent?.trim() ?? ""))) expect(name).not.toBe("");
+    await links.nth(4).focus();
+    await expect(links.nth(4).locator(".dock-label")).toHaveCSS("opacity", "1");
+    // Fixed to the bottom of the viewport.
+    const box = (await dock.boundingBox())!;
+    expect(box.y + box.height).toBeGreaterThan(900 - 40);
+  });
+
+  test("Arabic links to the Arabic docs and mirrors the order (home at the right)", async ({ page }) => {
+    await open(page, "/ar");
+    const links = page.locator("nav.dock").getByRole("link");
+    await expect(links.nth(4)).toHaveAttribute("href", "/docs/ar/");
+    const first = (await links.first().boundingBox())!;
+    const last = (await links.last().boundingBox())!;
+    expect(first.x).toBeGreaterThan(last.x);
+  });
+});
+
+test.describe("Mail FAQ", () => {
+  test("rows are disclosure buttons: Tab and Enter open a message in the reading pane", async ({ page }) => {
+    await open(page, "/en");
+    const list = page.locator(".mail-list");
+    await expect(list).toHaveAccessibleName(/.+/);
+    await list.scrollIntoViewIfNeeded();
+    const rows = list.locator(".mail-row");
+    await expect(rows.first()).toHaveAttribute("aria-expanded", "true");
+    await rows.first().focus();
+    await page.keyboard.press("Tab");
+    await expect(rows.nth(1)).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(rows.nth(1)).toHaveAttribute("aria-expanded", "true");
+    await expect(rows.first()).toHaveAttribute("aria-expanded", "false");
+    const pane = page.locator(`[id="${await rows.nth(1).getAttribute("aria-controls")}"]`);
+    await expect(pane).toBeVisible();
+    await expect(pane).toHaveRole("region");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press(" ");
+    await expect(rows.nth(2)).toHaveAttribute("aria-expanded", "true");
+    await axe(page, ".mail", "mail faq");
+  });
+
+  test.describe("on a phone", () => {
+    test.use({ ...IPHONE });
+    test("works as an accordion: a second press closes the open message", async ({ page }) => {
+      await open(page, "/en");
+      const rows = page.locator(".mail-list .mail-row");
+      await rows.first().scrollIntoViewIfNeeded();
+      await rows.first().click();
+      await expect(rows.first()).toHaveAttribute("aria-expanded", "false");
+      await rows.nth(1).click();
+      await expect(rows.nth(1)).toHaveAttribute("aria-expanded", "true");
+    });
+  });
+});
+
+test.describe("desktop icons and Quick Look", () => {
+  test("an icon opens Quick Look with the source link; Escape closes it and focus returns", async ({ page }) => {
+    await open(page, "/en");
+    const icons = page.locator(".desk-icons").getByRole("button");
+    await expect(icons).toHaveCount(4);
+    const icon = icons.first();
+    await icon.focus();
+    await page.keyboard.press("Enter");
+    await expect(icon).toHaveAttribute("aria-expanded", "true");
+    const look = page.locator(".quicklook");
+    await expect(look).toBeVisible();
+    // The window's move handle takes focus, so the keyboard is already inside it.
+    await expect(look.locator(".dwin-handle")).toBeFocused();
+    const source = look.locator(".dwin-body a");
+    await expect(source).toHaveAttribute("target", "_blank");
+    await expect(source).toHaveAttribute("rel", "noopener noreferrer");
+    expect(await source.getAttribute("href")).toMatch(/^https:\/\/(www\.|fr\.)?(dribbble\.com|behance\.net|pinterest\.com)\//);
+    await expect(look.locator("img")).toHaveAttribute("referrerpolicy", "no-referrer");
+    expect(await look.locator("img").getAttribute("alt")).toBeTruthy();
+    await axe(page, ".desk-icons-wrap", "quick look");
+    await page.keyboard.press("Escape");
+    await expect(look).toHaveCount(0);
+    await expect(icon).toBeFocused();
+  });
+
+  test("an image that does not load falls back to the generative art", async ({ page }) => {
+    await page.route(CDN, (route) => route.fulfill({ status: 404, body: "" }));
     await page.goto("/en");
-    expect(await page.locator(".faq-item").first().evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    await expect(page.locator("html")).toHaveClass(/reveal-on/);
+    const icon = page.locator(".desk-icon").first();
+    await expect(icon.locator(".art")).toHaveCount(1);
+    await expect(icon.locator("img")).toHaveCount(0);
+  });
+});
+
+test.describe("phone home screen", () => {
+  test.use({ ...IPHONE });
+  for (const url of ["/en", "/ar", "/en/pricing", "/ar/canvases", "/en/account", "/en/no-such-page"]) {
+    test(`${url} has no sideways scroll`, async ({ page }) => {
+      await mockCdn(page);
+      await page.goto(url);
+      await expect(page.locator(".site")).toBeVisible();
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test("the nav moves to the dock, and windows stack without a move handle", async ({ page }) => {
+    await open(page, "/en");
+    await expect(page.getByRole("banner").locator(".site-nav")).toBeHidden();
+    await expect(page.locator("nav.dock")).toBeVisible();
+    await expect(page.locator("#add-window .dwin-handle")).toHaveCount(0);
+    const win = (await page.locator("#add-window").boundingBox())!;
+    expect(win.width).toBeGreaterThan(390 - 2 * 32);
+  });
+});
+
+test.describe("Arabic", () => {
+  test("the page is rtl with the Arabic font; the menu bar and window lights mirror", async ({ page }) => {
+    await open(page, "/ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    const font = await page.locator(".site").evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(font).toMatch(/IBM Plex Sans Arabic/);
+    // Brand at the right edge of the menu bar, the Add to Claude pill at the left.
+    const brand = (await page.getByRole("banner").locator(".brand").boundingBox())!;
+    const pill = (await page.getByRole("banner").locator(".menubar-pill").boundingBox())!;
+    expect(brand.x).toBeGreaterThan(pill.x);
+    // Traffic lights sit at the window's right (inline start).
+    const win = (await page.locator("#add-window").boundingBox())!;
+    const close = (await page.locator("#add-window .dwin-light[data-light='close']").boundingBox())!;
+    expect(close.x).toBeGreaterThan(win.x + win.width / 2);
+    // Code stays ltr.
+    await expect(page.getByTestId("code-server-url").first().locator("code")).toHaveAttribute("dir", "ltr");
+    await axe(page, ".desk-hero", "ar hero");
+  });
+});
+
+test.describe("export file tabs", () => {
+  test("arrow keys move along the cards and switch the window", async ({ page }) => {
+    await open(page, "/en");
+    const tabs = page.getByRole("tab");
+    await expect(tabs).toHaveCount(6);
+    await tabs.first().scrollIntoViewIfNeeded();
+    await tabs.first().focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(tabs.nth(1)).toBeFocused();
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator(".export-window-file")).toHaveText("AGENTS.md");
+    await page.keyboard.press("End");
+    await expect(page.locator(".export-window-file")).toHaveText("BRIEF.md");
+    await page.keyboard.press("Home");
+    await expect(page.getByRole("tabpanel")).toContainText("version: alpha");
+  });
+
+  test("Arabic: ArrowLeft moves forward", async ({ page }) => {
+    await open(page, "/ar");
+    const tabs = page.getByRole("tab");
+    await tabs.first().scrollIntoViewIfNeeded();
+    await tabs.first().focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  });
+});
+
+test.describe("gallery Finder window", () => {
+  test("Open example shows the board with every reference linked", async ({ page }) => {
+    await open(page, "/en");
+    const card = page.locator(".gallery-card").first();
+    await card.scrollIntoViewIfNeeded();
+    await card.locator(".gallery-reveal .st-btn").focus();
+    await expect(card.locator(".gallery-reveal")).toHaveCSS("opacity", "1");
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator(".board-dialog-credit")).toHaveCount(4);
+    await expect(dialog.locator(".board-dialog-palette li")).toHaveCount(5);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
   });
 });
 
 test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
-  test("every section is visible", async ({ page }) => {
+  test("every window is visible", async ({ page }) => {
     await page.goto("/en");
-    for (const sel of [".faq-item", ".gallery-card", ".plan", ".frame"]) {
+    for (const sel of [".mail-row", ".gallery-card", ".plan", ".frame", "#add-window"]) {
       expect(await page.locator(sel).first().evaluate((el) => getComputedStyle(el).opacity), sel).toBe("1");
     }
-  });
-});
-
-test.describe("404", () => {
-  for (const theme of ["light", "dark"] as const) {
-    test(`unknown pages answer 404 with the inset panel in English and Arabic (${theme})`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: theme });
-      const en = await page.goto("/en/no-such-page");
-      expect(en?.status()).toBe(404);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Nothing lives at this address");
-      await expect(page.locator(".nf-panel .st-btn")).toHaveCount(2);
-      await axe(page, ".site", `404 en ${theme}`);
-      const ar = await page.goto("/ar/no-such-page");
-      expect(ar?.status()).toBe(404);
-      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("لا توجد صفحة على هذا العنوان");
-      await axe(page, ".site", `404 ar ${theme}`);
-    });
-  }
-});
-
-test.describe("canvases dashboard", () => {
-  for (const theme of ["light", "dark"] as const) {
-    test(`lists canvases as cards with a details panel, axe clean (${theme})`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: theme });
-      await mockThumbs(page);
-      await page.goto("/en/canvases");
-      await expect(page.getByRole("heading", { level: 1, name: "Canvases" })).toBeVisible();
-      const cards = page.locator(".lab-card");
-      await expect(cards).toHaveCount(4);
-      await expect(cards.first().getByRole("link", { name: "Cold checkout" })).toHaveAttribute("href", "/c/e2e-seed");
-      await expect(cards.first().locator(".collage img")).toHaveCount(4);
-      const details = page.getByRole("complementary", { name: "Details" });
-      await expect(details).toContainText("Cold checkout");
-      await cards.nth(2).getByRole("button", { name: "Show details" }).click();
-      await expect(details).toContainText("Transit dashboard");
-      await expect(details.getByRole("link", { name: /pinterest\.com\/pin\// }).first()).toBeVisible();
-      await axe(page, ".site", `dashboard ${theme}`);
-    });
-  }
-
-  test("collapse is remembered after a reload, and Shared links filters", async ({ page }) => {
-    await mockThumbs(page);
-    await page.goto("/en/canvases");
-    await page.getByRole("button", { name: "Collapse sidebar" }).click();
-    await expect(page.locator(".lab")).toHaveAttribute("data-collapsed", "");
-    await page.reload();
-    await expect(page.locator(".lab")).toHaveAttribute("data-collapsed", "");
-    await page.getByRole("button", { name: "Expand sidebar" }).click();
-    await expect(page.locator(".lab")).not.toHaveAttribute("data-collapsed", "");
-    await page.getByRole("link", { name: /Shared links/ }).click();
-    await expect(page).toHaveURL(/view=shared/);
-    await expect(page.locator(".lab-card")).toHaveCount(1);
-  });
-
-  test("Arabic dashboard is rtl", async ({ page }) => {
-    await mockThumbs(page);
-    await page.goto("/ar/canvases");
-    await expect(page.locator(".site")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { level: 1, name: "اللوحات" })).toBeVisible();
-    await axe(page, ".site", "dashboard ar");
-  });
-});
-
-test.describe("share page chrome", () => {
-  test("a slim bar sits above the unchanged shared canvas", async ({ page }) => {
-    await mockThumbs(page);
-    await page.goto(DEMO_SHARE);
-    const bar = page.getByRole("navigation", { name: /home/ });
-    await expect(bar).toContainText("A canvas made with");
-    await expect(bar.getByRole("link", { name: "Add to Claude" })).toHaveAttribute("href", "/en#install");
-    await expect(page.getByTestId("view-only-banner")).toBeVisible();
-    await expect(page.locator(".react-flow__node")).toHaveCount(7);
-    const barBox = (await bar.boundingBox())!;
-    const pageBox = (await page.locator(".bn-page").boundingBox())!;
-    expect(pageBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height - 1);
-  });
-});
-
-test.describe("header", () => {
-  test("shows Your canvases when signed in, and Canvases carries a Beta chip", async ({ page }) => {
-    await page.goto("/en/pricing");
-    const header = page.getByRole("banner");
-    await expect(header.getByRole("link", { name: "Your canvases" })).toHaveAttribute("href", "/en/canvases");
-    await expect(header.getByRole("link", { name: "Canvases Beta" })).toBeVisible();
-    await expect(page.locator(".site [title]")).toHaveCount(0);
   });
 });
