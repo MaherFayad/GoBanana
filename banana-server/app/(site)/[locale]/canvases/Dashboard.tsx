@@ -14,6 +14,7 @@
  * - Nothing here is draggable, so no drag alternative is needed.
  */
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   AccountIcon,
@@ -157,6 +158,19 @@ function Collage({ card, label, large = false }: { card: DashCard; label: string
 export function Dashboard({ locale, appName, view, cards, total, sharedCount, failed, email, links, t }: Props) {
   const collapsed = useSyncExternalStore(subscribe, readCollapsed, () => false);
   const [selected, setSelected] = useState<string | null>(cards[0]?.id ?? null);
+  // The card the user last clicked. A second click on it opens the canvas; the first one only
+  // shows its details. Starts empty so the preselected first card still needs two clicks.
+  const [armed, setArmed] = useState<string | null>(null);
+  const router = useRouter();
+  const canvasHref = (id: string) => `/c/${encodeURIComponent(id)}`;
+  const pickCard = (id: string) => {
+    if (armed === id) {
+      router.push(canvasHref(id));
+      return;
+    }
+    setSelected(id);
+    setArmed(id);
+  };
   const [showNew, setShowNew] = useState(false);
   const newId = useId();
   const current = cards.find((c) => c.id === selected) ?? null;
@@ -307,11 +321,22 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
               const isSel = card.id === selected;
               const titleId = `card-${card.id}`;
               return (
-                <li key={card.id} className="lab-card" data-selected={isSel ? "" : undefined}>
+                <li
+                  key={card.id}
+                  className="lab-card"
+                  data-selected={isSel ? "" : undefined}
+                  data-armed={armed === card.id ? "" : undefined}
+                  // Pointer shortcut only: the title link and the details button below are the
+                  // keyboard routes to the same two actions.
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("a, button")) return;
+                    pickCard(card.id);
+                  }}
+                >
                   <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
                   <div className="lab-card-body">
                     <h2 className="lab-card-title" id={titleId}>
-                      <Link href={`/c/${encodeURIComponent(card.id)}`}>{card.title}</Link>
+                      <Link href={canvasHref(card.id)}>{card.title}</Link>
                     </h2>
                     <p className="lab-card-brief">{card.brief ?? t.noBrief}</p>
                     <p className="lab-card-meta">
@@ -340,17 +365,29 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
                           <span>{t.sharedChip}</span>
                         </span>
                       ) : null}
-                      <button
-                        type="button"
-                        className="st-btn lab-details-btn"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-pressed={isSel}
-                        aria-describedby={titleId}
-                        onClick={() => setSelected(card.id)}
-                      >
-                        {t.showDetails}
-                      </button>
+                      {armed === card.id ? (
+                        <Link
+                          className="st-btn lab-details-btn"
+                          data-variant="primary"
+                          data-size="sm"
+                          href={canvasHref(card.id)}
+                          aria-describedby={titleId}
+                        >
+                          {t.open}
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className="st-btn lab-details-btn"
+                          data-variant="ghost"
+                          data-size="sm"
+                          aria-pressed={isSel}
+                          aria-describedby={titleId}
+                          onClick={() => pickCard(card.id)}
+                        >
+                          {t.showDetails}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </li>
