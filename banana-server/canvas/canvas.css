@@ -1170,9 +1170,32 @@
   z-index: var(--st-z-canvas-selection);
 }
 
-/* React Flow attribution stays hidden by the existing proOptions setting; keep its pane plain. */
+/* React Flow attribution stays visible (its maintainers ask non-subscribers to keep it),
+   restyled on tokens so it passes 4.5:1 and is a 24px target. It sits in the board's bottom
+   corner, away from the notch and every control. */
 .bn-canvas .react-flow__attribution {
-  background: transparent;
+  margin: var(--st-space-2xs);
+  padding-block: 0;
+  padding-inline: var(--st-space-xs);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface);
+  font-size: var(--st-text-s);
+  line-height: 1;
+}
+
+.bn-canvas .react-flow__attribution a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--st-target-min);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.bn-canvas .react-flow__attribution a:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--st-focus-ring);
 }
 
 /* ------------------------------------------------------------------ menus */

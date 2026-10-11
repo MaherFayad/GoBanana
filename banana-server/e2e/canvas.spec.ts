@@ -371,6 +371,10 @@ test.describe("moodboard canvas", () => {
       ).toEqual([]);
     };
     await check("canvas");
+    // The React Flow attribution stays visible and passes contrast (it failed at 2.65:1 before).
+    await expect(page.locator(".react-flow__attribution a")).toBeVisible();
+    const attribution = await new AxeBuilder({ page }).include(".react-flow__attribution").withRules(["color-contrast", "target-size"]).analyze();
+    expect(attribution.violations).toEqual([]);
     await node(page, "note1").focus();
     await page.keyboard.press("m");
     await expect(page.getByRole("menu")).toBeVisible();
