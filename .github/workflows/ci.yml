@@ -50,3 +50,39 @@ jobs:
             git status --porcelain -- db/migrations
             exit 1
           fi
+
+  e2e:
+    # Playwright on Chromium against `next dev` (playwright.config.ts starts it with the test-only
+    # sign-in bypass; API and image hosts are mocked). Covers the canvas, the inline canvas in a
+    # fake MCP Apps host, the public site with axe in light, dark and Arabic (rtl), and the design
+    # gates that need a browser (e2e/design-target-size.spec.ts, SC 2.5.8). The Vitest design
+    # gates (tests/design-*.test.ts) run in the server job with the unit tests.
+    name: banana-server e2e (Playwright, Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: banana-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: banana-server/package-lock.json
+      - run: npm ci
+      # CI only: the dev container ships Chromium in /opt/pw-browsers and must never run this.
+      # @playwright/test 1.56.1 supports ubuntu24.04-x64 (ubuntu-latest) with --with-deps.
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        run: npx playwright test
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            banana-server/playwright-report/
+            banana-server/test-results/
+          retention-days: 7

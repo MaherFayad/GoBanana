@@ -8,7 +8,7 @@
  * Mounts the Studio toast stack once for the whole page (share, upload and canvas toasts).
  * No forced theme: the tokens follow the system, dark when there is no preference.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { WarningIcon } from "@/components/studio/icons";
 import { ToastProvider } from "@/components/studio/Toast";
 import { CanvasApp } from "./CanvasApp";
@@ -34,6 +34,23 @@ export interface WebCanvasProps {
   pricingHref?: string;
 }
 
+/** Same rule as the inline view (ui/canvas/main.tsx): under 720px the canvas goes compact. */
+const NARROW = "(max-width: 719.98px)";
+const subscribeNarrow = (onChange: () => void) => {
+  const mq = window.matchMedia(NARROW);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
+
+/** True on phones: the rail is hidden and the results panel starts closed, so the board keeps the width. */
+function useNarrow(): boolean {
+  return useSyncExternalStore(
+    subscribeNarrow,
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
+
 export function WebCanvas({
   canvasId,
   appName,
@@ -46,6 +63,7 @@ export function WebCanvas({
   pricingHref = "/en/pricing",
 }: WebCanvasProps) {
   const [conflict, setConflict] = useState(false);
+  const compact = useNarrow();
   const persistence = useMemo<CanvasPersistence>(() => {
     const inner = createFetchPersistence(canvasId, { baseUpdatedAt: initialUpdatedAt ?? null });
     return {
@@ -92,6 +110,7 @@ export function WebCanvas({
           initialState={initialState ?? undefined}
           persistence={persistence}
           readOnly={readOnly}
+          compact={compact}
           web={{ plan, shareToken, pricingHref }}
         />
       </div>

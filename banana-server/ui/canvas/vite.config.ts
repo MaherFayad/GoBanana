@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import { APP_ORIGIN_PLACEHOLDER, CANVAS_ASSET_DIR, CANVAS_ASSET_PATH } from "../../lib/mcp/resources/canvas-asset";
+import { APP_ORIGIN_PLACEHOLDER, CANVAS_ASSET_DIR, CANVAS_ASSET_PATH } from "../../lib/mcp/resources/canvas-asset.ts";
 
 const root = fileURLToPath(new URL("./", import.meta.url));
 const repo = fileURLToPath(new URL("../../", import.meta.url));

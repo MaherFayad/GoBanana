@@ -11,7 +11,7 @@
  *   image-off -> image (with a slash, components/studio/icons/glyphs.tsx)
  *   warning -> warning-diamond    upload -> upload          share -> share
  *   link -> link                  hand -> hand              help -> circle-question
- *   search -> search
+ *   search -> search                cursor -> cursor-minimal  arrange -> grid-3x3
  *   Toast kinds: info -> circle-info, error -> square-alert, success -> check, warning -> warning-diamond.
  */
 import { AspectRatio } from "pixelarticons/react/AspectRatio.js";
@@ -24,8 +24,10 @@ import { CircleInfo } from "pixelarticons/react/CircleInfo.js";
 import { CircleQuestion } from "pixelarticons/react/CircleQuestion.js";
 import { Close } from "pixelarticons/react/Close.js";
 import { Compass } from "pixelarticons/react/Compass.js";
+import { CursorMinimal } from "pixelarticons/react/CursorMinimal.js";
 import { ExternalLink } from "pixelarticons/react/ExternalLink.js";
 import { Frame } from "pixelarticons/react/Frame.js";
+import { Grid3x3 } from "pixelarticons/react/Grid3x3.js";
 import { Hand } from "pixelarticons/react/Hand.js";
 import { Layout } from "pixelarticons/react/Layout.js";
 import { Link } from "pixelarticons/react/Link.js";
@@ -71,3 +73,7 @@ export const HelpIcon = createIcon("help", CircleQuestion);
 export const SearchIcon = createIcon("search", Search);
 export const InfoIcon = createIcon("info", CircleInfo);
 export const ErrorIcon = createIcon("error", SquareAlert);
+/** Select tool. */
+export const CursorIcon = createIcon("cursor", CursorMinimal);
+/** Arrange menu. */
+export const ArrangeIcon = createIcon("arrange", Grid3x3);
