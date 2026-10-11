@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "banana-server",
+  "name": "gobanana-server",
   "account_id": "d4747e2944f64aa7bfd27f0abddb1993",
   // custom-worker.ts wraps the generated .open-next/worker.js and adds the cron handler.
   "main": "custom-worker.ts",
@@ -32,8 +32,8 @@
   // go in .dev.vars locally and `npx wrangler secret put <NAME>` in production.
   "vars": {
     "APP_NAME": "GoBanana",
-    "APP_URL": "https://banana-server.maherfayad55.workers.dev",
-    "MCP_RESOURCE_URL": "https://banana-server.maherfayad55.workers.dev/api/mcp",
+    "APP_URL": "https://gobanana-server.maherfayad55.workers.dev",
+    "MCP_RESOURCE_URL": "https://gobanana-server.maherfayad55.workers.dev/api/mcp",
     "WORKOS_CLIENT_ID": "client_01M4NBKJEZYVMTKFEG0Y7WXFBZ",
     "WORKOS_AUTHKIT_DOMAIN": "https://sensitive-conch-18-staging.authkit.app",
     "IMAGE_HOST_ALLOWLIST": "",
