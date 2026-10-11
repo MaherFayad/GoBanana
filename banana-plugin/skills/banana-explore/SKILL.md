@@ -1,9 +1,9 @@
 ---
 name: banana-explore
-description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a Banana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use banana-moodboard to arrange an existing canvas, banana-palette for colors, banana-design-md for DESIGN.md.
+description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use banana-moodboard to arrange an existing canvas, banana-palette for colors, banana-design-md for DESIGN.md.
 ---
 
-# Banana explore
+# GoBanana explore
 
 Turn a fuzzy "make it cooler" into a few sharp, usable directions, then pull real references for them into a moodboard canvas. Mobbin shows what works. GoBanana shows what's next.
 

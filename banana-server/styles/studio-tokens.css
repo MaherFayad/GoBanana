@@ -220,6 +220,38 @@
   /* A11y change. Studio uses 45% alpha (about 2.6:1). 72% keeps placeholder text at 4.5:1. */
   --st-note-ink-subtle: rgba(31, 33, 38, 0.72);
   --st-note-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 0, 0, 0.18);
+
+  /* Site art: the generative tiles on the landing page (CSS and SVG only, no images). Like the
+     note paper, a picture is the same in both themes. Decorative only: every tile carries its
+     name in real text next to it, so none of these needs a contrast pair. */
+  --st-art-madder: #a23b2c;
+  --st-art-ink: #1c1a19;
+  --st-art-wool: #efe6d6;
+  --st-art-saffron: #e8a33d;
+  --st-art-indigo: #2e3a72;
+  --st-art-malachite: #1f5e46;
+  --st-art-teak: #5a3a22;
+  --st-art-sand: #d9b98c;
+  --st-art-paper: #f4f1ea;
+  --st-art-graphite: #2b2b2b;
+  --st-art-signal: #e2382b;
+  --st-art-cobalt: #1f4fd1;
+  --st-art-dusk-1: #f2a65a;
+  --st-art-dusk-2: #c0587e;
+  --st-art-dusk-3: #4b2f6b;
+  --st-art-dusk-4: #1d1b3a;
+  --st-art-sun: #ffd27a;
+  --st-art-mint: #9fe3c9;
+  --st-art-rose: #f4a6c0;
+  --st-art-lilac: #b8a6f4;
+  --st-art-sky: #8fd1ff;
+  --st-art-pink: #ff5fa2;
+  --st-art-blue: #2d6bff;
+  --st-art-glacier: #88a7c4;
+  --st-art-glint: rgba(255, 255, 255, 0.35);
+  --st-art-line: rgba(255, 255, 255, 0.18);
+  --st-art-shade: rgba(0, 0, 0, 0.28);
+  --st-art-rule: rgba(28, 26, 25, 0.12);
 }
 
 /* Arabic: Plex Sans Arabic first, Inter for Latin runs inside Arabic text, taller lines. */

@@ -1,9 +1,9 @@
 ---
 name: banana-design-md
-description: Turn a Banana moodboard canvas into a DESIGN.md design system file that coding agents can follow, write it to disk, and lint it until it passes. Use when the user mentions "DESIGN.md", "design system file", "design spec for my agent", "turn this board into a design system", "write the design rules down", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md) from the Banana MCP server, then npx @google/design.md lint. For AGENTS.md use banana-agents-md; for tokens and Tailwind use banana-asset-kit.
+description: Turn a GoBanana moodboard canvas into a DESIGN.md design system file that coding agents can follow, write it to disk, and lint it until it passes. Use when the user mentions "DESIGN.md", "design system file", "design spec for my agent", "turn this board into a design system", "write the design rules down", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md) from the GoBanana MCP server, then npx @google/design.md lint. For AGENTS.md use banana-agents-md; for tokens and Tailwind use banana-asset-kit.
 ---
 
-# Banana DESIGN.md
+# GoBanana DESIGN.md
 
 Export the canvas as a DESIGN.md (Google Labs DESIGN.md format, alpha), save it in the user's project, and make sure it lints clean.
 
@@ -43,4 +43,4 @@ Export the canvas as a DESIGN.md (Google Labs DESIGN.md format, alpha), save it 
 - **`npx` cannot run** (no Node, no network): say so, give the exact lint command for the user to run later, and still check the file by eye against the section order and component keys above.
 - **Inline canvas not shown:** give the canvas web link from `open_canvas` or `get_canvas` so the user can review the board.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.
-- **Banana tools missing:** ask the user to enable the Banana connector (or run `/mcp` in Claude Code and log in).
+- **GoBanana tools missing:** ask the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

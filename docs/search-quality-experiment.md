@@ -168,3 +168,21 @@ Leaving the domain out of the taste lane (round 8) avoided repeats but drifted o
 | `{style} travel {component} app ui` (broader domain) | 26 | 18 | 26 |
 
 New taste template: `{style} {domain} {component} ui design`.
+
+## Round 10: bridge lane (32 queries)
+
+The owner's live board for "Flight checkout screen for a GCC travel OTA" was about 60% unrelated to flight booking: Sadu weaving photos, seed packets, Uzbek suzani jackets, tassels, a car air freshener. The raw idea (inspiration lane) brings the mood but not the screen. Can a query carry the idea into UI directly? Four forms, one per idea, on `site:dribbble.com/shots` with the UI negatives:
+
+| Form | Good | Title has the idea | Travel |
+| --- | --- | --- | --- |
+| `{i} ui design` | 39 | 11 | 0 |
+| `{i} app ui` | 38 | 5 | 0 |
+| `{i} travel app ui` | 41 | 3 | 31 |
+| `{i} inspired flight app ui` | 23 | 0 | 18 |
+
+- `{i} ui design` returned plenty of real shots, but only 11 of 39 were about the idea. The rest were generic UI that matched "ui design".
+- When the idea is a real product, it works: "vending machine ui design" gave 7 real vending machine UIs.
+- Niche crafts give nothing: "sadu" and "suzani" gave 0 shots that name the idea.
+- Adding the domain ("travel", "flight") pulls results back to travel apps and drops the idea almost entirely (3 and 0 titles with the idea). That is the fidelity lane's job already.
+
+**Conclusion:** keep the bridge lane only with the title precision filter. The server sends `"{ingredient} ui design"` (arm `app`: `"{ingredient} app ui"`) and keeps a result only when its title has the ingredient's head word (whole word, any case, singular or plural). Expect the lane to be empty often; its places flow to the other UI lanes. It costs 1 request, inside the 8-request cap, and comes before the hero lane when the budget cuts. Together with the new default `mix: "ui"` (about 20% inspiration, UI lanes first) and agent-side idea triage (`rate_directions`), a board for a screen brief should lead with screens.

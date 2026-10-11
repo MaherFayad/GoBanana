@@ -1,9 +1,9 @@
 ---
 name: banana-agents-md
-description: Write an AGENTS.md that tells coding agents to follow the project's DESIGN.md, use only ship tokens, treat explore tokens as concept only, and never copy reference images. Use when the user mentions "AGENTS.md", "rules for coding agents", "tell Cursor, Codex or Claude Code how to use the design", "agent instructions for the UI", or "make my agents follow the design system". Runs export_kit (agents_md) from the Banana MCP server and points to DESIGN.md. To create DESIGN.md first, use banana-design-md.
+description: Write an AGENTS.md that tells coding agents to follow the project's DESIGN.md, use only ship tokens, treat explore tokens as concept only, and never copy reference images. Use when the user mentions "AGENTS.md", "rules for coding agents", "tell Cursor, Codex or Claude Code how to use the design", "agent instructions for the UI", or "make my agents follow the design system". Runs export_kit (agents_md) from the GoBanana MCP server and points to DESIGN.md. To create DESIGN.md first, use banana-design-md.
 ---
 
-# Banana AGENTS.md
+# GoBanana AGENTS.md
 
 Export the design rules for coding agents and save them where agents read them. AGENTS.md is short on purpose: it points to DESIGN.md, which holds the tokens.
 
@@ -31,4 +31,4 @@ Export the design rules for coding agents and save them where agents read them. 
 - **Plan message** (`agents_md` is a Pro format): show it as is, with its upgrade link, once. Do not retry or loop. Offer what is free: DESIGN.md (banana-design-md). If the user then asks you to write a short rules section by hand, keep it to the three rules above and the pointer to DESIGN.md.
 - **Inline canvas not shown:** give the canvas web link so the user can review the board.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.
-- **Banana tools missing:** ask the user to enable the Banana connector (or run `/mcp` in Claude Code and log in).
+- **GoBanana tools missing:** ask the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

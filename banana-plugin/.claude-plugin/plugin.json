@@ -1,8 +1,8 @@
 {
   "name": "banana",
-  "displayName": "Banana",
+  "displayName": "GoBanana",
   "version": "0.1.0",
-  "description": "Wild design exploration for your agent. Bend a brief into unexpected directions, pull linked references into a moodboard canvas, extract a palette, and export DESIGN.md, AGENTS.md, tokens and a FigJam board. Mobbin shows what works. Banana shows what's next.",
+  "description": "Wild design exploration for your agent. Bend a brief into unexpected directions, pull linked references into a moodboard canvas, extract a palette, and export DESIGN.md, AGENTS.md, tokens and a FigJam board. Mobbin shows what works. GoBanana shows what's next.",
   "author": {
     "name": "Maher Fayad",
     "url": "https://banana.example"

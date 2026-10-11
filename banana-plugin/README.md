@@ -1,10 +1,10 @@
-# Banana
+# GoBanana
 
-**Mobbin shows what works. Banana shows what's next.**
+**Mobbin shows what works. GoBanana shows what's next.**
 
-Banana is a Claude plugin for wild design exploration. Ask your agent to "go wild" on a screen, and Banana bends the brief into unexpected directions, pulls linked references from Pinterest, Dribbble, Behance and Awwwards into a moodboard canvas, extracts a palette with WCAG checks, and exports a DESIGN.md, an AGENTS.md, design tokens and a FigJam board.
+GoBanana is a Claude plugin for wild design exploration. Ask your agent to "go wild" on a screen, and GoBanana bends the brief into unexpected directions, pulls linked references from Pinterest, Dribbble, Behance and Awwwards into a moodboard canvas, extracts a palette with WCAG checks, and exports a DESIGN.md, an AGENTS.md, design tokens and a FigJam board.
 
-The plugin connects your agent to the Banana MCP server and adds 6 skills that tell the agent which tools to call, in which order, and how to present the results.
+The plugin connects your agent to the GoBanana MCP server and adds 6 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, pre-launch. The domain is not chosen yet, so every URL in this repo uses the placeholder `banana.example`. See [Placeholders](#placeholders).
 
@@ -12,7 +12,7 @@ The plugin connects your agent to the Banana MCP server and adds 6 skills that t
 
 ### Claude Code
 
-From the marketplace repo that lists Banana (owner and repo are set at launch):
+From the marketplace repo that lists GoBanana (owner and repo are set at launch):
 
 ```text
 /plugin install banana --marketplace <owner>/<repo>
@@ -24,17 +24,17 @@ Or load this folder directly while developing:
 claude --plugin-dir ./banana-plugin
 ```
 
-Then run `/mcp`, pick `plugin:banana:banana`, and log in. Banana uses OAuth, so there is no API key to paste.
+Then run `/mcp`, pick `plugin:banana:banana`, and log in. GoBanana uses OAuth, so there is no API key to paste.
 
 ### claude.ai and Cowork
 
-Add the plugin from your organization's plugin settings or from Anthropic's directory once it is listed. The Banana server shows up as a connector; connect it and log in.
+Add the plugin from your organization's plugin settings or from Anthropic's directory once it is listed. The GoBanana server shows up as a connector; connect it and log in.
 
 ## What it does
 
 | Skill | Say something like | What happens |
 | --- | --- | --- |
-| `banana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, runs `bend_brief`, shows the directions as a short list, opens a canvas, searches 2 or 3 directions into the tray, then audits the results: rates misses and standouts with `rate_references` and re-searches a weak lane with better words |
+| `banana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, opens a canvas, bends it into 8 ideas, drops the ones that cannot become UI for your screen (`rate_directions`), searches the shortlist UI first into the tray, audits the results (`rate_references`, re-searching a weak lane with better words), then shows only the kept ideas |
 | `banana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, short notes, a clean layout; optionally a FigJam board through the Figma MCP, or an HTML board |
 | `banana-palette` | "palette", "colors from these" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
 | `banana-design-md` | "DESIGN.md", "design system file" | Exports DESIGN.md, writes it, runs `npx @google/design.md lint`, fixes what it flags |
@@ -53,13 +53,13 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `rate_references`, `extract_palette`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
+`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
 
 If your client cannot show the canvas inline, every skill gives you the web link to open it full screen.
 
 ## Hard rules on images and sources
 
-- **Banana never downloads, stores or re-hosts reference images.** It keeps URLs and metadata only. Images load in your browser from their source.
+- **GoBanana never downloads, stores or re-hosts reference images.** It keeps URLs and metadata only. Images load in your browser from their source.
 - **Every reference shows its source link**: on the canvas, in share links, in every export, and in every skill reply.
 - **Never copy reference images into your repo.** The skills will not do it, and the AGENTS.md they write tells coding agents not to either. Reference images belong to their owners.
 - **No scraping.** References come from web search results only.
@@ -71,7 +71,7 @@ Free covers `bend_brief` (unlimited), 30 searches a month, 3 canvases, and the `
 
 ## Evals
 
-`evals/` holds 24 test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/banana/` answers the Banana tools with fixed replies, so runs never touch the real server. Graders check that the right skill fired, the tools ran in a sensible order, source links and the canvas link appear, and files were written.
+`evals/` holds 27 test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/banana/` answers the GoBanana tools with fixed replies, so runs never touch the real server. Graders check that the right skill fired, the tools ran in a sensible order, source links and the canvas link appear, and files were written.
 
 ```bash
 cd banana-plugin
@@ -99,7 +99,7 @@ claude plugin validate --strict ./banana-plugin
 ## Placeholders
 
 - `https://banana.example` stands in for the real domain in `.mcp.json`, `.claude-plugin/plugin.json` (homepage, documentation, support, privacy and terms links) and the eval mocks. Replace them all together once the domain is chosen.
-- "Banana" is a working name until a trademark check.
+- The product is called "GoBanana". The plugin id (`banana`), the skill names (`banana-*`), the MCP tool names and the `.mcp.json` server key stay `banana`, so existing installs keep working.
 - `assets/icon.png` is a placeholder icon.
 
 ## Contributing

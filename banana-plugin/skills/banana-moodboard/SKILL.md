@@ -1,15 +1,15 @@
 ---
 name: banana-moodboard
-description: Build and arrange a Banana moodboard from references in the canvas tray, and optionally rebuild it as a FigJam board through the Figma MCP. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the Banana MCP server. Every tile keeps its source link. To find new references first, use banana-explore.
+description: Build and arrange a GoBanana moodboard from references in the canvas tray, and optionally rebuild it as a FigJam board through the Figma MCP. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use banana-explore.
 ---
 
-# Banana moodboard
+# GoBanana moodboard
 
 Turn the tray of search results into a board people can read: one section per direction, a short note on why each one matters, then a clean layout. Optionally rebuild the same board in FigJam.
 
 ## Ground rules
 
-- **Every tile keeps its source link**, on the Banana canvas, in FigJam and in any HTML board. Never drop a link to make a board look cleaner.
+- **Every tile keeps its source link**, on the GoBanana canvas, in FigJam and in any HTML board. Never drop a link to make a board look cleaner.
 - **Never download, save or copy reference images** to the repo or to disk. The canvas and the HTML board point at the source URLs.
 - **The server only returns text.** When a file is needed (HTML board), you write it to disk.
 - Plain words, no em dashes.
@@ -55,7 +55,7 @@ Say the board is ready. If the client shows the canvas inline, point to it. **Al
 When the user wants the board in Figma or FigJam:
 
 1. Call `export_kit` with `canvasId` and `formats: ["figjam_spec"]`. The spec is JSON: `{ sections: [{ title, x, y, w, h, items: [{ type, x, y, w, h, imageUrl?, text?, hex?, sourceUrl }] }] }`.
-2. Check the Figma MCP is connected (tools such as `use_figma`, `create_new_file`). If not, tell the user to connect the Figma connector, and give the Banana web link meanwhile.
+2. Check the Figma MCP is connected (tools such as `use_figma`, `create_new_file`). If not, tell the user to connect the Figma connector, and give the GoBanana web link meanwhile.
 3. Follow the Figma MCP's own skill instructions for FigJam (load `figma-use-figjam` or `figma-use` before calling `use_figma`). Create a new FigJam file, or use the board URL the user gives.
 4. Build from the spec, keeping its positions and sizes:
    - each section becomes a FigJam section with its title;
@@ -70,6 +70,6 @@ If the user wants a file they can open or share: call `export_kit` with `formats
 
 ## When things go wrong
 
-- **Quota, item cap or plan message** (for example `figjam_spec` and `html_board` are Pro): show the message as is, with its upgrade link, once. Do not retry or loop. Offer what still works: the arranged Banana canvas and its web link.
+- **Quota, item cap or plan message** (for example `figjam_spec` and `html_board` are Pro): show the message as is, with its upgrade link, once. Do not retry or loop. Offer what still works: the arranged GoBanana canvas and its web link.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.
-- **Banana tools missing:** ask the user to enable the Banana connector (or run `/mcp` in Claude Code and log in).
+- **GoBanana tools missing:** ask the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

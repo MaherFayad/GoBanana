@@ -1,6 +1,6 @@
-# Banana plugin
+# GoBanana plugin
 
-Claude plugin for the Banana MCP server: 6 skills that drive the server's 9 tools for wild design exploration, moodboards and design exports. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
+Claude plugin for the GoBanana MCP server: 6 skills that drive the server's 10 tools for wild design exploration, moodboards and design exports. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
 
 This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is not loaded for plugin users, and `claude plugin validate --strict` fails on it.
 

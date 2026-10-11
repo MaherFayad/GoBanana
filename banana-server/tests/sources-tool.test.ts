@@ -7,6 +7,7 @@ import {
   createSearchReferencesTool,
   inputSchema,
   type SearchReferencesDeps,
+  type SearchReferencesInput,
 } from "@/lib/mcp/tools/search_references";
 import { createMemoryUsageStore, currentPeriod, type Plan } from "@/lib/quota";
 import type { Reference } from "@/lib/sources";
@@ -161,7 +162,7 @@ describe("search_references tool", () => {
     expect(res.structuredContent).toMatchObject({ mix: "wild" });
     const plain = await tool({ query: "x", mix: "balanced" }, "u1");
     expect(plain.structuredContent).toMatchObject({ mix: "balanced" });
-    const bad = await tool({ directionId: "bd-8dti7s7c", mix: "bananas" }, "u1");
+    const bad = await tool({ directionId: "bd-8dti7s7c", mix: "bananas" } as unknown as SearchReferencesInput, "u1");
     expect(bad.isError).toBe(true);
     expect(text(bad)).toContain("mix as one of ui, balanced, wild");
   });

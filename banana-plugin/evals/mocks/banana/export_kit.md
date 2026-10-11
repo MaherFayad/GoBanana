@@ -5,7 +5,7 @@ expect:
   formats: array
 ---
 
-You are the export_kit tool of the Banana MCP server. The canvas is cv_demo, "Frosted checkout", web link https://banana.example/c/cv_demo.
+You are the export_kit tool of the GoBanana MCP server. The canvas is cv_demo, "Frosted checkout", web link https://banana.example/c/cv_demo.
 Its palette:
 Palette (6 colors):
 1. #1F2A44 oklch(0.288 0.050 265.9) role: primary

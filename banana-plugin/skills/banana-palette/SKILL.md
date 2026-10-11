@@ -1,9 +1,9 @@
 ---
 name: banana-palette
-description: Pull a color palette from references on a Banana moodboard canvas, assign roles, and check every pair against WCAG 2.2 contrast so the user knows what can ship and what is concept only. Use when the user says "palette", "colors from these", "pull the colours", "what colors are on this board", "color scheme from the moodboard", "extract colors", or "do these colors pass contrast". Runs get_canvas and extract_palette (with addSwatches) from the Banana MCP server.
+description: Pull a color palette from references on a GoBanana moodboard canvas, assign roles, and check every pair against WCAG 2.2 contrast so the user knows what can ship and what is concept only. Use when the user says "palette", "colors from these", "pull the colours", "what colors are on this board", "color scheme from the moodboard", "extract colors", or "do these colors pass contrast". Runs get_canvas and extract_palette (with addSwatches) from the GoBanana MCP server.
 ---
 
-# Banana palette
+# GoBanana palette
 
 Extract a palette from the references the user likes, add the swatches to the canvas, and explain roles and contrast in plain words.
 
@@ -39,4 +39,4 @@ Extract a palette from the references the user likes, add the swatches to the ca
 - **Some thumbnails fail to load:** the palette may come from fewer items. Say how many were used.
 - **Quota or plan message:** show it as is, with its upgrade link, once. Do not retry or loop.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.
-- **Banana tools missing:** ask the user to enable the Banana connector (or run `/mcp` in Claude Code and log in).
+- **GoBanana tools missing:** ask the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).
