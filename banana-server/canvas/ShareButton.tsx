@@ -28,6 +28,7 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
   const [status, setStatus] = useState("");
   const buttonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const createRef = useRef<HTMLButtonElement>(null);
   const panelId = `bn-share-${useId().replace(/:/g, "")}`;
   const inputId = `${panelId}-link`;
 
@@ -56,6 +57,8 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
       }
       setToken(body.token ?? null);
       setUrl(body.url ?? null);
+      // The button that was pressed may be gone now; keep focus inside the panel.
+      requestAnimationFrame(() => (body.token ? inputRef.current : createRef.current)?.focus());
       setStatus(method === "DELETE" ? "Link turned off. The old link no longer works." : "Link ready.");
     } catch {
       setError({ message: "Could not reach the server. Try again." });
@@ -131,7 +134,13 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
               </div>
             </>
           ) : (
-            <button type="button" className="bn-btn bn-btn-primary" disabled={busy} onClick={() => void call("POST")}>
+            <button
+              ref={createRef}
+              type="button"
+              className="bn-btn bn-btn-primary"
+              disabled={busy}
+              onClick={() => void call("POST")}
+            >
               Create view-only link
             </button>
           )}

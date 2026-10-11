@@ -44,8 +44,9 @@ const EXPECTED = [
   "get_canvas",
   "extract_palette",
   "export_kit",
-  // App-only (hidden from the model by MCP Apps hosts); the inline canvas saves through it.
+  // App-only (hidden from the model by MCP Apps hosts); the inline canvas saves and reloads through them.
   "save_canvas_state",
+  "load_canvas_state",
 ];
 
 type ListedTool = {

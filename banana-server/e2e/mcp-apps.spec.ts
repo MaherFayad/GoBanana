@@ -71,12 +71,13 @@ const OPEN_RESULT = {
       webUrl: `https://banana.example.com/c/${CANVAS_ID}`,
       brief: null,
       items: 3,
+      sections: 0,
       tray: 0,
-      updatedAt: T0,
-      state: STATE,
     },
     created: false,
   },
+  // View only: the host hands result _meta to the view, not to the model.
+  _meta: { "banana/canvas": { state: STATE, updatedAt: T0 } },
 };
 
 /** CSP header a host would build from `_meta.ui.csp` (spec default plus our declared domains). */
@@ -103,6 +104,9 @@ function hostPage(openResult: unknown): string {
   let version = 0;
   const send = (msg) => frame().contentWindow.postMessage(msg, "*");
   function answer(params) {
+    if (params.name === "load_canvas_state") {
+      return { content: [{ type: "text", text: "Loaded." }], structuredContent: { ok: true, state: ${JSON.stringify(STATE)}, updatedAt: ${JSON.stringify(T0)}, title: "Cold checkout", removed: 0 } };
+    }
     if (params.name !== "save_canvas_state") {
       return { isError: true, content: [{ type: "text", text: "Unknown tool" }] };
     }
@@ -189,6 +193,28 @@ test.describe("inline canvas in an MCP Apps host", () => {
     await expect(card).toBeVisible();
     await expect(card.getByRole("link")).toHaveAttribute("href", "https://dribbble.com/shots/42-broken");
     expect(cspErrors).toEqual([]);
+  });
+
+  test("reads the board from result _meta without any extra tool call", async ({ page }) => {
+    const { frame } = await openInHost(page);
+    await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+    expect(await calls(page)).toEqual([]);
+  });
+
+  test("loads the board through load_canvas_state when the host drops result _meta", async ({ page }) => {
+    const { _meta: _dropped, ...withoutMeta } = OPEN_RESULT;
+    const { frame } = await openInHost(page, withoutMeta);
+    await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+    const [load] = await calls(page);
+    expect(load!.name).toBe("load_canvas_state");
+    expect(load!.arguments.canvasId).toBe(CANVAS_ID);
+    // Saves still carry the version the load returned.
+    await node(frame, "note1").focus();
+    await node(frame, "note1").press("ArrowRight");
+    await expect.poll(async () => (await calls(page)).length, { timeout: 5_000 }).toBe(2);
+    const save = (await calls(page))[1]!;
+    expect(save.name).toBe("save_canvas_state");
+    expect(save.arguments.baseUpdatedAt).toBe(T0);
   });
 
   test("auto-saves through save_canvas_state with the last version it saw", async ({ page }) => {

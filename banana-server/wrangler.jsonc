@@ -31,6 +31,8 @@
     "MCP_RESOURCE_URL": "https://banana-server.<your-subdomain>.workers.dev/api/mcp",
     "WORKOS_CLIENT_ID": "client_REPLACE_ME",
     "WORKOS_AUTHKIT_DOMAIN": "https://REPLACE-ME.authkit.app",
-    "IMAGE_HOST_ALLOWLIST": ""
+    "IMAGE_HOST_ALLOWLIST": "",
+    // Payments are off: every free user gets Pro limits. Remove at launch.
+    "BETA_PLAN": "pro"
   }
 }

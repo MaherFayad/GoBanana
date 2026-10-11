@@ -4,8 +4,10 @@
  *
  * Flow:
  * 1. Connect to the host over postMessage (`App` from @modelcontextprotocol/ext-apps).
- * 2. The host sends the `open_canvas` result (`ui/notifications/tool-result`); its
- *    `structuredContent.canvas` carries the canvas id, title, web link, state and updatedAt.
+ * 2. The host sends the `open_canvas` result (`ui/notifications/tool-result`):
+ *    `structuredContent.canvas` has the id, title and web link (the model sees this), and
+ *    `_meta["banana/canvas"]` has the board state and updatedAt (view only). Without that
+ *    `_meta`, the board loads through the app-only `load_canvas_state` tool.
  * 3. CanvasApp renders it and auto-saves through `save_canvas_state` (canvas/persistence-bridge.ts).
  *
  * Never fetches image bytes: tiles are plain <img> tags that load from the source host,
@@ -268,7 +270,9 @@ function InlineCanvas({ canvas, theme, host }: { canvas: OpenedCanvas; theme?: "
         canvasId={canvas.id}
         appName={APP_NAME}
         title={canvas.title}
-        initialState={session.state ?? {}}
+        // Undefined when the host dropped the result `_meta`: CanvasApp then loads through
+        // the persistence, which calls the app-only load_canvas_state tool.
+        initialState={session.state}
         persistence={session.persistence}
         theme={theme}
         onSaved={onSaved}

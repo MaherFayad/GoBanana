@@ -11,7 +11,10 @@ import type { AuthInfo } from "@modelcontextprotocol/server";
 import { buildAuthedMcpHandler } from "@/app/api/[transport]/handler";
 import { canvasCsp, CANVAS_UI_URI, FONT_DOMAINS, RESOURCE_MIME_TYPE } from "@/lib/mcp/resources/canvas";
 import { CANVAS_HTML } from "@/lib/mcp/resources/canvas-html.generated";
-import { createOpenCanvasTool } from "@/lib/mcp/tools/open_canvas";
+import { createOpenCanvasTool, inputSchema as openInput, VIEW_META_KEY } from "@/lib/mcp/tools/open_canvas";
+import { createLoadCanvasStateTool, TOOL_DESCRIPTION as LOAD_DESC } from "@/lib/mcp/tools/load_canvas_state";
+import { lenient } from "@/lib/mcp/tools/types";
+import type { RegisterTool } from "@/lib/mcp/tools/types";
 import {
   CONFLICT_MESSAGE,
   createSaveCanvasStateTool,
@@ -21,8 +24,10 @@ import {
 import {
   ConflictError,
   createBridgePersistence,
+  LOAD_TOOL,
   readOpenCanvasResult,
   SAVE_TOOL,
+  VIEW_META_KEY as BRIDGE_META_KEY,
   type ToolCaller,
 } from "@/canvas/persistence-bridge";
 import { DEFAULT_IMAGE_HOSTS } from "@/lib/sources/allowlist";
@@ -104,7 +109,7 @@ describe("ui://banana/canvas resource", () => {
 });
 
 describe("tool listing", () => {
-  it("open_canvas points at the canvas UI and save_canvas_state is app-only", async () => {
+  it("open_canvas points at the canvas UI; save_canvas_state and load_canvas_state are app-only", async () => {
     const result = await rpc("tools/list");
     const tools = result.tools as { name: string; _meta?: Record<string, unknown>; inputSchema: { required?: string[] } }[];
     const open = tools.find((t) => t.name === "open_canvas")!;
@@ -112,7 +117,10 @@ describe("tool listing", () => {
     const save = tools.find((t) => t.name === SAVE_TOOL)!;
     expect(save._meta).toEqual({ ui: { visibility: ["app"] } });
     expect(save.inputSchema.required?.sort()).toEqual(["canvasId", "state"]);
-    expect(SAVE_DESC).not.toMatch(/[\u2014\u2013]/);
+    const load = tools.find((t) => t.name === LOAD_TOOL)!;
+    expect(load._meta).toEqual({ ui: { visibility: ["app"] } });
+    expect(load.inputSchema.required).toEqual(["canvasId"]);
+    for (const d of [SAVE_DESC, LOAD_DESC]) expect(d).not.toMatch(/[\u2014\u2013]/);
   });
 });
 
@@ -121,10 +129,19 @@ describe("tool listing", () => {
 const ok = (r: { structuredContent?: Record<string, unknown> }) => r.structuredContent as SaveCanvasOutput;
 
 describe("open_canvas result for the inline app", () => {
-  it("carries the state and updatedAt the bridge reads", async () => {
+  it("keeps the board out of structuredContent and puts it in the result _meta for the view", async () => {
     const { deps, repos } = makeDeps();
     const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1)]));
     const res = await createOpenCanvasTool(deps)({ canvasId: c.id }, ALICE);
+    expect(BRIDGE_META_KEY).toBe(VIEW_META_KEY);
+    // What the model may see: small and without the board.
+    expect(res.structuredContent).toEqual({
+      canvas: { id: c.id, title: "Board", webUrl: `https://app.example.test/c/${c.id}`, brief: "flight checkout screen", items: 1, sections: 0, tray: 0 },
+      created: false,
+    });
+    expect(JSON.stringify(res.structuredContent)).not.toContain("img_a");
+    expect(JSON.stringify(res.content)).not.toContain("img_a");
+    expect(res._meta?.[VIEW_META_KEY]).toMatchObject({ updatedAt: c.updatedAt.toISOString() });
     const read = readOpenCanvasResult(res);
     expect(read.ok).toBe(true);
     if (!read.ok) return;
@@ -136,6 +153,40 @@ describe("open_canvas result for the inline app", () => {
     const created = readOpenCanvasResult(await createOpenCanvasTool(deps)({ title: "New" }, ALICE));
     expect(created.ok && (created.canvas.state as CanvasState).nodes).toEqual([]);
     expect(created.ok && created.canvas.updatedAt).toMatch(/^\d{4}-\d\d-\d\dT/);
+  });
+
+  it("keeps result _meta on the wire (tools/call through the real MCP handler)", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1)]));
+    const open = createOpenCanvasTool(deps);
+    const registerTest: RegisterTool = (server) => {
+      server.registerTool("open_canvas", { description: "test", inputSchema: lenient(openInput) }, async (args) => open(args, ALICE));
+    };
+    const h = buildAuthedMcpHandler({ verifyToken, tools: [registerTest] });
+    const res = await h(
+      new Request(`${ORIGIN}/api/mcp`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json, text/event-stream",
+          "mcp-protocol-version": "2025-06-18",
+          authorization: "Bearer good",
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "open_canvas", arguments: { canvasId: c.id } } }),
+      }),
+    );
+    const body = await res.text();
+    const line = body.trim().startsWith("{") ? body : body.split("\n").find((l) => l.startsWith("data:"))!.slice(5);
+    const result = (JSON.parse(line) as { result: { _meta?: Record<string, { state: CanvasState }> } }).result;
+    expect(result._meta?.[VIEW_META_KEY]?.state.nodes.map((n) => n.id)).toEqual(["img_a"]);
+  });
+
+  it("reads a result without _meta as 'board not delivered'", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1)]));
+    const { _meta: _dropped, ...stripped } = await createOpenCanvasTool(deps)({ canvasId: c.id }, ALICE);
+    const read = readOpenCanvasResult(stripped);
+    expect(read).toEqual({ ok: true, canvas: { id: c.id, title: "Board", webUrl: `https://app.example.test/c/${c.id}` } });
   });
 
   it("passes a tool error through as a plain message", () => {
@@ -234,6 +285,27 @@ describe("save_canvas_state", () => {
   });
 });
 
+describe("load_canvas_state", () => {
+  it("loads the owner's board with the takedown filter and refuses other users", async () => {
+    const { deps, repos } = makeDeps({ takedowns: ["https://www.pinterest.com/pin/3/"] });
+    const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1), imageNode("img_gone", 3)]));
+    const load = createLoadCanvasStateTool(deps);
+    const res = await load({ canvasId: c.id }, ALICE);
+    expect(res.isError).toBeFalsy();
+    const out = res.structuredContent as { ok: true; state: CanvasState; updatedAt: string; removed: number };
+    expect(out.state.nodes.map((n) => n.id)).toEqual(["img_a"]);
+    expect(out.removed).toBe(1);
+    expect(out.updatedAt).toBe(c.updatedAt.toISOString());
+
+    const bob = await load({ canvasId: c.id }, BOB);
+    expect(bob.isError).toBe(true);
+    expect(bob.structuredContent).toMatchObject({ ok: false, reason: "not_found" });
+    expect(JSON.stringify(bob)).not.toContain("img_a");
+    expect((await load({ canvasId: c.id }, undefined)).structuredContent).toMatchObject({ reason: "signed_out" });
+    expect((await load({}, ALICE)).structuredContent).toMatchObject({ reason: "invalid" });
+  });
+});
+
 // ---------------------------------------------------------------------------- bridge
 
 describe("bridge persistence over save_canvas_state", () => {
@@ -241,10 +313,12 @@ describe("bridge persistence over save_canvas_state", () => {
     const { deps, repos } = makeDeps();
     const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1)]));
     const tool = createSaveCanvasStateTool(deps);
+    const load = createLoadCanvasStateTool(deps);
     const calls: { name: string; arguments?: Record<string, unknown> }[] = [];
     const app: ToolCaller = {
       async callServerTool(params) {
         calls.push(params);
+        if (params.name === LOAD_TOOL) return load(params.arguments, ALICE);
         if (params.name !== SAVE_TOOL) throw new Error(`unexpected tool ${params.name}`);
         return tool(params.arguments, ALICE);
       },
@@ -259,7 +333,7 @@ describe("bridge persistence over save_canvas_state", () => {
       updatedAt: opened.canvas.updatedAt,
       onConflict,
     });
-    return { repos, c, p, calls, onConflict };
+    return { repos, c, p, calls, onConflict, app };
   }
 
   const nodesOf = async (repos: ReturnType<typeof makeDeps>["repos"], id: string) =>
@@ -275,6 +349,19 @@ describe("bridge persistence over save_canvas_state", () => {
     expect(calls[0]!.arguments!.baseUpdatedAt).toBe(c.updatedAt.toISOString());
     expect(calls[1]!.arguments!.baseUpdatedAt).not.toBe(calls[0]!.arguments!.baseUpdatedAt);
     expect(p.baseUpdatedAt).toBe((await repos.canvases.getOwned(ALICE, c.id))!.updatedAt.toISOString());
+  });
+
+  it("falls back to load_canvas_state when the board did not arrive in _meta", async () => {
+    const { repos, c, app, calls } = await setup();
+    await repos.canvases.saveState(ALICE, c.id, state([imageNode("img_a", 1), imageNode("img_b", 2)]));
+    const p = createBridgePersistence({ app, canvasId: c.id });
+    expect(((await p.load()) as CanvasState).nodes.map((n) => n.id)).toEqual(["img_a", "img_b"]);
+    expect(calls.map((x) => x.name)).toEqual([LOAD_TOOL]);
+    const latest = (await repos.canvases.getOwned(ALICE, c.id))!.updatedAt.toISOString();
+    expect(p.baseUpdatedAt).toBe(latest);
+    await p.save(state([imageNode("img_b", 2)]));
+    expect(calls[1]!.arguments!.baseUpdatedAt).toBe(latest);
+    expect(await nodesOf(repos, c.id)).toEqual(["img_b"]);
   });
 
   it("holds saves after a conflict until the user loads the latest version", async () => {

@@ -1,8 +1,11 @@
 /**
  * Canvas persistence over the MCP Apps bridge (inline canvas in chat, spec section 9).
  *
- * - Load: the state comes from the `open_canvas` tool result (`structuredContent.canvas`),
- *   which the host hands to the view as `ui/notifications/tool-result`. No extra call.
+ * - Load: the board comes from the `open_canvas` tool result `_meta["banana/canvas"]`
+ *   (`state`, `updatedAt`), which the host hands to the view as
+ *   `ui/notifications/tool-result` but does not show to the model. `structuredContent`
+ *   stays small (id, title, link, counts). If a host drops result `_meta`, the view loads
+ *   the board through the app-only `load_canvas_state` tool instead.
  * - Save: `app.callServerTool({ name: "save_canvas_state", ... })`, proxied by the host to
  *   our MCP server with the user's token. The server checks ownership, size, embedded
  *   bytes and `baseUpdatedAt` (lib/mcp/tools/save_canvas_state.ts).
@@ -18,13 +21,17 @@ import { PersistenceError } from "./persistence";
 import type { CanvasState } from "./types";
 
 export const SAVE_TOOL = "save_canvas_state";
+export const LOAD_TOOL = "load_canvas_state";
 export const OPEN_TOOL = "open_canvas";
+/** Key of the view-only board in the open_canvas result `_meta` (lib/mcp/tools/open_canvas.ts). */
+export const VIEW_META_KEY = "banana/canvas";
 
 /** The part of `CallToolResult` the canvas reads. */
 export type ToolCallResult = {
   content?: readonly { type: string; text?: string }[];
   structuredContent?: unknown;
   isError?: boolean;
+  _meta?: unknown;
 };
 
 /** The part of the ext-apps `App` the canvas needs (`app.callServerTool`). */
@@ -37,8 +44,10 @@ export type OpenedCanvas = {
   id: string;
   title: string;
   webUrl: string;
-  updatedAt: string;
-  state: unknown;
+  /** Undefined when the result reached the view without its `_meta` board. */
+  updatedAt?: string;
+  /** Undefined when the result reached the view without its `_meta` board; load it with `load_canvas_state`. */
+  state?: unknown;
 };
 
 function isObj(v: unknown): v is Record<string, unknown> {
@@ -60,14 +69,15 @@ export function readOpenCanvasResult(result: ToolCallResult): { ok: true; canvas
   if (result.isError) return { ok: false, message: resultText(result) || fallback };
   const c = isObj(result.structuredContent) ? result.structuredContent.canvas : undefined;
   if (!isObj(c) || typeof c.id !== "string" || !c.id) return { ok: false, message: resultText(result) || fallback };
+  const view = isObj(result._meta) ? result._meta[VIEW_META_KEY] : undefined;
+  const board = isObj(view) && isObj(view.state) && typeof view.updatedAt === "string" ? view : null;
   return {
     ok: true,
     canvas: {
       id: c.id,
       title: typeof c.title === "string" && c.title ? c.title : "Untitled canvas",
       webUrl: typeof c.webUrl === "string" ? c.webUrl : "",
-      updatedAt: typeof c.updatedAt === "string" ? c.updatedAt : "",
-      state: c.state ?? null,
+      ...(board ? { state: board.state, updatedAt: board.updatedAt as string } : {}),
     },
   };
 }
@@ -102,9 +112,12 @@ export interface BridgePersistence extends CanvasPersistence {
 export interface BridgePersistenceOptions {
   app: ToolCaller;
   canvasId: string;
-  /** State from the open_canvas result. */
-  initialState: unknown;
-  /** `updatedAt` from the open_canvas result. */
+  /**
+   * State from the open_canvas result `_meta`. Leave undefined when the host dropped it:
+   * `load()` then fetches the board through `load_canvas_state`.
+   */
+  initialState?: unknown;
+  /** `updatedAt` from the open_canvas result `_meta`. */
   updatedAt?: string;
   onConflict?: (info: ConflictInfo) => void;
 }
@@ -151,7 +164,19 @@ export function createBridgePersistence(opts: BridgePersistenceOptions): BridgeP
       return conflict;
     },
     async load() {
-      return opts.initialState ?? null;
+      if (opts.initialState !== undefined) return opts.initialState;
+      let result: ToolCallResult;
+      try {
+        result = await opts.app.callServerTool({ name: LOAD_TOOL, arguments: { canvasId: opts.canvasId } });
+      } catch {
+        throw new PersistenceError("Could not reach the server to load this canvas.");
+      }
+      const out: Record<string, unknown> = isObj(result.structuredContent) ? result.structuredContent : {};
+      if (result.isError || out.ok !== true || !isObj(out.state)) {
+        throw new PersistenceError(resultText(result) || "Could not load this canvas.", out.reason === "not_found" ? 404 : undefined);
+      }
+      if (typeof out.updatedAt === "string") base = out.updatedAt;
+      return out.state;
     },
     async save(state) {
       if (conflict) {
