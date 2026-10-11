@@ -71,7 +71,7 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "query", "sources", "taste"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste"]);
   });
 
   it("validates count and sources", () => {
@@ -129,16 +129,49 @@ describe("search_references tool", () => {
     const res = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1" }, "u1");
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
     expect(plan.length).toBeLessThanOrEqual(8);
-    expect(plan.map((r) => r.lane)).toEqual(["inspiration", "fidelity", "taste", "inspiration", "hero", "locale"]);
-    const out = res.structuredContent as { lanes: Record<string, string>; queries: string[]; query: string };
+    expect(plan.map((r) => r.lane)).toEqual(["inspiration", "fidelity", "taste", "bridge", "inspiration", "hero", "locale"]);
+    expect(plan.find((r) => r.lane === "bridge")).toMatchObject({
+      query: "crushed velvet ui design -template -kit -free -wireframe",
+      site: "dribbble",
+      titleWord: "velvet",
+    });
+    const out = res.structuredContent as { lanes: Record<string, string>; queries: string[]; query: string; mix: string };
     expect(out.query).toBe("crushed velvet");
-    expect(out.lanes).toMatchObject({ inspiration: "crushed velvet", fidelity: "flight app ui", locale: "arabic app ui" });
+    expect(out.mix).toBe("ui");
+    expect(out.lanes).toMatchObject({
+      inspiration: "crushed velvet",
+      fidelity: "flight app ui",
+      bridge: "crushed velvet ui design",
+      locale: "arabic app ui",
+    });
     expect(out.lanes.taste).toMatch(/ flight checkout ui design$/);
     expect(out.lanes.hero).toMatch(/ flight app single screen$/);
     expect(out.queries[0]).toBe("crushed velvet site:pinterest.com/pin");
     expect(out.queries[1]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
     expect(text(res)).toContain('inspiration "crushed velvet"');
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(1);
+  });
+
+  it("defaults to the ui mix and passes the mix it is given to the plan run", async () => {
+    const { tool, runPlan } = setup();
+    await tool({ directionId: "bd-8dti7s7c" }, "u1");
+    expect((runPlan.mock.calls[0]! as unknown as [unknown, { mix: string }])[1].mix).toBe("ui");
+    const res = await tool({ directionId: "bd-8dti7s7c", mix: "wild" }, "u1");
+    expect((runPlan.mock.calls[1]! as unknown as [unknown, { mix: string }])[1].mix).toBe("wild");
+    expect(res.structuredContent).toMatchObject({ mix: "wild" });
+    const plain = await tool({ query: "x", mix: "balanced" }, "u1");
+    expect(plain.structuredContent).toMatchObject({ mix: "balanced" });
+    const bad = await tool({ directionId: "bd-8dti7s7c", mix: "bananas" }, "u1");
+    expect(bad.isError).toBe(true);
+    expect(text(bad)).toContain("mix as one of ui, balanced, wild");
+  });
+
+  it("re-searches the bridge lane with the agent's words and keeps the idea's title filter", async () => {
+    const { tool, runPlan } = setup();
+    const res = await tool({ directionId: "bd-8dti7s7c", lane: "bridge", query: "velvet checkout ui" }, "u1");
+    const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string; titleWord?: string }[]];
+    expect(plan).toEqual([{ lane: "bridge", query: "velvet checkout ui -template -kit -free -wireframe", site: "dribbble", titleWord: "velvet" }]);
+    expect(res.structuredContent).toMatchObject({ lane: "bridge", arms: { bridge: "agent:velvet checkout ui" } });
   });
 
   it("uses and saves the taste words it is given", async () => {

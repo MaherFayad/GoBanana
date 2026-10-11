@@ -8,6 +8,7 @@
 import type { Plan, UsageStore } from "@/lib/quota";
 import type { Reference } from "@/lib/sources/types";
 import type { ArmStat } from "@/lib/learning/arms";
+import type { DirectionReason, IngredientStat } from "@/lib/learning/directions";
 import type { FeedbackReason, FeedbackVerdict } from "@/lib/learning/hints";
 
 export type CanvasRecord = {
@@ -75,6 +76,11 @@ export interface DirectionRepo {
    */
   findForUser(userId: string, directionId: string, canvasId?: string): Promise<DirectionRecord | null>;
   listForCanvas(canvasId: string): Promise<DirectionRecord[]>;
+  /**
+   * Delete directions of a canvas by row uuid; returns how many went. Callers check that the
+   * canvas is the user's first. No other table references a direction row.
+   */
+  deleteMany(canvasId: string, ids: readonly string[]): Promise<number>;
 }
 
 export type ReferenceRecord = {
@@ -127,11 +133,13 @@ export type NewFeedback = {
   termKey: string | null;
   arm: string | null;
   verdict: FeedbackVerdict;
-  reasons: FeedbackReason[];
+  /** rate_references reasons, or rate_directions reasons on direction rows (lane "direction"). */
+  reasons: (FeedbackReason | DirectionReason)[];
   creator: string | null;
 };
 
 export type ArmStatRow = ArmStat;
+export type IngredientStatRow = IngredientStat;
 
 export interface FeedbackRepo {
   insertMany(rows: readonly NewFeedback[]): Promise<void>;
@@ -145,6 +153,12 @@ export interface FeedbackRepo {
    * users, and this user's own raw counts. Never returns user ids.
    */
   armStats(userId: string, termKeys: readonly string[]): Promise<ArmStatRow[]>;
+  /**
+   * rate_directions ratings per ingredient term key (`direction|...`), every arm (move) pooled,
+   * grouped like armStats, in one query. Only rows that may matter: rated by at least `k` users,
+   * or by this user. Never returns user ids.
+   */
+  directionStats(userId: string, k: number): Promise<IngredientStatRow[]>;
 }
 
 export interface BlocklistRepo {

@@ -4,6 +4,8 @@ import { authExtra } from "@/lib/auth";
 import { bendBrief, bendInputSchema, formatDirections, parseBendInput, type BendResult } from "@/lib/bend";
 import { mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { CanvasRecord } from "@/lib/db/types";
+import { globalLearningOn, K_ANON } from "@/lib/learning/arms";
+import { ingredientWeights } from "@/lib/learning/directions";
 import { cleanTaste } from "@/lib/taste";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
@@ -33,7 +35,26 @@ export const inputSchema = bendInputSchema.extend({
  */
 const advertisedInput: StandardSchemaWithJSON<unknown, unknown> = lenient(inputSchema);
 
-export type BendBriefDeps = Pick<CanvasToolDeps, "repos">;
+export type BendBriefDeps = Pick<CanvasToolDeps, "repos"> & {
+  /** GLOBAL_LEARNING: false means only the user's own direction ratings steer their bends. Default true. */
+  globalLearning?(): boolean;
+};
+
+/**
+ * Ingredient weights from rate_directions feedback: one grouped read per call. Fails open: any
+ * error, or no user, gives no weights, so the bend is exactly what it was without feedback.
+ */
+async function readWeights(getDeps: () => BendBriefDeps, userId: string | undefined): Promise<Map<string, number>> {
+  if (!userId) return new Map();
+  try {
+    const deps = getDeps();
+    const stats = await deps.repos.feedback.directionStats(userId, K_ANON);
+    return ingredientWeights(stats, { global: deps.globalLearning?.() ?? true });
+  } catch {
+    console.error("[bend_brief] could not read direction stats");
+    return new Map();
+  }
+}
 
 /** Save directions (and new taste words) on the user's canvas. */
 async function saveDirections(
@@ -63,7 +84,10 @@ async function saveDirections(
   return true;
 }
 
-/** Handler logic. `getDeps` is only called when a canvasId is passed, so plain bends never touch the database. */
+/**
+ * Handler logic. `getDeps` is only called for a signed-in user (direction stats, and the canvas
+ * when a canvasId is passed); anonymous bends never touch the database.
+ */
 export function createBendBriefTool(getDeps: () => BendBriefDeps) {
   return async function bendBriefTool(args: unknown, userId: string | undefined): Promise<ToolResult> {
     const parsed = parseBendInput(args);
@@ -93,9 +117,10 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
     }
     const taste = newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined);
 
+    const ingredientWeights = await readWeights(getDeps, userId);
     let result: BendResult;
     try {
-      result = bendBrief({ ...parsed.input, ...(taste.length > 0 ? { taste } : {}) });
+      result = bendBrief({ ...parsed.input, ...(taste.length > 0 ? { taste } : {}) }, { ingredientWeights });
     } catch {
       return toolMessage("Could not bend that brief. Try a shorter brief in plain words.");
     }
@@ -122,6 +147,17 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
 
 let liveTool: ReturnType<typeof createBendBriefTool> | undefined;
 
+/** Live deps; `repos` stays lazy so a missing DATABASE_URL only fails the parts that need it. */
+function liveBendDeps(): BendBriefDeps {
+  const canvas = liveCanvasDeps();
+  return {
+    get repos() {
+      return canvas.repos;
+    },
+    globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
+  };
+}
+
 export const register: RegisterTool = (server) => {
   server.registerTool(
     "bend_brief",
@@ -132,7 +168,7 @@ export const register: RegisterTool = (server) => {
       annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
     },
     async (args, ctx) => {
-      liveTool ??= createBendBriefTool(liveCanvasDeps);
+      liveTool ??= createBendBriefTool(liveBendDeps);
       return liveTool(args, authExtra(ctx)?.userId);
     },
   );

@@ -3,6 +3,8 @@ import { getLens, lensEntries, LISTS, STOP_WORDS } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53, mulberry32, shuffle, stableId, type Rng } from "./prng";
 import { cleanTaste, DEFAULT_TASTE } from "@/lib/taste";
+import { weightedOrder } from "@/lib/learning/directions";
+import { directionTermKey } from "@/lib/learning/terms";
 import { inspirationQuery, laneTexts } from "./queries";
 import { extractSubject } from "./subject";
 import {
@@ -36,6 +38,7 @@ export { MOVES } from "./types";
 export {
   MAX_FOCUSED_QUERY_WORDS,
   MAX_LANE_WORDS,
+  bridgeQuery,
   fidelityCoreQuery,
   fidelityQuery,
   heroQuery,
@@ -115,6 +118,8 @@ class EntryPicker {
   constructor(
     private readonly rng: Rng,
     subjectWords: readonly string[],
+    /** Reorders a pool right after its shuffle (ingredient weights). Spends no random draws. */
+    private readonly order?: (poolKey: string, shuffled: ListEntry[]) => ListEntry[],
   ) {
     for (const w of subjectWords) this.usedStems.add(stem(w));
   }
@@ -129,6 +134,7 @@ class EntryPicker {
     let pool = this.pools.get(poolKey);
     if (!pool) {
       pool = shuffle(entries, this.rng);
+      if (this.order) pool = this.order(poolKey, pool);
       this.pools.set(poolKey, pool);
     }
     const fresh = pool.filter((e) => !this.usedKeys.has(e.key.toLowerCase()));
@@ -223,6 +229,31 @@ function pairKey(a: MoveId, b: MoveId): string {
   return MOVES.indexOf(a) < MOVES.indexOf(b) ? `${a}+${b}` : `${b}+${a}`;
 }
 
+/** Options that never come from the tool input. */
+export interface BendOptions {
+  /**
+   * Weight per ingredient term key (`direction|{ingredient}`, lib/learning/directions.ts), from
+   * rate_directions feedback. Missing keys weigh 1. Empty or absent: today's picks exactly.
+   */
+  ingredientWeights?: ReadonlyMap<string, number>;
+}
+
+/** The move whose list a pool key names ("materials", "lens:sadu"), or null for moods. */
+function poolMove(poolKey: string): MoveId | null {
+  if (poolKey.startsWith("lens:")) return "lens";
+  return MOVES.find((m) => MOVE_DEFS[m].list === poolKey) ?? null;
+}
+
+/** Pool reorder from ingredient weights, or undefined when there are none. */
+function ingredientOrder(weights: ReadonlyMap<string, number> | undefined) {
+  if (!weights || weights.size === 0) return undefined;
+  return (poolKey: string, shuffled: ListEntry[]): ListEntry[] => {
+    const move = poolMove(poolKey);
+    if (!move) return shuffled;
+    return weightedOrder(shuffled, (e) => weights.get(directionTermKey(inspirationQuery(move, e.query))) ?? 1);
+  };
+}
+
 interface Plan {
   moves: MoveId[];
   picked: ListEntry[];
@@ -232,11 +263,13 @@ interface Plan {
 /**
  * Turn a plain brief into wild design directions. Rule-based and deterministic:
  * the same brief, wildness, moves and lens always give the same directions, and
- * a larger count only appends directions.
+ * a larger count only appends directions. With `options.ingredientWeights` (rate_directions
+ * feedback) ingredients agents keep dropping come up less often; the same weights give the same
+ * directions.
  * Throws BendInputError with a plain message on invalid input; tools should call
  * parseBendInput first.
  */
-export function bendBrief(raw: BendInput): BendResult {
+export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult {
   const parsed = parseBendInput(raw);
   if (!parsed.ok) throw new BendInputError(parsed.message);
   const input = parsed.input;
@@ -250,7 +283,7 @@ export function bendBrief(raw: BendInput): BendResult {
   const key = seedKey(input);
   const rng = mulberry32(cyrb53(key));
   const subject = extractSubject(input.brief, wildness);
-  const entries = new EntryPicker(rng, subject.words);
+  const entries = new EntryPicker(rng, subject.words, ingredientOrder(options.ingredientWeights));
 
   // Allowed moves, in canonical order. A lens preset forces the lens move into every direction.
   const allowed: MoveId[] = MOVES.filter((m) => !input.moves || input.moves.includes(m));
@@ -429,7 +462,9 @@ export function bendBrief(raw: BendInput): BendResult {
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
     const lanes = laneTexts(input.brief, searchQuery, taste, id);
     const searchQueries = [
-      ...new Set([lanes.inspiration, lanes.taste, lanes.fidelity, lanes.hero, lanes.locale].filter((q): q is string => Boolean(q))),
+      ...new Set(
+        [lanes.inspiration, lanes.taste, lanes.fidelity, lanes.bridge, lanes.hero, lanes.locale].filter((q): q is string => Boolean(q)),
+      ),
     ];
 
     directions.push({

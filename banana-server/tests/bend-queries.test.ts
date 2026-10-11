@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bendBrief,
+  bridgeQuery,
   fidelityCoreQuery,
   fidelityQuery,
   heroQuery,
@@ -116,6 +117,14 @@ describe("brief lanes", () => {
     expect(tasteVariants("poster for a jazz festival", "grainy")).toEqual({});
   });
 
+  it("bridges the idea to UI for UI briefs whose idea has a head word", () => {
+    expect(bridgeQuery(CANVAS_BRIEF, "vending machine")).toBe("vending machine ui design");
+    expect(bridgeQuery("flight checkout screen", "Sadu weaving")).toBe("Sadu weaving ui design");
+    expect(bridgeQuery("poster for a jazz festival", "vending machine")).toBeNull();
+    expect(bridgeQuery(CANVAS_BRIEF, "3d ui")).toBeNull();
+    expect(laneTexts("poster for a jazz festival", "vending machine", DEFAULT_TASTE, "bd-1").bridge).toBeUndefined();
+  });
+
   it("hero for app briefs only, locale for Arabic briefs only", () => {
     expect(heroQuery(CANVAS_BRIEF, "dark mode")).toBe("dark mode flight app single screen");
     expect(heroQuery("saudi fintech app", "luxury")).toBe("luxury fintech app single screen");
@@ -132,6 +141,7 @@ describe("brief lanes", () => {
       inspiration: "crushed velvet",
       taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} flight checkout ui design`,
       fidelity: "flight app ui",
+      bridge: "crushed velvet ui design",
       hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
       locale: "arabic app ui",
     });
@@ -188,6 +198,7 @@ describe("bend output", () => {
         d.searchQuery,
         "monochrome flight checkout ui design",
         "flight app ui",
+        `${d.searchQuery} ui design`,
         "monochrome flight app single screen",
       ]);
     }

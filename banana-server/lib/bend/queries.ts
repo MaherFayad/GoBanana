@@ -7,12 +7,14 @@
  * - fidelity: "{domain} {surface}" ("flight app ui"): real product UI for the brief.
  * - taste: "{style} {domain} {component} ui design" ("big typography flight checkout ui design").
  *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21.
+ * - bridge: "{ingredient} ui design" (UI briefs): the idea already applied to UI. Kept only when
+ *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
  * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
  * - locale: "arabic {surface}" when the brief is Arabic or right to left.
  *
  * Site operators and negatives are added by lib/sources/plan.ts; these are the plain words.
  */
-import type { LaneTexts } from "@/lib/sources/plan";
+import { bridgeHead, type LaneTexts } from "@/lib/sources/plan";
 import { DEFAULT_TASTE } from "@/lib/taste";
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
 import { MOVE_DEFS } from "./moves";
@@ -303,6 +305,15 @@ export function heroQuery(brief: string, style: string): string | null {
   return capWords(`${styleWords(style)} ${coreNoun(p.domain)} app single screen`);
 }
 
+/**
+ * Bridge lane: "{ingredient} ui design" for UI briefs whose ingredient has a head word to filter
+ * result titles by (lib/sources/plan.ts bridgeHead), or null.
+ */
+export function bridgeQuery(brief: string, ingredient: string): string | null {
+  if (!isUiBrief(brief) || !bridgeHead(ingredient)) return null;
+  return capWords(`${ingredient} ui design`);
+}
+
 /** Locale lane: "arabic {surface}" when the brief is Arabic or right to left, or null. */
 export function localeQuery(brief: string): string | null {
   const p = briefParts(brief);
@@ -338,6 +349,8 @@ export function laneTexts(brief: string | null | undefined, inspiration: string,
   lanes.fidelity = fidelityQuery(b);
   const core = fidelityCoreQuery(b);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
+  const bridge = bridgeQuery(b, inspiration);
+  if (bridge) lanes.bridge = bridge;
   const hero = heroQuery(b, pickStyle(taste, key, 1));
   if (hero) lanes.hero = hero;
   const locale = localeQuery(b);

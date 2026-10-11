@@ -10,6 +10,7 @@
  *   fidelity     default (with the core noun fallback), core (core noun up front)
  *   taste        default "{style} {domain} {component} ui design",
  *                app "{style} {domain} app {component} ui" (app briefs), core (core domain noun)
+ *   bridge       default "{ingredient} ui design", app "{ingredient} app ui"
  *   hero, locale default
  *   any lane     agent:{words}, recorded when an agent re-searches one lane with its own words
  *
@@ -20,7 +21,7 @@
  *   and only for them. With GLOBAL_LEARNING=off only the user's own ratings apply.
  */
 import { cyrb53, mulberry32, type Rng } from "../bend/prng";
-import { planRequests, type LaneTexts, type PlannedRequest } from "../sources/plan";
+import { bridgeHead, planRequests, type LaneTexts, type PlannedRequest } from "../sources/plan";
 import type { LaneName, SourceSite } from "../sources/types";
 import { MAX_KEY_LENGTH, queryWords } from "./terms";
 
@@ -47,9 +48,16 @@ export function builtInArms(lane: LaneName, lanes: LaneTexts, variants: ArmVaria
       return lanes.fidelityCore ? [UI_DEFAULT, "core"] : [UI_DEFAULT];
     case "taste":
       return [UI_DEFAULT, ...(variants.tasteApp ? ["app"] : []), ...(variants.tasteCore ? ["core"] : [])];
+    case "bridge":
+      return lanes.bridge ? [UI_DEFAULT, "app"] : [UI_DEFAULT];
     default:
       return [UI_DEFAULT];
   }
+}
+
+/** Bridge lane words for the `app` arm: "{ingredient} app ui". */
+export function bridgeAppText(ingredient: string): string {
+  return `${ingredient} app ui`;
 }
 
 /** Arm id for an agent's own words for a lane (site operators and negatives stripped). */
@@ -99,29 +107,36 @@ export function planWithArms(
     else if (arms.taste === "app" && variants.tasteApp) out.taste = variants.tasteApp;
     else if (arms.taste === "core" && variants.tasteCore) out.taste = variants.tasteCore;
   }
+  if (lanes.bridge) {
+    const agent = agentWords("bridge");
+    if (agent) out.bridge = agent;
+    else if (arms.bridge === "app") out.bridge = bridgeAppText(lanes.inspiration);
+  }
   for (const lane of ["hero", "locale"] as const) {
     const agent = agentWords(lane);
     if (agent && lanes[lane]) out[lane] = agent;
   }
 
-  const plan = planRequests(out, sources);
+  // The bridge filter keeps the direction's own idea, whatever words the inspiration arm used.
+  const plan = planRequests(out, sources, { bridgeWord: bridgeHead(lanes.inspiration) });
   if (insp !== "raw@behance" || inspAgent) return plan;
   // Both inspiration requests on Behance galleries: page 1 where Pinterest was, then page 2.
   let n = 0;
   return plan.map((r) => (r.lane === "inspiration" ? { ...r, site: "behance" as const, ...(n++ === 0 ? {} : { page: 2 }) } : r));
 }
 
-/** The requests one lane would send with `text` as its words (a lane-only re-search). */
-export function planLane(lane: LaneName, text: string, sources?: readonly SourceSite[]): PlannedRequest[] {
+/**
+ * The requests one lane would send with `text` as its words (a lane-only re-search). A bridge
+ * re-search keeps the title filter of the direction's `ingredient` (no ingredient, no request).
+ */
+export function planLane(lane: LaneName, text: string, sources?: readonly SourceSite[], ingredient?: string): PlannedRequest[] {
   const lanes: LaneTexts = { inspiration: lane === "inspiration" ? text : "" };
   if (lane !== "inspiration") lanes[lane] = text;
-  return planRequests(lanes, sources).filter((r) => r.lane === lane);
+  return planRequests(lanes, sources, { bridgeWord: bridgeHead(ingredient) }).filter((r) => r.lane === lane);
 }
 
-/** Ratings of one term and arm. `great`, `bad` and `users` count each user once; `own*` are this user's raw counts. */
-export type ArmStat = {
-  termKey: string;
-  arm: string;
+/** Grouped rating counts: `great`, `bad` and `users` count each user once; `own*` are this user's raw counts. */
+export type CountStat = {
   great: number;
   bad: number;
   users: number;
@@ -129,8 +144,14 @@ export type ArmStat = {
   ownBad: number;
 };
 
+/** Ratings of one term and arm. */
+export type ArmStat = CountStat & {
+  termKey: string;
+  arm: string;
+};
+
 /** The counts that may influence this user, or null when none may. */
-export function usableCounts(stat: ArmStat, opts: { global: boolean; k?: number }): { great: number; bad: number } | null {
+export function usableCounts(stat: CountStat, opts: { global: boolean; k?: number }): { great: number; bad: number } | null {
   if (opts.global && stat.users >= (opts.k ?? K_ANON)) return { great: stat.great, bad: stat.bad };
   if (stat.ownGreat + stat.ownBad > 0) return { great: stat.ownGreat, bad: stat.ownBad };
   return null;

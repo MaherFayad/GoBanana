@@ -8,7 +8,7 @@ import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { blockedItems, searchFeedback } from "@/db/schema";
 import { isUuid } from "./ids";
-import type { ArmStatRow, BlocklistRepo, FeedbackRepo, NewFeedback } from "./types";
+import type { ArmStatRow, BlocklistRepo, FeedbackRepo, IngredientStatRow, NewFeedback } from "./types";
 
 /** Most rows one armStats read groups (term keys of one search, a handful of arms each). */
 const MAX_TERM_KEYS = 16;
@@ -68,11 +68,54 @@ export async function readArmStats(db: Db, userId: string, termKeys: readonly st
   }));
 }
 
+/** Most ingredient rows one directionStats read returns (the word lists hold a few hundred). */
+const MAX_INGREDIENTS = 5000;
+
+/**
+ * The grouped direction stats query (rate_directions rows: lane "direction"), one row per
+ * ingredient term key. Same per-user grouping as armStatsSql, arms (moves) pooled. Exported so
+ * tests can check the SQL without a database.
+ */
+export function directionStatsSql(userId: string, k: number) {
+  return sql`
+    select term_key,
+      count(*) filter (where g > b)::int as great,
+      count(*) filter (where b > g)::int as bad,
+      count(*)::int as users,
+      coalesce(sum(g) filter (where user_id = ${userId}::uuid), 0)::int as own_great,
+      coalesce(sum(b) filter (where user_id = ${userId}::uuid), 0)::int as own_bad
+    from (
+      select term_key, user_id,
+        count(*) filter (where verdict = 'great') as g,
+        count(*) filter (where verdict = 'bad') as b
+      from "search_feedback"
+      where lane = 'direction' and term_key like 'direction|%'
+      group by term_key, user_id
+    ) per_user
+    group by term_key
+    having count(*) >= ${k} or bool_or(user_id = ${userId}::uuid)
+    limit ${MAX_INGREDIENTS}`;
+}
+
+export async function readDirectionStats(db: Db, userId: string, k: number): Promise<IngredientStatRow[]> {
+  if (!isUuid(userId)) return [];
+  const result = await db.execute(directionStatsSql(userId, k));
+  return (result.rows as Record<string, unknown>[]).map((r) => ({
+    termKey: String(r.term_key),
+    great: Number(r.great ?? 0),
+    bad: Number(r.bad ?? 0),
+    users: Number(r.users ?? 0),
+    ownGreat: Number(r.own_great ?? 0),
+    ownBad: Number(r.own_bad ?? 0),
+  }));
+}
+
 export function feedbackRepo(db: Db): FeedbackRepo {
   return {
     insertMany: (rows) => insertFeedback(db, rows),
     listCreatorRatings: (userId, limit) => listCreatorRatings(db, userId, limit),
     armStats: (userId, termKeys) => readArmStats(db, userId, termKeys),
+    directionStats: (userId, k) => readDirectionStats(db, userId, k),
   };
 }
 

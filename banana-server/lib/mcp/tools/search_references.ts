@@ -26,10 +26,13 @@ import { queryWords, termKey } from "@/lib/learning/terms";
 import { planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import {
+  DEFAULT_MIX,
   DEFAULT_SOURCES,
   LANE_NAMES,
+  MIXES,
   SOURCE_SITES,
   type LaneName,
+  type Mix,
   type Reference,
   type SourceSite,
 } from "@/lib/sources/types";
@@ -54,6 +57,7 @@ export const TOOL_DESCRIPTION =
   "Every result carries its source link: always show it next to the image. " +
   "Pass canvasId to add the results to that canvas tray. " +
   "Pass taste with a few style words that describe the user's references (for example from their mood boards), such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. " +
+  'mix sets how much of a direction search is raw idea against UI: "ui" (default, mostly UI screens), "balanced" or "wild" (mostly the raw idea). ' +
   "To redo one lane of a direction with better words, pass directionId, lane and query. " +
   "Rate results with rate_references so later searches improve. " +
   "Results are links to the source pages only.";
@@ -69,6 +73,10 @@ export const inputSchema = z.object({
     .enum(LANE_NAMES)
     .optional()
     .describe("With directionId and query: search only this lane of the direction, with the query as its words."),
+  mix: z
+    .enum(MIXES)
+    .optional()
+    .describe('Direction searches: "ui" (default) puts UI screens first with about 20% raw idea, "balanced" 40%, "wild" 60%.'),
 });
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
@@ -129,6 +137,8 @@ export type SearchReferencesOutput = {
   learned?: boolean;
   /** Lane-only re-search: the lane that was searched. */
   lane?: LaneName;
+  /** Inspiration's share and the order of the results (lib/sources/plan.ts). */
+  mix: Mix;
   sources: SourceSite[];
   references: Reference[];
   note?: string;
@@ -251,7 +261,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
     const parsed = inputSchema.safeParse(rawInput);
     if (!parsed.success) {
       return toolMessage(
-        "Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, and lane as one of inspiration, taste, fidelity, hero or locale.",
+        `Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, lane as one of ${LANE_NAMES.join(", ")}, and mix as one of ${MIXES.join(", ")}.`,
       );
     }
     const input = parsed.data;
@@ -312,6 +322,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       }
 
       const sources = input.sources ? SOURCE_SITES.filter((s) => input.sources!.includes(s)) : [...DEFAULT_SOURCES];
+      const mix: Mix = input.mix ?? DEFAULT_MIX;
       // What the user taught search: blocked items never come back, liked creators move up.
       const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
       const preferCreators = preferredCreators(learning.creatorRatings);
@@ -325,7 +336,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         if (input.lane) {
           // Only this lane, with the agent's words; they become an arm of the lane's term.
           arms = { [input.lane]: agentArm(laneWords!) };
-          plan = planLane(input.lane, queryWords(laneWords!), picked);
+          plan = planLane(input.lane, queryWords(laneWords!), picked, lanes.inspiration);
         } else {
           arms = await pickArms(deps, userId, lanes, termKeys, variants, deps.now?.() ?? new Date());
           learned = Object.entries(arms).some(([lane, arm]) => arm !== defaultArm(lane as LaneName));
@@ -337,6 +348,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         const result = await deps.adapter.runPlan(plan, {
           count: input.count,
           userId,
+          mix,
           exclude,
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
@@ -365,6 +377,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         queries: searched.queries,
         sources,
         references: result.references,
+        mix,
         addedToTray: false,
       };
       if (searched.lanes) out.lanes = searched.lanes;

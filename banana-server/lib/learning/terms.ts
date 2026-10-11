@@ -31,3 +31,11 @@ export function queryWords(text: string): string {
 export function termKey(lane: LaneName, text: string): string {
   return `${lane}|${queryWords(text)}`;
 }
+
+/**
+ * Term key for a bend direction's idea, for rate_directions feedback: `direction|{ingredient}`,
+ * with the ingredient (the direction's lead search words) normalized like lane words.
+ */
+export function directionTermKey(ingredient: string): string {
+  return `direction|${queryWords(ingredient)}`;
+}

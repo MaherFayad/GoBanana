@@ -10,6 +10,7 @@ import type {
   ArmStatRow,
   CanvasRecord,
   DirectionRecord,
+  IngredientStatRow,
   NewFeedback,
   PaletteRecord,
   ReferenceRecord,
@@ -135,6 +136,12 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
       async listForCanvas(canvasId) {
         return data.directions.filter((d) => d.canvasId === canvasId).map((d) => ({ ...d }));
       },
+      async deleteMany(canvasId, ids) {
+        const drop = new Set(ids);
+        const before = data.directions.length;
+        data.directions = data.directions.filter((d) => !(d.canvasId === canvasId && drop.has(d.id)));
+        return before - data.directions.length;
+      },
     },
     references: {
       async insertMany(canvasId, refs) {
@@ -258,6 +265,32 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
           out.set(k, s);
         }
         return [...out.values()];
+      },
+      async directionStats(userId, k) {
+        // Same grouping as lib/db/feedback.ts directionStatsSql.
+        const perUser = new Map<string, { termKey: string; userId: string; g: number; b: number }>();
+        for (const f of data.feedback) {
+          if (f.lane !== "direction" || !f.termKey?.startsWith("direction|")) continue;
+          const key = `${f.termKey}\n${f.userId}`;
+          const row = perUser.get(key) ?? { termKey: f.termKey, userId: f.userId, g: 0, b: 0 };
+          if (f.verdict === "great") row.g++;
+          else row.b++;
+          perUser.set(key, row);
+        }
+        const out = new Map<string, IngredientStatRow & { mine: boolean }>();
+        for (const u of perUser.values()) {
+          const s = out.get(u.termKey) ?? { termKey: u.termKey, great: 0, bad: 0, users: 0, ownGreat: 0, ownBad: 0, mine: false };
+          s.users++;
+          if (u.g > u.b) s.great++;
+          if (u.b > u.g) s.bad++;
+          if (u.userId === userId) {
+            s.ownGreat += u.g;
+            s.ownBad += u.b;
+            s.mine = true;
+          }
+          out.set(u.termKey, s);
+        }
+        return [...out.values()].filter((s) => s.users >= k || s.mine).map(({ mine: _mine, ...s }) => s);
       },
     },
     blocklist: {

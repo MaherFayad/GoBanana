@@ -20,9 +20,17 @@ export const SOURCE_DOMAINS: Record<SourceSite, string> = {
   awwwards: "awwwards.com",
 };
 
-/** Search lanes of a direction search (lib/sources/plan.ts). */
-export const LANE_NAMES = ["inspiration", "taste", "fidelity", "hero", "locale"] as const;
+/**
+ * Search lanes of a direction search (lib/sources/plan.ts). Inspiration is the raw idea; the
+ * others are UI lanes. Bridge is the idea already applied to UI ("vending machine ui design").
+ */
+export const LANE_NAMES = ["inspiration", "taste", "fidelity", "hero", "locale", "bridge"] as const;
 export type LaneName = (typeof LANE_NAMES)[number];
+
+/** How much of a direction search goes to the raw idea (inspiration) against UI lanes. */
+export const MIXES = ["ui", "balanced", "wild"] as const;
+export type Mix = (typeof MIXES)[number];
+export const DEFAULT_MIX: Mix = "ui";
 
 export type SourceQuery = {
   query: string;

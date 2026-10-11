@@ -28,10 +28,12 @@
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
 import { bigEnough, isJunk, rankReferences, sizeRuleApplies, upgradeImage } from "./quality";
-import { FALLBACK_MIN_GOOD, laneQuotas, mergeLanes, type LaneName, type PlannedRequest } from "./plan";
+import { FALLBACK_MIN_GOOD, laneOrder, laneQuotas, mergeLanes, titleHasWord, type LaneName, type PlannedRequest } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import {
+  DEFAULT_MIX,
   SOURCE_DOMAINS,
+  type Mix,
   type Reference,
   type SourceAdapter,
   type SourceQuery,
@@ -101,6 +103,8 @@ export type RunPlanOptions = {
   excludeKeys?: readonly string[];
   /** Normalized creators the user rated great (lib/learning/creator.ts): nudged up within each lane. */
   preferCreators?: readonly string[];
+  /** Inspiration's share and the merge order (lib/sources/plan.ts laneQuotas). Default "ui". */
+  mix?: Mix;
 };
 
 /** What one planned request brought back. */
@@ -555,11 +559,14 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
       const mapped = mapSerperImagesWithStats(images, { sources: [req.site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
       const words = queryWords(query);
-      const kept = excluded.size === 0 ? mapped.references : mapped.references.filter((r) => !excluded.has(itemKey(r.sourceUrl)));
+      // Bridge lane precision filter: only titles that name the idea (round 10: 11 of 39 did).
+      const word = req.titleWord;
+      const onTopic = word ? mapped.references.filter((r) => titleHasWord(r.title, word)) : mapped.references;
+      const kept = excluded.size === 0 ? onTopic : onTopic.filter((r) => !excluded.has(itemKey(r.sourceUrl)));
       return {
         references: kept.map((r) => ({ ...r, lane: req.lane, query: words })),
-        dropped: mapped.dropped,
-        before: mapped.references.length,
+        dropped: mapped.dropped + (mapped.references.length - onTopic.length),
+        before: onTopic.length,
       };
     };
 
@@ -624,16 +631,24 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       slot.dropped += mapped.dropped;
     });
 
-    // Per lane: its requests interleaved, preferred creators nudged up, then lanes merged by quota.
-    const lists = new Map<LaneName, Reference[]>();
+    // Per lane: its requests interleaved, preferred creators nudged up, then lanes merged by quota
+    // in mix order (the "ui" mix puts the UI lanes first). An empty lane's quota goes to the others.
+    const mix = opts.mix ?? DEFAULT_MIX;
+    const byLane = new Map<LaneName, Reference[]>();
     for (const slot of slots) {
-      const prev = lists.get(slot.req.lane);
-      lists.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SERPER_PAGE_SIZE * 4) : slot.refs);
+      const prev = byLane.get(slot.req.lane);
+      byLane.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SERPER_PAGE_SIZE * 4) : slot.refs);
     }
     const prefer = opts.preferCreators ?? [];
-    if (prefer.length > 0) for (const [lane, list] of lists) lists.set(lane, nudgeByCreator(list, prefer));
-    const quotas = laneQuotas(count, [...lists.keys()]);
-    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]);
+    const lists = new Map<LaneName, Reference[]>();
+    for (const lane of laneOrder([...byLane.keys()], mix)) {
+      const list = byLane.get(lane)!;
+      lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
+    }
+    const quotas = laneQuotas(count, [...lists.keys()], mix);
+    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], {
+      uiFirst: mix === "ui",
+    });
 
     const result: PlanSearchResult = {
       references,

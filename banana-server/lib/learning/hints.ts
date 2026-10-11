@@ -33,6 +33,9 @@ export function badHint(lane: LaneName | null, reasons: readonly FeedbackReason[
     if (has("stock_or_shop")) return `Try ${RETRY(lane)}: add a craft word such as "poster" or "graphic design".`;
     return `Try ${RETRY(lane)}: describe the visual, not the object, for example "35mm film strip macro" instead of "oversized film frames".`;
   }
+  if (lane === "bridge") {
+    return `Try ${RETRY(lane)}: keep the idea's main word and name a screen, for example "vending machine checkout ui". Titles without the idea's main word are left out.`;
+  }
   if (has("not_ui") || has("off_topic")) return `Try ${RETRY(lane)}: name the domain and the screen, for example "flight checkout ui design".`;
   if (has("cluttered")) return `Try ${RETRY(lane)}: ask for one screen, for example add "single screen" or a component such as card or widget.`;
   if (has("wrong_style")) return `Try ${RETRY(lane)} with the user's style words, or pass taste.`;

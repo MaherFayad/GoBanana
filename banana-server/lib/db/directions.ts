@@ -1,5 +1,5 @@
 /** `directions` table: bend_brief output saved for a canvas (spec section 11). */
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { canvases, directions } from "@/db/schema";
 import { isUuid } from "./ids";
@@ -54,10 +54,22 @@ export async function listDirections(db: Db, canvasId: string): Promise<Directio
   return db.select(columns).from(directions).where(eq(directions.canvasId, canvasId));
 }
 
+/** Delete directions of one canvas by row uuid (rate_directions drop). Ownership is checked by the caller. */
+export async function deleteDirections(db: Db, canvasId: string, ids: readonly string[]): Promise<number> {
+  const rowIds = [...new Set(ids)].filter(isUuid);
+  if (!isUuid(canvasId) || rowIds.length === 0) return 0;
+  const gone = await db
+    .delete(directions)
+    .where(and(eq(directions.canvasId, canvasId), inArray(directions.id, rowIds)))
+    .returning({ id: directions.id });
+  return gone.length;
+}
+
 export function directionRepo(db: Db): DirectionRepo {
   return {
     upsertMany: (canvasId, rows) => upsertDirections(db, canvasId, rows),
     findForUser: (userId, directionId, canvasId) => findDirectionForUser(db, userId, directionId, canvasId),
     listForCanvas: (canvasId) => listDirections(db, canvasId),
+    deleteMany: (canvasId, ids) => deleteDirections(db, canvasId, ids),
   };
 }

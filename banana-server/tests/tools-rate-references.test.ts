@@ -153,7 +153,9 @@ describe("rate_references tool", () => {
     const s = setup();
     const b = await boardWithDirection(s, ALICE);
     const first = ((await s.search({ directionId: b.directionId, canvasId: b.canvasId }, ALICE)).structuredContent as SearchOut).references;
-    const blocked = first.slice(0, 4);
+    // The "ui" mix lists UI lanes first: block two of them and the two inspiration results.
+    const blocked = [...first.filter((r) => r.lane !== "inspiration").slice(0, 2), ...first.filter((r) => r.lane === "inspiration").slice(0, 2)];
+    expect(blocked).toHaveLength(4);
     const res = await s.rate({ ratings: blocked.map((r) => ({ referenceId: r.id, verdict: "bad" as const })) }, ALICE);
     expect(res.structuredContent).toMatchObject({ rated: 4, bad: 4, blocked: 4, removedFromTray: 0 });
     const keys = new Set(blocked.map((r) => itemKey(r.sourceUrl)));
