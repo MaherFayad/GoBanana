@@ -8,7 +8,7 @@ import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./type
 export const BEND_BRIEF_DESCRIPTION =
   "Turn a plain design brief into wild, unexpected design directions. " +
   "Use it when the user wants fresh, bold or surprising ideas instead of the usual layout. " +
-  "Each direction has a title, a search query and a prompt to riff on. " +
+  "Each direction has a short title, a twist, a search query and a prompt to riff on. " +
   "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
   "Pass canvasId to save the directions there, then call search_references with a direction id.";
 

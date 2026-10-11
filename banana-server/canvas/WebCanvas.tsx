@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { CanvasApp } from "./CanvasApp";
 import { CONFLICT_MESSAGE, createFetchPersistence, isConflict, type CanvasPersistence } from "./persistence";
 import type { CanvasState } from "./types";
+import type { Plan } from "@/lib/quota";
 
 export interface WebCanvasProps {
   canvasId: string;
@@ -19,9 +20,25 @@ export interface WebCanvasProps {
   /** `updatedAt` of `initialState`, sent as `baseUpdatedAt` on the first save. */
   initialUpdatedAt?: string | null;
   readOnly?: boolean;
+  /** Effective plan (`effectivePlan(user.plan)`, BETA_PLAN applied), for upgrade notes. */
+  plan?: Plan | null;
+  /** Current share token, for the Share button. */
+  shareToken?: string | null;
+  /** Pricing page link for upgrade notes. */
+  pricingHref?: string;
 }
 
-export function WebCanvas({ canvasId, appName, title, initialState, initialUpdatedAt, readOnly = false }: WebCanvasProps) {
+export function WebCanvas({
+  canvasId,
+  appName,
+  title,
+  initialState,
+  initialUpdatedAt,
+  readOnly = false,
+  plan = null,
+  shareToken = null,
+  pricingHref = "/en/pricing",
+}: WebCanvasProps) {
   const [conflict, setConflict] = useState(false);
   const persistence = useMemo<CanvasPersistence>(() => {
     const inner = createFetchPersistence(canvasId, { baseUpdatedAt: initialUpdatedAt ?? null });
@@ -55,6 +72,7 @@ export function WebCanvas({ canvasId, appName, title, initialState, initialUpdat
         initialState={initialState ?? undefined}
         persistence={persistence}
         readOnly={readOnly}
+        web={{ plan, shareToken, pricingHref }}
       />
     </div>
   );

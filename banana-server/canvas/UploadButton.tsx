@@ -17,7 +17,7 @@ import { newNodeId, referenceSize } from "./factory";
 import type { CanvasFlowNode, UploadFlowNode } from "./types";
 
 export interface UploadButtonProps {
-  /** The user's plan when known. Unknown lets the server decide. */
+  /** The user's effective plan (server side `effectivePlan()`, so BETA_PLAN counts). Unknown lets the server decide. */
   plan?: Plan | null;
   /** Where the upgrade note links. */
   pricingHref?: string;

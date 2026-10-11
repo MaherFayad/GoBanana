@@ -8,6 +8,7 @@ import type { Plan } from "@/lib/quota";
 import type { SaveStatus } from "./autosave";
 import { IconFit, IconFrame, IconMinus, IconNote, IconPanel, IconPlus, IconWarning } from "./icons";
 import { LAYOUT_LABELS, LAYOUTS, type LayoutKind } from "./layout-adapter";
+import { ShareButton } from "./ShareButton";
 import { UploadButton } from "./UploadButton";
 
 export interface ToolbarProps {
@@ -31,7 +32,10 @@ export interface ToolbarProps {
    * (MCP Apps), where the iframe has no web session to upload or share with.
    */
   canvasId?: string;
-  /** Signed-in user's plan; free users see the controls with an upgrade note. */
+  /**
+   * Signed-in user's plan for the upgrade note. Pass `effectivePlan(user.plan)` from the
+   * server (BETA_PLAN is not readable in the browser). Unknown lets the server decide.
+   */
   plan?: Plan | null;
   /** Current share token, if the canvas is shared. */
   shareToken?: string | null;
@@ -80,7 +84,12 @@ export function Toolbar(p: ToolbarProps) {
             </button>
           </div>
 
-          {p.canvasId && <UploadButton plan={p.plan} pricingHref={p.pricingHref} />}
+          {p.canvasId && (
+            <div className="bn-toolbar-group" role="group" aria-label="Upload and share">
+              <UploadButton plan={p.plan} pricingHref={p.pricingHref} />
+              <ShareButton canvasId={p.canvasId} initialToken={p.shareToken ?? null} />
+            </div>
+          )}
 
           <div className="bn-toolbar-group" role="group" aria-labelledby="bn-arrange-label">
             <span id="bn-arrange-label" className="bn-toolbar-label">

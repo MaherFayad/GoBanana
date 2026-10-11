@@ -145,14 +145,10 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
               )}
             </p>
           )}
-          <p className="bn-visually-hidden" role="status" aria-live="polite">
+          {/* Always rendered, so screen readers hear each change. */}
+          <p className="bn-share-status" role="status">
             {busy ? "Working" : status}
           </p>
-          {status && !busy && (
-            <p className="bn-share-status" aria-hidden="true">
-              {status}
-            </p>
-          )}
         </div>
       )}
     </div>

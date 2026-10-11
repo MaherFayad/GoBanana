@@ -50,11 +50,11 @@
   "blueprint paper",
   "marbled paper",
   "faux fur",
-  "pool tiles",
+  { "label": "pool tiles", "leads": false },
   "glass block",
   "lava lamp wax",
   "plaster cast",
   "sandpaper",
-  "pressed flowers",
+  { "label": "pressed flowers", "leads": false },
   "dichroic glass"
 ]

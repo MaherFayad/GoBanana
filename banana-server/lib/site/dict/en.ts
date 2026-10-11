@@ -140,6 +140,7 @@ export const en = {
     signedOut: "Sign in to see your plan and usage.",
     planTitle: "Plan",
     planLabel: "Current plan",
+    betaPlan: "Beta: Pro features on",
     upgrade: "Pricing",
     manageBilling: "Billing and invoices",
     manageBillingNote: "Invoices and payment details are in the Paddle emails you receive after each payment.",

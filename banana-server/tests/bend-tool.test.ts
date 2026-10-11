@@ -67,16 +67,33 @@ describe("bend_brief tool", () => {
     const { handler } = capture();
     const res = await handler({ brief: "flight checkout screen", wildness: 4 }, {});
     expect(res.isError).toBeFalsy();
-    const directions = res.structuredContent?.directions as { id: string; searchQuery: string; title: string }[];
+    const directions = res.structuredContent?.directions as {
+      id: string;
+      searchQuery: string;
+      title: string;
+      twist: string;
+      move: string;
+      prompt: string;
+    }[];
     expect(directions).toHaveLength(6);
     const text = res.content[0]!.text;
-    for (const d of directions) {
-      expect(text).toContain(d.title);
-      expect(text).toContain(d.searchQuery);
-      expect(text).toContain(d.id);
-    }
+    directions.forEach((d, i) => {
+      expect(d.twist.length).toBeGreaterThan(0);
+      // One compact line per direction: "1. Title (Twist: ...) [move + move] query: ...".
+      expect(text).toContain(`${i + 1}. ${d.title} (Twist: ${d.twist}) [${d.move}] query: ${d.searchQuery}\n`);
+      expect(text).toContain(`id: ${d.id}. Prompt: ${d.prompt}`);
+    });
     expect(text).toContain("search_references");
     expect(text).not.toContain("\u2014");
+  });
+
+  it("leaves the twist out of the text at wildness 1 and 2", async () => {
+    const { handler } = capture();
+    const res = await handler({ brief: "podcast player", wildness: 2 }, {});
+    const directions = res.structuredContent?.directions as { twist: string; title: string; move: string }[];
+    for (const d of directions) expect(d.twist).toBe("");
+    expect(res.content[0]!.text).not.toContain("Twist:");
+    expect(res.content[0]!.text).toContain(`1. ${directions[0]!.title} [${directions[0]!.move}] query: `);
   });
 
   it("answers invalid input with a plain message, never a throw", async () => {

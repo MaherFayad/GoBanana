@@ -7,14 +7,28 @@ import {
   LENSES,
   LISTS,
   MAX_QUERY_WORDS,
+  MAX_TITLE_WORDS,
+  MAX_TWIST_WORDS,
   MOVES,
   parseBendInput,
+  splitMoves,
   type MoveId,
   type Wildness,
 } from "@/lib/bend";
-import { LAYOUT_WORDS } from "@/lib/bend/lists";
+import { LAYOUT_WORDS, lensEntries, RENAMED } from "@/lib/bend/lists";
+import { mulberry32 } from "@/lib/bend/prng";
 import { extractSubject } from "@/lib/bend/subject";
-import { MODIFIER_TEMPLATES, PRIMARY_TEMPLATES, PROMPT_CLAUSES } from "@/lib/bend/templates";
+import {
+  article,
+  canRender,
+  PAIR_TEMPLATES,
+  PROMPT_CLAUSES,
+  render,
+  ROLE,
+  SINGLE_TEMPLATES,
+  templateRoles,
+  TWIST_TEMPLATES,
+} from "@/lib/bend/templates";
 
 const SAMPLE_BRIEFS = [
   "flight checkout screen",
@@ -228,8 +242,9 @@ describe("word lists, lenses and templates", () => {
       expect(readFileSync(file, "utf8"), file).not.toContain("\u2014");
     }
     const templates = [
-      ...Object.values(PRIMARY_TEMPLATES).flat(),
-      ...Object.values(MODIFIER_TEMPLATES).flat(),
+      ...Object.values(SINGLE_TEMPLATES).flat(),
+      ...Object.values(PAIR_TEMPLATES).flat(),
+      ...Object.values(TWIST_TEMPLATES).flat(),
       ...Object.values(PROMPT_CLAUSES),
     ];
     for (const t of templates) expect(t).not.toContain("\u2014");
@@ -286,6 +301,279 @@ describe("word lists, lenses and templates", () => {
       const lower = text.toLowerCase();
       for (const d of deny) expect(new RegExp(`\\b${d}\\b`).test(lower), `${text} has ${d}`).toBe(false);
       for (const d of denyAr) expect(text.includes(d), `${text} has ${d}`).toBe(false);
+    }
+  });
+});
+
+/** 20 seeded random briefs, so the caps are checked beyond the hand-picked samples. */
+function randomBriefs(n: number): string[] {
+  const rng = mulberry32(20261011);
+  const pick = (xs: readonly string[]) => xs[Math.floor(rng() * xs.length)]!;
+  const things = [
+    "insurance claim", "grocery list", "car rental", "pet adoption", "tax filing", "language learning",
+    "recipe", "museum ticket", "crypto wallet", "smart home", "parking payment", "job board",
+    "university admissions", "hospital appointment", "wedding planner", "e-commerce returns",
+  ];
+  const kinds = ["screen", "app", "dashboard", "landing page", "onboarding flow", "settings page", "checkout", "portal"];
+  const lead = ["", "", "simple ", "clean intuitive ", "fast "];
+  const tail = ["", "", " for teenagers", " for a small bakery", " with dark mode"];
+  return Array.from({ length: n }, () => `${pick(lead)}${pick(things)} ${pick(kinds)}${pick(tail)}`);
+}
+const RANDOM_BRIEFS = randomBriefs(20);
+
+/**
+ * Ids captured from the engine before titles became short title plus twist (2026-10-11).
+ * Ids are saved on canvases, so they must never move for the same input.
+ */
+const ID_SNAPSHOT: { input: { brief: string; wildness: Wildness; lens?: string }; ids: string[] }[] = [
+  {
+    input: { brief: "flight checkout screen", wildness: 5 },
+    ids: ["bd-hf5abe4m", "bd-8dti7s7c", "bd-r65qu4pr", "bd-dwyo4stn", "bd-2r5484w5", "bd-8hfupzvw", "bd-9dybmp54", "bd-t9uj85a1"],
+  },
+  {
+    input: { brief: "podcast player", wildness: 3 },
+    ids: ["bd-1wojkuo9", "bd-5rpsgh9a", "bd-wotpt12c", "bd-uus6ri8n", "bd-m6oheyqw", "bd-j9rpcy83", "bd-4173oy4g", "bd-r7y73371"],
+  },
+  {
+    input: { brief: "government e-services portal", wildness: 4, lens: "najdi" },
+    ids: ["bd-pcv7ucs0", "bd-l67d5nq2", "bd-z83i3gqc", "bd-fru702be", "bd-8v9hrhtw", "bd-m62xasee", "bd-sqxglu78", "bd-09r9tgzk"],
+  },
+];
+
+describe("short title and twist", () => {
+  it("keeps ids exactly as captured before the title rework", () => {
+    for (const { input, ids } of ID_SNAPSHOT) {
+      expect(bendBrief({ ...input, count: 8 }).directions.map((d) => d.id)).toEqual(ids);
+    }
+  });
+
+  it("caps titles at 10 words and twists at 8 for samples and random briefs", () => {
+    for (const brief of [...SAMPLE_BRIEFS, ...RANDOM_BRIEFS]) {
+      for (const w of LEVELS) {
+        for (const lens of [undefined, "najdi", "sadu"]) {
+          const result = bendBrief({ brief, wildness: w, count: 8, ...(lens ? { lens } : {}) });
+          for (const d of result.directions) {
+            expect(words(d.title).length, d.title).toBeLessThanOrEqual(MAX_TITLE_WORDS);
+            expect(words(d.twist).length, d.twist).toBeLessThanOrEqual(MAX_TWIST_WORDS);
+            expect(words(d.searchQuery).length, d.searchQuery).toBeLessThanOrEqual(MAX_QUERY_WORDS);
+            expect(d.title).toMatch(/^[A-Z0-9]/);
+            expect(d.title).not.toMatch(/[,:;.\s]$/);
+            expect(d.twist).not.toMatch(/[,:;.\s]$/);
+          }
+          const titles = result.directions.map((d) => d.title.toLowerCase());
+          expect(new Set(titles).size, brief).toBe(titles.length);
+        }
+      }
+    }
+  });
+
+  it("adds a twist from wildness 3 up and none at 1 and 2", () => {
+    for (const brief of [...SAMPLE_BRIEFS, ...RANDOM_BRIEFS.slice(0, 5)]) {
+      for (const w of LEVELS) {
+        for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
+          if (w <= 2) expect(d.twist).toBe("");
+          else expect(words(d.twist).length).toBeGreaterThan(0);
+        }
+      }
+    }
+    // A moves filter with no constraint or scale still gets a twist (from the mood).
+    for (const d of bendBrief({ brief: "podcast player", wildness: 3, moves: ["era", "material"], count: 8 }).directions) {
+      expect(d.twist.length).toBeGreaterThan(0);
+      expect(d.ingredients.constraint).toBeUndefined();
+      expect(d.ingredients.element).toBeUndefined();
+    }
+  });
+
+  it("leads with the lens when a lens is set, and keeps every move in the prompt", () => {
+    for (const lens of LENSES) {
+      for (const w of [3, 4, 5] as Wildness[]) {
+        for (const d of bendBrief({ brief: "flight checkout screen", wildness: w, lens: lens.id, count: 8 }).directions) {
+          expect(d.title, d.title).toContain(d.ingredients.tradition);
+        }
+      }
+    }
+    for (const d of bendBrief({ brief: "flight checkout screen", wildness: 5, count: 8 }).directions) {
+      for (const v of Object.values(d.ingredients)) expect(d.prompt).toContain(String(v));
+    }
+  });
+
+  it("builds the query from the headline moves plus at most one twist word", () => {
+    for (const brief of SAMPLE_BRIEFS) {
+      for (const d of bendBrief({ brief, wildness: 5, count: 8 }).directions) {
+        const { twist } = splitMoves(d.moves, false);
+        if (!twist) continue;
+        const slot = { transplant: "object", material: "material", era: "era", constraint: "constraint", scale: "element", lens: "tradition" } as const;
+        const label = d.ingredients[slot[twist]]!;
+        const lists = { transplant: "objects", material: "materials", era: "eras", constraint: "constraints", scale: "elements", lens: "traditions" } as const;
+        const query = LISTS[lists[twist]].find((e) => e.label === label)!.query;
+        if (words(query).length > 1) expect(d.searchQuery.toLowerCase(), d.searchQuery).not.toContain(query.toLowerCase());
+      }
+    }
+  });
+
+  it("splits moves into a headline pair and a twist", () => {
+    expect(splitMoves(["transplant", "material", "constraint"], false)).toEqual({ headline: ["transplant", "material"], twist: "constraint" });
+    expect(splitMoves(["scale", "material", "era"], false)).toEqual({ headline: ["material", "era"], twist: "scale" });
+    expect(splitMoves(["era", "transplant", "lens"], true)).toEqual({ headline: ["era", "lens"], twist: "transplant" });
+    expect(splitMoves(["material", "scale"], false)).toEqual({ headline: ["material"], twist: "scale" });
+    expect(splitMoves(["material", "era"], false)).toEqual({ headline: ["material", "era"], twist: null });
+    expect(splitMoves(["era"], false)).toEqual({ headline: ["era"], twist: null });
+  });
+});
+
+describe("template grammar", () => {
+  const ROLE_LISTS: Record<string, readonly string[]> = {
+    obj: LISTS.objects.map((e) => e.label),
+    mat: LISTS.materials.map((e) => e.label),
+    era: LISTS.eras.map((e) => e.label),
+    rule: LISTS.constraints.map((e) => e.label),
+    el: LISTS.elements.map((e) => e.label),
+    lens: [...LISTS.traditions.map((e) => e.label), ...LENSES.flatMap((l) => l.terms)],
+    m: LISTS.moods.map((e) => e.label),
+    eralead: LISTS.eras.filter((e) => e.leads).map((e) => e.label),
+    matlead: LISTS.materials.filter((e) => e.leads).map((e) => e.label),
+  };
+  const SUBJECTS = [
+    { subj: "flight checkout", head: "flight checkout" },
+    { subj: "coffee shop landing page", head: "landing page" },
+    { subj: "podcast", head: "podcast" },
+  ];
+
+  /** Render a template so every entry of every role it uses appears at least once. */
+  function renderAll(template: string): string[] {
+    const roles = templateRoles(template).filter((r) => r !== "subj" && r !== "head");
+    const longest = Math.max(1, ...roles.map((r) => ROLE_LISTS[r]!.length));
+    const out: string[] = [];
+    for (const s of SUBJECTS) {
+      for (let i = 0; i < longest; i++) {
+        const vars: Record<string, string> = { ...s };
+        roles.forEach((r, k) => {
+          const list = ROLE_LISTS[r]!;
+          vars[r] = list[(i + k * 7) % list.length]!;
+        });
+        out.push(render(template, vars));
+      }
+    }
+    return out;
+  }
+
+  function grammarProblems(text: string): string[] {
+    const problems: string[] = [];
+    if (/\b(a|an) (a|an)\b/i.test(text)) problems.push("double article");
+    if (/\s{2,}/.test(text) || text !== text.trim()) problems.push("extra space");
+    if (/\s[,:;.]/.test(text) || /[,:;]{2,}|,\s*,|:\s*:/.test(text)) problems.push("stray punctuation");
+    if (/[,:;]$/.test(text)) problems.push("trailing punctuation");
+    if (/[{}]/.test(text)) problems.push("unfilled token");
+    if (/[—–]/.test(text)) problems.push("dash");
+    for (const [, art, next] of text.matchAll(/\b(a|an|A|An) ([\w-]+)/g)) {
+      if (art!.toLowerCase() !== article(next!)) problems.push(`"${art} ${next}"`);
+    }
+    if (/\b(\w+) \1\b/i.test(text)) problems.push("repeated word");
+    return problems;
+  }
+
+  it("grammar check catches the mistakes it looks for", () => {
+    for (const bad of ["a a matchbook", "an matchbook", "a arcade cabinet", "two  spaces", "ends with a comma,", "a , b", "the the rule", "left {obj}"]) {
+      expect(grammarProblems(bad), bad).not.toEqual([]);
+    }
+    expect(grammarProblems("Flight checkout as an arcade cabinet, a matchbook and an 8-bit sign")).toEqual([]);
+  });
+
+  it("has six or more templates per move, move pair and twist source", () => {
+    for (const m of MOVES) expect(SINGLE_TEMPLATES[m].length, m).toBeGreaterThanOrEqual(6);
+    for (const [k, list] of Object.entries(PAIR_TEMPLATES)) expect(list.length, k).toBeGreaterThanOrEqual(6);
+    for (const [k, list] of Object.entries(TWIST_TEMPLATES)) expect(list.length, k).toBeGreaterThanOrEqual(6);
+    // Every pair the headline can hold has templates (constraint always goes to the twist).
+    const leaders = MOVES.filter((m) => m !== "constraint");
+    for (const a of leaders) {
+      for (const b of leaders) {
+        if (MOVES.indexOf(a) < MOVES.indexOf(b)) expect(PAIR_TEMPLATES[`${a}+${b}`], `${a}+${b}`).toBeDefined();
+      }
+    }
+  });
+
+  it("only uses roles the move or pair fills", () => {
+    const base = ["subj", "head", "m"];
+    const own = (m: MoveId) => [ROLE[m], `${ROLE[m]}lead`];
+    for (const m of MOVES) {
+      for (const t of SINGLE_TEMPLATES[m]) for (const r of templateRoles(t)) expect([...base, ...own(m)], t).toContain(r);
+      for (const t of TWIST_TEMPLATES[m]) for (const r of templateRoles(t)) expect([...base, ROLE[m]], t).toContain(r);
+    }
+    for (const t of TWIST_TEMPLATES.mood) for (const r of templateRoles(t)) expect(base, t).toContain(r);
+    for (const [key, list] of Object.entries(PAIR_TEMPLATES)) {
+      const roles = key.split("+").flatMap((m) => own(m as MoveId));
+      for (const t of list) for (const r of templateRoles(t)) expect([...base, ...roles], t).toContain(r);
+    }
+  });
+
+  it("renders every template with every list entry cleanly", () => {
+    const all = [
+      ...Object.values(SINGLE_TEMPLATES).flat(),
+      ...Object.values(PAIR_TEMPLATES).flat(),
+      ...Object.values(TWIST_TEMPLATES).flat(),
+      ...Object.values(PROMPT_CLAUSES),
+    ];
+    const failures: string[] = [];
+    for (const t of all) {
+      for (const text of renderAll(t)) {
+        const p = grammarProblems(text);
+        if (p.length) failures.push(`${text} (${p.join(", ")})`);
+      }
+    }
+    expect(failures.slice(0, 20)).toEqual([]);
+  });
+
+  it("can always fit a twist in 8 words and a single-move title in 10", () => {
+    for (const [source, list] of Object.entries(TWIST_TEMPLATES)) {
+      for (const text of list.flatMap((t) => renderAll(t))) {
+        // At least the shortest template must fit for every entry; checked per entry below.
+        expect(text.length).toBeGreaterThan(0);
+      }
+      const roles = source === "mood" ? ["m"] : [ROLE[source as MoveId]];
+      for (const entry of ROLE_LISTS[roles[0]!]!) {
+        const vars = { subj: "x", head: "x", m: "neon-lit", [roles[0]!]: entry };
+        const best = Math.min(...list.map((t) => words(render(t, vars)).length));
+        expect(best, `${source}: ${entry}`).toBeLessThanOrEqual(MAX_TWIST_WORDS);
+      }
+    }
+    for (const m of MOVES) {
+      for (const entry of ROLE_LISTS[ROLE[m]]!) {
+        const vars = { subj: "coffee shop landing page", head: "landing page", m: "sunset glow", [ROLE[m]]: entry };
+        const best = Math.min(...SINGLE_TEMPLATES[m].filter((t) => canRender(t, vars)).map((t) => words(render(t, vars)).length));
+        expect(best, `${m}: ${entry}`).toBeLessThanOrEqual(MAX_TITLE_WORDS);
+      }
+    }
+  });
+
+  it("never puts an entry marked leads: false right before the subject", () => {
+    const blocked = [...LISTS.eras, ...LISTS.materials].filter((e) => !e.leads).map((e) => e.label.toLowerCase());
+    expect(blocked.length).toBeGreaterThan(0);
+    for (const brief of SAMPLE_BRIEFS) {
+      for (const w of LEVELS) {
+        for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
+          const subject = extractSubject(brief, w).title.toLowerCase();
+          for (const b of blocked) expect(d.title.toLowerCase(), d.title).not.toContain(`${b} ${subject}`);
+        }
+      }
+    }
+  });
+
+  it("keeps scale elements plural so verbs agree", () => {
+    for (const e of LISTS.elements) expect(/s$/.test(e.label) || ["emoji", "dice"].includes(e.label), e.label).toBe(true);
+  });
+
+  it("keeps reworded entries keyed by their old label", () => {
+    for (const [list, map] of Object.entries(RENAMED)) {
+      const entries = list.startsWith("lens:")
+        ? lensEntries(LENSES.find((l) => `lens:${l.id}` === list)!)
+        : LISTS[list as keyof typeof LISTS];
+      expect(entries, list).toBeDefined();
+      for (const [label, old] of Object.entries(map)) {
+        const entry = entries.find((e) => e.label === label);
+        expect(entry, `${list}: ${label}`).toBeDefined();
+        expect(entry!.key).toBe(old);
+        expect(entries.some((e) => e.label === old), `${list}: ${old} still listed`).toBe(false);
+      }
     }
   });
 });

@@ -25,6 +25,8 @@ export interface ListEntry {
    * entries reworded after launch (lib/bend/renamed.json), which keep their old label here.
    */
   key: string;
+  /** Reads well right before the subject ("Art Deco 1925 checkout"). False for entries like "1990s rave flyers". */
+  leads: boolean;
 }
 
 /** The list entries one direction is built from, keyed by the slot each move fills. */

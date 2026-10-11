@@ -69,7 +69,9 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
               key={src}
               src={src}
               alt={title}
-              referrerPolicy="no-referrer"
+              // Third-party images get no referrer. Uploads are same-origin and send it, so a
+              // share page (/s/<token>) can show them (lib/uploads/http.ts shareTokenFrom).
+              referrerPolicy={isUpload ? "same-origin" : "no-referrer"}
               loading="lazy"
               decoding="async"
               draggable={false}

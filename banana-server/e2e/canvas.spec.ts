@@ -52,20 +52,32 @@ const INITIAL_STATE = {
   tray: [pin(1, "Frosted vinyl sleeve"), pin(2, "Glass checkout"), pin(3, "Ice typography")],
 };
 
-type Api = { puts: unknown[] };
+type Api = { puts: unknown[]; bases: (string | undefined)[]; version: number; conflict: boolean };
+
+const stamp = (v: number) => new Date(Date.UTC(2026, 9, 11, 10, 0, v)).toISOString();
 
 async function mockCanvas(page: Page): Promise<Api> {
-  const api: Api = { puts: [] };
+  const api: Api = { puts: [], bases: [], version: 0, conflict: false };
   await page.route(`**/api/canvas/${CANVAS_ID}`, async (route) => {
     const req = route.request();
     if (req.method() === "PUT") {
-      const body = req.postDataJSON() as { state: unknown };
+      const body = req.postDataJSON() as { state: unknown; baseUpdatedAt?: string };
+      api.bases.push(body.baseUpdatedAt);
+      if (api.conflict) {
+        await route.fulfill({ status: 409, contentType: "application/json", body: JSON.stringify({ error: "changed" }) });
+        return;
+      }
       api.puts.push(body.state);
-      await route.fulfill({ status: 204 });
+      api.version += 1;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, updatedAt: stamp(api.version) }) });
       return;
     }
     const state = api.puts.at(-1) ?? INITIAL_STATE;
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ state }) });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ state, updatedAt: stamp(api.version) }),
+    });
   });
   // Allowed host: serve a synthetic pixel. Failing host: abort, so the tile shows a link card.
   await page.route(/^https:\/\/i\.pinimg\.com\//, (route) => route.fulfill({ status: 200, contentType: "image/png", body: PNG_1PX }));
@@ -267,6 +279,63 @@ test.describe("moodboard canvas", () => {
 
     await page.reload();
     await expect(page.getByText("Saved across reloads")).toBeVisible();
+  });
+
+  test("saves send the loaded version; a conflict stops saving and asks for a reload", async ({ page }) => {
+    const api = await openCanvas(page);
+    await page.getByRole("button", { name: "Add note" }).click();
+    await page.getByRole("textbox", { name: "Note text" }).fill("First");
+    await page.getByRole("textbox", { name: "Note text" }).press("Control+Enter");
+    await expect.poll(() => api.puts.length, { timeout: 5_000 }).toBe(1);
+    expect(api.bases[0]).toBe(stamp(0));
+
+    // Another window saved in between: the server answers 409.
+    api.conflict = true;
+    await page.getByRole("button", { name: "Add note" }).click();
+    await page.getByRole("textbox", { name: "Note text" }).fill("Second");
+    await page.getByRole("textbox", { name: "Note text" }).press("Control+Enter");
+    const alert = page.getByRole("alert").filter({ hasText: "This canvas changed in another window. Reload to see the latest." });
+    await expect(alert).toBeVisible({ timeout: 5_000 });
+    expect(api.bases[1]).toBe(stamp(1));
+    await expect(page.getByTestId("save-status")).toHaveText(/Could not save/);
+    const tries = api.bases.length;
+    await page.getByTestId("save-status").getByRole("button", { name: "Try again" }).click();
+    await page.waitForTimeout(300);
+    // A stale tab never sends its state again.
+    expect(api.bases.length).toBe(tries);
+    await expect(alert.getByRole("button", { name: "Reload" })).toBeVisible();
+  });
+
+  test("share: create a view-only link, copy it, turn it off @a11y", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    const calls: string[] = [];
+    const TOKEN = "AbCdEfGhIjKlMnOpQrStUvWx";
+    await page.route(`**/api/canvas/${CANVAS_ID}/share`, async (route) => {
+      const method = route.request().method();
+      calls.push(method);
+      const body = method === "DELETE" ? { token: null, url: null } : { token: TOKEN, url: `http://localhost/s/${TOKEN}` };
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+    });
+    await openCanvas(page);
+    const share = page.getByRole("button", { name: "Share", exact: true });
+    await share.click();
+    await expect(share).toHaveAttribute("aria-expanded", "true");
+    await page.getByRole("button", { name: "Create view-only link" }).click();
+    const link = page.getByRole("textbox", { name: "View-only link" });
+    await expect(link).toHaveValue(`http://localhost/s/${TOKEN}`);
+    await page.getByRole("button", { name: "Copy link" }).click();
+    await expect(page.getByText("Link copied.", { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`http://localhost/s/${TOKEN}`);
+
+    const results = await new AxeBuilder({ page }).include(".bn-share").withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
+
+    await page.getByRole("button", { name: "Turn off link" }).click();
+    await expect(page.getByRole("button", { name: "Create view-only link" })).toBeVisible();
+    expect(calls).toEqual(["POST", "DELETE"]);
+    await page.keyboard.press("Escape");
+    await expect(share).toBeFocused();
+    await expect(share).toHaveAttribute("aria-expanded", "false");
   });
 
   test("axe finds no serious or critical issues @a11y", async ({ page }) => {

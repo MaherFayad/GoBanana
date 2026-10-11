@@ -8,7 +8,9 @@ import type { MoveId } from "./types";
  *   scale {el}         lens {lens}      plus {m} mood, {subj} subject, {head} last two subject words
  * Prefix "a-" adds "a" or "an" to the phrase: {a-obj}, {a-m-obj} ("a neon-lit matchbook").
  * Hyphens join several roles into one phrase: {mat-obj} ("frosted glass vinyl record sleeve").
- * A capital first letter capitalizes the result: {Subj}, {Mat}, {A-obj}.
+ * A capital first letter capitalizes the result: {Subj}, {Era}, {A-obj}.
+ * {eralead} and {matlead} are the era or material placed right before the subject; they are only
+ * filled for entries that read well there (list entries with "leads": false skip those templates).
  */
 
 /** Role each move fills in templates. */
@@ -35,7 +37,7 @@ export const SINGLE_TEMPLATES: Record<MoveId, readonly string[]> = {
   material: [
     "{Subj} made of {mat}",
     "{Subj} in {mat}",
-    "{Mat} {subj}",
+    "{Matlead} {subj}",
     "{Subj} you could touch, all {mat}",
     "{Subj} wrapped in {mat}",
     "{Subj} rendered in {m} {mat}",
@@ -44,10 +46,10 @@ export const SINGLE_TEMPLATES: Record<MoveId, readonly string[]> = {
   era: [
     "{Subj} straight out of {era}",
     "{Subj}, {era} edition",
-    "{Era} {subj}",
+    "{Eralead} {subj}",
     "{Subj}, rewound to {era}",
     "{Subj} smuggled back to {era}",
-    "{Subj} as it looked in {era}",
+    "{Subj} as seen in {era}",
   ],
   constraint: [
     "{Subj}, but {rule}",
@@ -83,27 +85,27 @@ export const PAIR_TEMPLATES: Readonly<Record<string, readonly string[]>> = {
   "transplant+material": [
     "{Subj} as {a-obj} in {mat}",
     "{Subj} in {mat}, sold like {a-obj}",
-    "{Subj} as {a-mat-obj}",
-    "{Mat} {subj}, folded into {a-obj}",
+    "{Subj} as {a-obj}, all {mat}",
+    "{Matlead} {subj}, folded into {a-obj}",
     "{Subj} in {mat}, packaged like {a-obj}",
     "What if the {head} were {a-obj} in {mat}",
     "{Subj} printed on {a-obj} made of {mat}",
   ],
   "transplant+era": [
     "{Subj} as {a-obj} from {era}",
-    "{Era} {subj}, packaged like {a-obj}",
-    "{Subj} as {a-era-obj}",
+    "{Eralead} {subj}, packaged like {a-obj}",
+    "{Subj} as {a-obj}, {era} style",
     "{Subj} printed on {a-obj} from {era}",
     "{Subj} as {a-obj}, {era} edition",
     "{Subj} smuggled into {era} as {a-obj}",
   ],
   "material+era": [
-    "{Era} {subj} in {mat}",
+    "{Eralead} {subj} in {mat}",
     "{Subj} in {mat}, rewound to {era}",
-    "{Mat} {subj} straight out of {era}",
+    "{Matlead} {subj} straight out of {era}",
     "{Subj} cast in {mat}, {era} edition",
-    "{Subj} in {mat}, as it looked in {era}",
-    "{Era} {subj}, all {mat}",
+    "{Subj} in {mat}, as seen in {era}",
+    "{Eralead} {subj}, all {mat}",
   ],
   "transplant+lens": [
     "{Subj} as {a-obj} patterned with {lens}",
@@ -118,17 +120,17 @@ export const PAIR_TEMPLATES: Readonly<Record<string, readonly string[]>> = {
   "material+lens": [
     "{Subj} in {mat}, patterned after {lens}",
     "{Subj} meets {lens}, all in {mat}",
-    "{Mat} {subj} with the rhythm of {lens}",
-    "{Mat} {subj}, after {lens}",
+    "{Matlead} {subj} with the rhythm of {lens}",
+    "{Matlead} {subj}, after {lens}",
     "{Subj} drawn from {lens}, finished in {mat}",
-    "{Mat} {subj} in the language of {lens}",
+    "{Matlead} {subj} in the language of {lens}",
   ],
   "era+lens": [
-    "{Era} {subj} meets {lens}",
+    "{Eralead} {subj} meets {lens}",
     "{Subj} meets {lens}, rewound to {era}",
     "{Subj} patterned after {lens}, {era} style",
     "{Subj} drawn from {lens}, {era} edition",
-    "{Era} {subj} with the rhythm of {lens}",
+    "{Eralead} {subj} with the rhythm of {lens}",
     "{Subj} in the language of {lens}, {era} edition",
   ],
   "transplant+scale": [
@@ -141,19 +143,19 @@ export const PAIR_TEMPLATES: Readonly<Record<string, readonly string[]>> = {
   ],
   "material+scale": [
     "{Subj} in {mat} with giant {el}",
-    "{Mat} {subj}, {el} blown up huge",
+    "{Matlead} {subj}, {el} blown up huge",
     "Giant {el} in {mat} run the {head}",
     "{Subj} built from oversized {el} in {mat}",
     "Tiny {head}, huge {el}, all {mat}",
     "{Subj} in {mat}, {el} at billboard size",
   ],
   "era+scale": [
-    "{Era} {subj} with giant {el}",
+    "{Eralead} {subj} with giant {el}",
     "{Subj}, {era} style, {el} blown up huge",
     "Tiny {head}, huge {el}, straight out of {era}",
     "{Subj} rewound to {era}, all oversized {el}",
-    "{Subj} as it looked in {era}, with giant {el}",
-    "{Era} {subj} built from oversized {el}",
+    "{Subj} as seen in {era}, with giant {el}",
+    "{Eralead} {subj} built from oversized {el}",
   ],
   "scale+lens": [
     "{Subj} meets {lens}, with giant {el}",
@@ -193,11 +195,11 @@ export const TWIST_TEMPLATES: Record<MoveId | "mood", readonly string[]> = {
   ],
   constraint: [
     "{rule}",
-    "the rule: {rule}",
+    "{rule}, no exceptions",
+    "{rule}, start to finish",
+    "{rule}, nothing breaks it",
+    "{rule}, end to end",
     "house rule: {rule}",
-    "one law: {rule}",
-    "no exceptions: {rule}",
-    "hard rule: {rule}",
   ],
   scale: [
     "{el} blown up huge",
@@ -275,6 +277,11 @@ export function templateRoles(template: string): string[] {
     for (const p of parts[0] === "a" && parts.length > 1 ? parts.slice(1) : parts) roles.add(p);
   }
   return [...roles];
+}
+
+/** True when every role the template uses has a value. */
+export function canRender(template: string, vars: TemplateVars): boolean {
+  return templateRoles(template).every((r) => Boolean(vars[r]));
 }
 
 /** Fill a template. Throws when a role has no value, so a bad template never ships half rendered. */

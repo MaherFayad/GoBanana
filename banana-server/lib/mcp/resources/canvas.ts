@@ -8,13 +8,14 @@
  *
  * CSP (`_meta.ui.csp`):
  * - `resourceDomains`: the image host allowlist (lib/sources/allowlist.ts, same list the
- *   search adapter filters on), the app origin (user uploads), and Google Fonts for
- *   type samples. Images load in the browser from their source; nothing is proxied.
+ *   search adapter filters on) and Google Fonts for type samples. Images load in the
+ *   browser from their source; nothing is proxied. User uploads are same-origin paths
+ *   behind the web session (`/api/uploads/:id`), so inline they show as link cards.
  * - `connectDomains`: none. Saves go through the host bridge (`save_canvas_state`).
  */
 import { registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/server";
-import { APP_NAME, getConfig } from "@/lib/config";
+import { APP_NAME } from "@/lib/config";
 import { allowlistFromEnv, allowlistToCspDomains } from "@/lib/sources/allowlist";
 import { CANVAS_UI_URI } from "@/lib/mcp/tools/open_canvas";
 import { CANVAS_HTML } from "./canvas-html.generated";
@@ -26,27 +27,13 @@ export const FONT_DOMAINS: readonly string[] = ["https://fonts.googleapis.com", 
 
 export type CanvasCsp = { resourceDomains: string[]; connectDomains: string[] };
 
-/** Origin of an http(s) URL, or null. */
-function originOf(url: string | undefined): string | null {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    return u.protocol === "https:" || u.protocol === "http:" ? u.origin : null;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * CSP for the inline canvas. Read per call so `IMAGE_HOST_ALLOWLIST` and `APP_URL`
- * come from the request's environment (OpenNext fills process.env per request).
+ * CSP for the inline canvas. Read per call so `IMAGE_HOST_ALLOWLIST` comes from the
+ * request's environment (OpenNext fills process.env per request).
  */
-export function canvasCsp(opts: { imageHostAllowlist?: string; appUrl?: string } = {}): CanvasCsp {
+export function canvasCsp(opts: { imageHostAllowlist?: string } = {}): CanvasCsp {
   const allowlist = allowlistFromEnv(opts.imageHostAllowlist ?? readEnv("IMAGE_HOST_ALLOWLIST"));
-  const domains = [...allowlistToCspDomains(allowlist)];
-  const app = originOf(opts.appUrl ?? getConfig().appUrl);
-  if (app) domains.push(app);
-  domains.push(...FONT_DOMAINS);
+  const domains = [...allowlistToCspDomains(allowlist), ...FONT_DOMAINS];
   return { resourceDomains: [...new Set(domains)], connectDomains: [] };
 }
 

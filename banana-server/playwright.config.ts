@@ -33,6 +33,9 @@ export default defineConfig({
     ? undefined
     : {
         command: `npx next dev -p ${PORT}`,
+        // Test-only sign-in bypass (lib/web-auth.ts): /c/:id renders for a fixed user without
+        // AuthKit or a database. Ignored when NODE_ENV=production, so a built app never honors it.
+        env: { E2E_AUTH_BYPASS: "1" },
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,

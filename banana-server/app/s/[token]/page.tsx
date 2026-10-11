@@ -34,10 +34,22 @@ export default async function SharedCanvasPage({ params }: Props) {
   const { token } = await params;
   if (!isValidShareToken(token)) notFound();
 
-  const shared = await loadSharedCanvas(token, {
-    shares: getShareRepo,
-    loadMatcher: () => memoTakedowns(getRepos().takedowns)(),
-  });
+  let shared: Awaited<ReturnType<typeof loadSharedCanvas>>;
+  try {
+    shared = await loadSharedCanvas(token, {
+      shares: getShareRepo,
+      loadMatcher: () => memoTakedowns(getRepos().takedowns)(),
+    });
+  } catch {
+    // Database or takedown list unavailable: show nothing (fail closed), never the token.
+    console.error("[share] shared canvas could not load");
+    return (
+      <main id="main" style={{ maxWidth: 640, margin: "0 auto", padding: "2rem 1rem", fontFamily: "system-ui, sans-serif" }}>
+        <h1>Shared canvas</h1>
+        <p>This canvas cannot load right now. Try again in a minute.</p>
+      </main>
+    );
+  }
   if (!shared) notFound();
 
   return <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state} />;

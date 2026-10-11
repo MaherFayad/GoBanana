@@ -8,6 +8,7 @@ import {
   PAIR_TEMPLATES,
   PROMPT_CLAUSES,
   PROMPT_OPENING,
+  canRender,
   render,
   ROLE,
   SINGLE_TEMPLATES,
@@ -390,14 +391,16 @@ export function bendBrief(raw: BendInput): BendResult {
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
     for (let n = 0; n < list.length; n++) {
-      const text = render(list[templates.next(rotationKey, list.length)]!, vars);
+      const template = list[templates.next(rotationKey, list.length)]!;
+      if (!canRender(template, vars)) continue;
+      const text = render(template, vars);
       if (wordCount(text) <= maxWords && !taken?.has(text.toLowerCase())) return text;
     }
     return null;
   };
   /** Shortest rendering of a list; the last resort, so output never goes missing. */
   const shortest = (list: readonly string[], vars: TemplateVars): string =>
-    list.map((t) => render(t, vars)).sort((x, y) => wordCount(x) - wordCount(y) || x.localeCompare(y))[0] ?? "";
+    list.filter((t) => canRender(t, vars)).map((t) => render(t, vars)).sort((x, y) => wordCount(x) - wordCount(y) || x.localeCompare(y))[0] ?? "";
 
   plans.forEach((plan, i) => {
     const { moves, picked, mood } = plan;
@@ -408,6 +411,7 @@ export function bendBrief(raw: BendInput): BendResult {
       if (!entry) return;
       ingredients[MOVE_DEFS[m].slot] = entry.label;
       vars[ROLE[m]] = entry.label;
+      if (entry.leads) vars[`${ROLE[m]}lead`] = entry.label;
     });
 
     const split = splitMoves(moves, Boolean(lens));

@@ -96,14 +96,9 @@ describe("ui://banana/canvas resource", () => {
     expect(item!._meta?.ui?.prefersBorder).toBe(true);
   });
 
-  it("builds the CSP from IMAGE_HOST_ALLOWLIST and the app origin", () => {
-    const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com, *.example-cdn.com", appUrl: "https://app.example.test/" });
-    expect(csp.resourceDomains).toEqual([
-      "https://i.pinimg.com",
-      "https://*.example-cdn.com",
-      "https://app.example.test",
-      ...FONT_DOMAINS,
-    ]);
+  it("builds the CSP from IMAGE_HOST_ALLOWLIST", () => {
+    const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com, *.example-cdn.com" });
+    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", "https://*.example-cdn.com", ...FONT_DOMAINS]);
     expect(csp.connectDomains).toEqual([]);
   });
 });
@@ -117,7 +112,7 @@ describe("tool listing", () => {
     const save = tools.find((t) => t.name === SAVE_TOOL)!;
     expect(save._meta).toEqual({ ui: { visibility: ["app"] } });
     expect(save.inputSchema.required?.sort()).toEqual(["canvasId", "state"]);
-    expect(SAVE_DESC).not.toMatch(/[—–]/);
+    expect(SAVE_DESC).not.toMatch(/[\u2014\u2013]/);
   });
 });
 

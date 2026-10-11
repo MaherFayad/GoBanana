@@ -11,7 +11,7 @@ import { loadCanvas } from "@/lib/canvas/store";
 import { memoTakedowns } from "@/lib/db/takedowns";
 import type { ShareRepo } from "@/lib/db/shares";
 import type { Repos } from "@/lib/db/types";
-import { limitsFor } from "@/lib/quota";
+import { effectivePlan, limitsFor, type Plan } from "@/lib/quota";
 import type { TakedownMatcher } from "@/lib/takedown";
 import type { WebUser } from "@/lib/web-session";
 
@@ -27,6 +27,8 @@ export interface PageCanvas {
   shareToken: string | null;
   /** Whether the owner's plan allows share links. */
   canShare: boolean;
+  /** The owner's effective plan (BETA_PLAN applied), for upgrade notes in the toolbar. */
+  plan: Plan;
 }
 
 export type PageLoad = { kind: "ok"; canvas: PageCanvas } | { kind: "signed_out" } | { kind: "not_found" };
@@ -53,10 +55,11 @@ export async function loadCanvasForPage(id: string, deps: CanvasPageDeps): Promi
   const user = await deps.getUser();
   if (!user) return { kind: "signed_out" };
   const canShare = limitsFor(user.plan).shareLinks;
+  const plan = effectivePlan(user.plan);
   if (deps.bypass) {
     return {
       kind: "ok",
-      canvas: { id, title: "Moodboard", state: null, updatedAt: null, readOnly: false, shareToken: null, canShare },
+      canvas: { id, title: "Moodboard", state: null, updatedAt: null, readOnly: false, shareToken: null, canShare, plan },
     };
   }
   const repos = deps.repos();
@@ -73,6 +76,7 @@ export async function loadCanvasForPage(id: string, deps: CanvasPageDeps): Promi
       readOnly: false,
       shareToken: loaded.canvas.shareToken,
       canShare,
+      plan,
     },
   };
 }

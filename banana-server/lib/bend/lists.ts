@@ -12,7 +12,7 @@ import lensesJson from "./lenses.json";
 import renamedJson from "./renamed.json";
 import type { LensPreset, ListEntry } from "./types";
 
-type RawEntry = string | { label: string; query?: string };
+type RawEntry = string | { label: string; query?: string; leads?: boolean };
 
 /**
  * Entries reworded after launch, per list ("lens:<id>" for lens terms): new label to old label.
@@ -26,7 +26,8 @@ function normalize(raw: readonly RawEntry[], list: string): ListEntry[] {
   return raw.map((e) => {
     const label = typeof e === "string" ? e : e.label;
     const query = typeof e === "string" ? e : (e.query ?? e.label);
-    return { label, query, key: renamed[label] ?? label };
+    const leads = typeof e === "string" ? true : (e.leads ?? true);
+    return { label, query, key: renamed[label] ?? label, leads };
   });
 }
 

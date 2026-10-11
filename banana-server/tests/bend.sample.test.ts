@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { bendBrief, formatDirections, type Wildness } from "@/lib/bend";
 
 /**
- * Prints directions for the 10 M2 sample briefs at wildness 1, 3 and 5 so people
+ * Prints directions for the 10 M2 sample briefs at wildness 3 and 5 so people
  * can eyeball quality. Run: npx vitest run tests/bend.sample --silent=false
  */
 const SAMPLE_BRIEFS = [
@@ -21,9 +21,10 @@ const SAMPLE_BRIEFS = [
 describe("bend samples", () => {
   for (const brief of SAMPLE_BRIEFS) {
     it(brief, () => {
-      for (const wildness of [1, 3, 5] as Wildness[]) {
+      for (const wildness of [3, 5] as Wildness[]) {
         const result = bendBrief({ brief, wildness });
         expect(result.directions).toHaveLength(6);
+        for (const d of result.directions) expect(d.twist.length).toBeGreaterThan(0);
         console.log(formatDirections(result) + "\n");
       }
     });

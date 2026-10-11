@@ -142,6 +142,7 @@ export const ar: Dict = {
     signedOut: "سجل الدخول لعرض خطتك واستخدامك.",
     planTitle: "الخطة",
     planLabel: "الخطة الحالية",
+    betaPlan: "النسخة التجريبية: مزايا الاحترافية مفعلة",
     upgrade: "الأسعار",
     manageBilling: "الفواتير والدفع",
     manageBillingNote: "تجد الفواتير وتفاصيل الدفع في رسائل Paddle التي تصلك بعد كل عملية دفع.",

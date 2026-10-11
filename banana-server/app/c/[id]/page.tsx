@@ -38,6 +38,8 @@ export default async function CanvasPage({ params }: Props) {
       initialState={canvas.state}
       initialUpdatedAt={canvas.updatedAt}
       readOnly={canvas.readOnly}
+      plan={canvas.plan}
+      shareToken={canvas.shareToken}
     />
   );
 }

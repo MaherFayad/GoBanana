@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { limitsFor } from "@/lib/quota";
+import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
 import { getAccountUsage, getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
@@ -38,6 +38,8 @@ export default async function AccountPage({ params }: Props) {
   }
 
   const usage = await getAccountUsage(user.id);
+  // Payments are off during the beta: BETA_PLAN gives free users Pro limits (lib/quota.ts).
+  const onBeta = user.plan === "free" && betaPlan() !== null;
   const limits = limitsFor(user.plan);
   const ofLimit = (used: number, limit: number) =>
     Number.isFinite(limit) ? fmt(t.ofLimit, { used, limit }) : fmt(t.unlimited, { used });
@@ -56,13 +58,15 @@ export default async function AccountPage({ params }: Props) {
         <h2 id="plan-title">{t.planTitle}</h2>
         <dl>
           <dt>{t.planLabel}</dt>
-          <dd>{dict.pricing.plans[user.plan].name}</dd>
+          <dd>{onBeta ? t.betaPlan : dict.pricing.plans[user.plan].name}</dd>
         </dl>
-        <div className="actions">
-          <Link className="button secondary" href={href(locale, "pricing")}>
-            {t.upgrade}
-          </Link>
-        </div>
+        {onBeta ? null : (
+          <div className="actions">
+            <Link className="button secondary" href={href(locale, "pricing")}>
+              {t.upgrade}
+            </Link>
+          </div>
+        )}
         <h3>{t.manageBilling}</h3>
         {/* TODO(billing): link to the Paddle customer portal once a portal session endpoint exists. */}
         <p>{t.manageBillingNote}</p>

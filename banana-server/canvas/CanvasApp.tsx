@@ -49,7 +49,7 @@ import { nodeLabel } from "./labels";
 import { nodeTypes } from "./nodes";
 import type { CanvasPersistence } from "./persistence";
 import { deserializeState, orderNodes, serializeState, stateKey, type Deserialized, type IsBlocked } from "./state";
-import { Toolbar } from "./Toolbar";
+import { Toolbar, type ToolbarProps } from "./Toolbar";
 import { Tray, TRAY_DND_TYPE } from "./Tray";
 import { MIN_SIZE, type CanvasFlowNode, type CanvasState, type TrayReference } from "./types";
 
@@ -71,6 +71,8 @@ export interface CanvasAppProps {
   theme?: "light" | "dark";
   /** Called after each successful save. */
   onSaved?: (state: CanvasState) => void;
+  /** Web canvas only: shows Upload and Share in the toolbar. Leave unset inline (MCP Apps). */
+  web?: Pick<ToolbarProps, "plan" | "shareToken" | "pricingHref">;
 }
 
 /**
@@ -160,6 +162,7 @@ function CanvasEditor({
   loadFonts = true,
   onSaved,
   theme,
+  web,
   initial,
 }: CanvasAppProps & { initial: Deserialized }) {
   const rf = useReactFlow<CanvasFlowNode>();
@@ -487,6 +490,7 @@ function CanvasEditor({
         onZoomOut={() => void rf.zoomOut({ duration: 150 })}
         onFit={() => void rf.fitView({ padding: 0.1, duration: 200 })}
         onRetrySave={() => void saver.flush()}
+        {...(web && !readOnly ? { canvasId, ...web } : {})}
       />
       {initial.removed > 0 && (
         <p className="bn-notice" role="status">

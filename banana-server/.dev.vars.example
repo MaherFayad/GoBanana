@@ -4,6 +4,8 @@
 NEXTJS_ENV=development
 
 WORKOS_API_KEY=
+# Web sign-in session cookie key, 32+ characters (openssl rand -base64 32).
+WORKOS_COOKIE_PASSWORD=
 DATABASE_URL=
 SERPER_API_KEY=
 PADDLE_API_KEY=
@@ -14,3 +16,8 @@ APP_URL=http://localhost:8787
 MCP_RESOURCE_URL=http://localhost:8787/api/mcp
 WORKOS_AUTHKIT_DOMAIN=
 WORKOS_CLIENT_ID=
+# Must match a redirect URI in WorkOS. Optional: defaults to APP_URL + /auth/callback.
+NEXT_PUBLIC_WORKOS_REDIRECT_URI=http://localhost:8787/auth/callback
+
+# Payments are off: every free user gets Pro limits. Remove at launch.
+BETA_PLAN=pro
