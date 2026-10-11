@@ -2,7 +2,7 @@
 
 **Mobbin shows what works. GoBanana shows what's next.**
 
-GoBanana is a Claude plugin for wild design exploration. Ask your agent to "go wild" on a screen, and GoBanana bends the brief into unexpected directions, pulls linked references from Pinterest, Dribbble, Behance and Awwwards into a moodboard canvas, extracts a palette with WCAG checks, and exports a DESIGN.md, an AGENTS.md, design tokens and a FigJam board.
+GoBanana is a Claude plugin for wild design exploration. Ask your agent to "go wild" on a screen, and GoBanana bends the brief into unexpected directions, pulls linked UI references (app screens, web pages, dashboards, components) from Pinterest, Dribbble, Behance and Awwwards into a moodboard canvas, extracts a palette with WCAG checks, and exports a DESIGN.md, an AGENTS.md, design tokens and a FigJam board.
 
 The plugin connects your agent to the GoBanana MCP server and adds 6 skills that tell the agent which tools to call, in which order, and how to present the results.
 
@@ -34,7 +34,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 | Skill | Say something like | What happens |
 | --- | --- | --- |
-| `gobanana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, opens a canvas, bends it into 8 ideas, drops the ones that cannot become UI for your screen (`rate_directions`), searches the shortlist UI first into the tray, audits the results (`rate_references`, re-searching a weak lane with better words), then shows only the kept ideas |
+| `gobanana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, opens a canvas, bends it into 8 ideas, drops the ones that cannot become UI for your screen (`rate_directions`), searches UI references for the shortlist into the tray (the wild idea goes into notes, never images), audits the results (`rate_references`, re-searching a weak lane with better words), then shows only the kept ideas |
 | `gobanana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, short notes, a clean layout; optionally a FigJam board through the Figma MCP, or an HTML board |
 | `gobanana-palette` | "palette", "colors from these" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
 | `gobanana-design-md` | "DESIGN.md", "design system file" | Exports DESIGN.md, writes it, runs `npx @google/design.md lint`, fixes what it flags |

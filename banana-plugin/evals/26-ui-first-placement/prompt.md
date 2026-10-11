@@ -1,6 +1,6 @@
 ---
-description: "UI-first placement: UI references lead each section, at most 2 inspiration images per section."
-expected_outcome: "search_references, rate_references, then add_to_canvas placing UI-lane references (fidelity, taste, bridge, hero) before inspiration ones, with no more than 2 inspiration references per section."
+description: "UI-only placement: every placed reference is a UI result, and the direction's wild idea goes on the board as a note, not as images."
+expected_outcome: "search_references, rate_references, then add_to_canvas placing UI references from the results in the direction's section plus one short note that carries the wild idea (twist and salvage)."
 tags: [explore, placement]
 max_turns: 30
 timeout_seconds: 600

@@ -1,11 +1,11 @@
 ---
 name: gobanana-explore
-description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use gobanana-moodboard to arrange an existing canvas, gobanana-palette for colors, gobanana-design-md for DESIGN.md.
+description: Turn a vague design ask into wild, unexpected directions and pull linked UI references (app screens, web pages, dashboards, components) for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use gobanana-moodboard to arrange an existing canvas, gobanana-palette for colors, gobanana-design-md for DESIGN.md.
 ---
 
 # GoBanana explore
 
-Turn a fuzzy "make it cooler" into a few sharp, usable directions, then pull real references for them into a moodboard canvas. Mobbin shows what works. GoBanana shows what's next.
+Turn a fuzzy "make it cooler" into a few sharp, usable directions, then pull real UI references for them into a moodboard canvas. Mobbin shows what works. GoBanana shows what's next.
 
 The GoBanana server does no thinking. It bends the brief with word lists and templates, then runs a web image search. You do the thinking: shape the brief, pick the wildness, reject the ideas that cannot be used, sell the rest, choose what to search.
 
@@ -16,6 +16,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Do not describe images you have not seen.** Search results give titles, sites and links. Talk about the direction, not about pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** The user is designing a real screen. Reject any idea that cannot become UI for that screen instead of listing every idea. Never show a dropped idea.
+- **References are always UI.** Every search result is a UI image: an app screen, a web page, a dashboard or a component. The wild idea never comes back as images (no textures, objects, posters or crafts). It lives in the directions and in the notes on the board: the twist and the salvage.
 
 ## Steps
 
@@ -71,7 +72,7 @@ Call `bend_brief` with `brief`, `wildness`, `count: 8` and the `canvasId`, plus 
 Judge every direction for THIS screen. Keep an idea only if all three hold:
 
 - **(a) UI path.** Its salvage maps to a concrete UI pattern for the brief's actual screen. Say the pattern to yourself in a few words: "seat map as a woven grid", "fare cards that stack like boarding passes". If you cannot name one, it fails. A pretty texture with no screen idea fails.
-- **(b) Usable references.** After the search and audit (steps 8 and 9) it has at least 3 on-topic, usable references from the UI lanes (`fidelity`, `taste`, `bridge`, `hero`, `locale`). Inspiration results alone do not count.
+- **(b) Usable references.** After the search and audit (steps 8 and 9) it has at least 3 on-topic, usable UI references.
 - **(c) Not a near duplicate** of an idea you already kept (same move and a similar ingredient, or the same UI pattern).
 
 How to run it without wasting searches:
@@ -82,14 +83,16 @@ How to run it without wasting searches:
 
 ### 8. Search references for the shortlist
 
-For each shortlisted direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). One call searches several lanes at once and counts as one search:
+For each shortlisted direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). One call searches several lanes at once and counts as one search. Every lane is UI:
 
 - `fidelity`: real screens for the brief. `taste`: the user's style on the brief's screen. `hero`: one clean screen.
-- `bridge`: the idea already applied to UI ("vending machine ui design"). The server keeps a bridge result only when its title names the idea, so this lane is often empty. That is fine; its places go to the other UI lanes.
-- `inspiration`: the raw idea (material, craft, object). Useful for the mood, but it is not UI.
+- `component`: the parts the brief names ("banking quick actions ui", "flight seat selection ui"). Name them in the brief to get them, for example "Banking app home: balance, quick actions, transactions".
+- `bridge`: the idea already applied to UI ("vending machine ui design"). The server keeps a bridge result only when its title names the idea, so this lane is often empty. That is fine; its places go to the other lanes.
 - `locale`: Arabic UI, for Arabic or right to left briefs.
 
-Leave `mix` at the default (`"ui"`): UI references come first and about 20% are raw inspiration. Use `mix: "balanced"` or `mix: "wild"` only when the user asks for a wilder, more abstract or more moodboard-like mix ("go wilder on the references", "more raw inspiration", "less UI"). Do not pass a direction's `searchQuery` as `query` when you have its id. Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards.
+The server drops any result whose title names no UI, so a board never fills with jackets, signs or logos. Do not pass `mix`: it is ignored. Do not pass a direction's `searchQuery` as `query` when you have its id. A plain `query` is searched as UI too ("teletext" becomes "teletext app ui"), so name the screen or product when you can ("banking app home"). Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards.
+
+If the user asks for raw inspiration images (textures, objects, posters, "less UI"), say in one line that GoBanana search returns UI only, then put the wildness into the directions instead: bend at a higher wildness, and write the idea into each section note (see step 10).
 
 ### 9. Audit and rate every search
 
@@ -97,14 +100,14 @@ The server does not look at images. You do. After each `search_references`:
 
 1. **Judge every result** against the brief and the user's style words, from its title, source site and URL, and from the image when you can see it. Each result line shows `[referenceId, lane]`.
 2. **Call `rate_references`** with the `canvasId` and one rating per judged result. It is free. Always rate the junk, so it leaves the tray and never comes back:
-   - `bad` for shops and product listings, fashion and clothing, home decor, DIY and crafts, and any product unrelated to the brief (a car air freshener on a flight checkout board is junk). Also bad: stock, UI kit sales, cluttered sheets, duplicates, and anything not UI in a UI lane (taste, fidelity, bridge, hero, locale). Add `reasons` (`off_topic`, `stock_or_shop`, `not_ui`, `cluttered`, `duplicate`, `low_craft`, `wrong_style`).
+   - `bad` for shops and product listings, fashion and clothing, home decor, DIY and crafts, and any product unrelated to the brief (a car air freshener on a flight checkout board is junk). Also bad: stock, UI kit sales, cluttered sheets, duplicates, near-empty phone mockups, and anything that is not UI. Add `reasons` (`off_topic`, `stock_or_shop`, `not_ui`, `cluttered`, `duplicate`, `low_craft`, `wrong_style`).
    - `great` for standouts only: about the top 10 to 20%. Add `great_craft`, `on_style` or `on_brief`.
-3. **Retry a weak lane.** If more than 40% of one lane is bad, search that lane once more: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. Describe the visual, not the object: "35mm film strip macro", not "oversized film frames". For the bridge lane keep the idea's main word in the query. Use the hint `rate_references` returns. At most 2 retries per lane, and each retry counts toward the quota.
-4. **Count what is left** per direction for triage test (b): usable UI and bridge references, not inspiration.
+3. **Retry a weak lane.** If more than 40% of one lane is bad, search that lane once more: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. Name the screen or component: "cinema seat picker ui", not "oversized film frames". For the bridge lane keep the idea's main word and name a screen ("film strip ticket checkout ui"). Words that name no UI get "app ui" added. Use the hint `rate_references` returns. At most 2 retries per lane, and each retry counts toward the quota.
+4. **Count what is left** per direction for triage test (b): usable UI references.
 
-### 10. Place UI first, then present only the kept ideas
+### 10. Place UI references, put the idea in a note, then present only the kept ideas
 
-- **Placement:** if you add references to the board (`add_to_canvas`), put UI references (fidelity, taste, bridge, hero, locale) first in each section, then at most 2 inspiration images per section. Allow more inspiration only when the user asked for a wilder mix (and then search with `mix`).
+- **Placement:** if you add references to the board (`add_to_canvas`), place only UI references from the results in each direction's section. Add one short note per section that carries the wild idea, for example `WILD: fare cards that stack like boarding passes. SALVAGE: stacked fare cards with a tear line.` The idea is words on the board, never images.
 - **Present** only the kept directions, as a numbered list. One line each: a bold title, the move in brackets, and a half-sentence on the UI pattern it gives this screen. Example:
 
 > 1. **Checkout as a frosted vinyl sleeve** (transplant + material). Fare summary slides out like a record.
@@ -112,7 +115,7 @@ The server does not look at images. You do. After each `search_references`:
 > 3. **One color, no cards** (constraint). Hierarchy from type alone.
 
 - Then **one line** on what you dropped and why, for example: "Dropped 5 of 8 ideas: 3 had no clear screen idea, 1 found too few usable references, 1 repeated another." Never list the dropped ideas one by one.
-- Per kept direction: what each lane searched (the `lanes` field) and 2 or 3 highlights as `[title](sourceUrl) (site)`, UI references first. Tell the user in one line what you rejected from the results and why, for example: "Removed 4 results (2 shop listings, 2 off topic)."
+- Per kept direction: what each lane searched (the `lanes` field) and 2 or 3 highlights as `[title](sourceUrl) (site)`. Tell the user in one line what you rejected from the results and why, for example: "Removed 4 results (2 shop listings, 2 off topic)."
 
 ### 11. Offer next steps
 
@@ -122,7 +125,7 @@ End with a short menu, for example:
 - **Palette:** pull colors from the references you like, with WCAG checks (gobanana-palette).
 - **DESIGN.md:** turn the board into a design system file your coding agent can follow (gobanana-design-md).
 - **Turn it up or down:** rerun at wildness N+1 or N-1, or try a lens.
-- **Wilder references:** search again with `mix: "balanced"` or `"wild"` for more raw inspiration.
+- **Wilder ideas:** bend again one level higher. The references stay UI; the wildness shows in the directions and their notes.
 - **Change the look:** search again with other `taste` words.
 
 ## When things go wrong

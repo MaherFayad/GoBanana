@@ -26,10 +26,10 @@ function serperPage(q: string, page = 1) {
   return {
     images: Array.from({ length: 10 }, (_, i) => {
       const id = `${h}${i}`;
-      const title = `Shot ${i} by Maker ${i % 3} on Dribbble`;
+      const title = `App shot ${i} by Maker ${i % 3} on Dribbble`;
       if (site.startsWith("dribbble")) return { title, link: `https://dribbble.com/shots/${id}-${slug}`, imageUrl: `https://cdn.dribbble.com/u/${slug}-${i}.png` };
       if (site.startsWith("behance")) {
-        return { title: `Project ${i}`, link: `https://www.behance.net/gallery/${id}/${slug}`, imageUrl: `https://mir-s3-cdn-cf.behance.net/p/${slug}-${i}.jpg`, imageWidth: 1400, imageHeight: 1000 };
+        return { title: `App project ${i}`, link: `https://www.behance.net/gallery/${id}/${slug}`, imageUrl: `https://mir-s3-cdn-cf.behance.net/p/${slug}-${i}.jpg`, imageWidth: 1400, imageHeight: 1000 };
       }
       return { title, link: `https://www.pinterest.com/pin/${id}/`, imageUrl: `https://i.pinimg.com/736x/${slug}-${i}.jpg`, imageWidth: 736, imageHeight: 1000 };
     }),
@@ -127,7 +127,7 @@ describe("rate_references tool", () => {
     const row = s.repos.data.feedback.find((f) => f.itemKey === itemKey(bad2.sourceUrl))!;
     expect(row).toMatchObject({ userId: ALICE, verdict: "bad", reasons: ["stock_or_shop"], lane: bad2.lane, query: bad2.query });
     expect(row.termKey).toMatch(new RegExp(`^${bad2.lane}\\|`));
-    expect(row.arm).toBe(bad2.lane === "inspiration" ? "raw@pinterest+behance" : "default");
+    expect(row.arm).toBe("default");
     expect(s.repos.data.feedback.find((f) => f.verdict === "great")!.creator).toMatch(/^maker \d$/);
     // Free: no search counted.
     expect(await s.repos.usage.get(ALICE, "2026-10")).toEqual(usageBefore);
@@ -153,8 +153,9 @@ describe("rate_references tool", () => {
     const s = setup();
     const b = await boardWithDirection(s, ALICE);
     const first = ((await s.search({ directionId: b.directionId, canvasId: b.canvasId }, ALICE)).structuredContent as SearchOut).references;
-    // The "ui" mix lists UI lanes first: block two of them and the two inspiration results.
-    const blocked = [...first.filter((r) => r.lane !== "inspiration").slice(0, 2), ...first.filter((r) => r.lane === "inspiration").slice(0, 2)];
+    // Two results of the direction search and two of a plain query search (UI forms of the idea).
+    const plainFirst = ((await s.search({ query: b.ingredient, canvasId: b.canvasId }, ALICE)).structuredContent as SearchOut).references;
+    const blocked = [...first.slice(0, 2), ...plainFirst.slice(0, 2)];
     expect(blocked).toHaveLength(4);
     const res = await s.rate({ ratings: blocked.map((r) => ({ referenceId: r.id, verdict: "bad" as const })) }, ALICE);
     expect(res.structuredContent).toMatchObject({ rated: 4, bad: 4, blocked: 4, removedFromTray: 0 });
@@ -175,6 +176,35 @@ describe("rate_references tool", () => {
   });
 });
 
+describe("old inspiration lane rows", () => {
+  it("rates a reference saved by the removed inspiration lane with a plain hint, and never steers search with it", async () => {
+    const s = setup();
+    const b = await boardWithDirection(s, ALICE);
+    const old = {
+      id: "ref_00000000000000aa",
+      thumbUrl: "https://i.pinimg.com/736x/old.jpg",
+      imageUrl: "https://i.pinimg.com/736x/old.jpg",
+      sourceUrl: "https://www.pinterest.com/pin/424242/",
+      sourceSite: "pinterest.com",
+      title: "Uzbek suzani jacket",
+      lane: "inspiration",
+      query: b.ingredient.toLowerCase(),
+      termKey: `inspiration|${b.ingredient.toLowerCase()}`,
+      arm: "raw@pinterest+behance",
+    };
+    await s.repos.references.insertMany(b.canvasId, [old as never]);
+    const res = await s.rate({ canvasId: b.canvasId, ratings: [{ referenceId: old.id, verdict: "bad", reasons: ["not_ui"] }] }, ALICE);
+    const out = res.structuredContent as { rated: number; hints: { lane: string | null; hint: string }[] };
+    expect(out.rated).toBe(1);
+    expect(out.hints[0]!.lane).toBeNull();
+    expect(out.hints[0]!.hint).not.toContain("inspiration");
+    // A later direction search plans UI lanes only, with default arms.
+    const next = (await s.search({ directionId: b.directionId, canvasId: b.canvasId }, ALICE)).structuredContent as SearchOut;
+    expect(Object.keys(next.arms ?? {})).not.toContain("inspiration");
+    expect(next.queries.some((q) => q.includes("behance"))).toBe(false);
+  });
+});
+
 describe("lane-only re-search and learned arms", () => {
   it("re-searches one lane with the agent's words and records them as an arm of the lane's term", async () => {
     const s = setup();
@@ -182,25 +212,26 @@ describe("lane-only re-search and learned arms", () => {
     await s.search({ directionId: b.directionId, canvasId: b.canvasId }, ALICE);
     const calls = s.fetchMock.mock.calls.length;
 
+    // Words that name no UI get "app ui": search is UI only.
     const res = await s.search(
-      { directionId: b.directionId, canvasId: b.canvasId, lane: "inspiration", query: "35mm Film Strip macro site:pinterest.com" },
+      { directionId: b.directionId, canvasId: b.canvasId, lane: "taste", query: "35mm Film Strip macro site:pinterest.com" },
       ALICE,
     );
     expect(res.isError).toBeFalsy();
-    const out = res.structuredContent as SearchOut & { query: string };
-    expect(out.lane).toBe("inspiration");
-    expect(out.query).toBe("35mm film strip macro");
-    expect(out.arms).toEqual({ inspiration: "agent:35mm film strip macro" });
+    const out = res.structuredContent as SearchOut & { query: string; lanes: { taste: string } };
+    expect(out.lane).toBe("taste");
+    expect(out.query).toBe("35mm film strip macro app ui");
+    expect(out.arms).toEqual({ taste: "agent:35mm film strip macro app ui" });
     expect(out.learned).toBe(false);
-    expect(out.queries).toEqual(["35mm film strip macro site:pinterest.com/pin", "35mm film strip macro site:behance.net/gallery"]);
-    expect(s.fetchMock.mock.calls.length - calls).toBe(2);
-    expect(out.references.every((r) => r.lane === "inspiration")).toBe(true);
-    expect(text(res)).toContain('the inspiration lane "35mm film strip macro"');
+    expect(out.queries).toEqual(["35mm film strip macro app ui -template -kit -free -wireframe site:dribbble.com/shots"]);
+    expect(s.fetchMock.mock.calls.length - calls).toBe(1);
+    expect(out.references.every((r) => r.lane === "taste")).toBe(true);
+    expect(text(res)).toContain('the taste lane "35mm film strip macro app ui"');
 
     // Saved with the direction's term key and the agent arm.
     const rows = [...s.repos.data.references.values()].filter((r) => r.arm?.startsWith("agent:"));
     expect(rows.length).toBe(out.references.length);
-    expect(rows.every((r) => r.termKey === `inspiration|${b.ingredient.toLowerCase()}` && r.query === "35mm film strip macro")).toBe(true);
+    expect(rows.every((r) => r.termKey === `taste|${out.lanes.taste}` && r.query === "35mm film strip macro app ui")).toBe(true);
     // It is a search: counted.
     expect((await s.repos.usage.get(ALICE, "2026-10")).searches).toBe(2);
   });
@@ -213,6 +244,7 @@ describe("lane-only re-search and learned arms", () => {
     expect(text(await s.search({ directionId: b.directionId, lane: "taste", query: "site:dribbble.com" }, ALICE))).toContain("Pass a few words");
     expect(text(await s.search({ directionId: b.directionId, lane: "locale", query: "arabic ui" }, ALICE))).toContain("has no locale lane");
     expect(text(await s.search({ directionId: b.directionId, lane: "sideways", query: "x" } as unknown as Parameters<typeof s.search>[0], ALICE))).toContain("lane as one of");
+    expect(text(await s.search({ directionId: b.directionId, lane: "inspiration", query: "x" } as unknown as Parameters<typeof s.search>[0], ALICE))).toContain("Search is UI only");
   });
 
   it("uses a rated arm for its rater, not for others below 3 raters, and for everyone at 3", async () => {
@@ -222,7 +254,7 @@ describe("lane-only re-search and learned arms", () => {
     const rateLane = async (userId: string) => {
       const b = await boardWithDirection(s, userId);
       boards.set(userId, b);
-      const res = await s.search({ directionId: b.directionId, canvasId: b.canvasId, lane: "inspiration", query: "35mm film strip macro", count: 12 }, userId);
+      const res = await s.search({ directionId: b.directionId, canvasId: b.canvasId, lane: "taste", query: "film strip checkout ui", count: 12 }, userId);
       const refs = (res.structuredContent as SearchOut).references;
       await s.rate({ canvasId: b.canvasId, ratings: refs.map((r) => ({ referenceId: r.id, verdict: "great" as const })) }, userId);
     };
@@ -231,12 +263,12 @@ describe("lane-only re-search and learned arms", () => {
       boards.set(userId, b);
       return (await s.search({ directionId: b.directionId, canvasId: b.canvasId }, userId)).structuredContent as SearchOut;
     };
-    /** Dave's inspiration arm on each of 10 days. */
+    /** Dave's taste arm on each of 10 days. */
     const daveOverDays = async () => {
       const arms: string[] = [];
       for (let d = 0; d < 10; d++) {
         s.clock.now = new Date(NOW.getTime() + d * 86_400_000);
-        arms.push((await armFor(DAVE)).arms!.inspiration!);
+        arms.push((await armFor(DAVE)).arms!.taste!);
       }
       s.clock.now = NOW;
       return arms;
@@ -244,18 +276,18 @@ describe("lane-only re-search and learned arms", () => {
 
     await rateLane(ALICE);
     const alice = await armFor(ALICE);
-    expect(alice.arms!.inspiration).toBe("agent:35mm film strip macro");
+    expect(alice.arms!.taste).toBe("agent:film strip checkout ui");
     expect(alice.learned).toBe(true);
-    expect(alice.queries[0]).toBe("35mm film strip macro site:pinterest.com/pin");
+    expect(alice.queries).toContain("film strip checkout ui -template -kit -free -wireframe site:dribbble.com/shots");
     // Dave has rated nothing: one or two raters are not enough, on any day.
-    expect(await armFor(DAVE)).toMatchObject({ learned: false, arms: { inspiration: "raw@pinterest+behance" } });
+    expect(await armFor(DAVE)).toMatchObject({ learned: false, arms: { taste: "default" } });
     await rateLane(BOB);
-    expect(new Set(await daveOverDays())).toEqual(new Set(["raw@pinterest+behance"]));
+    expect(new Set(await daveOverDays())).toEqual(new Set(["default"]));
 
     // Three raters (one vote each): the arm now competes for Dave too.
     await rateLane(CAROL);
     const days = await daveOverDays();
-    expect(days.filter((a) => a === "agent:35mm film strip macro").length).toBeGreaterThan(2);
+    expect(days.filter((a) => a === "agent:film strip checkout ui").length).toBeGreaterThan(2);
     expect(raters).toHaveLength(3);
   });
 
@@ -263,12 +295,12 @@ describe("lane-only re-search and learned arms", () => {
     const s = setup({ global: false });
     for (const userId of [ALICE, BOB, CAROL]) {
       const b = await boardWithDirection(s, userId);
-      const refs = ((await s.search({ directionId: b.directionId, canvasId: b.canvasId, lane: "inspiration", query: "35mm film strip macro" }, userId)).structuredContent as SearchOut).references;
+      const refs = ((await s.search({ directionId: b.directionId, canvasId: b.canvasId, lane: "taste", query: "film strip checkout ui" }, userId)).structuredContent as SearchOut).references;
       await s.rate({ canvasId: b.canvasId, ratings: refs.map((r) => ({ referenceId: r.id, verdict: "great" as const })) }, userId);
     }
     const d = await boardWithDirection(s, DAVE);
     const dave = (await s.search({ directionId: d.directionId, canvasId: d.canvasId }, DAVE)).structuredContent as SearchOut;
-    expect(dave).toMatchObject({ learned: false, arms: { inspiration: "raw@pinterest+behance" } });
+    expect(dave).toMatchObject({ learned: false, arms: { taste: "default" } });
   });
 
   it("reads GLOBAL_LEARNING from the environment", async () => {

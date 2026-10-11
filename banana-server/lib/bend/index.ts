@@ -513,7 +513,7 @@ export function formatDirections(result: BendResult): string {
   });
   lines.push(
     "",
-    "Next: call search_references with a direction id (after saving to a canvas) or a direction's query to pull image references. Pick the directions that excite the user, or bend again at a different wildness.",
+    "Next: call search_references with a direction id (after saving to a canvas) or a direction's query to pull UI references (screens and components; the idea itself stays in the notes). Pick the directions that excite the user, or bend again at a different wildness.",
   );
   return lines.join("\n");
 }

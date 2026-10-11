@@ -1,7 +1,7 @@
 /**
  * Words and term keys for search learning (pure). A term key names what a lane searched for,
  * independent of how it was worded: the lane plus the plain words of its default text,
- * lowercased, with negatives and site operators stripped ("inspiration|oversized film frames").
+ * lowercased, with negatives and site operators stripped ("taste|minimal flight checkout ui design").
  * Ratings of results found for that term are pooled per term key and arm (lib/learning/arms.ts).
  */
 import type { LaneName } from "../sources/types";
@@ -27,7 +27,7 @@ export function queryWords(text: string): string {
     .trim();
 }
 
-/** Term key for a lane and its default text, for example `inspiration|oversized film frames`. */
+/** Term key for a lane and its default text, for example `fidelity|flight app ui`. */
 export function termKey(lane: LaneName, text: string): string {
   return `${lane}|${queryWords(text)}`;
 }

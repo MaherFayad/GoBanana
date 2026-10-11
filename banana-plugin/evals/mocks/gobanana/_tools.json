@@ -64,7 +64,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray. mix sets how much of a direction search is raw idea against UI: \"ui\" (default, mostly UI screens), \"balanced\" or \"wild\" (mostly the raw idea). To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve.",
+      "description": "Find UI references (app screens, web pages, dashboards, components) on Dribbble, Pinterest and Behance. Every result links to its source: always show the source link next to the image. Results are always UI, whatever the words: a wild idea belongs in the direction notes, not in the images. Pass a directionId from bend_brief (best: real screens and components for the brief, in the user's taste), or a query. Pass canvasId to add the results to that canvas tray. Pass taste with a few style words that describe the user's references, such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve. mix is ignored (always UI). Results are links to the source pages only.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -108,14 +108,14 @@
           "lane": {
             "type": "string",
             "enum": [
-              "inspiration",
-              "taste",
               "fidelity",
+              "taste",
+              "component",
               "hero",
-              "locale",
-              "bridge"
+              "bridge",
+              "locale"
             ],
-            "description": "With directionId and query: search only this lane of the direction, with the query as its words."
+            "description": "With directionId and query: search only this lane of the direction, with the query as its words (\"app ui\" is added when they name no UI)."
           },
           "mix": {
             "type": "string",
@@ -124,7 +124,7 @@
               "balanced",
               "wild"
             ],
-            "description": "Direction searches: \"ui\" (default) puts UI screens first with about 20% raw idea, \"balanced\" 40%, \"wild\" 60%."
+            "description": "Ignored: results are always UI. Kept so older calls still work."
           }
         }
       }

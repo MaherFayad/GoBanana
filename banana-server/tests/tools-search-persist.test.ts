@@ -86,10 +86,10 @@ describe("search_references with the database", () => {
 
     const res = await search({ directionId: dir.id, canvasId: c.id }, ALICE);
     expect(res.isError).toBeFalsy();
-    // Lane 1 is the direction's raw ingredient; the brief lanes come from the canvas brief.
+    // Every lane is a UI lane from the canvas brief; the raw idea is never searched on its own.
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
-    expect(plan[0]).toMatchObject({ lane: "inspiration", query: dir.searchQuery });
-    expect(plan.some((r) => r.lane === "fidelity")).toBe(true);
+    expect(plan[0]).toMatchObject({ lane: "fidelity", query: "flight app ui -template -kit -free -wireframe" });
+    expect(plan.some((r) => r.query === dir.searchQuery)).toBe(false);
     expect((res.structuredContent as { addedToTray: boolean }).addedToTray).toBe(true);
 
     const s = (await repos.canvases.getOwned(ALICE, c.id))!.state as CanvasState;
@@ -149,13 +149,14 @@ describe("search_references with the database", () => {
       await tool({ query: "poster" }, ALICE);
       await tool({ query: "poster" }, ALICE);
       expect(list).toHaveBeenCalledTimes(2);
-      // One path-scoped request per source (pinterest.com/pin, dribbble.com/shots) per search.
-      expect(serper).toHaveBeenCalledTimes(4);
+      // "poster" names no UI: 3 path-scoped UI forms per search ("poster app ui" and "poster ui design"
+      // on Dribbble, "poster app ui" on Pinterest); the short form is the same words, so no retry.
+      expect(serper).toHaveBeenCalledTimes(6);
 
       list.mockRejectedValueOnce(new Error("db down"));
       const res = await tool({ query: "poster" }, ALICE);
       expect((res.structuredContent as { references: unknown[] } | undefined)?.references ?? []).toHaveLength(0);
-      expect(serper).toHaveBeenCalledTimes(4);
+      expect(serper).toHaveBeenCalledTimes(6);
     } finally {
       vi.unstubAllGlobals();
       vi.unstubAllEnvs();

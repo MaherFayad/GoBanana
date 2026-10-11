@@ -102,7 +102,7 @@ describe("MCP contract", () => {
     ]);
     const search = byName.search_references!.inputSchema.properties as Record<string, { enum?: string[] }>;
     expect(search.mix!.enum).toEqual(["ui", "balanced", "wild"]);
-    expect(search.lane!.enum).toEqual(["inspiration", "taste", "fidelity", "hero", "locale", "bridge"]);
+    expect(search.lane!.enum).toEqual(["fidelity", "taste", "component", "hero", "bridge", "locale"]);
   });
 
   it("runs bend_brief and returns text plus structured directions", async () => {

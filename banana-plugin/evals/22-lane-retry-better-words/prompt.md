@@ -1,6 +1,6 @@
 ---
-description: "Most of the inspiration lane is junk: rate it bad and re-search that lane once with words for the visual."
-expected_outcome: "rate_references with bad ratings for the frame shop, stock and decor results, then search_references with directionId, lane inspiration and a new query that describes the visual."
+description: "Most of the bridge lane is off (shops, a kit sale): rate it bad and re-search that lane once with words that keep the idea and name a screen."
+expected_outcome: "rate_references with bad ratings for the frame shop, kit sale and off-topic results, then search_references with directionId, lane bridge and a new query that keeps the idea's main word and names a screen or component."
 tags: [explore, audit, retry]
 max_turns: 30
 timeout_seconds: 600

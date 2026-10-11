@@ -12,6 +12,7 @@ Turn the tray of search results into a board people can read: one section per di
 - **Every tile keeps its source link**, on the GoBanana canvas, in FigJam and in any HTML board. Never drop a link to make a board look cleaner.
 - **Never download, save or copy reference images** to the repo or to disk. The canvas and the HTML board point at the source URLs.
 - **The server only returns text.** When a file is needed (HTML board), you write it to disk.
+- **References are UI only** (app screens, web pages, dashboards, components). A direction's wild idea goes on the board as words in a note, never as an image.
 - Plain words, no em dashes.
 
 ## Steps
@@ -27,8 +28,8 @@ If the tray is empty, run the gobanana-explore flow first (`bend_brief`, then `s
 Call `add_to_canvas` with `canvasId` and `items`:
 
 1. One `{ "type": "section", "title": "<direction title>" }` per direction, unless sections already exist.
-2. The references for each direction as `{ "type": "reference", "referenceId": "..." }`, passing that direction's `sectionId`. UI references first (lanes fidelity, taste, bridge, hero, locale), then at most 2 inspiration references per section, unless the user asked for a wilder mix.
-3. One short `{ "type": "note", "text": "..." }` per section saying what to steal from it ("type as the only hierarchy", "misregistered two-ink print"). Keep notes under 12 words.
+2. The references for each direction as `{ "type": "reference", "referenceId": "..." }`, passing that direction's `sectionId`. They are all UI references; lead with the strongest screen.
+3. One short `{ "type": "note", "text": "..." }` per section with the direction's idea: the twist and what to salvage for the screen, for example `WILD: misregistered two-ink print. SALVAGE: two-color ticket with offset type.` Keep each part under 12 words. If the user wants wilder images, explain that references stay UI and make the note bolder instead.
 4. If a palette exists, add swatches as `{ "type": "swatch", "hex": "...", "role": "..." }`.
 
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message (see below) and stop adding.

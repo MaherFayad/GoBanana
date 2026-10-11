@@ -93,11 +93,11 @@ export const references = pgTable(
     height: integer("height"),
     /** The search result id (`ref_...`) the row was saved from. */
     resultId: text("result_id"),
-    /** Direction searches: the lane that found it ("inspiration", "taste", ...). */
+    /** Direction searches: the lane that found it ("fidelity", "taste", ...; older rows may say "inspiration"). */
     lane: text("lane"),
     /** The request words that found it, without negatives or the site operator. */
     query: text("query"),
-    /** lib/learning/terms.ts term key of that lane ("inspiration|oversized film frames"). */
+    /** lib/learning/terms.ts term key of that lane ("fidelity|flight app ui"). */
     termKey: text("term_key"),
     /** lib/learning/arms.ts arm the lane used ("default", "raw@behance", "agent:..."). */
     arm: text("arm"),

@@ -1,4 +1,4 @@
-Rated 5: 0 great, 5 bad.
-Bad results will not come back in later searches. 5 removed from the tray.
+Rated 4: 0 great, 4 bad.
+Bad results will not come back in later searches. 4 removed from the tray.
 Next:
-- inspiration lane: Try search_references with directionId, lane "inspiration" and new query words: describe the visual, not the object, for example "35mm film strip macro" instead of "oversized film frames".
+- bridge lane: Try search_references with directionId, lane "bridge" and new query words: keep the idea's main word and name a screen, for example "vending machine checkout ui". Titles without the idea's main word are left out.
