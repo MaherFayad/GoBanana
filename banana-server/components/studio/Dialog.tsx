@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type MouseEvent, type ReactNode, type RefObject } from "react";
 import { CloseIcon } from "./icons";
+import { modalStack } from "./modalStack";
 import { Tooltip } from "./Tooltip";
 
 export type DialogSize = "sm" | "md" | "lg" | "xl" | "2xl";
@@ -83,6 +84,7 @@ export function Dialog({
       const active = document.activeElement;
       returnTo.current = active instanceof HTMLElement && active !== document.body ? active : null;
       dialog.showModal();
+      modalStack.push(dialog);
       const target =
         initialFocus?.current ??
         firstFocusable(dialog.querySelector(".st-dialog-body")) ??
@@ -91,6 +93,7 @@ export function Dialog({
       target?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
+      modalStack.remove(dialog);
     }
   }, [open, initialFocus]);
 
@@ -103,6 +106,7 @@ export function Dialog({
       onCloseRef.current();
     };
     const onNativeClose = () => {
+      modalStack.remove(dialog);
       const target = returnTo.current;
       returnTo.current = null;
       if (target && target.isConnected) target.focus();
@@ -121,6 +125,7 @@ export function Dialog({
   useEffect(() => {
     const dialog = ref.current;
     return () => {
+      if (dialog) modalStack.remove(dialog);
       if (dialog?.open) {
         const target = returnTo.current;
         dialog.close();
