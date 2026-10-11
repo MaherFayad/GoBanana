@@ -1,0 +1,31 @@
+---
+title: GoBanana
+description: توثيق GoBanana، إضافة Claude وخادم MCP الذي يحول وصف التصميم إلى اتجاهات جريئة ويجد لها المراجع.
+template: splash
+hero:
+  title: GoBanana
+  tagline: حول فكرتك إلى اتجاهات لم يسبقك إليها أحد. يجد GoBanana مراجع مرتبطة بمصادرها لكل اتجاه، ويصدر حزمة يبني منها وكيلك.
+  actions:
+    - text: إضافة إلى Claude
+      link: /docs/ar/start/install/
+      icon: right-arrow
+      variant: primary
+    - text: مقدمة
+      link: /docs/ar/start/introduction/
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## تصفح التوثيق
+
+<CardGrid>
+	<LinkCard title="لوحتك الأولى" description="اطلب فكرة جريئة لشاشة وشاهد اللوحة تمتلئ." href="/docs/ar/start/first-board/" />
+	<LinkCard title="ربط خادم MCP" description="تطبيقات Claude وClaude Code وChatGPT وCursor، بعنوان خادم واحد." href="/docs/ar/start/connect/" />
+	<LinkCard title="تحويل الوصف إلى اتجاهات" description="الحركات ومستويات الجرأة والعدسات الثقافية." href="/docs/ar/guides/bend/" />
+	<LinkCard title="البحث عن المراجع وتقييمها" description="ابحث في Pinterest وDribbble وBehance وAwwwards، واحتفظ بالجيد منها." href="/docs/ar/guides/references/" />
+	<LinkCard title="تصدير الحزمة" description="DESIGN.md وAGENTS.md ورموز التصميم وTailwind وFigJam." href="/docs/ar/guides/export/" />
+	<LinkCard title="الخطط والحدود" description="ما تشمله الخطة المجانية وPro، وما يحدث عند بلوغ الحد." href="/docs/ar/reference/plans/" />
+	<LinkCard title="أدوات MCP" description="كل الأدوات مع معاملاتها." href="/docs/ar/reference/tools/" />
+	<LinkCard title="حل المشكلات" description="تسجيل الدخول، واللوحات المفقودة، والحدود، والصور التي لا تظهر." href="/docs/ar/guides/troubleshooting/" />
+</CardGrid>

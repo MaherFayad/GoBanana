@@ -1,0 +1,35 @@
+---
+// The Bend mark, the product name and a BETA pill.
+import Default from '@astrojs/starlight/components/SiteTitle.astro';
+
+const beta = Astro.locals.starlightRoute.lang === 'ar' ? 'تجريبي' : 'Beta';
+---
+
+<div class="gb-title">
+	<Default />
+	<span class="gb-beta">{beta}</span>
+</div>
+
+<style>
+	.gb-title {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		min-width: 0;
+	}
+	.gb-beta {
+		flex: none;
+		padding: 0.125rem 0.5rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 999px;
+		color: var(--sl-color-gray-2);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+	:global([dir='rtl']) .gb-beta {
+		letter-spacing: normal;
+	}
+</style>

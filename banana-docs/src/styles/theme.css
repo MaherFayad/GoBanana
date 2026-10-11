@@ -1,0 +1,290 @@
+/*
+ * GoBanana docs theme. Every color here comes from banana-server/styles/studio-tokens.css
+ * (dark values), mapped onto Starlight's variables. The docs are dark only.
+ *
+ *   --st-bg-body #000000        -> page background
+ *   --st-bg-surface #1b1b1b     -> gray-6 (nav, cards, code)
+ *   --st-border #333333         -> gray-5 (hairlines)
+ *   --st-border-strong #4a4a4a  -> gray-4
+ *   --st-text-subtle #8f8f8f    -> gray-3
+ *   --st-text-muted #a1a1aa     -> gray-2 (body text)
+ *   --st-text #ededed           -> gray-1
+ *   --st-text-bright #f4f4f5    -> white (headings)
+ *   --st-brand (--st-accent-7) #f7df72  -> accent-high (links, accent text)
+ *   --st-primary-fill #ffd84d   -> accent (primary button fill, current page)
+ *   --st-primary-text #111827   -> ink on yellow
+ */
+
+:root,
+:root[data-theme='dark'],
+:root[data-theme='light'] {
+	color-scheme: dark;
+
+	--gb-ink: #111827;
+	--gb-yellow: #ffd84d;
+	--gb-yellow-hover: #ffe170;
+	--gb-brand: #f7df72;
+	--gb-surface: #1b1b1b;
+	--gb-surface-2: #282828;
+
+	--sl-color-white: #f4f4f5;
+	--sl-color-gray-1: #ededed;
+	--sl-color-gray-2: #a1a1aa;
+	--sl-color-gray-3: #8f8f8f;
+	--sl-color-gray-4: #4a4a4a;
+	--sl-color-gray-5: #333333;
+	--sl-color-gray-6: #1b1b1b;
+	--sl-color-gray-7: #0e0e0e;
+	--sl-color-black: #000000;
+
+	--sl-color-accent-low: #2a250e;
+	--sl-color-accent: var(--gb-yellow);
+	--sl-color-accent-high: var(--gb-brand);
+
+	--sl-color-text: var(--sl-color-gray-2);
+	--sl-color-text-accent: var(--sl-color-accent-high);
+	--sl-color-text-invert: var(--gb-ink);
+	--sl-color-bg: #000000;
+	--sl-color-bg-nav: #000000;
+	--sl-color-bg-sidebar: #000000;
+	--sl-color-bg-inline-code: var(--gb-surface-2);
+	--sl-color-bg-accent: var(--gb-yellow);
+	--sl-color-hairline-light: #333333;
+	--sl-color-hairline: #1f1f1f;
+	--sl-color-hairline-shade: #000000;
+	--sl-color-backdrop-overlay: rgba(0, 0, 0, 0.72);
+
+	--sl-font: 'Instrument Sans', 'IBM Plex Sans Arabic';
+	--sl-line-height: 1.6;
+	--sl-line-height-headings: 1.05;
+	--sl-text-h1: 2.6rem;
+	--sl-text-h2: 1.75rem;
+	--sl-text-h3: 1.3rem;
+	--sl-text-h4: 1.1rem;
+	--sl-nav-height: 4rem;
+	--sl-content-width: 46rem;
+
+	--gb-radius-card: 1rem;
+	--gb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Arabic pages: Plex Arabic first, so Latin words inside Arabic text match its rhythm. */
+:root[lang='ar'] {
+	--sl-font: 'IBM Plex Sans Arabic', 'Instrument Sans';
+	--sl-line-height-headings: 1.35;
+}
+
+body {
+	background: #000000;
+}
+
+/* Tight headings, Latin only. Arabic keeps normal tracking. */
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1:where(#_top),
+.hero h1 {
+	letter-spacing: -0.04em;
+	font-weight: 600;
+}
+:root[lang='ar'] .sl-markdown-content :is(h1, h2, h3, h4),
+:root[lang='ar'] h1:where(#_top),
+:root[lang='ar'] .hero h1 {
+	letter-spacing: normal;
+}
+.sl-markdown-content :is(h2, h3) {
+	color: var(--sl-color-white);
+}
+
+/* Header */
+header.header {
+	border-bottom: 1px solid #1f1f1f;
+	background: rgba(0, 0, 0, 0.82);
+	backdrop-filter: blur(12px);
+}
+.site-title {
+	color: var(--sl-color-white);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+.site-title img {
+	height: 1.25rem;
+}
+site-search button[data-open-modal] {
+	border-radius: 0.75rem;
+	background: var(--gb-surface);
+	border-color: #2e2e2e;
+}
+
+/* Mobile menu button: a quiet surface, not a white disc. */
+button.sl-menu-button {
+	background-color: var(--gb-surface);
+	color: var(--sl-color-white);
+	border: 1px solid #333333;
+	box-shadow: none;
+}
+button.sl-menu-button:has(~ :popover-open) {
+	background-color: var(--gb-surface-2);
+}
+.sl-markdown-content .sl-anchor-link {
+	color: var(--sl-color-gray-3);
+}
+
+/* Sidebar: current page as a yellow pill with ink text. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+	background: var(--gb-yellow);
+	color: var(--gb-ink);
+	border-radius: 0.5rem;
+	font-weight: 600;
+}
+.sidebar-content a {
+	border-radius: 0.5rem;
+}
+.sidebar-content .group-label .large {
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+
+/* Links in body text */
+.sl-markdown-content a:not(:where(.not-content *)) {
+	color: var(--gb-brand);
+	text-underline-offset: 0.2em;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+	color: var(--sl-color-white);
+}
+
+/* Cards and link cards: 1rem radius, quiet borders. */
+.card,
+.sl-link-card {
+	border-radius: var(--gb-radius-card);
+	border-color: #2e2e2e;
+	background: #0b0b0b;
+	box-shadow: none;
+	transition: border-color 0.3s var(--gb-ease), background-color 0.3s var(--gb-ease);
+}
+.sl-link-card:hover {
+	border-color: #4a4a4a;
+	background: var(--gb-surface);
+}
+.sl-link-card .title {
+	color: var(--sl-color-white);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+:root[lang='ar'] .sl-link-card .title {
+	letter-spacing: normal;
+}
+.sl-link-card .description {
+	color: var(--sl-color-gray-2);
+}
+.sl-link-card .icon {
+	color: var(--sl-color-gray-1);
+}
+
+/* Code, tables, asides */
+.expressive-code .frame {
+	border-radius: 0.75rem;
+	overflow: hidden;
+}
+.sl-markdown-content table {
+	display: table;
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--sl-text-sm);
+}
+.sl-markdown-content :is(th, td) {
+	border-bottom: 1px solid #2e2e2e;
+	padding: 0.55rem 0.75rem;
+	vertical-align: top;
+}
+.sl-markdown-content th {
+	color: var(--sl-color-white);
+	font-weight: 600;
+	background: transparent;
+}
+.sl-markdown-content :is(th, td) code {
+	white-space: nowrap;
+}
+.gb-table {
+	overflow-x: auto;
+}
+.starlight-aside {
+	border-radius: 0.75rem;
+}
+
+/* Buttons: the primary action is a yellow pill with ink text. */
+.sl-link-button {
+	border-radius: 999px;
+	font-weight: 600;
+	transition: background-color 0.3s var(--gb-ease), border-color 0.3s var(--gb-ease), color 0.3s var(--gb-ease);
+}
+.sl-link-button.primary {
+	background: var(--gb-yellow);
+	border-color: var(--gb-yellow);
+	color: var(--gb-ink);
+}
+.sl-link-button.primary:hover {
+	background: var(--gb-yellow-hover);
+	border-color: var(--gb-yellow-hover);
+	color: var(--gb-ink);
+}
+.sl-link-button.minimal {
+	color: var(--sl-color-white);
+}
+.sl-link-button.minimal:hover {
+	color: var(--gb-brand);
+}
+:root[dir='rtl'] .sl-link-button svg {
+	transform: scaleX(-1);
+}
+
+/* Focus: a light ring that reads on black and on yellow. */
+:focus-visible {
+	outline: 2px solid #f4f4f5;
+	outline-offset: 2px;
+}
+.sl-link-button.primary:focus-visible {
+	box-shadow: 0 0 0 2px #000000;
+}
+
+/* Splash page */
+[data-has-hero] .hero {
+	padding-block: clamp(2.5rem, calc(1rem + 10vmin), 8rem) 2rem;
+}
+[data-has-hero] .hero h1 {
+	font-size: clamp(2.6rem, calc(1rem + 5vw), 4.25rem);
+	line-height: 0.95;
+	font-weight: 700;
+}
+[data-has-hero] .hero .tagline {
+	color: var(--sl-color-gray-2);
+	line-height: 1.5;
+}
+[data-has-hero] .hero .copy > * {
+	max-width: 34rem;
+}
+[data-has-hero] .sl-anchor-link {
+	display: none;
+}
+/* The product name is Latin on every page, so the hero and the header keep Instrument Sans and tight tracking. */
+:root[lang='ar'][data-has-hero] .hero h1,
+:root[lang='ar'] .site-title {
+	font-family: 'Instrument Sans', 'IBM Plex Sans Arabic', sans-serif;
+	letter-spacing: -0.04em;
+	line-height: 0.95;
+}
+[data-has-hero] .sl-markdown-content h2 {
+	font-size: 1.6rem;
+}
+.gb-explore {
+	margin-top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition: none !important;
+	}
+}

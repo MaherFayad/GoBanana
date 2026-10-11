@@ -10,3 +10,8 @@ next-env.d.ts
 coverage/
 playwright-report/
 test-results/
+
+# Docs site (banana-docs): build output, and the copy the server serves at /docs
+banana-docs/dist/
+banana-docs/.astro/
+banana-server/public/docs/

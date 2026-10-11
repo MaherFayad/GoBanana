@@ -1,0 +1,31 @@
+---
+title: GoBanana
+description: Docs for GoBanana, the Claude plugin and MCP server that bends a design brief into wild directions and finds references for them.
+template: splash
+hero:
+  title: GoBanana
+  tagline: Bend a brief into directions nobody else has. GoBanana finds linked references for each one and exports a kit your agent can build from.
+  actions:
+    - text: Add to Claude
+      link: /docs/start/install/
+      icon: right-arrow
+      variant: primary
+    - text: Introduction
+      link: /docs/start/introduction/
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Explore the docs
+
+<CardGrid>
+	<LinkCard title="Your first board" description="Ask for a wild take on a screen and watch the canvas fill up." href="/docs/start/first-board/" />
+	<LinkCard title="Connect the MCP server" description="Claude apps, Claude Code, ChatGPT and Cursor, with one server address." href="/docs/start/connect/" />
+	<LinkCard title="Bend a brief into directions" description="Moves, wildness levels and culture lenses." href="/docs/guides/bend/" />
+	<LinkCard title="Find and rate references" description="Search Pinterest, Dribbble, Behance and Awwwards, then keep the good ones." href="/docs/guides/references/" />
+	<LinkCard title="Export a kit" description="DESIGN.md, AGENTS.md, tokens, Tailwind and FigJam." href="/docs/guides/export/" />
+	<LinkCard title="Plans and limits" description="What Free and Pro include, and what happens at a limit." href="/docs/reference/plans/" />
+	<LinkCard title="MCP tools" description="Every tool, with its parameters." href="/docs/reference/tools/" />
+	<LinkCard title="Troubleshooting" description="Sign-in, missing canvases, limits and images that do not load." href="/docs/guides/troubleshooting/" />
+</CardGrid>

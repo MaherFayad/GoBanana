@@ -1,0 +1,8 @@
+---
+// Dark only: always stamp data-theme="dark", whatever the system or a stored choice says.
+---
+
+<script is:inline>
+	document.documentElement.dataset.theme = 'dark';
+	window.StarlightThemeProvider = { updatePickers() {} };
+</script>
