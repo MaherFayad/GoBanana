@@ -4,7 +4,7 @@ expect:
 ---
 
 Canvas cv_demo "Frosted checkout"
-Web link: https://banana.example/c/cv_demo
+Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_demo
 Brief: flight checkout screen that does not look like every other travel app
 Wildness: 4
 Directions searched: d1 "Your screen as a frosted vinyl sleeve", d2 "Brutalist receipt, type only", d3 "Risograph print, two inks, misregistered"

@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "banana": {
+    "gobanana": {
       "type": "http",
-      "url": "https://banana.example/api/mcp"
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
     }
   }
 }

@@ -1,6 +1,6 @@
 ---
-name: banana-design-md
-description: Turn a GoBanana moodboard canvas into a DESIGN.md design system file that coding agents can follow, write it to disk, and lint it until it passes. Use when the user mentions "DESIGN.md", "design system file", "design spec for my agent", "turn this board into a design system", "write the design rules down", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md) from the GoBanana MCP server, then npx @google/design.md lint. For AGENTS.md use banana-agents-md; for tokens and Tailwind use banana-asset-kit.
+name: gobanana-design-md
+description: Turn a GoBanana moodboard canvas into a DESIGN.md design system file that coding agents can follow, write it to disk, and lint it until it passes. Use when the user mentions "DESIGN.md", "design system file", "design spec for my agent", "turn this board into a design system", "write the design rules down", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md) from the GoBanana MCP server, then npx @google/design.md lint. For AGENTS.md use gobanana-agents-md; for tokens and Tailwind use gobanana-asset-kit.
 ---
 
 # GoBanana DESIGN.md
@@ -17,7 +17,7 @@ Export the canvas as a DESIGN.md (Google Labs DESIGN.md format, alpha), save it 
 ## Steps
 
 1. **Find the canvas.** Use the `canvasId` from this conversation, or ask. Call `get_canvas`.
-2. **Check for a palette.** If the canvas has no palette, run `extract_palette` first (see banana-palette) with `addSwatches: true`. DESIGN.md colors come from `ship` swatches; without them the file has no colors.
+2. **Check for a palette.** If the canvas has no palette, run `extract_palette` first (see gobanana-palette) with `addSwatches: true`. DESIGN.md colors come from `ship` swatches; without them the file has no colors.
 3. **Export.** Call `export_kit` with `canvasId` and `formats: ["design_md"]`. This format is on the Free plan.
 4. **Write the file.** Save the returned `content` as `DESIGN.md` at the project root, or where the user asks.
    - If a `DESIGN.md` already exists, do not overwrite it silently. Show what would change and ask. If they want both, save the new one as `DESIGN.banana.md`.
@@ -35,7 +35,7 @@ Export the canvas as a DESIGN.md (Google Labs DESIGN.md format, alpha), save it 
    - `contrast-ratio`: a text and background pair fails. Pick another `ship` color for that component, or tell the user which pair fails and by how much.
    - `unknown-key`, `orphaned-tokens`: remove the stray key, or use the token in a component.
 7. **Report.** Say where the file is, that lint passes (or what is left), and how many colors are `ship` vs `explore`.
-8. **Offer next steps:** an AGENTS.md that points coding agents at this file (banana-agents-md), and tokens plus a Tailwind theme (banana-asset-kit).
+8. **Offer next steps:** an AGENTS.md that points coding agents at this file (gobanana-agents-md), and tokens plus a Tailwind theme (gobanana-asset-kit).
 
 ## When things go wrong
 

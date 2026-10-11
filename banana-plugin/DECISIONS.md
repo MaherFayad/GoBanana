@@ -16,25 +16,29 @@ Claude Code accepts more keys (`when_to_use`, `allowed-tools` and others), but c
 
 ## 2026-10-11: evals use the `claude plugin eval` case format
 
-20 cases in `evals/<case>/prompt.md` + `graders/*.md`, with suite-wide MCP mocks in `evals/mocks/banana/`. `_tools.json` mirrors spec section 6 so mocked tools carry real descriptions and input schemas.
+20 cases in `evals/<case>/prompt.md` + `graders/*.md`, with suite-wide MCP mocks in `evals/mocks/gobanana/`. `_tools.json` mirrors spec section 6 so mocked tools carry real descriptions and input schemas.
 
 ## 2026-10-11: font list follows the server
 
-`banana-asset-kit` lists the pairings from `banana-server/lib/kit/fonts.json` (all OFL-1.1). Keep the two in sync.
+`gobanana-asset-kit` lists the pairings from `banana-server/lib/kit/fonts.json` (all OFL-1.1). Keep the two in sync.
 
 ## 2026-10-11: DESIGN.md lint pinned to 0.4.0
 
 Skills run `npx --yes @google/design.md@0.4.0 lint DESIGN.md`, the version the server pins.
 
-## 2026-10-11: audit loop in banana-explore
+## 2026-10-11: audit loop in gobanana-explore
 
 After every `search_references`, the agent judges each result (title, site, URL, and the image when it can see it) and calls `rate_references`: `bad` for off topic, shop or stock, DIY or decor in a UI lane, cluttered or duplicate results; `great` for about the top 10 to 20%. If more than 40% of a lane is bad it re-searches that lane once with `directionId`, `lane` and words that describe the visual, at most 2 retries per lane, and tells the user in one line what it dropped. The server does no AI work, so this is where judgment happens; ratings make later searches better (server DECISIONS.md, Learning rows). Eval cases 21 to 24 cover the audit, a lane retry, clean results with no retry, and the retry cap. The search mock now tags each result `[id, lane]`, as the server text does.
 
 
-## 2026-10-11: idea triage in banana-explore
+## 2026-10-11: idea triage in gobanana-explore
 
 The owner found about 60% of a live "Flight checkout screen for a GCC travel OTA" board unrelated to flight booking (Sadu weaving, seed packets, suzani jackets, tassels, a car air freshener). The agent now opens the canvas first, bends 8 ideas, and keeps an idea only if (a) its salvage maps to a concrete UI pattern for the actual screen, (b) after search and audit it has at least 3 on-topic usable UI or bridge references (inspiration alone does not count), and (c) it is not a near duplicate of a kept idea. (a) and (c) run before any search, so only a shortlist of 3 (at most 4, or the number the user asked for) costs searches; existing evals that cap searches at 3 still hold. It calls `rate_directions` with `drop` plus reasons for every rejected idea and `keep` for the shown ones, so the canvas never shows dropped ideas, presents only the kept ones and says in one line how many were dropped and why. Placement is UI first, at most 2 inspiration images per section; `mix: "balanced"` or `"wild"` only when the user asks for wilder references. Evals 25 (triage), 26 (UI-first placement) and 27 (wild mix) cover it.
 
 ## 2026-10-11: product name in prose is GoBanana
 
-User-facing prose (skill text, README, plugin.json `displayName` and `description`, eval prompts, graders and mock text) says "GoBanana". Ids stay `banana`: the plugin `name`, the `banana-*` skill folders and names, the MCP tool names, the `evals/mocks/banana` folder and the `.mcp.json` server key, so existing installs keep working. The wildness label "Bananas" is unchanged.
+User-facing prose (skill text, README, plugin.json `displayName` and `description`, eval prompts, graders and mock text) says "GoBanana". Ids stay `banana`: the plugin `name`, the `banana-*` skill folders and names, the MCP tool names, the `evals/mocks/gobanana` folder and the `.mcp.json` server key, so existing installs keep working. The wildness label "Bananas" is unchanged.
+
+## Plugin id renamed to gobanana (2026-10-11)
+
+The owner approved breaking the old install. Plugin `name`, the skill folders and names (`gobanana-*`), the `.mcp.json` server key and `evals/mocks/gobanana` now say `gobanana`; graders use `mcp__plugin_gobanana_gobanana__*`. `.mcp.json` and plugin.json URLs point at the live Worker `gobanana-server.maherfayad55.workers.dev` (renamed from `banana-server`). MCP tool names and the `DESIGN.banana.md` fallback filename are unchanged. This supersedes the entry above that kept ids as `banana`.

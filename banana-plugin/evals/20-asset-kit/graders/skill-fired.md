@@ -1,5 +1,5 @@
 ---
 type: tool_used
 tool: Skill
-input_match: '"skill"\s*:\s*"(?:[\w-]+:)?banana-asset-kit"'
+input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gobanana-asset-kit"'
 ---

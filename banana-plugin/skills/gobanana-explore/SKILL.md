@@ -1,6 +1,6 @@
 ---
-name: banana-explore
-description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use banana-moodboard to arrange an existing canvas, banana-palette for colors, banana-design-md for DESIGN.md.
+name: gobanana-explore
+description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use gobanana-moodboard to arrange an existing canvas, gobanana-palette for colors, gobanana-design-md for DESIGN.md.
 ---
 
 # GoBanana explore
@@ -118,9 +118,9 @@ The server does not look at images. You do. After each `search_references`:
 
 End with a short menu, for example:
 
-- **Moodboard:** arrange the tray into sections on the canvas, or build it in FigJam (banana-moodboard).
-- **Palette:** pull colors from the references you like, with WCAG checks (banana-palette).
-- **DESIGN.md:** turn the board into a design system file your coding agent can follow (banana-design-md).
+- **Moodboard:** arrange the tray into sections on the canvas, or build it in FigJam (gobanana-moodboard).
+- **Palette:** pull colors from the references you like, with WCAG checks (gobanana-palette).
+- **DESIGN.md:** turn the board into a design system file your coding agent can follow (gobanana-design-md).
 - **Turn it up or down:** rerun at wildness N+1 or N-1, or try a lens.
 - **Wilder references:** search again with `mix: "balanced"` or `"wild"` for more raw inspiration.
 - **Change the look:** search again with other `taste` words.

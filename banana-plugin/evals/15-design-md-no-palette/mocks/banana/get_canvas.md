@@ -1,5 +1,5 @@
 Canvas cv_demo "Frosted checkout"
-Web link: https://banana.example/c/cv_demo
+Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_demo
 Brief: flight checkout screen
 Sections: none yet
 Tray (8 references):

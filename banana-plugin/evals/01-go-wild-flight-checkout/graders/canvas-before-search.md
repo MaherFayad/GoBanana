@@ -1,5 +1,5 @@
 ---
 type: tool_order
-before: mcp__plugin_banana_banana__open_canvas
-after: mcp__plugin_banana_banana__search_references
+before: mcp__plugin_gobanana_gobanana__open_canvas
+after: mcp__plugin_gobanana_gobanana__search_references
 ---

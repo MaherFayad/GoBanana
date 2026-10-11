@@ -1,6 +1,6 @@
 ---
-name: banana-moodboard
-description: Build and arrange a GoBanana moodboard from references in the canvas tray, and optionally rebuild it as a FigJam board through the Figma MCP. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use banana-explore.
+name: gobanana-moodboard
+description: Build and arrange a GoBanana moodboard from references in the canvas tray, and optionally rebuild it as a FigJam board through the Figma MCP. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use gobanana-explore.
 ---
 
 # GoBanana moodboard
@@ -20,7 +20,7 @@ Turn the tray of search results into a board people can read: one section per di
 
 Use the `canvasId` from this conversation. If there is none, ask for the board link or id, or call `open_canvas` to create a new one. Then call `get_canvas` to see sections, tray references, notes and palettes.
 
-If the tray is empty, run the banana-explore flow first (`bend_brief`, then `search_references` with this `canvasId`).
+If the tray is empty, run the gobanana-explore flow first (`bend_brief`, then `search_references` with this `canvasId`).
 
 ### 2. Place items
 

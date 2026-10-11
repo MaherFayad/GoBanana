@@ -1,1 +1,1 @@
-You have used your 30 free searches this month. Upgrade: https://banana.example/pricing
+You have used your 30 free searches this month. Upgrade: https://gobanana-server.maherfayad55.workers.dev/pricing

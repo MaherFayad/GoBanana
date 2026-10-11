@@ -1,5 +1,5 @@
 ---
 type: tool_used
-tool: mcp__plugin_banana_banana__add_to_canvas
+tool: mcp__plugin_gobanana_gobanana__add_to_canvas
 input_match: '"type"\s*:\s*"section"'
 ---

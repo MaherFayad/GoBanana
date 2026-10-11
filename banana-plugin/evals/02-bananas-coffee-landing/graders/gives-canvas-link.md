@@ -1,4 +1,4 @@
 ---
 type: regex
-pattern: 'banana\.example/c/cv_demo'
+pattern: 'gobanana-server\.maherfayad55\.workers\.dev/c/cv_demo'
 ---

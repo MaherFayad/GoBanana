@@ -1,18 +1,18 @@
 {
-  "name": "banana",
+  "name": "gobanana",
   "displayName": "GoBanana",
   "version": "0.1.0",
   "description": "Wild design exploration for your agent. Bend a brief into unexpected directions, pull linked references into a moodboard canvas, extract a palette, and export DESIGN.md, AGENTS.md, tokens and a FigJam board. Mobbin shows what works. GoBanana shows what's next.",
   "author": {
     "name": "Maher Fayad",
-    "url": "https://banana.example"
+    "url": "https://gobanana-server.maherfayad55.workers.dev"
   },
-  "homepage": "https://banana.example",
+  "homepage": "https://gobanana-server.maherfayad55.workers.dev",
   "license": "MIT",
   "keywords": ["design", "moodboard", "inspiration", "design-system", "design-md", "palette", "figma", "mcp"],
   "icon": "./assets/icon.png",
-  "documentationUrl": "https://banana.example/docs",
-  "supportUrl": "https://banana.example/support",
-  "privacyPolicyUrl": "https://banana.example/privacy",
-  "termsOfServiceUrl": "https://banana.example/terms"
+  "documentationUrl": "https://gobanana-server.maherfayad55.workers.dev/en",
+  "supportUrl": "https://gobanana-server.maherfayad55.workers.dev/en/takedown",
+  "privacyPolicyUrl": "https://gobanana-server.maherfayad55.workers.dev/en/privacy",
+  "termsOfServiceUrl": "https://gobanana-server.maherfayad55.workers.dev/en/terms"
 }

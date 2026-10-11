@@ -1,5 +1,5 @@
 ---
-name: banana-palette
+name: gobanana-palette
 description: Pull a color palette from references on a GoBanana moodboard canvas, assign roles, and check every pair against WCAG 2.2 contrast so the user knows what can ship and what is concept only. Use when the user says "palette", "colors from these", "pull the colours", "what colors are on this board", "color scheme from the moodboard", "extract colors", or "do these colors pass contrast". Runs get_canvas and extract_palette (with addSwatches) from the GoBanana MCP server.
 ---
 
@@ -31,11 +31,11 @@ Extract a palette from the references the user likes, add the swatches to the ca
    - **explore:** fails for that use. Keep it for concept work, large decorative areas, or mood, and do not put body text on it.
 5. **Suggest fixes** for the best `explore` colors: say which way to move OKLCH lightness (darker text, lighter surface) to reach the target. Make clear it is a suggestion that needs a re-check.
 6. **Point to the canvas.** The swatches are on the board now. If the client cannot show the inline canvas, give the web link.
-7. **Offer next steps:** DESIGN.md from the `ship` colors (banana-design-md), or tokens, Tailwind theme and gradients (banana-asset-kit).
+7. **Offer next steps:** DESIGN.md from the `ship` colors (gobanana-design-md), or tokens, Tailwind theme and gradients (gobanana-asset-kit).
 
 ## When things go wrong
 
-- **No references selected or found:** say so, and offer to search first (banana-explore).
+- **No references selected or found:** say so, and offer to search first (gobanana-explore).
 - **Some thumbnails fail to load:** the palette may come from fewer items. Say how many were used.
 - **Quota or plan message:** show it as is, with its upgrade link, once. Do not retry or loop.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.

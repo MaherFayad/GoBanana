@@ -15,12 +15,12 @@ This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is no
 - Writing: plain words, no em dashes. Check with `grep -rn $'\xe2\x80\x94' .` before committing.
 
 ## Plugin rules
-- Name stays `banana`: kebab-case, never starting with `claude-` or `anthropic-`.
+- Name is `gobanana`: kebab-case, never starting with `claude-` or `anthropic-`.
 - No top-level `bin/` folder (claude.ai and Cowork refuse to install plugins with one).
 - No `CLAUDE.md` at the plugin root (see above).
 - Skill frontmatter: only `name` and `description`, so skills also load on claude.ai and Cowork. The description is what triggers the skill: lead with what it does, then concrete trigger phrases. Keep it under 1,536 characters.
-- `.mcp.json` points at the remote server. The domain is a placeholder (`banana.example`) until the name is final; change it in `.mcp.json`, `.claude-plugin/plugin.json`, the skills and `evals/mocks/` together.
-- Keep tool names and inputs in skills in sync with spec section 6 and `evals/mocks/banana/_tools.json`.
+- `.mcp.json` points at the remote server. It points at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen; change it in `.mcp.json`, `.claude-plugin/plugin.json`, the skills and `evals/mocks/` together.
+- Keep tool names and inputs in skills in sync with spec section 6 and `evals/mocks/gobanana/_tools.json`.
 
 ## Commands
 - validate: `claude plugin validate --strict .`
