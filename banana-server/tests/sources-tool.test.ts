@@ -115,6 +115,15 @@ describe("search_references tool", () => {
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(1);
   });
 
+  it("passes the canvas's source links so a direction search skips what is already there", async () => {
+    const getCanvasSourceUrls = vi.fn(async () => ["https://dribbble.com/shots/1-a"]);
+    const { tool, runPlan } = setup({ getCanvasSourceUrls });
+    await tool({ directionId: "bd-8dti7s7c", canvasId: "c1" }, "u1");
+    expect(getCanvasSourceUrls).toHaveBeenCalledWith("u1", "c1");
+    const [, opts] = runPlan.mock.calls[0]! as unknown as [unknown, { exclude: string[] }];
+    expect(opts.exclude).toEqual(["https://dribbble.com/shots/1-a"]);
+  });
+
   it("searches every lane of a saved direction and shows the lanes, counting one search", async () => {
     const { tool, runPlan, usage } = setup();
     const res = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1" }, "u1");

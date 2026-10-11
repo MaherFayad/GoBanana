@@ -276,6 +276,16 @@ export function toSnapshot(input: {
 // Tray
 
 /** Add search results to the tray (newest first, no duplicates, capped). */
+/** Every web source link on a canvas (tray and placed references), for skipping repeats in searches. */
+export function canvasSourceUrls(state: CanvasState): string[] {
+  const urls = state.tray.map((r) => r.sourceUrl);
+  for (const node of state.nodes) {
+    const data = node.data as { sourceUrl?: unknown };
+    if (typeof data?.sourceUrl === "string") urls.push(data.sourceUrl);
+  }
+  return urls;
+}
+
 export function addToTray(state: CanvasState, refs: readonly Reference[], directionId?: string): CanvasState {
   const incoming: TrayReference[] = refs.map((r) => ({
     id: r.id,

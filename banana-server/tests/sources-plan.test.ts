@@ -176,6 +176,19 @@ describe("runPlan", () => {
     expect(result.references.map((r) => r.sourceUrl).sort()).toEqual(["https://dribbble.com/shots/42-a-v2", "https://es.pinterest.com/pin/77/"]);
   });
 
+  it("skips references already on the canvas, matched by shot or pin id", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const first = await adapter.runPlan(planRequests(LANES), { count: 8, userId: "u" });
+    const kept = first.references.slice(0, 4).map((r) => r.sourceUrl);
+    // The same item under another slug or country subdomain still counts as kept.
+    const exclude = kept.map((u) => u.replace("https://www.pinterest.com/", "https://es.pinterest.com/"));
+    const again = await adapter.runPlan(planRequests(LANES), { count: 8, userId: "u", exclude });
+    expect(again.references.length).toBe(8);
+    const keys = new Set(kept);
+    expect(again.references.some((r) => keys.has(r.sourceUrl))).toBe(false);
+  });
+
   it("keeps what it has when later requests hit the rate limit, and fails only when nothing answered", async () => {
     let n = 0;
     const partly = vi.fn<FetchLike>(async (_url, init) => (n++ === 0 ? jsonResponse(pageFor(bodyOf(init).q)) : jsonResponse({ message: "You are allowed to submit up to 5 requests per second" }, 429)));

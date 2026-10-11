@@ -4,6 +4,7 @@ import {
   addToTray,
   appendNodes,
   arrangeState,
+  canvasSourceUrls,
   findForbiddenUrl,
   loadCanvas,
   MAX_STATE_BYTES,
@@ -175,6 +176,11 @@ describe("toSnapshot and the tray", () => {
     expect(snap.directions[0]!.id).toBe("bd-1");
     expect(snap.palettes[0]!.colors[0]!.hex).toBe("#112233");
     expect(snap.wildness).toBe(3);
+  });
+
+  it("lists every source link on the canvas, tray and board", () => {
+    const s = addToTray(state([imageNode("n1", 7)]), [ref(1)]);
+    expect(canvasSourceUrls(s).sort()).toEqual(["https://www.pinterest.com/pin/1/", "https://www.pinterest.com/pin/7/"]);
   });
 
   it("adds results to the tray newest first without duplicates, capped", () => {

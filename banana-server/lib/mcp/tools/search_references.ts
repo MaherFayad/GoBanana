@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { addToTray as addToCanvasTray, mutateCanvas, parseState } from "@/lib/canvas/store";
+import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { Repos } from "@/lib/db/types";
 import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
 import { inspirationFromQuery, laneTexts } from "@/lib/bend/queries";
@@ -77,6 +77,8 @@ export type SearchReferencesDeps = {
   addToTray(userId: string, canvasId: string, references: Reference[], directionId?: string): Promise<boolean>;
   /** Save style words on the user's canvas for later searches. Returns false when it is not theirs. */
   saveTaste?(userId: string, canvasId: string, taste: string[]): Promise<boolean>;
+  /** Source links already on the user's canvas (tray and board), or [] when it is not theirs. */
+  getCanvasSourceUrls?(userId: string, canvasId: string): Promise<string[]>;
   upgradeUrl(): string;
   now?(): Date;
 };
@@ -199,7 +201,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (lanes) {
         // One path-scoped request per lane and source, at most SERPER_MAX_REQUESTS in all (fallbacks included).
         const plan = planRequests(lanes, input.sources ? sources : undefined).slice(0, SERPER_MAX_REQUESTS);
-        const result = await deps.adapter.runPlan(plan, { count: input.count, userId });
+        const exclude = input.canvasId && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, input.canvasId) : [];
+        const result = await deps.adapter.runPlan(plan, { count: input.count, userId, exclude });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes };
       } else {
@@ -290,6 +293,10 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
         value: true,
       }));
       return outcome.ok;
+    },
+    getCanvasSourceUrls: async (userId, canvasId) => {
+      const canvas = await r().canvases.getOwned(userId, canvasId);
+      return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];
     },
     addToTray: async (userId, canvasId, references, directionId) => {
       const db = r();

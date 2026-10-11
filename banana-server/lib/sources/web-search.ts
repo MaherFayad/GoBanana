@@ -87,7 +87,10 @@ export type WebSearchAdapter = SourceAdapter & {
   /** Same as `search`, plus a plain note and whether the search provider answered. */
   run(q: SourceQuery): Promise<WebSearchResult>;
   /** Run a direction's search plan (lib/sources/plan.ts): one page per request, lanes merged by quota. */
-  runPlan(plan: readonly PlannedRequest[], opts: { count: number; userId: string }): Promise<PlanSearchResult>;
+  runPlan(
+    plan: readonly PlannedRequest[],
+    opts: { count: number; userId: string; /** Source links already on the canvas: never returned again. */ exclude?: readonly string[] },
+  ): Promise<PlanSearchResult>;
 };
 
 /** What one planned request brought back. */
@@ -496,7 +499,10 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     return result;
   }
 
-  async function runPlan(plan: readonly PlannedRequest[], opts: { count: number; userId: string }): Promise<PlanSearchResult> {
+  async function runPlan(
+    plan: readonly PlannedRequest[],
+    opts: { count: number; userId: string; exclude?: readonly string[] },
+  ): Promise<PlanSearchResult> {
     const count = Math.min(50, Math.max(1, Math.floor(opts.count)));
     const allowlist = config.allowlist ?? allowlistFromEnv();
     const apiKey = config.apiKey?.trim();
@@ -513,8 +519,14 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
 
     type Slot = { req: PlannedRequest; refs: Reference[]; dropped: number; ok: boolean; status: number; retried?: string };
-    const mapPage = (site: SourceSite, images: unknown[]) =>
-      mapSerperImagesWithStats(images, { sources: [site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
+    // References already on the canvas are skipped, so sections that share lanes get fresh results
+    // instead of the same shots (and a later search never pulls a kept reference into another section).
+    const excluded = new Set((opts.exclude ?? []).map(itemKey));
+    const mapPage = (site: SourceSite, images: unknown[]) => {
+      const mapped = mapSerperImagesWithStats(images, { sources: [site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
+      if (excluded.size === 0) return mapped;
+      return { ...mapped, references: mapped.references.filter((r) => !excluded.has(itemKey(r.sourceUrl))) };
+    };
 
     const base = plan.slice(0, SERPER_MAX_REQUESTS);
     let requests = base.length;
