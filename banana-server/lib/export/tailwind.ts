@@ -36,7 +36,7 @@ export function tailwindCss(model: KitModel): string {
     ` * Import after @import "tailwindcss";. Only colors tagged ship are here.`,
     ` * Fonts: ${commentText(model.pairing.url)}`,
     ` * Sources (reference images belong to their owners):`,
-    ...model.references.map((r) => ` * ${r.n}. ${commentText(r.title)} (${commentText(r.site)}): ${commentText(r.url ?? r.rawUrl)}`),
+    ...model.references.map((r) => ` * ${r.n}. ${commentText(r.title)} (${commentText(r.site)}): ${commentText(r.url ?? "source link not usable")}`),
     ` */`,
   ];
   return `${header.join("\n")}\n${tailwindThemeBlock(model)}`;

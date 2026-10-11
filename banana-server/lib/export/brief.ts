@@ -36,7 +36,7 @@ export function briefMd(m: KitModel): string {
     any = true;
     out.push(`### ${mdText(g.title)}`, "");
     for (const r of refs) {
-      out.push(`- ${r.n}. ${mdText(r.title)} (${mdText(r.site)}${r.tag ? `, ${r.tag}` : ""}): ${r.url ? mdAutolink(r.url) : `source link not usable (${mdText(r.rawUrl) || "missing"})`}`);
+      out.push(`- Reference ${r.n}: ${mdText(r.title)} (${mdText(r.site)}${r.tag ? `, ${r.tag}` : ""}): ${r.url ? mdAutolink(r.url) : `source link not usable (${mdText(r.rawUrl) || "missing"})`}`);
     }
     out.push("");
   }

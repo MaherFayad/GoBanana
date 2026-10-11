@@ -346,8 +346,9 @@ function buildComponents(ship: ColorToken[]): ComponentToken[] {
     const isSurface = SURFACE_LIKE.test(t.name);
     const base = isButton ? `button-${t.name}` : isSurface ? (t.name === "surface" ? "card" : `card-${t.name}`) : `chip-${t.name}`;
     const partner = bestPartner(t, ship);
+    const readable = !!partner && partner.ratio >= 4.5;
     const comp: ComponentToken = {
-      name: addName(base),
+      name: addName(readable ? base : `fill-${t.name}`),
       backgroundColor: t.name,
       typography: isSurface ? "body" : "label",
       rounded: isButton ? "md" : isSurface ? "lg" : "full",
@@ -355,12 +356,12 @@ function buildComponents(ship: ColorToken[]): ComponentToken[] {
       use: isButton ? `Main ${t.name} action` : isSurface ? "Panels and cards" : "Tags, badges and small highlights",
     };
     referenced.add(t.name);
-    if (partner && partner.ratio >= 4.5) {
+    if (readable && partner) {
       comp.textColor = partner.token.name;
       comp.ratio = partner.ratio;
       referenced.add(partner.token.name);
     } else {
-      comp.use = `${comp.use}. Fill only: no ship color reaches 4.5:1 on it, so never put text on it`;
+      comp.use = "Fills, borders and decoration only: no ship color reaches 4.5:1 on it, so never put text on it";
       delete comp.typography;
     }
     comps.push(comp);

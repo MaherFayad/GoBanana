@@ -53,7 +53,7 @@ export function agentsMd(m: KitModel): string {
     "",
     "Reference images belong to their owners. Never copy them into the repo.",
     "",
-    sourcesMarkdown(m),
+    sourcesMarkdown(m, false),
     "",
   ].join("\n");
 }

@@ -167,7 +167,10 @@ function layout(m: KitModel): string {
 
 function elevation(m: KitModel): string {
   const surfaces = m.ship.filter((c) => /(surface|neutral|background|paper|base|canvas)/.test(c.name));
-  const first = surfaces.length > 0 ? `Show depth with color steps between ${surfaces.map((c) => `${c.name} (${c.hex})`).join(" and ")} rather than heavy shadows.` : "Show depth with color steps between surfaces rather than heavy shadows.";
+  const first =
+    surfaces.length > 0
+      ? `Show depth with flat color layers rather than heavy shadows: ${surfaces.map((c) => `${c.name} (${c.hex})`).join(" and ")} for cards and panels, with the stronger colors on top for actions.`
+      : "Show depth with flat color layers rather than heavy shadows, with the stronger colors on top for actions.";
   return `${first} Use a soft shadow only for things that float, such as menus and dialogs. Never use a shadow alone to show focus or state: pair it with an outline or a text label (WCAG SC 2.4.7 and SC 1.4.1).`;
 }
 
@@ -220,14 +223,14 @@ function dosAndDonts(m: KitModel): string {
   return list([...dos, ...donts]);
 }
 
-export function sourcesMarkdown(m: KitModel): string {
+export function sourcesMarkdown(m: KitModel, withIntro = true): string {
   if (m.references.length === 0) return "No references on the board.";
-  const intro = "Reference images belong to their owners. Only links are kept here.";
+  const intro = withIntro ? "Reference images belong to their owners. Only links are kept here.\n\n" : "";
   const lines = m.references.map((r) => {
     const link = r.url ? mdAutolink(r.url) : `source link not usable (${mdText(r.rawUrl) || "missing"})`;
     return `${r.n}. ${mdText(r.title)} (${mdText(r.site)}): ${link}`;
   });
-  return `${intro}\n\n${lines.join("\n")}`;
+  return `${intro}${lines.join("\n")}`;
 }
 
 export function designMd(model: KitModel): string {

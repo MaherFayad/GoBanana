@@ -17,7 +17,10 @@ export interface FigjamItem {
   imageUrl?: string;
   text?: string;
   hex?: string;
-  /** Source link for references; the board link (or null) for notes, swatches and type samples. */
+  /**
+   * Source link for references (null only when the stored link is not a safe http(s) URL);
+   * the board link (or null) for notes and swatches; the font link for type samples.
+   */
   sourceUrl: string | null;
   title?: string;
   sourceSite?: string;
@@ -51,7 +54,7 @@ function toItem(item: CanvasItem, origin: { x: number; y: number }, m: KitModel,
   };
   if (isReference(item)) {
     const ref = refs.get(item.id);
-    const out: FigjamItem = { type: item.type, ...base, sourceUrl: ref?.url ?? safeUrl(item.sourceUrl) ?? (oneLine(item.sourceUrl, 500) || null) };
+    const out: FigjamItem = { type: item.type, ...base, sourceUrl: ref?.url ?? safeUrl(item.sourceUrl) };
     const img = ref?.id === item.id ? ref.imageUrl : (safeUrl(item.imageUrl) ?? safeUrl(item.thumbUrl));
     if (img) out.imageUrl = img;
     out.title = ref?.title ?? (oneLine(item.title, 160) || "Reference");

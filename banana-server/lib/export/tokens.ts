@@ -50,7 +50,7 @@ export function dtcgCore(model: KitModel): Record<string, unknown> {
 export function tokensJson(model: KitModel): string {
   const file = dtcgCore(model);
   file.$extensions = {
-    sources: model.references.map((r) => ({ n: r.n, title: r.title, site: r.site, url: r.url ?? r.rawUrl })),
+    sources: model.references.map((r) => ({ n: r.n, title: r.title, site: r.site, url: r.url })),
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 }
