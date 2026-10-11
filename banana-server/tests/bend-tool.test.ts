@@ -45,7 +45,7 @@ describe("bend_brief tool", () => {
     expect(name).toBe("bend_brief");
     expect(config.description).toBe(BEND_BRIEF_DESCRIPTION);
     expect(BEND_BRIEF_DESCRIPTION).toContain("search_references");
-    expect(BEND_BRIEF_DESCRIPTION).not.toMatch(/[—–]/);
+    expect(BEND_BRIEF_DESCRIPTION).not.toMatch(/[\u2014\u2013]/);
     expect(BEND_BRIEF_DESCRIPTION.length).toBeLessThan(450);
   });
 
@@ -76,7 +76,7 @@ describe("bend_brief tool", () => {
       expect(text).toContain(d.id);
     }
     expect(text).toContain("search_references");
-    expect(text).not.toContain("—");
+    expect(text).not.toContain("\u2014");
   });
 
   it("answers invalid input with a plain message, never a throw", async () => {

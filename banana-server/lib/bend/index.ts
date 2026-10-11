@@ -320,13 +320,18 @@ export function bendBrief(raw: BendInput): BendResult {
     for (let attempt = 0; attempt < 12; attempt++) {
       const primary = moves[0]!;
       const pList = PRIMARY_TEMPLATES[primary];
-      let t = render(pList[templates.next(`p:${primary}`, pList.length)] ?? pList[0]!, vars(0));
+      const opener = pList[templates.next(`p:${primary}`, pList.length)] ?? pList[0]!;
+      // Openers that end in a clause ("where the stars are the size of buildings") take a comma before modifiers.
+      const clauseOpener = /[,:]|\b(where|until|could|if|If)\b/.test(opener);
+      let t = render(opener, vars(0));
       for (let j = 1; j < moves.length; j++) {
         const m = moves[j]!;
         const mList = MODIFIER_TEMPLATES[m];
         const mod = render(mList[templates.next(`m:${m}`, mList.length)] ?? mList[0]!, vars(j));
-        // After the first modifier, every phrase starts with a comma so long titles stay readable.
-        t += j >= 2 && !mod.startsWith(",") ? `,${mod}` : mod;
+        const firstWord = mod.replace(/^[,\s]+/, "").split(" ")[0] ?? "";
+        const echoes = new RegExp(`\\b${firstWord}\\b`, "i").test(t);
+        // Readable chains: a comma after clause openers, after the first modifier, and before repeated words.
+        t += !mod.startsWith(",") && (j >= 2 || clauseOpener || echoes) ? `,${mod}` : mod;
       }
       title = t;
       if (!titles.has(title.toLowerCase())) break;

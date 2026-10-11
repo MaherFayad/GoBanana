@@ -216,7 +216,7 @@ describe("output quality", () => {
     for (const brief of SAMPLE_BRIEFS) {
       for (const w of LEVELS) {
         const json = JSON.stringify(bendBrief({ brief, wildness: w, count: 8 }));
-        expect(json).not.toContain("—");
+        expect(json).not.toContain("\u2014");
       }
     }
   });
@@ -225,14 +225,14 @@ describe("output quality", () => {
 describe("word lists, lenses and templates", () => {
   it("has no em dashes in any list, lens or template file", () => {
     for (const file of allBendFiles(BEND_DIR)) {
-      expect(readFileSync(file, "utf8"), file).not.toContain("—");
+      expect(readFileSync(file, "utf8"), file).not.toContain("\u2014");
     }
     const templates = [
       ...Object.values(PRIMARY_TEMPLATES).flat(),
       ...Object.values(MODIFIER_TEMPLATES).flat(),
       ...Object.values(PROMPT_CLAUSES),
     ];
-    for (const t of templates) expect(t).not.toContain("—");
+    for (const t of templates) expect(t).not.toContain("\u2014");
   });
 
   it("has at least 40 entries in every list", () => {

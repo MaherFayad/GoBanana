@@ -82,14 +82,16 @@ export function extractSubject(brief: string, wildness: Wildness): Subject {
   if (title.length === 0) title = clean(tokens, { keepLayout: true, stripUsability: false }).slice(-3);
   if (title.length === 0) title = ["interface"];
 
-  let query = rule.keepLayoutWords ? build(true, 4) : title;
-  if (query.length === 0) query = title;
+  const full = build(true, 4).length ? build(true, 4) : title;
+  const query = rule.keepLayoutWords ? full : title;
+  // Fresh keeps the screen type in titles too ("Coffee shop landing page as a thermal receipt").
+  const shown = rule.keepLayoutWords ? full : title;
 
   return {
     query: query.join(" "),
-    title: title.join(" "),
-    head: title.slice(-2).join(" "),
-    full: (build(true, 4).length ? build(true, 4) : title).join(" "),
+    title: shown.join(" "),
+    head: shown.slice(-2).join(" "),
+    full: full.join(" "),
     words: clean(tokens, { keepLayout: true, stripUsability: false }),
   };
 }
