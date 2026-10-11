@@ -1,0 +1,316 @@
+/*
+ * Generative tile art (TileArt.tsx). Tokens only (--st-art-*, a picture that is the same in both
+ * themes), logical properties only. Each tile fills its box; the box sets the size and ratio.
+ */
+
+.art {
+  position: relative;
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--st-art-paper);
+  isolation: isolate;
+}
+
+.art-svg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+}
+
+/* ---------------------------------------------------------------- Sadu bands (material) */
+
+.art-sadu {
+  background:
+    conic-gradient(from -45deg at 50% 100%, var(--st-art-wool) 90deg, transparent 0) 0 34% / 28px 14px repeat-x,
+    conic-gradient(from 135deg at 50% 0, var(--st-art-wool) 90deg, transparent 0) 0 66% / 28px 14px repeat-x,
+    conic-gradient(from -45deg at 50% 100%, var(--st-art-saffron) 90deg, transparent 0) 14px 88% / 28px 10px repeat-x,
+    repeating-linear-gradient(
+      180deg,
+      var(--st-art-madder) 0 16%,
+      var(--st-art-ink) 16% 20%,
+      var(--st-art-wool) 20% 22%,
+      var(--st-art-ink) 22% 26%,
+      var(--st-art-madder) 26% 50%
+    );
+}
+
+/* ---------------------------------------------------------------- Kufic grid (lens) */
+
+.art-kufic {
+  background:
+    repeating-linear-gradient(90deg, var(--st-art-rule) 0 1px, transparent 1px 11.11%),
+    repeating-linear-gradient(180deg, var(--st-art-rule) 0 1px, transparent 1px 11.11%),
+    var(--st-art-wool);
+}
+
+.art-kufic-path {
+  fill: none;
+  stroke: var(--st-art-malachite);
+  stroke-width: 1;
+  stroke-linecap: square;
+}
+
+/* ---------------------------------------------------------------- Mashrabiya lattice (lens) */
+
+.art-mashrabiya {
+  background:
+    radial-gradient(circle at 70% 30%, var(--st-art-sun), transparent 60%),
+    var(--st-art-dusk-1);
+}
+
+.art-lattice {
+  fill: none;
+  stroke: var(--st-art-teak);
+  stroke-width: 2.4;
+}
+
+/* ---------------------------------------------------------------- Halftone (era) */
+
+.art-halftone {
+  background: var(--st-art-paper);
+}
+
+.art-halftone::before,
+.art-halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.art-halftone::before {
+  background: radial-gradient(circle, var(--st-art-indigo) 0 42%, transparent 46%) 0 0 / 9px 9px;
+  mask-image: radial-gradient(circle at 30% 70%, var(--st-scrim) 0, transparent 75%);
+}
+
+.art-halftone::after {
+  background: radial-gradient(circle, var(--st-art-signal) 0 30%, transparent 34%) 4px 4px / 9px 9px;
+  mask-image: linear-gradient(200deg, var(--st-scrim) 0, transparent 60%);
+}
+
+/* ---------------------------------------------------------------- Fluted glass (material) */
+
+.art-fluted {
+  background: var(--st-art-glacier);
+}
+
+.art-fluted::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 30% 40%, var(--st-art-saffron), transparent 40%),
+    radial-gradient(circle at 70% 65%, var(--st-art-rose), transparent 45%),
+    radial-gradient(circle at 55% 20%, var(--st-art-lilac), transparent 40%);
+  filter: blur(14px);
+}
+
+.art-fluted::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--st-art-glint) 0,
+    transparent 5px,
+    var(--st-art-shade) 11px,
+    var(--st-art-glint) 12px
+  );
+  backdrop-filter: blur(3px);
+}
+
+/* ---------------------------------------------------------------- Grain (material) */
+
+.art-grain {
+  background:
+    radial-gradient(circle at 30% 20%, var(--st-art-sun), transparent 55%),
+    linear-gradient(160deg, var(--st-art-sand), var(--st-art-dusk-2) 70%, var(--st-art-dusk-3));
+}
+
+/* The noise layer (feTurbulence) on grain and risograph tiles. */
+.art-grain .art-svg,
+.art-riso .art-svg {
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+}
+
+/* ---------------------------------------------------------------- Iridescent film (material) */
+
+.art-iridescent {
+  background: var(--st-art-lilac);
+}
+
+.art-iridescent::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: conic-gradient(
+    from 210deg at 45% 55%,
+    var(--st-art-mint),
+    var(--st-art-sky),
+    var(--st-art-lilac),
+    var(--st-art-rose),
+    var(--st-art-sun),
+    var(--st-art-mint)
+  );
+  filter: blur(18px);
+}
+
+.art-iridescent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, var(--st-art-glint), transparent 55%);
+}
+
+/* ---------------------------------------------------------------- Oversized numerals (scale) */
+
+.art-numerals {
+  display: grid;
+  place-items: center;
+  background: var(--st-art-ink);
+}
+
+.art-numeral {
+  color: var(--st-art-saffron);
+  font-family: var(--st-font-sans);
+  font-size: 9rem;
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  direction: ltr;
+  translate: 8% 12%;
+}
+
+/* ---------------------------------------------------------------- Memphis shapes (era) */
+
+.art-memphis {
+  background:
+    radial-gradient(circle, var(--st-art-ink) 0 1.4px, transparent 1.8px) 0 0 / 12px 12px,
+    var(--st-art-rose);
+}
+
+.art-fill-sun {
+  fill: var(--st-art-sun);
+}
+
+.art-fill-malachite {
+  fill: var(--st-art-malachite);
+}
+
+.art-fill-blue {
+  fill: var(--st-art-blue);
+}
+
+.art-dot {
+  fill: var(--st-art-ink);
+}
+
+.art-stroke-ink {
+  fill: none;
+  stroke: var(--st-art-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* ---------------------------------------------------------------- Swiss grid (constraint) */
+
+.art-swiss {
+  background:
+    radial-gradient(circle at 68% 34%, var(--st-art-signal) 0 18%, transparent 18.5%),
+    linear-gradient(var(--st-art-ink) 0 0) 12% 72% / 62% 9% no-repeat,
+    linear-gradient(var(--st-art-ink) 0 0) 12% 84% / 34% 4% no-repeat,
+    repeating-linear-gradient(90deg, var(--st-art-rule) 0 1px, transparent 1px 16.66%),
+    repeating-linear-gradient(180deg, var(--st-art-rule) 0 1px, transparent 1px 12.5%),
+    var(--st-art-paper);
+}
+
+/* ---------------------------------------------------------------- Japanese ma (constraint) */
+
+.art-ma {
+  background:
+    radial-gradient(circle at 74% 70%, var(--st-art-ink) 0 3.5%, transparent 4%),
+    linear-gradient(var(--st-art-rule) 0 0) 50% 82% / 70% 1px no-repeat,
+    var(--st-art-paper);
+}
+
+/* ---------------------------------------------------------------- Desert modern dusk (transplant) */
+
+.art-dusk {
+  background:
+    radial-gradient(ellipse 80% 30% at 20% 100%, var(--st-art-dusk-3) 0 60%, transparent 61%),
+    radial-gradient(ellipse 90% 26% at 85% 100%, var(--st-art-dusk-4) 0 60%, transparent 61%),
+    radial-gradient(circle at 50% 66%, var(--st-art-sun) 0 14%, transparent 14.5%),
+    linear-gradient(
+      180deg,
+      var(--st-art-dusk-4) 0,
+      var(--st-art-dusk-3) 30%,
+      var(--st-art-dusk-2) 55%,
+      var(--st-art-dusk-1) 80%,
+      var(--st-art-sun)
+    );
+}
+
+/* ---------------------------------------------------------------- Risograph overprint (era) */
+
+.art-riso {
+  background: var(--st-art-paper);
+}
+
+.art-riso::before,
+.art-riso::after {
+  content: "";
+  position: absolute;
+  inline-size: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+}
+
+.art-riso::before {
+  inset-block-start: 14%;
+  inset-inline-start: 10%;
+  background: var(--st-art-pink);
+}
+
+.art-riso::after {
+  inset-block-start: 26%;
+  inset-inline-start: 30%;
+  background: var(--st-art-blue);
+}
+
+.art-riso .art-svg {
+  z-index: 1;
+  opacity: 0.45;
+}
+
+/* ---------------------------------------------------------------- Blueprint (transplant) */
+
+.art-blueprint {
+  background:
+    repeating-linear-gradient(90deg, var(--st-art-line) 0 1px, transparent 1px 10%),
+    repeating-linear-gradient(180deg, var(--st-art-line) 0 1px, transparent 1px 10%),
+    var(--st-art-cobalt);
+}
+
+.art-stroke-glint {
+  fill: none;
+  stroke: var(--st-art-glint);
+  stroke-width: 1.6;
+}
+
+.art-stroke-line {
+  fill: none;
+  stroke: var(--st-art-line);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 2;
+}
+
+@media (forced-colors: active) {
+  .art {
+    forced-color-adjust: none;
+  }
+}
