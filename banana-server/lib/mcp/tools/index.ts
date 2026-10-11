@@ -2,6 +2,7 @@ import type { RegisterTool } from "./types";
 import { register as ping } from "./ping";
 import { register as bendBrief } from "./bend_brief";
 import { register as searchReferences } from "./search_references";
+import { register as rateReferences } from "./rate_references";
 import { register as openCanvas } from "./open_canvas";
 import { register as addToCanvas } from "./add_to_canvas";
 import { register as arrangeCanvas } from "./arrange_canvas";
@@ -16,6 +17,7 @@ export const tools: RegisterTool[] = [
   ping,
   bendBrief,
   searchReferences,
+  rateReferences,
   openCanvas,
   addToCanvas,
   arrangeCanvas,

@@ -11,7 +11,9 @@ import { countCanvases, getCanvasForOwner, saveCanvasState, updateCanvas } from 
 import { findDirectionForUser, upsertDirections } from "@/lib/db/directions";
 import { isUuid, referenceRowId, uuidFromName } from "@/lib/db/ids";
 import { createMemoryRepos } from "@/lib/db/memory";
-import { getReferencesByIds, insertReferences } from "@/lib/db/references";
+import { findOwnedReferences, getReferencesByIds, insertReferences } from "@/lib/db/references";
+import { armStatsSql, blocklistRepo, insertFeedback, readArmStats } from "@/lib/db/feedback";
+import { PgDialect } from "drizzle-orm/pg-core";
 import { listTakedowns, memoTakedowns } from "@/lib/db/takedowns";
 import { incrementUsage, readUsage } from "@/lib/db/usage";
 import { getUserPlan } from "@/lib/db/users";
@@ -148,14 +150,19 @@ describe("drizzle repositories", () => {
     expect(calls[1]!.sql).toMatch(/"directions"\."id" = \$2 and "directions"\."canvas_id" = \$3/);
   });
 
-  it("stores reference URLs only, with deterministic ids, and ignores repeats", async () => {
+  it("stores reference URLs only, with deterministic ids; a repeat only refreshes how it was found", async () => {
     const { db, calls } = fakeDb();
-    await insertReferences(db, CANVAS, [ref(1)]);
+    await insertReferences(db, CANVAS, [{ ...ref(1), lane: "taste", query: "minimal card ui", termKey: "taste|minimal card ui", arm: "default" }]);
     const sql = calls[0]!.sql;
     expect(sql).toMatch(/insert into "references"/);
-    expect(sql).toMatch(/on conflict \("id"\) do nothing/);
+    expect(sql).toMatch(/on conflict \("id"\) do update set/);
+    // URLs are never overwritten; search details keep the stored value when the new search has none.
+    expect(sql).not.toMatch(/"(source_url|image_url|thumb_url)" = /);
+    expect(sql).toContain(`"lane" = coalesce(excluded."lane", "references"."lane")`);
+    expect(sql).toContain(`"arm" = coalesce(excluded."arm", "references"."arm")`);
     expect(calls[0]!.params).toContain(await referenceRowId(CANVAS, ref(1).id));
     expect(calls[0]!.params).toContain(ref(1).sourceUrl);
+    expect(calls[0]!.params).toEqual(expect.arrayContaining([ref(1).id, "taste", "minimal card ui", "taste|minimal card ui", "default"]));
   });
 
   it("maps reference lookups back to the ids the caller passed", async () => {
@@ -212,3 +219,82 @@ describe("memory repos", () => {
     expect(await repos.usage.get(ALICE, "2026-10")).toEqual({ searches: 3, canvases: 1 });
   });
 });
+
+describe("search learning repositories", () => {
+  const fb = (userId: string, verdict: "great" | "bad", arm = "agent:film strip", termKey = "inspiration|film frames") => ({
+    userId,
+    itemKey: `pinterest:${Math.random()}`,
+    sourceSite: "pinterest.com",
+    lane: "inspiration",
+    query: "film strip",
+    termKey,
+    arm,
+    verdict,
+    reasons: [],
+    creator: null,
+  });
+
+  it("groups arm stats so each user counts once, and returns no user ids", () => {
+    const q = new PgDialect().sqlToQuery(armStatsSql(ALICE, ["inspiration|film frames", "taste|x"]));
+    const sql = q.sql.replace(/\s+/g, " ");
+    expect(sql).toContain("group by term_key, arm, user_id ) per_user group by term_key, arm");
+    expect(sql).toContain("count(*) filter (where g > b)::int as great");
+    expect(sql).toContain("count(*) filter (where b > g)::int as bad");
+    expect(sql).toContain("where term_key in ($3, $4) and arm is not null");
+    expect(sql).not.toMatch(/select[^(]*\buser_id\b[^(]*from \(/);
+    expect(q.params).toEqual([ALICE, ALICE, "inspiration|film frames", "taste|x"]);
+  });
+
+  it("maps arm stats rows and skips bad input without a query", async () => {
+    const { db, calls } = fakeDb([[{ term_key: "t", arm: "a", great: 2, bad: 1, users: 3, own_great: 4, own_bad: 0 }]]);
+    expect(await readArmStats(db, ALICE, ["t"])).toEqual([{ termKey: "t", arm: "a", great: 2, bad: 1, users: 3, ownGreat: 4, ownBad: 0 }]);
+    expect(await readArmStats(db, "x", ["t"])).toEqual([]);
+    expect(await readArmStats(db, ALICE, [])).toEqual([]);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("inserts ratings and blocked items for real user ids only", async () => {
+    const { db, calls } = fakeDb();
+    await insertFeedback(db, [fb(ALICE, "bad"), fb("not-a-uuid", "bad")]);
+    expect(calls[0]!.sql).toMatch(/^insert into "search_feedback"/);
+    expect(calls[0]!.params).toContain(ALICE);
+    expect(calls[0]!.params).not.toContain("not-a-uuid");
+    await blocklistRepo(db).add(ALICE, ["dribbble:1", "dribbble:1", "pinterest:2"]);
+    expect(calls[1]!.sql).toMatch(/^insert into "blocked_items" .* on conflict do nothing$/);
+    expect(calls[1]!.params.filter((p) => p === "dribbble:1")).toHaveLength(1);
+    await blocklistRepo(db).add("x", ["dribbble:1"]);
+    expect(calls).toHaveLength(2);
+  });
+
+  it("looks up references on the user's own canvases only", async () => {
+    const { db, calls } = fakeDb([[]]);
+    await findOwnedReferences(db, ALICE, ["ref_1", CANVAS]);
+    expect(calls[0]!.sql).toContain('inner join "canvases" on "canvases"."id" = "references"."canvas_id"');
+    expect(calls[0]!.sql).toContain('"canvases"."user_id" = $1');
+    expect(calls[0]!.params).toEqual(expect.arrayContaining([ALICE, "ref_1", CANVAS]));
+  });
+
+  it("memory repos: one vote per user per term and arm, own raw counts, blocklist per user", async () => {
+    const repos = createMemoryRepos();
+    const C = "44444444-4444-4444-8444-444444444444";
+    await repos.feedback.insertMany([
+      fb(ALICE, "great"), fb(ALICE, "great"), fb(ALICE, "great"), fb(ALICE, "bad"),
+      fb(BOB, "bad"),
+      fb(C, "great"), fb(C, "bad"),
+      fb(BOB, "great", "default"),
+      fb(BOB, "great", "agent:film strip", "other|term"),
+    ]);
+    const stats = await repos.feedback.armStats(ALICE, ["inspiration|film frames"]);
+    expect(stats).toEqual(
+      expect.arrayContaining([
+        { termKey: "inspiration|film frames", arm: "agent:film strip", great: 1, bad: 1, users: 3, ownGreat: 3, ownBad: 1 },
+        { termKey: "inspiration|film frames", arm: "default", great: 1, bad: 0, users: 1, ownGreat: 0, ownBad: 0 },
+      ]),
+    );
+    expect(stats).toHaveLength(2);
+    await repos.blocklist.add(ALICE, ["dribbble:1", "dribbble:1"]);
+    expect(await repos.blocklist.list(ALICE)).toEqual(["dribbble:1"]);
+    expect(await repos.blocklist.list(BOB)).toEqual([]);
+  });
+});
+

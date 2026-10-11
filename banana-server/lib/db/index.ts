@@ -6,6 +6,7 @@
 import { getDb, type Db } from "@/db/client";
 import { canvasRepo } from "./canvases";
 import { directionRepo } from "./directions";
+import { blocklistRepo, feedbackRepo } from "./feedback";
 import { paletteRepo } from "./palettes";
 import { referenceRepo } from "./references";
 import { takedownRepo } from "./takedowns";
@@ -26,6 +27,8 @@ export function createDbRepos(db: Db): Repos {
     usage: usageRepo(db),
     takedowns: takedownRepo(db),
     users: userRepo(db),
+    feedback: feedbackRepo(db),
+    blocklist: blocklistRepo(db),
   };
 }
 

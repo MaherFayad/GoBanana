@@ -25,3 +25,8 @@ Claude Code accepts more keys (`when_to_use`, `allowed-tools` and others), but c
 ## 2026-10-11: DESIGN.md lint pinned to 0.4.0
 
 Skills run `npx --yes @google/design.md@0.4.0 lint DESIGN.md`, the version the server pins.
+
+## 2026-10-11: audit loop in banana-explore
+
+After every `search_references`, the agent judges each result (title, site, URL, and the image when it can see it) and calls `rate_references`: `bad` for off topic, shop or stock, DIY or decor in a UI lane, cluttered or duplicate results; `great` for about the top 10 to 20%. If more than 40% of a lane is bad it re-searches that lane once with `directionId`, `lane` and words that describe the visual, at most 2 retries per lane, and tells the user in one line what it dropped. The server does no AI work, so this is where judgment happens; ratings make later searches better (server DECISIONS.md, Learning rows). Eval cases 21 to 24 cover the audit, a lane retry, clean results with no retry, and the retry cap. The search mock now tags each result `[id, lane]`, as the server text does.
+

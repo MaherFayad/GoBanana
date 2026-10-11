@@ -10,6 +10,14 @@ import {
   purgeUnplacedReferences,
   type PurgeStore,
 } from "@/lib/purge/references";
+import {
+  createDbFeedbackPurgeStore,
+  FEEDBACK_RETENTION_MONTHS,
+  feedbackCutoff,
+  feedbackPurgeSql,
+  purgeOldFeedback,
+  type FeedbackPurgeStore,
+} from "@/lib/purge/feedback";
 
 const NOW = new Date("2026-11-20T03:17:00Z");
 const DAY = 24 * 60 * 60 * 1000;
@@ -105,5 +113,45 @@ describe("purge SQL", () => {
     const store = createDbPurgeStore(drizzle({ client: { query } as never }));
     expect(await store.deleteUnplacedBefore(purgeCutoff(NOW), 100)).toBe(2);
     expect(calls[0]).toMatch(/delete from "references"/);
+  });
+});
+
+describe("12-month purge of search ratings", () => {
+  it("deletes ratings older than 12 calendar months in batches, keeps newer ones", async () => {
+    const rows = [
+      { id: "old1", createdAt: new Date("2025-11-19T00:00:00Z") },
+      { id: "old2", createdAt: new Date("2025-11-20T03:16:59Z") },
+      { id: "edge", createdAt: new Date("2025-11-20T03:17:00Z") },
+      { id: "new", createdAt: new Date("2026-06-01T00:00:00Z") },
+    ];
+    const store: FeedbackPurgeStore = {
+      async deleteBefore(cutoff, limit) {
+        const doomed = rows.filter((r) => r.createdAt < cutoff).slice(0, limit);
+        for (const d of doomed) rows.splice(rows.indexOf(d), 1);
+        return doomed.length;
+      },
+    };
+    expect(feedbackCutoff(NOW).toISOString()).toBe("2025-11-20T03:17:00.000Z");
+    expect(FEEDBACK_RETENTION_MONTHS).toBe(12);
+    const res = await purgeOldFeedback(store, { now: NOW, batchSize: 1 });
+    expect(res).toMatchObject({ deleted: 2, done: true });
+    expect(rows.map((r) => r.id)).toEqual(["edge", "new"]);
+  });
+
+  it("is one batched delete on search_feedback by created_at", async () => {
+    const cutoff = feedbackCutoff(NOW);
+    const q = new PgDialect().sqlToQuery(feedbackPurgeSql(cutoff, 1000));
+    const sql = q.sql.replace(/\s+/g, " ");
+    expect(sql).toMatch(/^ ?delete from "search_feedback" where "id" in \( select "id" from "search_feedback" where "created_at" < \$1 order by "created_at" limit \$2 \) returning "id"$/);
+    expect(q.params).toEqual([cutoff.toISOString(), 1000]);
+    const query = vi.fn(async () => ({ rows: [{ id: "a" }], fields: [], rowCount: 1, command: "DELETE" }));
+    expect(await createDbFeedbackPurgeStore(drizzle({ client: { query } as never })).deleteBefore(cutoff, 10)).toBe(1);
+  });
+
+  it("runs from the daily cron next to the reference purge", async () => {
+    const { readFileSync } = await import("node:fs");
+    const worker = readFileSync(new URL("../custom-worker.ts", import.meta.url), "utf8");
+    expect(worker).toContain("purgeOldFeedback");
+    expect(worker).toContain('from "./lib/purge/feedback"');
   });
 });

@@ -5,8 +5,8 @@
  * - inspiration: the direction's lead ingredient, raw ("Sadu weaving", "crushed velvet"). Stacking
  *   ideas, or adding UI words or "poster" to a niche idea, returns tag pages or nothing.
  * - fidelity: "{domain} {surface}" ("flight app ui"): real product UI for the brief.
- * - taste: "{style} {component} ui" ("minimal checkout ui"). No domain: with it, this lane
- *   returned the same shots as fidelity.
+ * - taste: "{style} {domain} {component} ui design" ("big typography flight checkout ui design").
+ *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21.
  * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
  * - locale: "arabic {surface}" when the brief is Arabic or right to left.
  *
@@ -249,12 +249,51 @@ export function fidelityCoreQuery(brief: string): string | null {
   return capWords(`${coreNoun(p.domain)} ${SURFACE_WORDS[p.surface]}`);
 }
 
-/** Taste lane: "{style} {component} ui" ("minimal checkout ui"); "{style} {subject}" for other briefs. */
+/**
+ * "{style} {domain} {component} ui design" within MAX_FOCUSED_QUERY_WORDS: when it runs long the
+ * domain drops to its core noun, then style words drop from the end. "ui design" always stays.
+ */
+function tasteUiQuery(p: BriefParts, style: string, domain: readonly string[], tail = "ui design", app = false): string {
+  const dom = [...domain];
+  let s = words(styleWords(style));
+  const build = () => words(`${s.join(" ")} ${dom.join(" ")} ${app ? "app " : ""}${p.component} ${tail}`);
+  const fits = () => new Set(build()).size <= MAX_FOCUSED_QUERY_WORDS;
+  if (!fits() && dom.length > 1) dom.splice(0, dom.length, coreNoun(dom)!);
+  while (!fits() && s.length > 1) s = s.slice(0, -1);
+  return capWords(build().join(" "));
+}
+
+/**
+ * Taste lane: "{style} {domain} {component} ui design" ("big typography flight checkout ui design");
+ * "{style} {subject}" for other briefs. The domain keeps results on topic (live test 2026-10-11:
+ * 20 of 21 on topic against 1 of 24 for "{style} {component} ui", and 19 of 21 still new against
+ * the fidelity lane).
+ */
 export function tasteQuery(brief: string, style: string): string {
   const p = briefParts(brief);
-  const s = styleWords(style);
-  if (!p.ui) return capWords(`${s} ${extractSubject(p.main, 2).title}`);
-  return capWords(`${s} ${p.component} ui`);
+  if (!p.ui) return capWords(`${styleWords(style)} ${extractSubject(p.main, 2).title}`);
+  return tasteUiQuery(p, style, p.domain);
+}
+
+/**
+ * Alternative taste wordings the search learner (lib/learning/arms.ts) can try for UI briefs:
+ * `app` = "{style} {domain} app {component} ui" (app briefs only), `core` = the default template
+ * with the domain cut to its core noun (compound domains only). Absent when they would not differ.
+ */
+export function tasteVariants(brief: string, style: string): { app?: string; core?: string } {
+  const p = briefParts(brief);
+  if (!p.ui) return {};
+  const base = tasteUiQuery(p, style, p.domain);
+  const out: { app?: string; core?: string } = {};
+  if (p.surface === "app") {
+    const app = tasteUiQuery(p, style, p.domain, "ui", true);
+    if (app !== base) out.app = app;
+  }
+  if (p.domain.length > 1) {
+    const core = tasteUiQuery(p, style, [coreNoun(p.domain)!]);
+    if (core !== base) out.core = core;
+  }
+  return out;
 }
 
 /** Hero lane (app surface only): "{style} {coreDomain} app single screen", or null. */
@@ -274,6 +313,16 @@ export function localeQuery(brief: string): string | null {
 export function pickStyle(taste: readonly string[], key: string, offset = 0): string {
   const list = taste.length > 0 ? taste : DEFAULT_TASTE;
   return list[(cyrb53(`taste|${key}`) + offset) % list.length]!;
+}
+
+/** Taste lane variants for a direction (same style pick as laneTexts). */
+export function directionTasteVariants(
+  brief: string | null | undefined,
+  taste: readonly string[],
+  key: string,
+): { app?: string; core?: string } {
+  const b = brief?.trim();
+  return b ? tasteVariants(b, pickStyle(taste, key)) : {};
 }
 
 /**

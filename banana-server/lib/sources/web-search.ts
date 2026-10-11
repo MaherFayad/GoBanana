@@ -40,6 +40,8 @@ import {
 } from "./types";
 import { hostMatchesDomain, parseHttpUrl } from "./url";
 import { EMPTY_TAKEDOWNS, type TakedownMatcher } from "../takedown";
+import { nudgeByCreator } from "../learning/creator";
+import { queryWords } from "../learning/terms";
 
 export const SERPER_IMAGES_ENDPOINT = "https://google.serper.dev/images";
 
@@ -87,10 +89,18 @@ export type WebSearchAdapter = SourceAdapter & {
   /** Same as `search`, plus a plain note and whether the search provider answered. */
   run(q: SourceQuery): Promise<WebSearchResult>;
   /** Run a direction's search plan (lib/sources/plan.ts): one page per request, lanes merged by quota. */
-  runPlan(
-    plan: readonly PlannedRequest[],
-    opts: { count: number; userId: string; /** Source links already on the canvas: never returned again. */ exclude?: readonly string[] },
-  ): Promise<PlanSearchResult>;
+  runPlan(plan: readonly PlannedRequest[], opts: RunPlanOptions): Promise<PlanSearchResult>;
+};
+
+export type RunPlanOptions = {
+  count: number;
+  userId: string;
+  /** Source links already on the canvas: never returned again. */
+  exclude?: readonly string[];
+  /** Item keys (itemKey) the user blocked with rate_references: never returned again. */
+  excludeKeys?: readonly string[];
+  /** Normalized creators the user rated great (lib/learning/creator.ts): nudged up within each lane. */
+  preferCreators?: readonly string[];
 };
 
 /** What one planned request brought back. */
@@ -102,6 +112,8 @@ export type PlanRequestReport = {
   good: number;
   /** Set when the request was retried with its fallback query. */
   retried?: string;
+  /** Set when page 2 was fetched because page 1 was mostly already on the canvas or blocked. */
+  page2?: true;
 };
 
 export type PlanSearchResult = WebSearchResult & { report?: PlanRequestReport[] };
@@ -436,6 +448,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       }
     }
 
+    const excludedKeys = new Set(q.excludeKeys ?? []);
+    const prefer = q.preferCreators ?? [];
     const budget = requestBudget(q.maxRequests);
     // With fewer requests than sources, search a rotating subset so lanes cover different sources.
     const offset = Math.max(0, Math.floor(q.sourceOffset ?? 0));
@@ -476,8 +490,14 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         lane.full = out.images.length >= SERPER_PAGE_SIZE;
         if (out.images.length === 0) return;
         lane.images.push(...out.images);
-        const mapped = mapSerperImagesWithStats(lane.images, { sources: [lane.site], allowlist, takedowns, count });
-        lane.refs = mapped.references;
+        const mapped = mapSerperImagesWithStats(lane.images, {
+          sources: [lane.site],
+          allowlist,
+          takedowns,
+          count: excludedKeys.size > 0 ? 50 : count,
+        });
+        const kept = excludedKeys.size > 0 ? mapped.references.filter((r) => !excludedKeys.has(itemKey(r.sourceUrl))) : mapped.references;
+        lane.refs = nudgeByCreator(kept.slice(0, count), prefer);
         lane.dropped = mapped.dropped;
       });
       if (!anyAnswered) break;
@@ -499,10 +519,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     return result;
   }
 
-  async function runPlan(
-    plan: readonly PlannedRequest[],
-    opts: { count: number; userId: string; exclude?: readonly string[] },
-  ): Promise<PlanSearchResult> {
+  async function runPlan(plan: readonly PlannedRequest[], opts: RunPlanOptions): Promise<PlanSearchResult> {
     const count = Math.min(50, Math.max(1, Math.floor(opts.count)));
     const allowlist = config.allowlist ?? allowlistFromEnv();
     const apiKey = config.apiKey?.trim();
@@ -518,52 +535,103 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       }
     }
 
-    type Slot = { req: PlannedRequest; refs: Reference[]; dropped: number; ok: boolean; status: number; retried?: string };
-    // References already on the canvas are skipped, so sections that share lanes get fresh results
-    // instead of the same shots (and a later search never pulls a kept reference into another section).
-    const excluded = new Set((opts.exclude ?? []).map(itemKey));
-    const mapPage = (site: SourceSite, images: unknown[]) => {
-      const mapped = mapSerperImagesWithStats(images, { sources: [site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
-      if (excluded.size === 0) return mapped;
-      return { ...mapped, references: mapped.references.filter((r) => !excluded.has(itemKey(r.sourceUrl))) };
+    type Slot = {
+      req: PlannedRequest;
+      refs: Reference[];
+      dropped: number;
+      ok: boolean;
+      status: number;
+      /** Page 1 came back full (10 images), so a page 2 may exist. */
+      full: boolean;
+      /** Good results before the exclude filter. */
+      before: number;
+      retried?: string;
+      page2?: true;
+    };
+    // References already on the canvas, or blocked by the user, are skipped, so sections that share
+    // lanes get fresh results instead of the same shots (and a later search never pulls a kept
+    // reference into another section).
+    const excluded = new Set([...(opts.exclude ?? []).map(itemKey), ...(opts.excludeKeys ?? [])]);
+    const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
+      const mapped = mapSerperImagesWithStats(images, { sources: [req.site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
+      const words = queryWords(query);
+      const kept = excluded.size === 0 ? mapped.references : mapped.references.filter((r) => !excluded.has(itemKey(r.sourceUrl)));
+      return {
+        references: kept.map((r) => ({ ...r, lane: req.lane, query: words })),
+        dropped: mapped.dropped,
+        before: mapped.references.length,
+      };
     };
 
     const base = plan.slice(0, SERPER_MAX_REQUESTS);
     let requests = base.length;
-    const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, (r) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), 1));
+    const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, (r) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), r.page ?? 1));
     const slots: Slot[] = base.map((req, i) => {
       const out = outcomes[i]!;
-      if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status };
-      const mapped = mapPage(req.site, out.images);
-      return { req, refs: mapped.references, dropped: mapped.dropped, ok: true, status: 200 };
+      if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status, full: false, before: 0 };
+      const mapped = mapPage(req, req.query, out.images);
+      return {
+        req,
+        refs: mapped.references,
+        dropped: mapped.dropped,
+        ok: true,
+        status: 200,
+        full: out.images.length >= SERPER_PAGE_SIZE,
+        before: mapped.before,
+      };
     });
     if (!slots.some((s) => s.ok)) {
       const limited = slots.some((s) => s.status === 429);
       return { ...failure(limited ? NOTES.rateLimited : NOTES.unavailable), requests };
     }
 
-    // Fallback ladder: a thin answer is retried once with its fallback query, within the budget.
+    // Second round, within the budget, in priority order:
+    // 1. Page 2 of a request whose page 1 was full and good but mostly already on the canvas or
+    //    blocked (exhausted by the exclude filter, not a thin answer).
+    // 2. The fallback query (core noun) of a thin answer.
     // A failed request (429, timeout) is not retried: that would only add load.
-    const retry = slots
-      .filter((s) => s.ok && s.req.fallback && s.refs.length < FALLBACK_MIN_GOOD)
-      .slice(0, SERPER_MAX_REQUESTS - requests);
-    requests += retry.length;
-    const retried = await mapLimit(retry, SERPER_MAX_IN_FLIGHT, (s) => fetchPage(apiKey, buildSourceQuery(s.req.fallback!, s.req.site), 1));
-    retry.forEach((slot, i) => {
-      const out = retried[i]!;
-      slot.retried = slot.req.fallback;
+    const planned = new Set(base.map((r) => `${r.query}|${r.site}|${r.page ?? 1}`));
+    const exhausted = slots.filter(
+      (s) =>
+        s.ok &&
+        (s.req.page ?? 1) === 1 &&
+        s.full &&
+        s.before >= FALLBACK_MIN_GOOD &&
+        s.refs.length < FALLBACK_MIN_GOOD &&
+        !planned.has(`${s.req.query}|${s.req.site}|2`),
+    );
+    const thin = slots.filter((s) => s.ok && s.req.fallback && s.refs.length < FALLBACK_MIN_GOOD && !exhausted.includes(s));
+    const jobs = [
+      ...exhausted.map((slot) => ({ slot, page2: true })),
+      ...thin.map((slot) => ({ slot, page2: false })),
+    ].slice(0, Math.max(0, SERPER_MAX_REQUESTS - requests));
+    requests += jobs.length;
+    const second = await mapLimit(jobs, SERPER_MAX_IN_FLIGHT, (j) =>
+      j.page2
+        ? fetchPage(apiKey, buildSourceQuery(j.slot.req.query, j.slot.req.site), 2)
+        : fetchPage(apiKey, buildSourceQuery(j.slot.req.fallback!, j.slot.req.site), 1),
+    );
+    jobs.forEach(({ slot, page2 }, i) => {
+      const out = second[i]!;
+      if (page2) slot.page2 = true;
+      else slot.retried = slot.req.fallback;
       if (!out.ok) return;
-      const mapped = mapPage(slot.req.site, out.images);
-      slot.refs = interleaveReferences([slot.refs, mapped.references], SERPER_PAGE_SIZE * 2);
+      const mapped = mapPage(slot.req, page2 ? slot.req.query : slot.req.fallback!, out.images);
+      // Page 2 goes after page 1 (rank order); a fallback answer is interleaved with the thin one.
+      slot.refs = page2
+        ? interleaveReferences([[...slot.refs, ...mapped.references]], SERPER_PAGE_SIZE * 2)
+        : interleaveReferences([slot.refs, mapped.references], SERPER_PAGE_SIZE * 2);
       slot.dropped += mapped.dropped;
     });
 
-    // Per lane: its requests interleaved, then lanes merged by quota.
+    // Per lane: its requests interleaved, preferred creators nudged up, then lanes merged by quota.
     const lists = new Map<LaneName, Reference[]>();
     for (const slot of slots) {
       const prev = lists.get(slot.req.lane);
       lists.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SERPER_PAGE_SIZE * 4) : slot.refs);
     }
+    const prefer = opts.preferCreators ?? [];
+    if (prefer.length > 0) for (const [lane, list] of lists) lists.set(lane, nudgeByCreator(list, prefer));
     const quotas = laneQuotas(count, [...lists.keys()]);
     const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]);
 
@@ -577,6 +645,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         query: s.req.query,
         good: s.refs.length,
         ...(s.retried ? { retried: s.retried } : {}),
+        ...(s.page2 ? { page2: true as const } : {}),
       })),
     };
     const note = countNote(references.length, count);

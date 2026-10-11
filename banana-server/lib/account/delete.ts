@@ -1,7 +1,7 @@
 /**
  * Account deletion (spec section 11 and M7): every R2 object under `u/<userId>/`, then
  * the `users` row, which cascades to canvases, directions, references, palettes,
- * uploads and usage. Pure apart from the injected bucket and repo, so tests prove
+ * uploads, usage, search ratings (search_feedback) and the search blocklist (blocked_items). Pure apart from the injected bucket and repo, so tests prove
  * that nothing is left behind. Never logs keys.
  *
  * Order: objects first, so a failure leaves the account in place and the user can try

@@ -7,12 +7,16 @@ import { planOf, type Plan, type Usage } from "@/lib/quota";
 import { isStateObject, stateHasTaste } from "@/lib/taste";
 import { isUuid, referenceRowId } from "./ids";
 import type {
+  ArmStatRow,
   CanvasRecord,
   DirectionRecord,
+  NewFeedback,
   PaletteRecord,
   ReferenceRecord,
   Repos,
 } from "./types";
+
+export type MemoryFeedback = NewFeedback & { createdAt: Date };
 
 export type MemoryRepos = Repos & {
   data: {
@@ -23,6 +27,9 @@ export type MemoryRepos = Repos & {
     usage: Map<string, Usage>;
     takedowns: string[];
     plans: Map<string, Plan>;
+    feedback: MemoryFeedback[];
+    /** user id to blocked item keys */
+    blocked: Map<string, Set<string>>;
   };
 };
 
@@ -43,10 +50,14 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     usage: new Map(),
     takedowns: [...(seed.takedowns ?? [])],
     plans: new Map(Object.entries(seed.plans ?? {})),
+    feedback: [],
+    blocked: new Map(),
   };
   let clock = Date.UTC(2026, 9, 1);
   const tick = () => new Date((clock += 1000));
   const usageKey = (u: string, p: string) => `${u}|${p}`;
+  /** Row creation times for references (newest first in findOwned). */
+  const created = new Map<string, Date>();
   const owned = (userId: string, canvasId: string) => {
     const c = data.canvases.get(canvasId);
     return c && c.userId === userId ? c : null;
@@ -129,7 +140,16 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
       async insertMany(canvasId, refs) {
         for (const r of refs) {
           const id = await referenceRowId(canvasId, r.id);
-          if (data.references.has(id)) continue;
+          const existing = data.references.get(id);
+          if (existing) {
+            // Same as the SQL upsert: URLs stay, search details follow the newer search.
+            existing.resultId = existing.resultId ?? r.id;
+            existing.lane = r.lane ?? existing.lane;
+            existing.query = r.query ?? existing.query;
+            existing.termKey = r.termKey ?? existing.termKey;
+            existing.arm = r.arm ?? existing.arm;
+            continue;
+          }
           data.references.set(id, {
             id,
             canvasId,
@@ -140,7 +160,13 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
             title: r.title ?? null,
             width: r.width ?? null,
             height: r.height ?? null,
+            resultId: r.id,
+            lane: r.lane ?? null,
+            query: r.query ?? null,
+            termKey: r.termKey ?? null,
+            arm: r.arm ?? null,
           });
+          created.set(id, tick());
         }
       },
       async getByIds(canvasId, ids) {
@@ -149,6 +175,17 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
           const rowId = isUuid(id) ? id : await referenceRowId(canvasId, id);
           const row = data.references.get(rowId);
           if (row && row.canvasId === canvasId) out.set(id, { ...row });
+        }
+        return out;
+      },
+      async findOwned(userId, ids) {
+        const out = new Map<string, ReferenceRecord>();
+        const rows = [...data.references.values()]
+          .filter((r) => owned(userId, r.canvasId) !== null)
+          .sort((a, b) => (created.get(b.id)?.getTime() ?? 0) - (created.get(a.id)?.getTime() ?? 0));
+        for (const id of new Set(ids)) {
+          const row = rows.find((r) => (isUuid(id) ? r.id === id.toLowerCase() : r.resultId === id));
+          if (row) out.set(id, { ...row });
         }
         return out;
       },
@@ -182,6 +219,55 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     users: {
       async getPlan(userId) {
         return planOf(data.plans.get(userId));
+      },
+    },
+    feedback: {
+      async insertMany(rows) {
+        for (const r of rows) data.feedback.push({ ...r, reasons: [...r.reasons], createdAt: tick() });
+      },
+      async listCreatorRatings(userId, limit = 500) {
+        return data.feedback
+          .filter((f) => f.userId === userId && f.creator !== null)
+          .reverse()
+          .slice(0, limit)
+          .map((f) => ({ itemKey: f.itemKey, verdict: f.verdict, creator: f.creator }));
+      },
+      async armStats(userId, termKeys) {
+        // Same grouping as lib/db/feedback.ts armStatsSql.
+        const keys = new Set(termKeys);
+        const perUser = new Map<string, { termKey: string; arm: string; userId: string; g: number; b: number }>();
+        for (const f of data.feedback) {
+          if (!f.termKey || !f.arm || !keys.has(f.termKey)) continue;
+          const k = `${f.termKey}\n${f.arm}\n${f.userId}`;
+          const row = perUser.get(k) ?? { termKey: f.termKey, arm: f.arm, userId: f.userId, g: 0, b: 0 };
+          if (f.verdict === "great") row.g++;
+          else row.b++;
+          perUser.set(k, row);
+        }
+        const out = new Map<string, ArmStatRow>();
+        for (const u of perUser.values()) {
+          const k = `${u.termKey}\n${u.arm}`;
+          const s = out.get(k) ?? { termKey: u.termKey, arm: u.arm, great: 0, bad: 0, users: 0, ownGreat: 0, ownBad: 0 };
+          s.users++;
+          if (u.g > u.b) s.great++;
+          if (u.b > u.g) s.bad++;
+          if (u.userId === userId) {
+            s.ownGreat += u.g;
+            s.ownBad += u.b;
+          }
+          out.set(k, s);
+        }
+        return [...out.values()];
+      },
+    },
+    blocklist: {
+      async add(userId, itemKeys) {
+        const set = data.blocked.get(userId) ?? new Set<string>();
+        for (const k of itemKeys) if (k) set.add(k);
+        data.blocked.set(userId, set);
+      },
+      async list(userId) {
+        return [...(data.blocked.get(userId) ?? [])];
       },
     },
   };

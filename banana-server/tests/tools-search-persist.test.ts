@@ -59,7 +59,7 @@ describe("taste on the canvas", () => {
     const c = await seedCanvas(repos, ALICE);
     const bent = await bend({ brief: "flight checkout screen", wildness: 3, canvasId: c.id, taste: ["Monochrome", "luxury"] }, ALICE);
     const dirs = (bent.structuredContent as { directions: { id: string; searchQueries: string[] }[] }).directions;
-    expect(dirs.every((d) => /^(monochrome|luxury) checkout ui$/.test(d.searchQueries[1]!))).toBe(true);
+    expect(dirs.every((d) => /^(monochrome|luxury) flight checkout ui design$/.test(d.searchQueries[1]!))).toBe(true);
     const stateOf = async () => (await repos.canvases.getOwned(ALICE, c.id))!.state as CanvasState;
     expect((await stateOf()).taste).toEqual(["monochrome", "luxury"]);
 
@@ -71,7 +71,7 @@ describe("taste on the canvas", () => {
     // A later search with no taste uses the canvas taste; one with taste replaces it.
     await search({ directionId: dirs[0]!.id, canvasId: c.id }, ALICE);
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
-    expect(plan.find((r) => r.lane === "taste")!.query).toMatch(/^(monochrome|luxury) checkout ui /);
+    expect(plan.find((r) => r.lane === "taste")!.query).toMatch(/^(monochrome|luxury) flight checkout ui design /);
     await search({ directionId: dirs[0]!.id, canvasId: c.id, taste: ["editorial"] }, ALICE);
     expect((await stateOf()).taste).toEqual(["editorial"]);
   });

@@ -34,7 +34,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 | Skill | Say something like | What happens |
 | --- | --- | --- |
-| `banana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, runs `bend_brief`, shows the directions as a short list, opens a canvas, and searches 2 or 3 directions into the tray |
+| `banana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, runs `bend_brief`, shows the directions as a short list, opens a canvas, searches 2 or 3 directions into the tray, then audits the results: rates misses and standouts with `rate_references` and re-searches a weak lane with better words |
 | `banana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, short notes, a clean layout; optionally a FigJam board through the Figma MCP, or an HTML board |
 | `banana-palette` | "palette", "colors from these" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
 | `banana-design-md` | "DESIGN.md", "design system file" | Exports DESIGN.md, writes it, runs `npx @google/design.md lint`, fixes what it flags |
@@ -53,7 +53,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `extract_palette`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
+`bend_brief`, `search_references`, `rate_references`, `extract_palette`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
 
 If your client cannot show the canvas inline, every skill gives you the web link to open it full screen.
 
@@ -71,7 +71,7 @@ Free covers `bend_brief` (unlimited), 30 searches a month, 3 canvases, and the `
 
 ## Evals
 
-`evals/` holds 20 test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/banana/` answers the Banana tools with fixed replies, so runs never touch the real server. Graders check that the right skill fired, the tools ran in a sensible order, source links and the canvas link appear, and files were written.
+`evals/` holds 24 test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/banana/` answers the Banana tools with fixed replies, so runs never touch the real server. Graders check that the right skill fired, the tools ran in a sensible order, source links and the canvas link appear, and files were written.
 
 ```bash
 cd banana-plugin

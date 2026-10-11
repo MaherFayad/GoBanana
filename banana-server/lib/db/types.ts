@@ -7,6 +7,8 @@
  */
 import type { Plan, UsageStore } from "@/lib/quota";
 import type { Reference } from "@/lib/sources/types";
+import type { ArmStat } from "@/lib/learning/arms";
+import type { FeedbackReason, FeedbackVerdict } from "@/lib/learning/hints";
 
 export type CanvasRecord = {
   id: string;
@@ -86,16 +88,69 @@ export type ReferenceRecord = {
   title: string | null;
   width: number | null;
   height: number | null;
+  /** Search result id (`ref_...`) the row was saved from; null on rows saved before migration 0003. */
+  resultId: string | null;
+  /** How the search found it (lib/learning). Null on older rows and plain query searches (lane, termKey, arm). */
+  lane: string | null;
+  query: string | null;
+  termKey: string | null;
+  arm: string | null;
 };
 
+/** A search result with how it was found, as search_references saves it. */
+export type SavedReference = Reference & { termKey?: string; arm?: string };
+
 export interface ReferenceRepo {
-  /** Save search results for a canvas (URLs only). Existing rows are left as they are. */
-  insertMany(canvasId: string, references: readonly Reference[]): Promise<void>;
+  /**
+   * Save search results for a canvas (URLs only). An existing row keeps its URLs; its search
+   * details (lane, query, term key, arm) are refreshed from the newer search when it has them.
+   */
+  insertMany(canvasId: string, references: readonly SavedReference[]): Promise<void>;
   /**
    * Look up references saved for a canvas. Each id may be a search result id (`ref_...`)
    * or a row uuid. The map is keyed by the id as passed.
    */
   getByIds(canvasId: string, ids: readonly string[]): Promise<Map<string, ReferenceRecord>>;
+  /**
+   * References saved on any of the user's canvases, by search result id (`ref_...`) or row uuid,
+   * newest first when one result sits on several canvases. Keyed by the id as passed.
+   */
+  findOwned(userId: string, ids: readonly string[]): Promise<Map<string, ReferenceRecord>>;
+}
+
+export type NewFeedback = {
+  userId: string;
+  itemKey: string;
+  sourceSite: string;
+  lane: string | null;
+  query: string | null;
+  termKey: string | null;
+  arm: string | null;
+  verdict: FeedbackVerdict;
+  reasons: FeedbackReason[];
+  creator: string | null;
+};
+
+export type ArmStatRow = ArmStat;
+
+export interface FeedbackRepo {
+  insertMany(rows: readonly NewFeedback[]): Promise<void>;
+  /** The user's ratings of results with a known creator, newest first, at most `limit`. */
+  listCreatorRatings(
+    userId: string,
+    limit?: number,
+  ): Promise<{ itemKey: string; verdict: FeedbackVerdict; creator: string | null }[]>;
+  /**
+   * Per term key and arm: users whose net verdict is great or bad (each user once), distinct
+   * users, and this user's own raw counts. Never returns user ids.
+   */
+  armStats(userId: string, termKeys: readonly string[]): Promise<ArmStatRow[]>;
+}
+
+export interface BlocklistRepo {
+  add(userId: string, itemKeys: readonly string[]): Promise<void>;
+  /** Every item key the user blocked. */
+  list(userId: string): Promise<string[]>;
 }
 
 export type PaletteRecord = { id: string; canvasId: string; colors: unknown; contrast: unknown };
@@ -128,4 +183,6 @@ export interface Repos {
   usage: UsageRepo;
   takedowns: TakedownRepo;
   users: UserRepo;
+  feedback: FeedbackRepo;
+  blocklist: BlocklistRepo;
 }

@@ -3,6 +3,7 @@
  * ever stored here (hard rule 2). Deleting a user cascades to every row they own;
  * their R2 objects are removed separately by the account deletion flow.
  */
+import { sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -71,7 +72,11 @@ export const directions = pgTable(
   ],
 );
 
-/** Reference images: URLs only. Rows not placed on a canvas are purged after 30 days. */
+/**
+ * Reference images: URLs only. Rows not placed on a canvas are purged after 30 days.
+ * `result_id`, `lane`, `query`, `term_key` and `arm` record how a search found the row (null on
+ * rows saved before 0003), so rate_references can credit the lane wording that found it.
+ */
 export const references = pgTable(
   "references",
   {
@@ -86,11 +91,22 @@ export const references = pgTable(
     title: text("title"),
     width: integer("width"),
     height: integer("height"),
+    /** The search result id (`ref_...`) the row was saved from. */
+    resultId: text("result_id"),
+    /** Direction searches: the lane that found it ("inspiration", "taste", ...). */
+    lane: text("lane"),
+    /** The request words that found it, without negatives or the site operator. */
+    query: text("query"),
+    /** lib/learning/terms.ts term key of that lane ("inspiration|oversized film frames"). */
+    termKey: text("term_key"),
+    /** lib/learning/arms.ts arm the lane used ("default", "raw@behance", "agent:..."). */
+    arm: text("arm"),
     createdAt: createdAt(),
   },
   (t) => [
     index("references_canvas_id_idx").on(t.canvasId),
     index("references_created_at_idx").on(t.createdAt),
+    index("references_result_id_idx").on(t.resultId),
   ],
 );
 
@@ -170,6 +186,53 @@ export const takedownRequests = pgTable(
   (t) => [index("takedown_requests_status_created_idx").on(t.status, t.createdAt)],
 );
 
+export const feedbackVerdictEnum = pgEnum("feedback_verdict", ["great", "bad"]);
+
+/**
+ * One rate_references rating. Personal data (user id plus what they liked): removed with the user
+ * (cascade) and after 12 months (lib/purge/feedback.ts, daily cron). Global learning reads these
+ * rows grouped by term key and arm and never stores per-user aggregates (DECISIONS.md).
+ */
+export const searchFeedback = pgTable(
+  "search_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Dribbble shot, Pinterest pin or Behance gallery key (lib/sources/web-search.ts itemKey). */
+    itemKey: text("item_key").notNull(),
+    sourceSite: text("source_site").notNull(),
+    lane: text("lane"),
+    query: text("query"),
+    termKey: text("term_key"),
+    arm: text("arm"),
+    verdict: feedbackVerdictEnum("verdict").notNull(),
+    reasons: text("reasons").array().notNull().default(sql`'{}'::text[]`),
+    /** Creator parsed from the result title (lib/learning/creator.ts), for creator affinity. */
+    creator: text("creator"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("search_feedback_user_created_idx").on(t.userId, t.createdAt),
+    index("search_feedback_term_arm_idx").on(t.termKey, t.arm),
+    index("search_feedback_created_at_idx").on(t.createdAt),
+  ],
+);
+
+/** Items a user rated bad: never returned to them again by any search. Removed with the user. */
+export const blockedItems = pgTable(
+  "blocked_items",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemKey: text("item_key").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.itemKey] })],
+);
+
 export type User = typeof users.$inferSelect;
 export type Canvas = typeof canvases.$inferSelect;
 export type Direction = typeof directions.$inferSelect;
@@ -179,3 +242,4 @@ export type Upload = typeof uploads.$inferSelect;
 export type Usage = typeof usage.$inferSelect;
 export type Takedown = typeof takedowns.$inferSelect;
 export type TakedownRequestRow = typeof takedownRequests.$inferSelect;
+export type SearchFeedbackRow = typeof searchFeedback.$inferSelect;

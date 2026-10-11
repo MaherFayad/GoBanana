@@ -20,6 +20,10 @@ export const SOURCE_DOMAINS: Record<SourceSite, string> = {
   awwwards: "awwwards.com",
 };
 
+/** Search lanes of a direction search (lib/sources/plan.ts). */
+export const LANE_NAMES = ["inspiration", "taste", "fidelity", "hero", "locale"] as const;
+export type LaneName = (typeof LANE_NAMES)[number];
+
 export type SourceQuery = {
   query: string;
   count: number;
@@ -35,6 +39,10 @@ export type SourceQuery = {
   maxRequests?: number;
   /** When maxRequests is below the number of sources, which source to start from (lanes rotate it). */
   sourceOffset?: number;
+  /** Item keys (lib/sources/web-search.ts itemKey) never to return: the user's blocklist. */
+  excludeKeys?: readonly string[];
+  /** Normalized creator names (lib/learning/creator.ts) the user rated great: nudged up within each source. */
+  preferCreators?: readonly string[];
 };
 
 export interface SourceAdapter {
@@ -51,6 +59,10 @@ export type Reference = {
   title?: string;
   width?: number;
   height?: number;
+  /** Direction searches: the lane that found it. */
+  lane?: LaneName;
+  /** Direction searches: the words of the request that found it (no negatives, no site operator). */
+  query?: string;
 };
 
 /** Search outcome with an optional plain note for the agent (for example when Serper fails). */

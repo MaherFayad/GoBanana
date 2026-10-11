@@ -5,6 +5,7 @@ import {
   SERPER_MAX_REQUESTS,
   buildSourceQuery,
   createWebSearchAdapter,
+  itemKey,
   laneQuotas,
   mergeLanes,
   parseAllowlist,
@@ -202,4 +203,114 @@ describe("runPlan", () => {
     // A failed request is never retried.
     expect(limited).toHaveBeenCalledTimes(planRequests(LANES).length);
   });
+
+  it("tags each result with its lane and the words that found it", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(LANES), { count: 12, userId: "u" });
+    expect(result.references.every((r) => r.lane && r.query && !r.query.includes("site:") && !r.query.includes("-template"))).toBe(true);
+    expect(result.references.find((r) => r.lane === "fidelity")?.query).toBe("saudi fintech app ui");
+    expect(result.references.find((r) => r.lane === "inspiration")?.query).toBe("crushed velvet");
+  });
+
+  it("never returns a blocked item key", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const first = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u" });
+    const blocked = first.references.slice(0, 5).map((r) => itemKey(r.sourceUrl));
+    const again = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u", excludeKeys: blocked });
+    expect(again.references.some((r) => blocked.includes(itemKey(r.sourceUrl)))).toBe(false);
+    expect(again.references).toHaveLength(12);
+  });
+
+  it("nudges a liked creator up inside its lane, never past the lane quotas", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const page = pageFor(bodyOf(init).q);
+      // The fifth shot of the taste request (past the lane's quota of 2) is by a creator the user liked.
+      if (bodyOf(init).q.startsWith("minimal checkout")) page.images[4]!.title = "Shot 4 by Jane Doe on Dribbble";
+      return jsonResponse(page);
+    });
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const plain = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u" });
+    const liked = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u", preferCreators: ["jane doe"] });
+    expect(plain.references.some((r) => r.title?.includes("Jane Doe"))).toBe(false);
+    expect(liked.references.some((r) => r.title?.includes("Jane Doe"))).toBe(true);
+    const lanesOf = (refs: Reference[]) => refs.map((r) => r.lane).sort();
+    expect(lanesOf(liked.references)).toEqual(lanesOf(plain.references));
+  });
+
+  it("fetches page 2 when page 1 is mostly on the canvas or blocked, before the core noun fallback", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const { q, page } = bodyOf(init);
+      return jsonResponse(pageFor(q, 10, page === 2 ? "-p2" : ""));
+    });
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const plan = planRequests(LANES);
+    const tasteQ = buildSourceQuery(plan[2]!.query, plan[2]!.site);
+    // 8 of the 10 taste shots are already on the canvas.
+    const exclude = pageFor(tasteQ).images.slice(0, 8).map((i) => i.link);
+    const result = await adapter.runPlan(plan, { count: 24, userId: "u", exclude });
+    const bodies = fetchMock.mock.calls.map(([, init]) => bodyOf(init));
+    expect(bodies).toHaveLength(plan.length + 1);
+    expect(bodies.at(-1)).toEqual({ q: tasteQ, num: 10, page: 2 });
+    expect(result.requests).toBe(plan.length + 1);
+    expect(result.report?.find((r) => r.lane === "taste")).toMatchObject({ page2: true, good: 12 });
+    expect(result.references.some((r) => r.sourceUrl.includes("-p2"))).toBe(true);
+  });
+
+  it("keeps page 2 and fallbacks within 8 requests, page 2 first", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const { q, page } = bodyOf(init);
+      // The Pinterest fidelity request is thin (a fallback case); everything else is full.
+      const thin = q.startsWith("saudi fintech") && q.includes("pinterest");
+      return jsonResponse(pageFor(q, thin ? 2 : 10, page === 2 ? "-p2" : ""));
+    });
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const plan = planRequests(LANES);
+    // Every result of the inspiration, taste and hero pages is already on the canvas: 4 exhausted requests.
+    const exclude = plan
+      .filter((r) => r.lane !== "fidelity")
+      .flatMap((r) => pageFor(buildSourceQuery(r.query, r.site)).images.map((i) => i.link));
+    let inFlight = 0;
+    let peak = 0;
+    const counted = vi.fn<FetchLike>(async (url, init) => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 2));
+      inFlight--;
+      return fetchMock(url, init);
+    });
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: counted, allowlist }).runPlan(plan, { count: 12, userId: "u", exclude });
+    const bodies = counted.mock.calls.map(([, init]) => bodyOf(init));
+    expect(bodies).toHaveLength(8);
+    expect(result.requests).toBe(8);
+    expect(peak).toBeLessThanOrEqual(4);
+    // Only 2 requests were left: both went to page 2, the thin fidelity answer got no fallback.
+    expect(bodies.slice(6).every((b) => b.page === 2)).toBe(true);
+    expect(result.report?.filter((r) => r.page2)).toHaveLength(2);
+    expect(result.report?.some((r) => r.retried)).toBe(false);
+    void adapter;
+  });
+
+  it("does not fetch page 2 for a thin answer or a short page", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q, 3)));
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests({ inspiration: "x" }), {
+      count: 12,
+      userId: "u",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.report?.some((r) => r.page2)).toBe(false);
+  });
 });
+
+describe("run with a blocklist", () => {
+  it("drops blocked items from a plain query search", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const first = await adapter.run({ query: "poster", count: 8, userId: "u" });
+    const blocked = [itemKey(first.references[0]!.sourceUrl)];
+    const again = await adapter.run({ query: "poster", count: 8, userId: "u", excludeKeys: blocked });
+    expect(again.references).toHaveLength(8);
+    expect(again.references.some((r) => itemKey(r.sourceUrl) === blocked[0])).toBe(false);
+  });
+});
+

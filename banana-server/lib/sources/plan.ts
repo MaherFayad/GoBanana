@@ -6,20 +6,19 @@
  *   UI_NEG       -template -kit -free -wireframe
  *   inspiration  "{ingredient}"                            pinterest.com/pin + behance.net/gallery
  *   fidelity     "{domain} {surface} {UI_NEG}"             dribbble.com/shots + pinterest.com/pin
- *   taste        "{style} {component} ui {UI_NEG}"         dribbble.com/shots
+ *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
  *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
  *   locale (ar)  "arabic {surface} {UI_NEG}"               replaces the fidelity Pinterest page
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
  * what the base plan leaves is spent on fallbacks (fidelity retried with the core domain noun).
  */
-import { SOURCE_SITES, type Reference, type SourceSite } from "./types";
+import { SOURCE_SITES, type LaneName, type Reference, type SourceSite } from "./types";
 
 /** Negatives for UI lanes: they cut template, kit and wireframe sales sheets. */
 export const UI_NEG = "-template -kit -free -wireframe";
 
-export const LANE_NAMES = ["inspiration", "taste", "fidelity", "hero", "locale"] as const;
-export type LaneName = (typeof LANE_NAMES)[number];
+export type { LaneName };
 
 /** Plain lane words (no negatives, no site operator), as bend_brief and the tool output show them. */
 export type LaneTexts = {
@@ -39,6 +38,8 @@ export type PlannedRequest = {
   site: SourceSite;
   /** Retry once with this query when the request brings back fewer than FALLBACK_MIN_GOOD results. */
   fallback?: string;
+  /** Serper page (default 1). A learned arm may ask for page 2 of the same query. */
+  page?: number;
 };
 
 /** A request that brings back fewer good results than this is retried once with its fallback. */
@@ -78,7 +79,7 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[]):
   const kept: PlannedRequest[] = [];
   for (const r of out) {
     const site = r.lane === "inspiration" || picked.includes(r.site) ? r.site : picked[0]!;
-    const key = `${r.query}|${site}`;
+    const key = `${r.query}|${site}|${r.page ?? 1}`;
     if (seen.has(key)) continue;
     seen.add(key);
     kept.push({ ...r, site });

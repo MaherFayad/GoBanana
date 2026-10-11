@@ -60,7 +60,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray.",
+      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray. To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -100,6 +100,76 @@
             },
             "minItems": 1,
             "maxItems": 5
+          },
+          "lane": {
+            "type": "string",
+            "enum": [
+              "inspiration",
+              "taste",
+              "fidelity",
+              "hero",
+              "locale"
+            ],
+            "description": "With directionId and query: search only this lane of the direction, with the query as its words."
+          }
+        }
+      }
+    },
+    {
+      "name": "rate_references",
+      "title": "Rate references",
+      "description": "Rate search results so later searches get better. Free. Pass referenceIds from search_references with verdict \"bad\" (off topic, shop or stock, cluttered, duplicate) or \"great\" (standouts only). Bad results leave the canvas tray and never come back in this user's searches. Each bad rating returns a hint for re-searching its lane.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ratings"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string",
+            "description": "Canvas whose tray holds the results. Bad ones are removed from it."
+          },
+          "ratings": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "required": [
+                "referenceId",
+                "verdict"
+              ],
+              "properties": {
+                "referenceId": {
+                  "type": "string"
+                },
+                "verdict": {
+                  "type": "string",
+                  "enum": [
+                    "great",
+                    "bad"
+                  ]
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "off_topic",
+                      "low_craft",
+                      "stock_or_shop",
+                      "cluttered",
+                      "duplicate",
+                      "wrong_style",
+                      "not_ui",
+                      "great_craft",
+                      "on_style",
+                      "on_brief"
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       }

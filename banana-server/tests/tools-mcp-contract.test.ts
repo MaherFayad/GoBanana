@@ -38,6 +38,7 @@ const EXPECTED = [
   "ping",
   "bend_brief",
   "search_references",
+  "rate_references",
   "open_canvas",
   "add_to_canvas",
   "arrange_canvas",
@@ -77,6 +78,9 @@ describe("MCP contract", () => {
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("canvasId");
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("taste");
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("taste");
+    expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("lane");
+    expect(byName.rate_references!.inputSchema.required).toEqual(["ratings"]);
+    expect(Object.keys(byName.rate_references!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
   });
 
   it("runs bend_brief and returns text plus structured directions", async () => {
@@ -94,5 +98,8 @@ describe("MCP contract", () => {
     expect((result!.content as { text: string }[])[0]!.text).toBe("wildness must be a whole number from 1 (Fresh) to 5 (Bananas).");
     const arrange = await rpc("tools/call", { name: "arrange_canvas", arguments: { canvasId: "x", layout: "spiral" } });
     expect((arrange.result!.content as { text: string }[])[0]!.text).toContain("layout must be one of");
+    const rate = await rpc("tools/call", { name: "rate_references", arguments: { ratings: [{ referenceId: "ref_1", verdict: "meh" }] } });
+    expect(rate.result!.isError).toBe(true);
+    expect((rate.result!.content as { text: string }[])[0]!.text).toContain("verdict of great or bad");
   });
 });

@@ -17,6 +17,7 @@ import {
   MOVES,
   pickStyle,
   tasteQuery,
+  tasteVariants,
 } from "@/lib/bend";
 import { lensEntries } from "@/lib/bend/lists";
 import { MOVE_DEFS } from "@/lib/bend/moves";
@@ -89,14 +90,30 @@ describe("brief lanes", () => {
     expect(fidelityQuery("poster for a jazz festival")).toBe("jazz festival poster design");
   });
 
-  it("taste: {style} {component} ui with no domain; the default component follows the surface", () => {
-    expect(tasteQuery(CANVAS_BRIEF, "minimal")).toBe("minimal checkout ui");
-    expect(tasteQuery("banking app onboarding", "dark mode")).toBe("dark mode onboarding ui");
-    expect(tasteQuery("saudi fintech app", "glassmorphism")).toBe("glassmorphism card ui");
-    expect(tasteQuery("luxury hotel website", "editorial")).toBe("editorial hero section ui");
-    expect(tasteQuery("pricing page for a saas tool", "swiss style")).toBe("swiss style pricing page ui");
-    expect(tasteQuery("logistics dashboard", "dark with one accent")).toBe("dark accent dashboard ui");
+  it("taste: {style} {domain} {component} ui design; the default component follows the surface", () => {
+    expect(tasteQuery(CANVAS_BRIEF, "big typography")).toBe("big typography flight checkout ui design");
+    expect(tasteQuery(CANVAS_BRIEF, "minimal")).toBe("minimal flight checkout ui design");
+    expect(tasteQuery("banking app onboarding", "dark mode")).toBe("dark mode banking onboarding ui design");
+    expect(tasteQuery("saudi fintech app", "glassmorphism")).toBe("glassmorphism saudi fintech card ui design");
+    expect(tasteQuery("luxury hotel website", "editorial")).toBe("editorial luxury hotel hero section ui design");
+    expect(tasteQuery("pricing page for a saas tool", "swiss style")).toBe("swiss style saas pricing page ui design");
+    expect(tasteQuery("logistics dashboard", "dark with one accent")).toBe("dark accent logistics dashboard ui design");
     expect(tasteQuery("poster for a jazz festival", "grainy")).toBe("grainy jazz festival poster");
+    // Too long: the domain drops to its core noun, then style words go; "ui design" stays.
+    expect(tasteQuery("Dashboard for a fleet management company", "very soft studio 3d light")).toBe(
+      "soft studio 3d fleet dashboard ui design",
+    );
+  });
+
+  it("taste variants for the search learner: app wording and the core domain noun", () => {
+    expect(tasteVariants(CANVAS_BRIEF, "big typography")).toEqual({ app: "big typography flight app checkout ui" });
+    expect(tasteVariants("saudi fintech app", "glassmorphism")).toEqual({
+      app: "glassmorphism saudi fintech app card ui",
+      core: "glassmorphism fintech card ui design",
+    });
+    expect(tasteVariants("luxury hotel website", "editorial")).toEqual({ core: "editorial hotel hero section ui design" });
+    expect(tasteVariants("logistics dashboard", "minimal")).toEqual({});
+    expect(tasteVariants("poster for a jazz festival", "grainy")).toEqual({});
   });
 
   it("hero for app briefs only, locale for Arabic briefs only", () => {
@@ -113,7 +130,7 @@ describe("brief lanes", () => {
     const lanes = laneTexts(CANVAS_BRIEF, "crushed velvet", DEFAULT_TASTE, "bd-8dti7s7c");
     expect(lanes).toEqual({
       inspiration: "crushed velvet",
-      taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} checkout ui`,
+      taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} flight checkout ui design`,
       fidelity: "flight app ui",
       hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
       locale: "arabic app ui",
@@ -167,7 +184,12 @@ describe("bend output", () => {
     const tasted = bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8, taste: ["monochrome"] });
     expect(tasted.directions.map((d) => d.id)).toEqual(base.directions.map((d) => d.id));
     for (const d of tasted.directions) {
-      expect(d.searchQueries).toEqual([d.searchQuery, "monochrome checkout ui", "flight app ui", "monochrome flight app single screen"]);
+      expect(d.searchQueries).toEqual([
+        d.searchQuery,
+        "monochrome flight checkout ui design",
+        "flight app ui",
+        "monochrome flight app single screen",
+      ]);
     }
   });
 });

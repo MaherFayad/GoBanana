@@ -20,7 +20,7 @@ function fakeDatabase(users: string[]) {
   const userRows = new Map(users.map((u) => [u, { workosId: `user_${u.slice(0, 4)}` }]));
   const rows: Row[] = [];
   for (const u of users) {
-    for (const table of ["canvases", "directions", "references", "palettes", "uploads", "usage"]) {
+    for (const table of ["canvases", "directions", "references", "palettes", "uploads", "usage", "search_feedback", "blocked_items"]) {
       for (let i = 0; i < 3; i++) rows.push({ userId: u, table });
     }
   }
@@ -57,7 +57,7 @@ describe("deleteAccountData", () => {
     expect(bucket.objects.has(`u/${ALICE}-other/keep`)).toBe(true);
     expect(db.userRows.has(ALICE)).toBe(false);
     expect(db.rows.filter((r) => r.userId === ALICE)).toEqual([]);
-    expect(db.rows.filter((r) => r.userId === BOB)).toHaveLength(18);
+    expect(db.rows.filter((r) => r.userId === BOB)).toHaveLength(24);
     // Three list pages of 1000 for the first sweep, one empty page for the second.
     expect(bucket.calls.list).toBe(4);
     expect(bucket.calls.delete).toBe(3);
@@ -88,7 +88,7 @@ describe("deleteAccountData", () => {
     seed(failing, ALICE, 2);
     await expect(deleteAccountData({ bucket: failing, repo: db.repo }, ALICE)).rejects.toThrow();
     expect(db.userRows.has(ALICE)).toBe(true);
-    expect(db.rows).toHaveLength(18);
+    expect(db.rows).toHaveLength(24);
   });
 
   it("refuses ids that are not uuids, so a prefix can never widen", async () => {
@@ -117,6 +117,9 @@ describe("schema cascades from users", () => {
     schema.palettes,
     schema.uploads,
     schema.usage,
+    // Search ratings and the blocklist are personal data: they go with the user (PDPL).
+    schema.searchFeedback,
+    schema.blockedItems,
   ];
 
   it("every user-owned table is reached from users by ON DELETE CASCADE", () => {

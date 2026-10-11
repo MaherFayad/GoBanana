@@ -47,6 +47,8 @@ export {
   localeQuery,
   pickStyle,
   tasteQuery,
+  tasteVariants,
+  directionTasteVariants,
 } from "./queries";
 export type { BendInput, BendResult, Direction, MoveId, Wildness } from "./types";
 

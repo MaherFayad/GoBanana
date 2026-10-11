@@ -1,6 +1,6 @@
 ---
 name: banana-explore
-description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a Banana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas and search_references from the Banana MCP server. Use banana-moodboard to arrange an existing canvas, banana-palette for colors, banana-design-md for DESIGN.md.
+description: Turn a vague design ask into wild, unexpected directions and pull linked visual references for them into a Banana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references and rate_references from the Banana MCP server. Use banana-moodboard to arrange an existing canvas, banana-palette for colors, banana-design-md for DESIGN.md.
 ---
 
 # Banana explore
@@ -79,9 +79,23 @@ Call `open_canvas` with a short `title` (max 80), the `brief` and `taste` if you
 
 For each picked direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). Prefer `directionId` whenever the directions are saved on a canvas: one call searches several lanes at once (the direction's raw idea, the user's taste, real screens for the brief and, for Arabic briefs, Arabic UI) and counts as one search. Do not pass a direction's `searchQuery` as `query` when you have its id. Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards. Use `query` with your own wording only to steer a single extra search.
 
-Then report per direction: how many references landed in the tray, what each lane searched (the `lanes` field), and 2 or 3 highlights as `[title](sourceUrl) (site)`. If a direction returns few results, say so and offer a reworded `query` or other sources. Do not call search again on your own more than once per direction; each search counts toward the user's quota.
+Then audit the results (step 9) before you report.
 
-### 9. Offer next steps
+### 9. Audit and rate every search
+
+The server does not look at images. You do. After each `search_references`:
+
+1. **Judge every result** against the brief and the user's style words, from its title, source site and URL, and from the image when you can see it. Each result line shows `[referenceId, lane]`.
+2. **Call `rate_references`** with the `canvasId` and one rating per judged result. It is free.
+   - `bad` for anything off topic, shop or stock, DIY or decor in a UI lane (taste, fidelity, hero, locale), cluttered, or a duplicate. Add `reasons` (`off_topic`, `stock_or_shop`, `not_ui`, `cluttered`, `duplicate`, `low_craft`, `wrong_style`).
+   - `great` for standouts only: about the top 10 to 20%. Add `great_craft`, `on_style` or `on_brief`.
+   - Bad results leave the tray and never come back for this user.
+3. **Retry a weak lane.** If more than 40% of one lane is bad, search that lane once more: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. Describe the visual, not the object: "35mm film strip macro", not "oversized film frames". Use the hint `rate_references` returns. At most 2 retries per lane, and each retry counts toward the quota.
+4. **Tell the user in one line** what you rejected and why, for example: "Dropped 4 (2 shop listings, 2 off topic) and retried the inspiration lane with 35mm film strip macro."
+
+Then report per direction: how many references are in the tray, what each lane searched (the `lanes` field), and 2 or 3 highlights as `[title](sourceUrl) (site)`. If a direction still returns few results, say so and offer other sources.
+
+### 10. Offer next steps
 
 End with a short menu, for example:
 

@@ -16,7 +16,8 @@
     "binding": "ASSETS"
   },
   "observability": { "enabled": true },
-  // Daily at 03:17 UTC: purge references older than 30 days that are not on a canvas.
+  // Daily at 03:17 UTC: purge references older than 30 days that are not on a canvas, and
+  // search ratings older than 12 months.
   "triggers": { "crons": ["17 3 * * *"] },
   // User uploads and export files only (never third-party images).
   // Create first: npx wrangler r2 bucket create banana-uploads
@@ -37,6 +38,8 @@
     "WORKOS_AUTHKIT_DOMAIN": "https://sensitive-conch-18-staging.authkit.app",
     "IMAGE_HOST_ALLOWLIST": "",
     // Payments are off: every free user gets Pro limits. Remove at launch.
-    "BETA_PLAN": "pro"
+    "BETA_PLAN": "pro",
+    // Search learning from rate_references across users ("off": each user's own ratings only).
+    "GLOBAL_LEARNING": "on"
   }
 }

@@ -71,7 +71,7 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "query", "sources", "taste"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "query", "sources", "taste"]);
   });
 
   it("validates count and sources", () => {
@@ -133,7 +133,7 @@ describe("search_references tool", () => {
     const out = res.structuredContent as { lanes: Record<string, string>; queries: string[]; query: string };
     expect(out.query).toBe("crushed velvet");
     expect(out.lanes).toMatchObject({ inspiration: "crushed velvet", fidelity: "flight app ui", locale: "arabic app ui" });
-    expect(out.lanes.taste).toMatch(/ checkout ui$/);
+    expect(out.lanes.taste).toMatch(/ flight checkout ui design$/);
     expect(out.lanes.hero).toMatch(/ flight app single screen$/);
     expect(out.queries[0]).toBe("crushed velvet site:pinterest.com/pin");
     expect(out.queries[1]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
@@ -146,7 +146,7 @@ describe("search_references tool", () => {
     const res = await tool({ directionId: "bd-8dti7s7c", taste: ["Monochrome"] }, "u1");
     expect(saveTaste).toHaveBeenCalledWith("u1", "c1", ["monochrome"]);
     const out = res.structuredContent as { lanes: Record<string, string>; taste: string[]; tasteSaved: boolean };
-    expect(out.lanes.taste).toBe("monochrome checkout ui");
+    expect(out.lanes.taste).toBe("monochrome flight checkout ui design");
     expect(out.lanes.hero).toBe("monochrome flight app single screen");
     expect(out).toMatchObject({ taste: ["monochrome"], tasteSaved: true });
     expect(runPlan).toHaveBeenCalledTimes(1);
@@ -157,7 +157,7 @@ describe("search_references tool", () => {
       getDirection: async () => ({ id: "d", searchQuery: "crushed velvet", brief: "banking app", taste: ["luxury"] }),
     });
     const res = await tool({ directionId: "d" }, "u1");
-    expect((res.structuredContent as { lanes: Record<string, string> }).lanes.taste).toBe("luxury card ui");
+    expect((res.structuredContent as { lanes: Record<string, string> }).lanes.taste).toBe("luxury banking card ui design");
   });
 
   it("rejects too many taste words with a plain message", async () => {
@@ -207,7 +207,8 @@ describe("search_references tool", () => {
   it("adds results to the canvas tray when canvasId is given", async () => {
     const { tool, addToTray } = setup();
     const res = await tool({ query: "x", canvasId: "c1" }, "u1");
-    expect(addToTray).toHaveBeenCalledWith("u1", "c1", [ref]);
+    // Saved with the query words that found them (no lane: a plain query search).
+    expect(addToTray).toHaveBeenCalledWith("u1", "c1", [{ ...ref, query: "x" }]);
     expect(res.structuredContent).toMatchObject({ canvasId: "c1", addedToTray: true });
   });
 

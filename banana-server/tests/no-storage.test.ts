@@ -223,4 +223,63 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     expect(globalRequests).toEqual([]);
     expect(writes).toEqual([]);
   });
+
+  it("search learning (blocklist, learned arms, a lane re-search) and rating: only Serper, no writes", async () => {
+    const requests: Recorded[] = [];
+    const tray: unknown[] = [];
+    const tool = createSearchReferencesTool({
+      adapter: createWebSearchAdapter({ apiKey: "k", fetch: recordingFetch(requests), allowlist }),
+      usage: createMemoryUsageStore(),
+      getPlan: async () => "free",
+      getDirection: async () => ({ id: "d1", searchQuery: "melted chrome", brief: "Flight checkout screen" }),
+      addToTray: async (_u, _c, refs) => {
+        tray.push(...refs);
+        return true;
+      },
+      getUserLearning: async () => ({
+        blocked: ["dribbble:1"],
+        creatorRatings: [
+          { itemKey: "dribbble:2", verdict: "great", creator: "jane doe" },
+          { itemKey: "dribbble:3", verdict: "great", creator: "jane doe" },
+        ],
+      }),
+      getArmStats: async (_u, keys) => [
+        { termKey: keys[0]!, arm: "raw@behance", great: 9, bad: 0, users: 9, ownGreat: 0, ownBad: 0 },
+        { termKey: keys[0]!, arm: "raw@pinterest+behance", great: 0, bad: 9, users: 9, ownGreat: 0, ownBad: 0 },
+      ],
+      upgradeUrl: () => "https://example.test/pricing",
+    });
+    const full = await tool({ directionId: "d1", canvasId: "c1" }, "u1");
+    expect(full.isError).toBeUndefined();
+    const lane = await tool({ directionId: "d1", canvasId: "c1", lane: "inspiration", query: "chrome macro" }, "u1");
+    expect(lane.isError).toBeUndefined();
+    expect(tray.length).toBeGreaterThan(0);
+    for (const item of tray) {
+      for (const value of Object.values(item as Record<string, unknown>)) {
+        expect(typeof value === "string" || typeof value === "number").toBe(true);
+      }
+    }
+    expect(requests.length).toBeLessThanOrEqual(8 + 2);
+
+    // Rating touches only the in-memory repos: no network, no writes.
+    const { createRateReferencesTool } = await import("@/lib/mcp/tools/rate_references");
+    const { createMemoryRepos } = await import("@/lib/db/memory");
+    const repos = createMemoryRepos();
+    const c = await repos.canvases.create({ userId: "11111111-1111-4111-8111-111111111111", title: "B", state: {} });
+    const saved = tray.slice(0, 2) as Parameters<typeof repos.references.insertMany>[1];
+    await repos.references.insertMany(c.id, saved);
+    const rate = createRateReferencesTool({ repos, appUrl: () => "https://example.test" });
+    const before = requests.length;
+    const rated = await rate(
+      { canvasId: c.id, ratings: saved.map((r) => ({ referenceId: r.id, verdict: "bad" as const })) },
+      "11111111-1111-4111-8111-111111111111",
+    );
+    expect(rated.structuredContent).toMatchObject({ rated: 2, bad: 2 });
+    expect(requests.length).toBe(before);
+
+    assertOnlySerper(requests);
+    expect(globalRequests).toEqual([]);
+    expect(writes).toEqual([]);
+  });
 });
+

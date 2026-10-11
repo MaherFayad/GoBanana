@@ -62,7 +62,7 @@ export interface Direction {
   searchQuery: string;
   /**
    * Lane words search_references uses for a directionId (lib/bend/queries.ts): inspiration (same as
-   * searchQuery), taste ("{style} {component} ui"), fidelity ("{domain} app ui", shared by every
+   * searchQuery), taste ("{style} {domain} {component} ui design"), fidelity ("{domain} app ui", shared by every
    * direction of a brief), then hero ("{style} {domain} app single screen", app briefs) and locale
    * ("arabic app ui", Arabic briefs) when they apply. Plain words: the server adds negatives and
    * site operators when it searches. At most 7 words each.

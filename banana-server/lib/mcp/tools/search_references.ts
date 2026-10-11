@@ -8,12 +8,31 @@
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
-import type { Repos } from "@/lib/db/types";
+import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
 import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
-import { inspirationFromQuery, laneTexts } from "@/lib/bend/queries";
+import { directionTasteVariants, inspirationFromQuery, laneTexts } from "@/lib/bend/queries";
+import {
+  agentArm,
+  builtInArms,
+  defaultArm,
+  globalLearningOn,
+  pickArm,
+  planLane,
+  planWithArms,
+  type ArmVariants,
+} from "@/lib/learning/arms";
+import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
+import { queryWords, termKey } from "@/lib/learning/terms";
 import { planRequests, type LaneTexts } from "@/lib/sources/plan";
-import { buildSourceQuery } from "@/lib/sources/query";
-import { DEFAULT_SOURCES, SOURCE_SITES, type Reference, type SourceSite } from "@/lib/sources/types";
+import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
+import {
+  DEFAULT_SOURCES,
+  LANE_NAMES,
+  SOURCE_SITES,
+  type LaneName,
+  type Reference,
+  type SourceSite,
+} from "@/lib/sources/types";
 import { cleanTaste, DEFAULT_TASTE } from "@/lib/taste";
 import {
   SERPER_MAX_REQUESTS,
@@ -35,6 +54,8 @@ export const TOOL_DESCRIPTION =
   "Every result carries its source link: always show it next to the image. " +
   "Pass canvasId to add the results to that canvas tray. " +
   "Pass taste with a few style words that describe the user's references (for example from their mood boards), such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. " +
+  "To redo one lane of a direction with better words, pass directionId, lane and query. " +
+  "Rate results with rate_references so later searches improve. " +
   "Results are links to the source pages only.";
 
 export const inputSchema = z.object({
@@ -44,6 +65,10 @@ export const inputSchema = z.object({
   count: z.number().int().min(4).max(24).default(12),
   canvasId: z.string().min(1).max(100).optional(),
   taste: tasteInputSchema.optional(),
+  lane: z
+    .enum(LANE_NAMES)
+    .optional()
+    .describe("With directionId and query: search only this lane of the direction, with the query as its words."),
 });
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
@@ -74,11 +99,20 @@ export type SearchReferencesDeps = {
    * Save references (URLs and metadata only) and put them in the canvas tray, tagged with
    * the direction they were found for. Returns false when the canvas is not the user's.
    */
-  addToTray(userId: string, canvasId: string, references: Reference[], directionId?: string): Promise<boolean>;
+  addToTray(userId: string, canvasId: string, references: SavedReference[], directionId?: string): Promise<boolean>;
   /** Save style words on the user's canvas for later searches. Returns false when it is not theirs. */
   saveTaste?(userId: string, canvasId: string, taste: string[]): Promise<boolean>;
   /** Source links already on the user's canvas (tray and board), or [] when it is not theirs. */
   getCanvasSourceUrls?(userId: string, canvasId: string): Promise<string[]>;
+  /**
+   * What the user taught search with rate_references: blocked item keys (never shown again) and
+   * their ratings of results with a known creator. A failure fails the search (blocked stays blocked).
+   */
+  getUserLearning?(userId: string): Promise<{ blocked: string[]; creatorRatings: CreatorRating[] }>;
+  /** Ratings per term key and arm (lib/db/feedback.ts). A failure falls back to the default arms. */
+  getArmStats?(userId: string, termKeys: string[]): Promise<ArmStatRow[]>;
+  /** GLOBAL_LEARNING: false means only the user's own ratings steer their searches. Default true. */
+  globalLearning?(): boolean;
   upgradeUrl(): string;
   now?(): Date;
 };
@@ -89,6 +123,12 @@ export type SearchReferencesOutput = {
   queries: string[];
   /** Direction searches only: the plain words of each lane. */
   lanes?: LaneTexts;
+  /** Direction searches only: the arm (wording) each lane used (lib/learning/arms.ts). */
+  arms?: Partial<Record<LaneName, string>>;
+  /** Direction searches only: true when ratings steered a lane away from its default wording. */
+  learned?: boolean;
+  /** Lane-only re-search: the lane that was searched. */
+  lane?: LaneName;
   sources: SourceSite[];
   references: Reference[];
   note?: string;
@@ -114,7 +154,9 @@ function resultText(out: SearchReferencesOutput): string {
     return lines.join("\n");
   }
   const lanes = out.lanes;
-  const searched = lanes
+  const searched = out.lane
+    ? `the ${out.lane} lane "${out.query}"`
+    : lanes
     ? Object.entries(lanes)
         .filter(([k]) => k !== "fidelityCore")
         .map(([k, v]) => `${k} "${v}"`)
@@ -122,10 +164,13 @@ function resultText(out: SearchReferencesOutput): string {
     : `"${out.query}"`;
   lines.push(`Found ${out.references.length} references for ${searched}. Show each source link with its image.`);
   out.references.forEach((r, i) => {
-    lines.push(`${i + 1}. ${r.title ?? "Untitled"} (${r.sourceSite}): ${r.sourceUrl}`);
+    const tag = r.lane ? `${r.id}, ${r.lane}` : r.id;
+    lines.push(`${i + 1}. [${tag}] ${r.title ?? "Untitled"} (${r.sourceSite}): ${r.sourceUrl}`);
   });
   if (out.note) lines.push(out.note);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
+  if (out.learned) lines.push("Some lanes used wording that rated better before.");
+  lines.push("Rate standouts and misses with rate_references (ids in brackets).");
   return lines.join("\n");
 }
 
@@ -138,7 +183,62 @@ export function directionLanes(direction: Direction, taste: readonly string[]): 
   return laneTexts(direction.brief, inspirationFromQuery(direction.searchQuery), taste, direction.bendId ?? direction.id);
 }
 
-type Searched = { result: WebSearchResult; queries: string[]; lanes?: LaneTexts };
+type Searched = {
+  result: WebSearchResult;
+  queries: string[];
+  lanes?: LaneTexts;
+  arms?: Partial<Record<LaneName, string>>;
+  learned?: boolean;
+  termKeys?: Partial<Record<LaneName, string>>;
+};
+
+/** Term key of every lane a direction has. */
+export function laneTermKeys(lanes: LaneTexts): Partial<Record<LaneName, string>> {
+  const out: Partial<Record<LaneName, string>> = {};
+  for (const lane of LANE_NAMES) {
+    const text = lanes[lane];
+    if (text) out[lane] = termKey(lane, text);
+  }
+  return out;
+}
+
+/** UTC day, so arm picks stay put for a user and term within a day. */
+const day = (d: Date) => d.toISOString().slice(0, 10);
+
+/**
+ * One arm per lane from the ratings (lib/learning/arms.ts). Lanes with no usable ratings keep
+ * the default; a stats failure keeps every default.
+ */
+async function pickArms(
+  deps: SearchReferencesDeps,
+  userId: string,
+  lanes: LaneTexts,
+  termKeys: Partial<Record<LaneName, string>>,
+  variants: ArmVariants,
+  now: Date,
+): Promise<Partial<Record<LaneName, string>>> {
+  const present = LANE_NAMES.filter((l) => termKeys[l]);
+  const arms: Partial<Record<LaneName, string>> = Object.fromEntries(present.map((l) => [l, defaultArm(l)]));
+  if (!deps.getArmStats) return arms;
+  let stats: ArmStatRow[];
+  try {
+    stats = await deps.getArmStats(userId, present.map((l) => termKeys[l]!));
+  } catch {
+    console.error("[search_references] could not read arm stats");
+    return arms;
+  }
+  const global = deps.globalLearning?.() ?? true;
+  for (const lane of present) {
+    arms[lane] = pickArm({
+      termKey: termKeys[lane]!,
+      candidates: builtInArms(lane, lanes, variants),
+      stats,
+      global,
+      seed: `${userId}|${day(now)}`,
+    }).arm;
+  }
+  return arms;
+}
 
 /** Handler logic, separate from MCP wiring so tests can call it directly. */
 export function createSearchReferencesTool(deps: SearchReferencesDeps) {
@@ -150,22 +250,31 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
 
     const parsed = inputSchema.safeParse(rawInput);
     if (!parsed.success) {
-      return toolMessage("Check the input: pass a directionId or a query, a count from 4 to 24, and at most 5 short taste words.");
+      return toolMessage(
+        "Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, and lane as one of inspiration, taste, fidelity, hero or locale.",
+      );
     }
     const input = parsed.data;
     if (!input.directionId && !input.query) {
       return toolMessage("Pass a directionId from bend_brief or a query.");
     }
+    if (input.lane && (!input.directionId || !input.query)) {
+      return toolMessage("To redo one lane, pass directionId, lane and query (the new words for that lane).");
+    }
+    const laneWords = input.lane ? cleanQuery(input.query!) : undefined;
+    if (input.lane && !laneWords) return toolMessage("Pass a few words in query for that lane.");
     if (input.canvasId && !plausibleId(input.canvasId)) {
       return toolMessage("That canvas was not found. Call open_canvas to create one, or check the canvasId.");
     }
 
     const inputTaste = cleanTaste(input.taste);
     try {
-      const query = input.query;
+      // A lane re-search uses the direction; its query is the lane's new words.
+      const query = input.lane ? undefined : input.query;
       let directionKey: string | undefined;
       let directionCanvasId: string | undefined;
       let lanes: LaneTexts | undefined;
+      let variants: ArmVariants = {};
       if (!query && input.directionId) {
         const direction = await deps.getDirection(userId, input.directionId, input.canvasId);
         if (!direction) {
@@ -177,6 +286,12 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         lanes = directionLanes(direction, taste.length > 0 ? taste : DEFAULT_TASTE);
         directionKey = direction.bendId ?? direction.id;
         directionCanvasId = direction.canvasId ?? undefined;
+        const v = directionTasteVariants(direction.brief, taste.length > 0 ? taste : DEFAULT_TASTE, directionKey);
+        variants = { ...(v.app ? { tasteApp: v.app } : {}), ...(v.core ? { tasteCore: v.core } : {}) };
+        if (input.lane && !lanes[input.lane]) {
+          const has = LANE_NAMES.filter((l) => lanes![l]).join(", ");
+          return toolMessage(`That direction has no ${input.lane} lane. Its lanes: ${has}.`);
+        }
       }
       if (!query && !lanes) return toolMessage("Pass a directionId from bend_brief or a query.");
 
@@ -197,16 +312,47 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       }
 
       const sources = input.sources ? SOURCE_SITES.filter((s) => input.sources!.includes(s)) : [...DEFAULT_SOURCES];
+      // What the user taught search: blocked items never come back, liked creators move up.
+      const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
+      const preferCreators = preferredCreators(learning.creatorRatings);
       let searched: Searched;
       if (lanes) {
+        const picked = input.sources ? sources : undefined;
+        const termKeys = laneTermKeys(lanes);
+        let plan;
+        let arms: Partial<Record<LaneName, string>> = {};
+        let learned = false;
+        if (input.lane) {
+          // Only this lane, with the agent's words; they become an arm of the lane's term.
+          arms = { [input.lane]: agentArm(laneWords!) };
+          plan = planLane(input.lane, queryWords(laneWords!), picked);
+        } else {
+          arms = await pickArms(deps, userId, lanes, termKeys, variants, deps.now?.() ?? new Date());
+          learned = Object.entries(arms).some(([lane, arm]) => arm !== defaultArm(lane as LaneName));
+          plan = learned ? planWithArms(lanes, arms, picked, variants) : planRequests(lanes, picked);
+        }
         // One path-scoped request per lane and source, at most SERPER_MAX_REQUESTS in all (fallbacks included).
-        const plan = planRequests(lanes, input.sources ? sources : undefined).slice(0, SERPER_MAX_REQUESTS);
+        plan = plan.slice(0, SERPER_MAX_REQUESTS);
         const exclude = input.canvasId && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, input.canvasId) : [];
-        const result = await deps.adapter.runPlan(plan, { count: input.count, userId, exclude });
+        const result = await deps.adapter.runPlan(plan, {
+          count: input.count,
+          userId,
+          exclude,
+          ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
+          ...(preferCreators.length > 0 ? { preferCreators } : {}),
+        });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
-        searched = { result, queries, lanes };
+        searched = { result, queries, lanes, arms, learned, termKeys };
       } else {
-        searched = { result: await deps.adapter.run({ query: query!, count: input.count, userId, sources }), queries: [query!] };
+        const result = await deps.adapter.run({
+          query: query!,
+          count: input.count,
+          userId,
+          sources,
+          ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
+          ...(preferCreators.length > 0 ? { preferCreators } : {}),
+        });
+        searched = { result, queries: [query!] };
       }
       const { result } = searched;
 
@@ -215,13 +361,18 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (result.ok) await deps.usage.addSearches(userId, quota.period, 1);
 
       const out: SearchReferencesOutput = {
-        query: lanes ? lanes.inspiration : query!,
+        query: input.lane ? queryWords(laneWords!) : lanes ? lanes.inspiration : query!,
         queries: searched.queries,
         sources,
         references: result.references,
         addedToTray: false,
       };
       if (searched.lanes) out.lanes = searched.lanes;
+      if (searched.arms) {
+        out.arms = searched.arms;
+        out.learned = searched.learned ?? false;
+      }
+      if (input.lane) out.lane = input.lane;
       if (inputTaste.length > 0) {
         out.taste = inputTaste;
         out.tasteSaved = tasteSaved;
@@ -231,9 +382,21 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
 
       if (input.canvasId && result.references.length > 0) {
         out.canvasId = input.canvasId;
+        // Saved with how they were found, so rate_references can credit the lane wording.
+        const saved: SavedReference[] = result.references.map((r) => {
+          const lane = r.lane;
+          const tk = lane ? searched.termKeys?.[lane] : undefined;
+          const arm = lane ? searched.arms?.[lane] ?? defaultArm(lane) : undefined;
+          return {
+            ...r,
+            ...(r.query ? {} : { query: queryWords(query ?? "") || undefined }),
+            ...(tk ? { termKey: tk } : {}),
+            ...(tk && arm ? { arm } : {}),
+          };
+        });
         const added = directionKey
-          ? await deps.addToTray(userId, input.canvasId, result.references, directionKey)
-          : await deps.addToTray(userId, input.canvasId, result.references);
+          ? await deps.addToTray(userId, input.canvasId, saved, directionKey)
+          : await deps.addToTray(userId, input.canvasId, saved);
         if (added) out.addedToTray = true;
         else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
       }
@@ -294,6 +457,12 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
       }));
       return outcome.ok;
     },
+    getUserLearning: async (userId) => {
+      const [blocked, creatorRatings] = await Promise.all([r().blocklist.list(userId), r().feedback.listCreatorRatings(userId)]);
+      return { blocked, creatorRatings };
+    },
+    getArmStats: (userId, termKeys) => r().feedback.armStats(userId, termKeys),
+    globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
     getCanvasSourceUrls: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];
