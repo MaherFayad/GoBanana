@@ -6,6 +6,9 @@
   // Must not be later than the bundled workerd release (1.20261006).
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Workers Free caps the upload at 3 MB gzipped. OpenNext leaves identifiers (and the
+  // whole middleware bundle) unminified, so wrangler minifies the final bundle.
+  "minify": true,
   "workers_dev": true,
   "assets": {
     "directory": ".open-next/assets",

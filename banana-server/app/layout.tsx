@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { APP_NAME } from "@/lib/config";
 import { DEFAULT_LOCALE, LOCALE_HEADER, dirOf, isLocale } from "@/lib/site/i18n";
+import "@/styles/fonts.css";
+import "@/styles/studio-tokens.css";
+import "@/styles/studio-components.css";
 
 export const metadata: Metadata = {
   title: APP_NAME,

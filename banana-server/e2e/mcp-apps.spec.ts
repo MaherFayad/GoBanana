@@ -11,8 +11,13 @@
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type FrameLocator, type Locator, type Page } from "@playwright/test";
-import { CANVAS_HTML } from "../lib/mcp/resources/canvas-html.generated";
-import { canvasCsp } from "../lib/mcp/resources/canvas";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { CANVAS_ASSET_PATH } from "../lib/mcp/resources/canvas-asset";
+import { canvasCsp, fillCanvasHtml } from "../lib/mcp/resources/canvas";
+
+/** The built view (`npm run build:ui`), as the `ui://banana/canvas` resource serves it. */
+const CANVAS_HTML = fillCanvasHtml(readFileSync(fileURLToPath(new URL(`../public${CANVAS_ASSET_PATH}`, import.meta.url)), "utf8"));
 
 const HOST = "https://host.test/chat";
 const SANDBOX = "https://sandbox.test/canvas.html";

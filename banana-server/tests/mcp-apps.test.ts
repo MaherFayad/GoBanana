@@ -9,8 +9,19 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import { buildAuthedMcpHandler } from "@/app/api/[transport]/handler";
-import { canvasCsp, CANVAS_UI_URI, FONT_DOMAINS, RESOURCE_MIME_TYPE } from "@/lib/mcp/resources/canvas";
-import { CANVAS_HTML } from "@/lib/mcp/resources/canvas-html.generated";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import {
+  appOrigin,
+  canvasCsp,
+  CANVAS_UI_URI,
+  fillCanvasHtml,
+  FONT_DOMAINS,
+  loadCanvasHtml,
+  RESOURCE_MIME_TYPE,
+  setCanvasHtmlLoader,
+} from "@/lib/mcp/resources/canvas";
+import { APP_ORIGIN_PLACEHOLDER, CANVAS_ASSET_PATH } from "@/lib/mcp/resources/canvas-asset";
 import { createOpenCanvasTool, inputSchema as openInput, VIEW_META_KEY } from "@/lib/mcp/tools/open_canvas";
 import { createLoadCanvasStateTool, TOOL_DESCRIPTION as LOAD_DESC } from "@/lib/mcp/tools/load_canvas_state";
 import { lenient } from "@/lib/mcp/tools/types";
@@ -33,6 +44,9 @@ import {
 import { DEFAULT_IMAGE_HOSTS } from "@/lib/sources/allowlist";
 import type { CanvasState } from "@/canvas/types";
 import { ALICE, BOB, imageNode, makeDeps, seedCanvas, state, text } from "./tools-fixtures";
+
+/** The built view (`npm run build:ui`, checked in), served as a static asset in production. */
+const CANVAS_HTML = readFileSync(join(process.cwd(), "public", CANVAS_ASSET_PATH), "utf8");
 
 // ---------------------------------------------------------------------------- MCP wire
 
@@ -102,9 +116,42 @@ describe("ui://banana/canvas resource", () => {
   });
 
   it("builds the CSP from IMAGE_HOST_ALLOWLIST", () => {
-    const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com, *.example-cdn.com" });
+    const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com, *.example-cdn.com", appUrl: "" });
     expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", "https://*.example-cdn.com", ...FONT_DOMAINS]);
     expect(csp.connectDomains).toEqual([]);
+  });
+
+  it("allows our own origin (APP_URL) for the view's font files", () => {
+    const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com", appUrl: "https://banana.example.com/some/path/" });
+    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", ...FONT_DOMAINS, "https://banana.example.com"]);
+    expect(appOrigin("https://banana-server.<your-subdomain>.workers.dev")).toBeUndefined();
+    expect(appOrigin("ftp://example.com")).toBeUndefined();
+    expect(appOrigin(undefined)).toBeUndefined();
+  });
+
+  it("fills the app origin into font URLs and leaves other HTML alone", () => {
+    const css = `@font-face{src:url(${APP_ORIGIN_PLACEHOLDER}/mcp-app/assets/inter.woff2)}`;
+    expect(fillCanvasHtml(css, "https://banana.example.com/")).toBe("@font-face{src:url(https://banana.example.com/mcp-app/assets/inter.woff2)}");
+    expect(fillCanvasHtml(CANVAS_HTML, "https://banana.example.com")).toBe(CANVAS_HTML);
+  });
+
+  it("serves the HTML from an injected loader, caches it and retries after a failure", async () => {
+    let calls = 0;
+    setCanvasHtmlLoader(async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("asset down");
+      return "<!doctype html><div id=\"root\"></div>";
+    });
+    try {
+      await expect(loadCanvasHtml()).rejects.toThrow("asset down");
+      expect(await loadCanvasHtml()).toBe("<!doctype html><div id=\"root\"></div>");
+      expect(await loadCanvasHtml()).toBe("<!doctype html><div id=\"root\"></div>");
+      expect(calls).toBe(2);
+      const result = await rpc("resources/read", { uri: CANVAS_UI_URI });
+      expect((result.contents as { text: string }[])[0]!.text).toBe("<!doctype html><div id=\"root\"></div>");
+    } finally {
+      setCanvasHtmlLoader(null);
+    }
   });
 });
 

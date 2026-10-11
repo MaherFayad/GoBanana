@@ -1,0 +1,1332 @@
+/*
+ * Studio primitives for Banana (docs/design-language.md section 4, plan Step 0).
+ *
+ * Rules for this file:
+ * - Tokens only (styles/studio-tokens.css). No hex, rgb or hsl literals here.
+ * - Logical properties only, so every primitive works in English (ltr) and Arabic (rtl).
+ * - Durations come from the --st-duration-* tokens, which are 0ms under reduced motion.
+ * - Focus is a box-shadow ring (--st-focus-ring) plus a transparent outline, so forced-colors
+ *   mode still draws a system outline.
+ * - Nothing interactive is smaller than 24 by 24 px (SC 2.5.8).
+ * - Readable text is never below --st-text-s (spec section 12, row 13); Arabic chrome text is one
+ *   step up. Only keycaps use --st-text-xs (the shortcut is also in aria-keyshortcuts).
+ *
+ * Class map (React wrappers live in components/studio/):
+ *   .st-btn            data-variant="ghost|secondary|primary|destructive" (default secondary)
+ *                      data-size="xs|sm|md|lg" (default sm), data-icon-only, data-tone="danger",
+ *                      data-shape="pill|flush", aria-pressed, disabled / aria-disabled,
+ *                      data-loading (overlay spinner) or data-loading="inline" (spinner + busy label)
+ *   .st-spinner        12px ring, currentColor head
+ *   .st-icon           pixel icons; [data-mirror] flips under rtl
+ *   .st-input          data-size="xs|sm|md|lg" (default sm), textarea, aria-invalid, disabled
+ *   .st-menu, .st-menu-item (data-tone="danger", aria-checked, data-highlighted),
+ *   .st-menu-item-icon, .st-menu-item-end, .st-menu-sep, data-state="closing" on .st-menu
+ *   .st-tooltip        data-side, data-wide, .st-tooltip-arrow
+ *   .st-dialog         native <dialog>; data-size="sm|md|lg|xl|2xl", data-tone="danger";
+ *                      .st-dialog-header, -heading, -eyebrow, -title, -close, -body, -footer
+ *   .st-toast-stack, .st-toast (data-kind="info|success|warning|error"), .st-toast-icon,
+ *   .st-toast-content, .st-toast-title, .st-toast-count, .st-toast-body, .st-toast-actions
+ *   .st-kbd, .st-shortcut
+ *   .st-chip           data-tone="ship|explore|success|danger|neutral" (opaque base layer)
+ *   .st-tile-grid, .st-tile (data-clickable or a/button), .st-tile-title (data-accent="1..10")
+ *   .st-section, .st-section-header, .st-section-title, .st-section-toggle, .st-section-body
+ *   .st-alert          data-tone="info|success|warning|danger"; .st-alert-icon, -content, -title
+ *   .st-skeleton       data-shape="text|block|circle"; .st-skeleton-stack
+ *   .st-empty          data-variant="card|centered"; .st-empty-title, .st-empty-body, .st-empty-actions
+ *   .st-visually-hidden
+ */
+
+/* ------------------------------------------------------------------ icons */
+
+.st-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  shape-rendering: crispEdges;
+}
+
+/* Directional glyphs (chevrons, arrows) point the reading way. Matched on the dir attribute,
+   not :dir(), because the CSS pipeline rewrites :dir() into :lang() lists for older browsers. */
+:where([dir="rtl"]) .st-icon[data-mirror] {
+  transform: scaleX(-1);
+}
+
+:where([dir="rtl"]) :where([dir="ltr"]) .st-icon[data-mirror] {
+  transform: none;
+}
+
+/* ------------------------------------------------------------------ visually hidden */
+
+.st-visually-hidden {
+  position: absolute !important;
+  inline-size: 1px !important;
+  block-size: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ------------------------------------------------------------------ spinner */
+
+.st-spinner {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  inline-size: 12px;
+  block-size: 12px;
+  border: 2px solid var(--st-overlay-20);
+  border-block-start-color: currentColor;
+  border-radius: var(--st-radius-pill);
+  animation: st-spin var(--st-duration-spin) linear infinite;
+}
+
+@keyframes st-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------------ button (4.1, 4.2) */
+
+.st-btn {
+  /* Per-variant colors; states only swap these. */
+  --st-btn-bg: var(--st-overlay-10);
+  --st-btn-fg: var(--st-btn-secondary-fg);
+  --st-btn-border: transparent;
+  --st-btn-bg-hover: var(--st-overlay-20);
+  --st-btn-fg-hover: var(--st-text);
+  --st-btn-bg-active: var(--st-overlay-30);
+  --st-btn-fg-active: var(--st-text);
+  --st-btn-focus: var(--st-focus-ring);
+  --st-btn-h: var(--st-control-h-sm);
+  --st-btn-pad: var(--st-space-s);
+  --st-btn-font: var(--st-text-s);
+  --st-btn-radius: var(--st-radius-input);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--st-space-2xs);
+  box-sizing: border-box;
+  block-size: var(--st-btn-h);
+  min-block-size: var(--st-target-min);
+  min-inline-size: max(var(--st-btn-h), var(--st-target-min));
+  margin: 0;
+  padding-block: 0;
+  padding-inline: var(--st-btn-pad);
+  /* Transparent so forced-colors mode shows a boundary. */
+  border: var(--st-border-width) solid var(--st-btn-border);
+  border-radius: var(--st-btn-radius);
+  background: var(--st-btn-bg);
+  color: var(--st-btn-fg);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-btn-font);
+  font-weight: var(--st-weight-bold);
+  line-height: 1;
+  letter-spacing: normal;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition:
+    color var(--st-duration-moderate) var(--st-ease),
+    background-color var(--st-duration-moderate) var(--st-ease),
+    border-color var(--st-duration-moderate) var(--st-ease),
+    opacity var(--st-duration-moderate) var(--st-ease),
+    box-shadow var(--st-duration-moderate) var(--st-ease);
+}
+
+.st-btn:hover:not(:disabled, [aria-disabled="true"], [data-loading]) {
+  background: var(--st-btn-bg-hover);
+  color: var(--st-btn-fg-hover);
+}
+
+.st-btn:active:not(:disabled, [aria-disabled="true"], [data-loading]) {
+  background: var(--st-btn-bg-active);
+  color: var(--st-btn-fg-active);
+}
+
+.st-btn:focus-visible {
+  box-shadow: var(--st-btn-focus);
+}
+
+/* Variants */
+.st-btn[data-variant="ghost"] {
+  --st-btn-bg: transparent;
+  --st-btn-fg: var(--st-text-muted);
+  --st-btn-bg-hover: var(--st-overlay-10);
+  --st-btn-fg-hover: var(--st-text);
+  --st-btn-bg-active: var(--st-overlay-20);
+  --st-btn-fg-active: var(--st-text);
+}
+
+.st-btn[data-variant="ghost"][data-tone="danger"] {
+  --st-btn-fg: var(--st-danger-fg);
+  --st-btn-bg-hover: var(--st-danger-10);
+  /* Studio uses --danger-light on hover; --st-danger-fg is the same color in dark and keeps
+     4.5:1 on the tint in light. */
+  --st-btn-fg-hover: var(--st-danger-fg);
+  --st-btn-bg-active: var(--st-danger-10);
+  --st-btn-fg-active: var(--st-danger-fg);
+}
+
+/* Owner decision: the primary call to action is Banana yellow with ink text. */
+.st-btn[data-variant="primary"] {
+  --st-btn-bg: var(--st-primary-fill);
+  --st-btn-fg: var(--st-primary-text);
+  --st-btn-border: var(--st-primary-border);
+  --st-btn-bg-hover: var(--st-primary-fill-hover);
+  --st-btn-fg-hover: var(--st-primary-text);
+  --st-btn-bg-active: var(--st-primary-fill-pressed);
+  --st-btn-fg-active: var(--st-primary-text);
+  --st-btn-focus: var(--st-primary-focus-ring);
+}
+
+/* A11y change: Studio fades the destructive button to 0.9 and 0.8 opacity on hover and press,
+   which takes the label under 4.5:1. Here the tint deepens and the label moves to danger-text. */
+.st-btn[data-variant="destructive"] {
+  --st-btn-bg: var(--st-danger-10);
+  --st-btn-fg: var(--st-danger-fg);
+  --st-btn-bg-hover: var(--st-danger-20);
+  --st-btn-fg-hover: var(--st-danger-text);
+  --st-btn-bg-active: var(--st-danger-20);
+  --st-btn-fg-active: var(--st-danger-text);
+}
+
+/* Sizes. xs and sm are raised to 24 and 28px (SC 2.5.8); text is floored at text-s. */
+.st-btn[data-size="xs"] {
+  --st-btn-h: var(--st-control-h-xs);
+  --st-btn-pad: var(--st-space-xs);
+  --st-btn-radius: var(--st-radius-field);
+}
+
+.st-btn[data-size="md"] {
+  --st-btn-h: var(--st-control-h-md);
+  --st-btn-pad: var(--st-space-xl);
+}
+
+.st-btn[data-size="lg"] {
+  --st-btn-h: var(--st-control-h-lg);
+  --st-btn-pad: var(--st-space-2xl);
+  --st-btn-font: var(--st-text-m);
+}
+
+.st-btn:lang(ar) {
+  --st-btn-font: var(--st-text-m);
+}
+
+.st-btn[data-size="lg"]:lang(ar) {
+  --st-btn-font: var(--st-text-l);
+}
+
+.st-btn[data-icon-only] {
+  inline-size: max(var(--st-btn-h), var(--st-target-min));
+  padding-inline: 0;
+}
+
+.st-btn[data-shape="pill"] {
+  --st-btn-radius: var(--st-radius-pill);
+}
+
+.st-btn[data-shape="flush"] {
+  --st-btn-radius: 0;
+}
+
+/* Selected toggle (aria-pressed): Studio's fill plus a non-color cue, a 2px bar at the block end. */
+.st-btn[aria-pressed="true"] {
+  --st-btn-bg: var(--st-overlay-20);
+  --st-btn-fg: var(--st-text);
+  --st-btn-bg-hover: var(--st-overlay-20);
+  --st-btn-fg-hover: var(--st-text);
+}
+
+.st-btn[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: max(25%, 6px);
+  inset-block-end: 2px;
+  block-size: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  pointer-events: none;
+}
+
+/* Disabled: real disabled loses pointer events; aria-disabled keeps them so a Tooltip can explain. */
+.st-btn:disabled,
+.st-btn[aria-disabled="true"] {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.st-btn:disabled {
+  pointer-events: none;
+}
+
+/* Loading (overlay): the label keeps its width under a centered spinner, so nothing resizes.
+   Pair with aria-busy="true" and say the busy verb in the accessible name or a live region. */
+.st-btn[data-loading] {
+  cursor: progress;
+}
+
+.st-btn[data-loading]:not([data-loading="inline"]) {
+  color: transparent;
+}
+
+.st-btn[data-loading]:not([data-loading="inline"])::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  box-sizing: border-box;
+  inline-size: 12px;
+  block-size: 12px;
+  margin-block-start: -6px;
+  margin-inline-start: -6px;
+  border: 2px solid var(--st-overlay-20);
+  border-block-start-color: var(--st-btn-fg);
+  border-radius: var(--st-radius-pill);
+  animation: st-spin var(--st-duration-spin) linear infinite;
+}
+
+/* Loading (inline): a spinner before a visible busy label ("Opening checkout…"). */
+.st-btn[data-loading="inline"]::before {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  inline-size: 12px;
+  block-size: 12px;
+  border: 2px solid var(--st-overlay-20);
+  border-block-start-color: currentColor;
+  border-radius: var(--st-radius-pill);
+  animation: st-spin var(--st-duration-spin) linear infinite;
+}
+
+/* ------------------------------------------------------------------ input (4.3) */
+
+.st-input {
+  --st-input-h: var(--st-control-h-sm);
+  --st-input-pad-block: var(--st-space-2xs);
+  --st-input-pad-inline: var(--st-space-s);
+  --st-input-font: var(--st-text-s);
+
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: var(--st-input-h);
+  min-block-size: var(--st-target-min);
+  margin: 0;
+  padding-block: var(--st-input-pad-block);
+  padding-inline: var(--st-input-pad-inline);
+  border: var(--st-border-width) solid var(--st-border-control);
+  border-radius: var(--st-radius-input);
+  background: transparent;
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-input-font);
+  font-weight: var(--st-weight-regular);
+  line-height: var(--st-leading-snug);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition:
+    border-color var(--st-duration-base) var(--st-ease),
+    box-shadow var(--st-duration-base) var(--st-ease);
+}
+
+.st-input::placeholder {
+  color: var(--st-text-placeholder);
+  opacity: 1;
+}
+
+.st-input:hover:not(:disabled, :focus) {
+  border-color: var(--st-border-control-hover);
+}
+
+.st-input:focus-visible,
+.st-input:focus {
+  border-color: var(--st-overlay-50);
+  box-shadow: var(--st-shadow-input-focus), var(--st-focus-ring);
+}
+
+.st-input[aria-invalid="true"] {
+  border-color: var(--st-danger-fg);
+}
+
+.st-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.st-input[data-size="xs"] {
+  --st-input-h: var(--st-control-h-xs);
+  --st-input-pad-block: var(--st-space-4xs);
+  --st-input-pad-inline: var(--st-space-xs);
+}
+
+.st-input[data-size="md"] {
+  --st-input-h: var(--st-control-h-md);
+  --st-input-pad-block: var(--st-space-xs);
+  --st-input-pad-inline: var(--st-space-m);
+}
+
+/* Site fields: 44px and 16px text (spec 12 row 13; also keeps mobile browsers from zooming). */
+.st-input[data-size="lg"] {
+  --st-input-h: var(--st-control-h-lg);
+  --st-input-pad-block: var(--st-space-s);
+  --st-input-pad-inline: var(--st-space-2xl);
+  --st-input-font: 1rem;
+}
+
+.st-input:lang(ar):not([data-size="lg"]) {
+  --st-input-font: var(--st-text-m);
+}
+
+textarea.st-input {
+  block-size: auto;
+  min-block-size: calc(var(--st-input-h) * 2);
+  border-radius: var(--st-radius-panel);
+  line-height: var(--st-leading-normal);
+  resize: vertical;
+}
+
+textarea.st-input[data-autogrow] {
+  field-sizing: content;
+  max-block-size: 12lh;
+  resize: none;
+}
+
+/* ------------------------------------------------------------------ menu (4.4) */
+
+.st-menu {
+  position: fixed;
+  z-index: var(--st-z-menu);
+  /* Set by the component from the trigger or pointer (inline-start offset in the reading direction). */
+  inset-block-start: var(--st-menu-y, auto);
+  inset-inline-start: var(--st-menu-x, auto);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: var(--st-menu-min-w);
+  max-inline-size: calc(100vw - 16px);
+  max-block-size: calc(100vh - 16px);
+  margin: 0;
+  padding: var(--st-space-3xs);
+  overflow: auto;
+  list-style: none;
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface-3);
+  box-shadow: var(--st-shadow-menu);
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+  transform-origin: top center;
+  animation: st-menu-in var(--st-duration-base) var(--st-ease-emphasized);
+}
+
+.st-menu[data-state="closing"] {
+  animation: st-menu-out var(--st-duration-quick) var(--st-ease-exit) forwards;
+  pointer-events: none;
+}
+
+@keyframes st-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+@keyframes st-menu-out {
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+}
+
+.st-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-m);
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: max(var(--st-menu-item-h), var(--st-target-min));
+  margin: 0;
+  padding-block: var(--st-space-4xs);
+  padding-inline: var(--st-space-m);
+  border: 0;
+  border-radius: var(--st-radius-menu-item);
+  background: transparent;
+  color: var(--st-text);
+  font-family: inherit;
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-menu);
+  line-height: var(--st-leading-snug);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: background-color var(--st-duration-base) var(--st-ease);
+}
+
+.st-menu-item:lang(ar) {
+  font-size: var(--st-text-m);
+}
+
+.st-menu-item:hover:not(:disabled, [aria-disabled="true"]),
+.st-menu-item[data-highlighted] {
+  background: var(--st-overlay-10);
+}
+
+.st-menu-item:focus-visible {
+  background: var(--st-overlay-10);
+  box-shadow: inset 0 0 0 2px var(--st-focus-ring-color);
+}
+
+.st-menu-item[data-tone="danger"] {
+  color: var(--st-danger-fg);
+}
+
+.st-menu-item:disabled,
+.st-menu-item[aria-disabled="true"] {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.st-menu-item-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.st-menu-item-end {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-2xs);
+  margin-inline-start: auto;
+  color: var(--st-text-muted);
+}
+
+/* Selected option in a menuitemradio group: the check carries the state, not color. */
+.st-menu-item:not([aria-checked="true"]) .st-menu-item-check {
+  visibility: hidden;
+}
+
+.st-menu-sep {
+  flex: none;
+  block-size: 1px;
+  margin-block: var(--st-space-3xs);
+  margin-inline: var(--st-space-xs);
+  border: 0;
+  background: var(--st-bg-surface-2);
+}
+
+/* ------------------------------------------------------------------ tooltip (4.5, 9.5) */
+
+.st-tooltip {
+  position: fixed;
+  z-index: var(--st-z-tooltip);
+  inset-block-start: var(--st-tt-y, 0);
+  inset-inline-start: var(--st-tt-x, 0);
+  box-sizing: border-box;
+  max-inline-size: min(var(--st-tooltip-max-w), calc(100vw - 16px));
+  margin: 0;
+  padding-block: var(--st-space-xs);
+  padding-inline: var(--st-space-m);
+  border: var(--st-border-width) solid var(--st-overlay-5);
+  border-radius: var(--st-radius);
+  background: var(--st-bg-body);
+  box-shadow: var(--st-shadow-tooltip);
+  color: var(--st-text-bright);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-medium);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  /* Hoverable (SC 1.4.13): the pointer can rest on the bubble. */
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity var(--st-duration-fast) var(--st-ease);
+}
+
+.st-tooltip:lang(ar) {
+  font-size: var(--st-text-m);
+  line-height: var(--st-leading-snug);
+}
+
+.st-tooltip[data-wide] {
+  max-inline-size: min(280px, calc(100vw - 16px));
+}
+
+.st-tooltip[data-state="open"] {
+  opacity: 1;
+}
+
+.st-tooltip[hidden] {
+  display: none;
+}
+
+.st-tooltip-arrow {
+  position: absolute;
+  inline-size: 6px;
+  block-size: 6px;
+  background: inherit;
+  border: inherit;
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+.st-tooltip[data-side="top"] .st-tooltip-arrow {
+  inset-block-end: -4px;
+  inset-inline-start: calc(var(--st-tt-arrow, 50%) - 4px);
+  border-block-start-color: transparent;
+  border-inline-start-color: transparent;
+}
+
+.st-tooltip[data-side="bottom"] .st-tooltip-arrow {
+  inset-block-start: -4px;
+  inset-inline-start: calc(var(--st-tt-arrow, 50%) - 4px);
+  border-block-end-color: transparent;
+  border-inline-end-color: transparent;
+}
+
+.st-tooltip[data-edge="inline-start"] .st-tooltip-arrow {
+  inset-inline-start: -4px;
+  inset-block-start: calc(var(--st-tt-arrow, 50%) - 4px);
+}
+
+.st-tooltip[data-edge="inline-end"] .st-tooltip-arrow {
+  inset-inline-end: -4px;
+  inset-block-start: calc(var(--st-tt-arrow, 50%) - 4px);
+}
+
+/* ------------------------------------------------------------------ dialog (4.6) */
+
+.st-dialog {
+  --st-dialog-w: var(--st-dialog-w-md);
+
+  box-sizing: border-box;
+  inline-size: min(var(--st-dialog-w), calc(100vw - 2 * var(--st-space-5xl)));
+  max-inline-size: none;
+  max-block-size: min(var(--st-dialog-max-h), calc(100vh - 2 * var(--st-space-5xl)));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-panel);
+  background: var(--st-bg-surface);
+  box-shadow: var(--st-shadow-dialog);
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+}
+
+.st-dialog[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  animation: st-dialog-in var(--st-duration-base) var(--st-ease-out);
+}
+
+.st-dialog::backdrop {
+  background: color-mix(in srgb, var(--st-bg-body) 50%, transparent);
+}
+
+.st-dialog[open]::backdrop {
+  animation: st-fade-in var(--st-duration-base) var(--st-ease-out);
+}
+
+@keyframes st-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+
+@keyframes st-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.st-dialog[data-size="sm"] {
+  --st-dialog-w: var(--st-dialog-w-sm);
+}
+
+.st-dialog[data-size="lg"] {
+  --st-dialog-w: var(--st-dialog-w-lg);
+}
+
+.st-dialog[data-size="xl"] {
+  --st-dialog-w: var(--st-dialog-w-xl);
+}
+
+.st-dialog[data-size="2xl"] {
+  --st-dialog-w: var(--st-dialog-w-2xl);
+}
+
+.st-dialog-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--st-space-m);
+  padding-block: var(--st-space-l);
+  padding-inline: var(--st-space-xl);
+  border-block-end: var(--st-border-width) solid var(--st-border);
+  background: var(--st-bg-surface-2);
+}
+
+.st-dialog-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-4xs);
+  min-inline-size: 0;
+}
+
+.st-dialog-eyebrow {
+  margin: 0;
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-bold);
+  letter-spacing: var(--st-tracking-eyebrow);
+  line-height: var(--st-leading-tight);
+  text-transform: uppercase;
+}
+
+.st-dialog[data-tone="danger"] .st-dialog-eyebrow {
+  color: var(--st-danger-fg);
+}
+
+.st-dialog-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--st-text-bright);
+  font-size: var(--st-text-l);
+  font-weight: var(--st-weight-bold);
+  line-height: var(--st-leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.st-dialog-body {
+  min-block-size: 0;
+  padding: var(--st-space-2xl);
+  overflow: auto;
+  font-size: var(--st-text-l);
+  line-height: var(--st-leading-normal);
+}
+
+.st-dialog-body > :first-child {
+  margin-block-start: 0;
+}
+
+.st-dialog-body > :last-child {
+  margin-block-end: 0;
+}
+
+.st-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--st-space-s);
+  padding-block: var(--st-space-l);
+  padding-inline: var(--st-space-xl);
+  border-block-start: var(--st-border-width) solid var(--st-border);
+  background: var(--st-bg-surface-2);
+}
+
+/* ------------------------------------------------------------------ toast (4.7) */
+
+.st-toast-stack {
+  position: fixed;
+  z-index: var(--st-z-toast);
+  inset-block-end: var(--st-toast-inset);
+  inset-inline-end: var(--st-toast-inset);
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  box-sizing: border-box;
+  inline-size: min(var(--st-toast-max-w), calc(100vw - 2 * var(--st-toast-inset)));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.st-toast {
+  --st-toast-accent: var(--st-text-subtle);
+
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--st-space-m);
+  box-sizing: border-box;
+  padding-block: var(--st-space-m);
+  padding-inline: var(--st-space-l);
+  border: var(--st-border-width) solid var(--st-overlay-10);
+  border-inline-start: var(--st-border-width-strong) solid var(--st-toast-accent);
+  border-radius: var(--st-radius-panel);
+  background: var(--st-bg-surface);
+  box-shadow: var(--st-shadow-panel);
+  backdrop-filter: blur(var(--st-panel-blur));
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-text-s);
+  line-height: 1.4;
+  pointer-events: auto;
+  animation: st-toast-in var(--st-duration-medium) var(--st-ease-out);
+}
+
+.st-toast:lang(ar) {
+  font-size: var(--st-text-m);
+  line-height: var(--st-leading-snug);
+}
+
+@keyframes st-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+.st-toast[data-kind="error"] {
+  --st-toast-accent: var(--st-danger-light);
+}
+
+.st-toast[data-kind="warning"] {
+  --st-toast-accent: var(--st-warning);
+}
+
+.st-toast[data-kind="success"] {
+  --st-toast-accent: var(--st-success);
+}
+
+.st-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 1.4em;
+  color: var(--st-toast-accent);
+}
+
+.st-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-4xs);
+  min-inline-size: 0;
+  padding-block-start: 0.2em;
+}
+
+.st-toast-title {
+  margin: 0;
+  color: var(--st-text-bright);
+  font-weight: var(--st-weight-medium);
+}
+
+.st-toast-count {
+  display: inline-block;
+  margin-inline-start: var(--st-space-xs);
+  padding-inline: var(--st-space-2xs);
+  border-radius: var(--st-radius-sm);
+  background: var(--st-overlay-10);
+  color: var(--st-text);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--st-weight-semibold);
+}
+
+.st-toast-body {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--st-text-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.st-toast-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-xs);
+  margin-block-start: var(--st-space-2xs);
+}
+
+/* ------------------------------------------------------------------ keycap (4.12) */
+
+.st-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  block-size: 19px;
+  min-inline-size: 19px;
+  padding-inline: var(--st-space-xs);
+  border: var(--st-border-width) solid var(--st-kbd-border);
+  border-radius: var(--st-radius-sm);
+  background: linear-gradient(var(--st-kbd-face-top), var(--st-kbd-face-bottom));
+  box-shadow:
+    inset 0 1px 0 var(--st-kbd-highlight),
+    inset 0 -1px 0 var(--st-kbd-edge),
+    0 1px 0 var(--st-kbd-drop),
+    0 1px 2px var(--st-kbd-drop);
+  color: var(--st-kbd-text);
+  font-family: var(--st-font-mono);
+  font-size: var(--st-text-xs);
+  font-weight: var(--st-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform var(--st-duration-instant) var(--st-ease);
+}
+
+.st-kbd:hover {
+  transform: translateY(-1px);
+}
+
+.st-kbd:active {
+  transform: translateY(1px);
+}
+
+.st-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  vertical-align: middle;
+}
+
+/* ------------------------------------------------------------------ chip */
+
+.st-chip {
+  --st-chip-fg: var(--st-text);
+  --st-chip-tint: var(--st-overlay-10);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-3xs);
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  min-block-size: var(--st-target-min);
+  padding-inline: var(--st-space-s);
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-pill);
+  /* The tint is painted over an opaque base, so chips keep their contrast over images. */
+  background: linear-gradient(var(--st-chip-tint), var(--st-chip-tint)), var(--st-bg-surface);
+  color: var(--st-chip-fg);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.st-chip:lang(ar) {
+  font-size: var(--st-text-m);
+}
+
+.st-chip > :where(span:not(.st-icon)) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.st-chip[data-tone="ship"] {
+  --st-chip-fg: var(--st-ship-fg);
+  --st-chip-tint: var(--st-ship-bg);
+}
+
+.st-chip[data-tone="explore"] {
+  --st-chip-fg: var(--st-explore-fg);
+  --st-chip-tint: var(--st-explore-bg);
+}
+
+.st-chip[data-tone="success"] {
+  --st-chip-fg: var(--st-success-text);
+  --st-chip-tint: var(--st-success-10);
+}
+
+.st-chip[data-tone="danger"] {
+  --st-chip-fg: var(--st-danger-text);
+  --st-chip-tint: var(--st-danger-10);
+}
+
+:where(a, button).st-chip {
+  cursor: pointer;
+}
+
+:where(a, button).st-chip:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+:where(a, button).st-chip:focus-visible {
+  box-shadow: var(--st-focus-ring-halo);
+}
+
+/* ------------------------------------------------------------------ tiles (4.9) */
+
+.st-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--st-tile-min, 200px), 1fr));
+  gap: 1px;
+  padding: 1px;
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+}
+
+.st-tile {
+  --st-tile-accent: var(--st-accent-1);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding: var(--st-space-xl);
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface-2);
+  color: var(--st-text);
+  text-align: start;
+  text-decoration: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition:
+    background-color var(--st-duration-base) var(--st-ease),
+    transform var(--st-duration-base) var(--st-ease),
+    box-shadow var(--st-duration-base) var(--st-ease);
+}
+
+.st-tile:hover {
+  background: var(--st-bg-surface-3);
+}
+
+:where(a, button).st-tile,
+.st-tile[data-clickable] {
+  cursor: pointer;
+  font: inherit;
+}
+
+:where(a, button).st-tile:hover,
+.st-tile[data-clickable]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--st-shadow-card-hover);
+}
+
+:where(a, button).st-tile:active,
+.st-tile[data-clickable]:active {
+  transform: none;
+  box-shadow: none;
+}
+
+:where(a, button).st-tile:focus-visible,
+.st-tile[data-clickable]:focus-visible {
+  box-shadow: var(--st-focus-ring);
+}
+
+.st-tile-title {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  line-height: var(--st-leading-tight);
+  text-transform: uppercase;
+}
+
+.st-tile-title::before {
+  content: "";
+  flex: none;
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 3px;
+  background: var(--st-tile-accent);
+}
+
+[data-accent="1"] { --st-tile-accent: var(--st-accent-1); }
+[data-accent="2"] { --st-tile-accent: var(--st-accent-2); }
+[data-accent="3"] { --st-tile-accent: var(--st-accent-3); }
+[data-accent="4"] { --st-tile-accent: var(--st-accent-4); }
+[data-accent="5"] { --st-tile-accent: var(--st-accent-5); }
+[data-accent="6"] { --st-tile-accent: var(--st-accent-6); }
+[data-accent="7"] { --st-tile-accent: var(--st-accent-7); }
+[data-accent="8"] { --st-tile-accent: var(--st-accent-8); }
+[data-accent="9"] { --st-tile-accent: var(--st-accent-9); }
+[data-accent="10"] { --st-tile-accent: var(--st-accent-10); }
+
+/* ------------------------------------------------------------------ section (4.9) */
+
+.st-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  padding-block: var(--st-space-m);
+  border-block-start: var(--st-border-width) solid var(--st-border-muted);
+}
+
+.st-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  min-block-size: var(--st-row-h);
+}
+
+.st-section-title {
+  margin: 0;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  line-height: var(--st-leading-tight);
+}
+
+.st-section-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--st-space-xs);
+  min-block-size: max(var(--st-row-h), var(--st-target-min));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--st-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  outline: 2px solid transparent;
+}
+
+.st-section-toggle:focus-visible {
+  box-shadow: var(--st-focus-ring);
+}
+
+.st-section-toggle .st-icon {
+  color: var(--st-text-muted);
+  opacity: 0;
+  transition:
+    opacity var(--st-duration-base) var(--st-ease),
+    transform var(--st-duration-base) var(--st-ease);
+}
+
+.st-section-toggle:hover .st-icon,
+.st-section-toggle:focus-visible .st-icon,
+.st-section-toggle[aria-expanded="false"] .st-icon {
+  opacity: 1;
+}
+
+.st-section-toggle[aria-expanded="false"] .st-icon {
+  transform: rotate(-90deg);
+}
+
+:where([dir="rtl"]) .st-section-toggle[aria-expanded="false"] .st-icon {
+  transform: rotate(90deg);
+}
+
+/* ------------------------------------------------------------------ alert */
+
+.st-alert {
+  --st-alert-fg: var(--st-info-text);
+  --st-alert-tint: var(--st-overlay-5);
+  --st-alert-edge: var(--st-info-text);
+
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--st-space-m);
+  box-sizing: border-box;
+  padding-block: var(--st-space-m);
+  padding-inline: var(--st-space-l);
+  border: var(--st-border-width) solid transparent;
+  border-inline-start: var(--st-border-width-strong) solid var(--st-alert-edge);
+  border-radius: var(--st-radius-panel);
+  background: linear-gradient(var(--st-alert-tint), var(--st-alert-tint)), var(--st-bg-surface);
+  color: var(--st-alert-fg);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-text-s);
+  line-height: var(--st-leading-normal);
+}
+
+.st-alert:lang(ar) {
+  font-size: var(--st-text-m);
+}
+
+.st-alert[data-tone="danger"] {
+  --st-alert-fg: var(--st-danger-text);
+  --st-alert-tint: var(--st-danger-10);
+  --st-alert-edge: var(--st-danger-light);
+}
+
+.st-alert[data-tone="warning"] {
+  --st-alert-fg: var(--st-warning-text);
+  --st-alert-tint: var(--st-warning-10);
+  --st-alert-edge: var(--st-warning);
+}
+
+.st-alert[data-tone="success"] {
+  --st-alert-fg: var(--st-success-text);
+  --st-alert-tint: var(--st-success-10);
+  --st-alert-edge: var(--st-success);
+}
+
+.st-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  block-size: 1.5em;
+}
+
+.st-alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-4xs);
+  min-inline-size: 0;
+}
+
+.st-alert-content > * {
+  margin: 0;
+}
+
+.st-alert-title {
+  font-weight: var(--st-weight-semibold);
+}
+
+.st-alert a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ skeleton (4.10) */
+
+.st-skeleton {
+  display: block;
+  inline-size: var(--st-skeleton-w, 100%);
+  block-size: var(--st-skeleton-h, 12px);
+  border-radius: var(--st-radius-sm);
+  background: linear-gradient(
+      90deg,
+      var(--st-bg-surface-3) 0%,
+      var(--st-bg-surface-4) 50%,
+      var(--st-bg-surface-3) 100%
+    )
+    0 0 / 200% 100% var(--st-bg-surface-3);
+  animation: st-skeleton-shimmer var(--st-duration-shimmer) ease-in-out infinite;
+}
+
+.st-skeleton[data-shape="text"] {
+  block-size: 0.8em;
+}
+
+.st-skeleton[data-shape="block"] {
+  block-size: var(--st-skeleton-h, 64px);
+  border-radius: var(--st-radius);
+}
+
+.st-skeleton[data-shape="circle"] {
+  inline-size: var(--st-skeleton-h, 24px);
+  block-size: var(--st-skeleton-h, 24px);
+  border-radius: var(--st-radius-pill);
+}
+
+.st-skeleton-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+}
+
+/* ------------------------------------------------------------------ empty state (4.11) */
+
+.st-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+  box-sizing: border-box;
+  padding: var(--st-space-xl);
+  border-radius: var(--st-radius-panel);
+  background: var(--st-bg-surface);
+  color: var(--st-text-subtle);
+  font-family: var(--st-font-sans);
+  font-size: var(--st-text-s);
+  line-height: var(--st-leading-normal);
+}
+
+.st-empty[data-variant="centered"] {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--st-space-5xl);
+  padding-inline: var(--st-space-2xl);
+  background: transparent;
+  color: var(--st-text-muted);
+  text-align: center;
+}
+
+.st-empty-title {
+  margin: 0;
+  color: var(--st-text);
+  font-weight: var(--st-weight-semibold);
+}
+
+.st-empty-body {
+  margin: 0;
+}
+
+.st-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-s);
+  margin-block-start: var(--st-space-s);
+}
+
+/* ------------------------------------------------------------------ reduced motion */
+
+/* The duration tokens are already 0ms; stop the endless loops outright as well. */
+@media (prefers-reduced-motion: reduce) {
+  .st-skeleton,
+  .st-spinner,
+  .st-btn[data-loading]::before {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ forced colors */
+
+@media (forced-colors: active) {
+  .st-btn:focus-visible,
+  .st-input:focus-visible,
+  .st-menu-item:focus-visible,
+  .st-chip:focus-visible,
+  .st-tile:focus-visible,
+  .st-section-toggle:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .st-btn[aria-pressed="true"]::after {
+    background: ButtonText;
+  }
+}
+
+/* ------------------------------------------------------------------ Step 0 font bridge */
+
+/* Until WP-A (canvas.css) and WP-B (site.css) move their own font stacks to --st-font-sans,
+   these two rules make the existing surfaces use Inter and IBM Plex Sans Arabic with no other
+   visual change. Safe to delete once both stylesheets read var(--st-font-sans). */
+html .site {
+  --font: var(--st-font-sans);
+  --font-ar: var(--st-font-sans);
+}
+
+html .bn-canvas {
+  font-family: var(--st-font-sans);
+}

@@ -1,0 +1,5 @@
+# Cloudflare Workers static assets headers (copied to .open-next/assets by OpenNext).
+# Fonts of the inline canvas (built by npm run build:ui) load from the MCP host's
+# sandbox origin, and browsers fetch fonts in CORS mode.
+/mcp-app/assets/*
+  Access-Control-Allow-Origin: *

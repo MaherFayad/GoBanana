@@ -1,0 +1,93 @@
+/* Layout for the test-only gallery (app/%5F_design). Tokens only. */
+.design-root {
+  display: grid;
+  gap: 1px;
+  min-block-size: 100vh;
+  margin: 0;
+  background: var(--st-border);
+  font-family: var(--st-font-sans);
+}
+
+.design-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-5xl);
+  padding: var(--st-space-6xl);
+  background: var(--st-bg-body);
+  color: var(--st-text);
+  /* Set here, where dir changes, so the rtl panel picks up the Arabic stack. */
+  font-family: var(--st-font-sans);
+}
+
+.design-panel h1 {
+  margin: 0;
+  color: var(--st-text-bright);
+  font-size: var(--st-text-3xl);
+  font-weight: var(--st-weight-semibold);
+}
+
+.design-panel h2 {
+  margin: 0 0 var(--st-space-s);
+  color: var(--st-text-bright);
+  font-size: var(--st-text-xl);
+  font-weight: var(--st-weight-semibold);
+}
+
+.design-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-m);
+  padding: var(--st-space-xl);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+}
+
+.design-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-s);
+}
+
+.design-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-3xs);
+  max-inline-size: 360px;
+  font-size: var(--st-text-s);
+}
+
+.design-field-error {
+  margin: 0;
+  color: var(--st-danger-fg);
+}
+
+.design-icon-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--st-space-3xs);
+  min-inline-size: 72px;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+}
+
+.design-menu-demo .st-menu {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  inline-size: max-content;
+}
+
+.design-empty-host {
+  display: flex;
+  min-block-size: 160px;
+  border: var(--st-border-width) dashed var(--st-border-control);
+  border-radius: var(--st-radius-card);
+}
+
+.design-text {
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+}

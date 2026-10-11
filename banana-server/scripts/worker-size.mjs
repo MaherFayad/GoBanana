@@ -4,9 +4,10 @@
  *
  * Bundles with `wrangler deploy --dry-run --outdir` (no login, nothing is uploaded), then
  * gzips each bundled file. Cloudflare limits (compressed): Workers Free 3 MB, Workers
- * Paid 10 MB. We must be on Workers Paid before this passes 3 MB (DECISIONS.md).
+ * Paid 10 MB. We stay on Workers Free; CI fails over a 2.9 MB budget (DECISIONS.md,
+ * docs/worker-size.md). `npm run worker:breakdown` shows what the size is made of.
  *
- * Usage: npm run worker:size [-- --max-mb 3]   (exits 1 when over --max-mb)
+ * Usage: npm run worker:size [-- --max-mb 2.9]   (exits 1 when over --max-mb)
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
