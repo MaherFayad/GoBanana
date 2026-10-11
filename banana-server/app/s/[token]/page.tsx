@@ -5,12 +5,19 @@
  * - noindex twice: the robots meta tag below, and the `X-Robots-Tag: noindex`
  *   response header, which proxy.ts adds for /s/* (pages cannot set headers).
  *   If proxy.ts is ever removed, add the header in next.config `headers()`.
+ * - Loads title and state only (never the owner's id or email), and only while the
+ *   owner's plan allows share links (spec section 12).
  * - Every reference shows its source link (hard rule 3) and the takedown list is
- *   checked on load (hard rule 5).
+ *   checked on load (hard rule 5), failing closed.
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SharedCanvas } from "@/canvas/SharedCanvas";
+import { loadSharedCanvas } from "@/canvas/server-load";
 import { APP_NAME } from "@/lib/config";
+import { getRepos } from "@/lib/db";
+import { getShareRepo } from "@/lib/db/shares";
+import { memoTakedowns } from "@/lib/db/takedowns";
 import { isValidShareToken, noindexMetadata } from "@/lib/share";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +25,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   ...noindexMetadata,
   title: `Shared canvas | ${APP_NAME}`,
+  referrer: "no-referrer",
 };
 
 type Props = { params: Promise<{ token: string }> };
@@ -26,18 +34,11 @@ export default async function SharedCanvasPage({ params }: Props) {
   const { token } = await params;
   if (!isValidShareToken(token)) notFound();
 
-  // TODO(db): load the canvas by `canvases.share_token = token` (select title and state only,
-  //   never user_id or email); notFound() when missing or when the owner's plan no longer
-  //   allows share links.
-  // TODO(takedown): drop nodes whose source, image or thumb URL is blocked
-  //   (loadTakedownMatcher + filterTakedowns from lib/takedown.ts) before rendering.
-  // TODO(canvas): render the React Flow canvas from canvas/ in read-only mode
-  //   (no drag, no edit, no tray), with the source link on every tile.
+  const shared = await loadSharedCanvas(token, {
+    shares: getShareRepo,
+    loadMatcher: () => memoTakedowns(getRepos().takedowns)(),
+  });
+  if (!shared) notFound();
 
-  return (
-    <main id="main" style={{ maxWidth: 960, margin: "0 auto", padding: "2rem 1rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Shared canvas</h1>
-      <p>This view-only canvas is not available yet.</p>
-    </main>
-  );
+  return <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state} />;
 }

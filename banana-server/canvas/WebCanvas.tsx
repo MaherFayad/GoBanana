@@ -1,9 +1,13 @@
 "use client";
 
-/** Full-screen web canvas (`/c/:id`). Saves through fetch to `/api/canvas/:id`. */
-import { useMemo } from "react";
+/**
+ * Full-screen web canvas (`/c/:id`). Saves through fetch to `/api/canvas/:id`, sending the
+ * version it started from, so a save never overwrites newer changes made in another window
+ * or by the agent. On a conflict, saving stops and a plain message asks for a reload.
+ */
+import { useMemo, useState } from "react";
 import { CanvasApp } from "./CanvasApp";
-import { createFetchPersistence } from "./persistence";
+import { CONFLICT_MESSAGE, createFetchPersistence, isConflict, type CanvasPersistence } from "./persistence";
 import type { CanvasState } from "./types";
 
 export interface WebCanvasProps {
@@ -12,13 +16,38 @@ export interface WebCanvasProps {
   title: string;
   /** Server-loaded state (already takedown filtered), or null to load from the API. */
   initialState: CanvasState | null;
+  /** `updatedAt` of `initialState`, sent as `baseUpdatedAt` on the first save. */
+  initialUpdatedAt?: string | null;
   readOnly?: boolean;
 }
 
-export function WebCanvas({ canvasId, appName, title, initialState, readOnly = false }: WebCanvasProps) {
-  const persistence = useMemo(() => createFetchPersistence(canvasId), [canvasId]);
+export function WebCanvas({ canvasId, appName, title, initialState, initialUpdatedAt, readOnly = false }: WebCanvasProps) {
+  const [conflict, setConflict] = useState(false);
+  const persistence = useMemo<CanvasPersistence>(() => {
+    const inner = createFetchPersistence(canvasId, { baseUpdatedAt: initialUpdatedAt ?? null });
+    return {
+      load: () => inner.load(),
+      async save(state) {
+        try {
+          await inner.save(state);
+        } catch (error) {
+          if (isConflict(error)) setConflict(true);
+          throw error;
+        }
+      },
+    };
+  }, [canvasId, initialUpdatedAt]);
+
   return (
     <div className="bn-page">
+      {conflict && (
+        <div className="bn-conflict" role="alert">
+          <p>{CONFLICT_MESSAGE}</p>
+          <button type="button" onClick={() => window.location.reload()}>
+            Reload
+          </button>
+        </div>
+      )}
       <CanvasApp
         canvasId={canvasId}
         appName={appName}

@@ -143,6 +143,33 @@ export const takedowns = pgTable("takedowns", {
   createdAt: createdAt(),
 });
 
+export const takedownRequestStatusEnum = pgEnum("takedown_request_status", ["open", "accepted", "rejected"]);
+export type TakedownRequestStatus = (typeof takedownRequestStatusEnum.enumValues)[number];
+
+/**
+ * Requests from the public takedown form. Kept apart from `takedowns` (the live block
+ * list) so a request never blocks anything until the owner reviews it and adds an entry
+ * to `takedowns` by hand. Holds the requester's name and email: never log these rows.
+ */
+export const takedownRequests = pgTable(
+  "takedown_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** The page or domain the request is about, as typed in the form. */
+    url: text("url").notNull(),
+    reason: text("reason").notNull(),
+    name: text("name").notNull(),
+    contactEmail: text("contact_email").notNull(),
+    /** "owner" or "agent" (acting for the rights holder). */
+    role: text("role").notNull(),
+    details: text("details").notNull(),
+    locale: text("locale").notNull().default("en"),
+    status: takedownRequestStatusEnum("status").notNull().default("open"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("takedown_requests_status_created_idx").on(t.status, t.createdAt)],
+);
+
 export type User = typeof users.$inferSelect;
 export type Canvas = typeof canvases.$inferSelect;
 export type Direction = typeof directions.$inferSelect;
@@ -151,3 +178,4 @@ export type Palette = typeof palettes.$inferSelect;
 export type Upload = typeof uploads.$inferSelect;
 export type Usage = typeof usage.$inferSelect;
 export type Takedown = typeof takedowns.$inferSelect;
+export type TakedownRequestRow = typeof takedownRequests.$inferSelect;

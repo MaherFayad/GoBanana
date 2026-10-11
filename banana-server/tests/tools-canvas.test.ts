@@ -31,7 +31,8 @@ describe("open_canvas", () => {
     let meta: unknown;
     const fake = { registerTool: (_n: string, config: { _meta?: unknown }) => (meta = config._meta) };
     registerOpen(fake as unknown as McpServer);
-    expect(meta).toEqual({ ui: { resourceUri: CANVAS_UI_URI } });
+    // registerAppTool (ext-apps) also writes the legacy flat key for older hosts.
+    expect(meta).toEqual({ ui: { resourceUri: CANVAS_UI_URI }, "ui/resourceUri": CANVAS_UI_URI });
     expect(CANVAS_UI_URI).toBe("ui://banana/canvas");
     expect(() => registerOpen(new McpServer({ name: "t", version: "0" }))).not.toThrow();
   });

@@ -22,6 +22,7 @@ export const ar: Dict = {
     },
     language: { label: "اللغة", switchTo: "English", switchToLang: "en" },
     signIn: "تسجيل الدخول",
+    signOut: "تسجيل الخروج",
   },
   landing: {
     title: "{app}: مراجع تصميم جريئة لوكيل الذكاء الاصطناعي",

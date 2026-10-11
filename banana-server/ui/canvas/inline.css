@@ -1,0 +1,69 @@
+/*
+ * Inline (MCP Apps) wrapper around the canvas. Colors come from the canvas tokens in
+ * canvas/canvas.css (the wrapper is itself a `.bn-canvas`), so contrast matches the web canvas.
+ */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.bn-inline {
+  overflow: hidden;
+}
+
+/* The CanvasApp root inside the wrapper takes the remaining height. */
+.bn-inline > .bn-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.bn-inline-bar {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  padding: 4px 12px;
+  background: var(--bn-surface);
+  border-bottom: 1px solid var(--bn-border-subtle);
+}
+
+.bn-inline-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 2px;
+  color: var(--bn-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bn-inline-conflict {
+  flex: none;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bn-explore-bg);
+  color: var(--bn-explore-text);
+  border-bottom: 2px solid var(--bn-explore-text);
+}
+
+.bn-inline-conflict p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.bn-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bn-inline-problem {
+  color: var(--bn-danger);
+}

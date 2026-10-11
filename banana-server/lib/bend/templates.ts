@@ -1,100 +1,254 @@
 import type { MoveId } from "./types";
 
 /**
- * Title and prompt templates. Tokens:
- *   {Subj} subject, capitalized   {subj} subject   {head} last word of the subject
- *   {x} the move's list entry     {X} entry, capitalized   {ax} entry with "a" or "an"
- *   {m} mood                      {amx} "a" or "an" + mood + entry
- * Plain words only, no em dashes.
+ * Title, twist and prompt templates. Plain words only, no em dashes.
+ *
+ * Tokens name a role. Each move fills one role with its list entry:
+ *   transplant {obj}   material {mat}   era {era}   constraint {rule}
+ *   scale {el}         lens {lens}      plus {m} mood, {subj} subject, {head} last two subject words
+ * Prefix "a-" adds "a" or "an" to the phrase: {a-obj}, {a-m-obj} ("a neon-lit matchbook").
+ * Hyphens join several roles into one phrase: {mat-obj} ("frosted glass vinyl record sleeve").
+ * A capital first letter capitalizes the result: {Subj}, {Mat}, {A-obj}.
  */
 
-/** Opening clause when the move leads the direction. */
-export const PRIMARY_TEMPLATES: Record<MoveId, readonly string[]> = {
+/** Role each move fills in templates. */
+export const ROLE: Record<MoveId, string> = {
+  transplant: "obj",
+  material: "mat",
+  era: "era",
+  constraint: "rule",
+  scale: "el",
+  lens: "lens",
+};
+
+/** Headline from a single move (wildness 1 and 2, and wildness 3+ when the other move is the twist). */
+export const SINGLE_TEMPLATES: Record<MoveId, readonly string[]> = {
   transplant: [
-    "{Subj} as {ax}",
-    "{Subj} as {amx}",
-    "What if the {head} were {amx}",
-    "{Subj} printed on {ax}",
-    "{Subj} that behaves like {ax}",
-    "{Subj} hiding inside {amx}",
-    "{Subj}, reimagined as {ax}",
-    "Turn the {head} into {amx}",
+    "{Subj} as {a-obj}",
+    "{Subj} as {a-m-obj}",
+    "What if the {head} were {a-m-obj}",
+    "{Subj} printed on {a-obj}",
+    "{Subj} that works like {a-obj}",
+    "{Subj} hiding inside {a-m-obj}",
+    "Turn the {head} into {a-m-obj}",
   ],
   material: [
-    "{Subj} made of {x}",
-    "{Subj} rendered in {x}",
-    "{Subj} built from {x}",
-    "{Subj} you could touch: {x}",
-    "{Subj}, all {x}",
-    "{Subj} wrapped in {x}",
-    "{X} {subj}",
+    "{Subj} made of {mat}",
+    "{Subj} in {mat}",
+    "{Mat} {subj}",
+    "{Subj} you could touch, all {mat}",
+    "{Subj} wrapped in {mat}",
+    "{Subj} rendered in {m} {mat}",
+    "{Subj} built from {mat}",
   ],
   era: [
-    "{Subj} straight out of {x}",
-    "{Subj}, {x} edition",
-    "{X} {subj}",
-    "{Subj}, rewound to {x}",
-    "{Subj} smuggled back to {x}",
-    "If {x} designed the {head}",
+    "{Subj} straight out of {era}",
+    "{Subj}, {era} edition",
+    "{Era} {subj}",
+    "{Subj}, rewound to {era}",
+    "{Subj} smuggled back to {era}",
+    "{Subj} as it looked in {era}",
   ],
   constraint: [
-    "{Subj}, but {x}",
-    "{Subj} with one rule: {x}",
-    "{Subj} on a strict diet: {x}",
-    "Strip the {head} down: {x}",
-    "{Subj} under one law: {x}",
+    "{Subj}, but {rule}",
+    "{Subj} with one rule: {rule}",
+    "{Subj} on a strict diet: {rule}",
+    "Strip the {head} down: {rule}",
+    "{Subj} under one law: {rule}",
+    "{Subj}, rule one: {rule}",
   ],
   scale: [
-    "{Subj} with giant {x}",
-    "Tiny {head}, huge {x}",
-    "{Subj} where the {x} are the size of buildings",
-    "{Subj} at billboard scale, all {x}",
-    "{Subj} drowned in oversized {x}",
-    "{Subj} built from oversized {x}",
-    "Zoom into the {head} until the {x} fill the room",
+    "{Subj} with giant {el}",
+    "Tiny {head}, huge {el}",
+    "{Subj} where the {el} are the size of buildings",
+    "{Subj} at billboard scale, all {el}",
+    "{Subj} drowned in oversized {el}",
+    "{Subj} built from oversized {el}",
   ],
   lens: [
-    "{Subj} through the eyes of {x}",
-    "{Subj} in the language of {x}",
-    "{Subj} drawn from {x}",
-    "{X} meets {subj}",
-    "{Subj}, patterned after {x}",
-    "{Subj} with the rhythm of {x}",
+    "{Subj} through the eyes of {lens}",
+    "{Subj} in the language of {lens}",
+    "{Subj} drawn from {lens}",
+    "{Subj} meets {lens}",
+    "{Subj}, patterned after {lens}",
+    "{Subj} with the rhythm of {lens}",
   ],
 };
 
-/** Phrase appended when the move joins a combination. Constraint always goes last. */
-export const MODIFIER_TEMPLATES: Record<MoveId, readonly string[]> = {
-  transplant: [
-    " shaped like {ax}",
-    ", folded into {ax}",
-    " inside {amx}",
-    ", styled as {ax}",
-    ", packaged like {ax}",
+/**
+ * Headline from the two strongest moves, keyed by the pair in canonical move order.
+ * Constraint is never in the headline pair (it always becomes the twist), so its pairs are absent.
+ */
+export const PAIR_TEMPLATES: Readonly<Record<string, readonly string[]>> = {
+  "transplant+material": [
+    "{Subj} as {a-obj} in {mat}",
+    "{Subj} in {mat}, sold like {a-obj}",
+    "{Subj} as {a-mat-obj}",
+    "{Mat} {subj}, folded into {a-obj}",
+    "{Subj} in {mat}, packaged like {a-obj}",
+    "What if the {head} were {a-obj} in {mat}",
+    "{Subj} printed on {a-obj} made of {mat}",
   ],
-  material: [" in {x}", ", finished in {x}", " made of {x}", ", all {x}", ", cast in {x}"],
-  era: [", {x} style", " straight out of {x}", ", {x} edition", ", rewound to {x}"],
-  constraint: [", but {x}", " with one rule: {x}", ", under one rule: {x}"],
-  scale: [" with giant {x}", ", {x} blown up huge", " with oversized {x}", ", {x} at billboard size"],
+  "transplant+era": [
+    "{Subj} as {a-obj} from {era}",
+    "{Era} {subj}, packaged like {a-obj}",
+    "{Subj} as {a-era-obj}",
+    "{Subj} printed on {a-obj} from {era}",
+    "{Subj} as {a-obj}, {era} edition",
+    "{Subj} smuggled into {era} as {a-obj}",
+  ],
+  "material+era": [
+    "{Era} {subj} in {mat}",
+    "{Subj} in {mat}, rewound to {era}",
+    "{Mat} {subj} straight out of {era}",
+    "{Subj} cast in {mat}, {era} edition",
+    "{Subj} in {mat}, as it looked in {era}",
+    "{Era} {subj}, all {mat}",
+  ],
+  "transplant+lens": [
+    "{Subj} as {a-obj} patterned with {lens}",
+    "{Subj} meets {lens}, sold like {a-obj}",
+    "{Subj} as {a-obj} in the language of {lens}",
+    "{Subj} printed on {a-obj}, after {lens}",
+    "{Subj} as {a-obj} drawn from {lens}",
+    "{Subj} meets {lens}, packaged like {a-obj}",
+    "{Subj} as {a-obj} with the rhythm of {lens}",
+    "{Subj} as {a-obj}, after {lens}",
+  ],
+  "material+lens": [
+    "{Subj} in {mat}, patterned after {lens}",
+    "{Subj} meets {lens}, all in {mat}",
+    "{Mat} {subj} with the rhythm of {lens}",
+    "{Mat} {subj}, after {lens}",
+    "{Subj} drawn from {lens}, finished in {mat}",
+    "{Mat} {subj} in the language of {lens}",
+  ],
+  "era+lens": [
+    "{Era} {subj} meets {lens}",
+    "{Subj} meets {lens}, rewound to {era}",
+    "{Subj} patterned after {lens}, {era} style",
+    "{Subj} drawn from {lens}, {era} edition",
+    "{Era} {subj} with the rhythm of {lens}",
+    "{Subj} in the language of {lens}, {era} edition",
+  ],
+  "transplant+scale": [
+    "{Subj} as {a-obj} with giant {el}",
+    "{Subj} as {a-obj}, {el} blown up huge",
+    "{Subj} printed on {a-obj}, all oversized {el}",
+    "Tiny {head}, huge {el}, packaged like {a-obj}",
+    "{Subj} as {a-obj} buried in giant {el}",
+    "{Subj} folded into {a-obj} with billboard {el}",
+  ],
+  "material+scale": [
+    "{Subj} in {mat} with giant {el}",
+    "{Mat} {subj}, {el} blown up huge",
+    "Giant {el} in {mat} run the {head}",
+    "{Subj} built from oversized {el} in {mat}",
+    "Tiny {head}, huge {el}, all {mat}",
+    "{Subj} in {mat}, {el} at billboard size",
+  ],
+  "era+scale": [
+    "{Era} {subj} with giant {el}",
+    "{Subj}, {era} style, {el} blown up huge",
+    "Tiny {head}, huge {el}, straight out of {era}",
+    "{Subj} rewound to {era}, all oversized {el}",
+    "{Subj} as it looked in {era}, with giant {el}",
+    "{Era} {subj} built from oversized {el}",
+  ],
+  "scale+lens": [
+    "{Subj} meets {lens}, with giant {el}",
+    "{Subj} patterned after {lens}, {el} blown up huge",
+    "Tiny {head}, huge {el}, patterned after {lens}",
+    "{Subj} with giant {el} drawn from {lens}",
+    "{Subj} with the rhythm of {lens} and giant {el}",
+    "Oversized {el} meet {lens} on the {head}",
+  ],
+};
+
+/** One short line carrying the third move, or a constraint or scale garnish. Shown after "Twist:". */
+export const TWIST_TEMPLATES: Record<MoveId | "mood", readonly string[]> = {
+  transplant: [
+    "folded into {a-obj}",
+    "packaged like {a-obj}",
+    "it ships as {a-obj}",
+    "printed on {a-obj}",
+    "shaped like {a-obj}",
+    "the wear of {a-obj}",
+  ],
+  material: [
+    "every surface in {mat}",
+    "finished in {mat}",
+    "trimmed in {mat}",
+    "buttons made of {mat}",
+    "edges cast in {mat}",
+    "the whole thing in {mat}",
+  ],
+  era: [
+    "type and color from {era}",
+    "rewound to {era}",
+    "colors lifted from {era}",
+    "straight out of {era}",
+    "styled like {era}",
+    "a grid borrowed from {era}",
+  ],
+  constraint: [
+    "{rule}",
+    "the rule: {rule}",
+    "house rule: {rule}",
+    "one law: {rule}",
+    "no exceptions: {rule}",
+    "hard rule: {rule}",
+  ],
+  scale: [
+    "{el} blown up huge",
+    "giant {el} everywhere",
+    "{el} at billboard size",
+    "{el} the size of buildings",
+    "oversized {el} crowd the edges",
+    "{el} as big as the screen",
+  ],
   lens: [
-    ", in the language of {x}",
-    ", through {x}",
-    ", with the rhythm of {x}",
-    ", patterned after {x}",
+    "patterned after {lens}",
+    "borders from {lens}",
+    "colors from {lens}",
+    "the rhythm of {lens}",
+    "trimmed with {lens}",
+    "{lens} in the margins",
+  ],
+  mood: [
+    "{a-m} mood throughout",
+    "{m} all over",
+    "mood: {m}",
+    "shot in {m} tones",
+    "{m} mood, start to finish",
+    "dial the mood to {m}",
   ],
 };
 
 /** One sentence per move in the direction prompt. */
 export const PROMPT_CLAUSES: Record<MoveId, string> = {
-  transplant: "Borrow the format, print details and wear of {ax}.",
-  material: "Render every surface as {x}, with real light and shadow.",
-  era: "Take type, color and grid from {x}.",
-  constraint: "Obey one hard rule: {x}.",
-  scale: "Make the {x} enormous and shrink everything else.",
-  lens: "Build pattern, rhythm and color from {x}.",
+  transplant: "Borrow the format, print details and wear of {a-obj}.",
+  material: "Render every surface as {mat}, with real light and shadow.",
+  era: "Take type, color and grid from {era}.",
+  constraint: "Obey one hard rule: {rule}.",
+  scale: "Make the {el} enormous and shrink everything else.",
+  lens: "Build pattern, rhythm and color from {lens}.",
 };
 
 export const PROMPT_OPENING = "Redesign the {subj}.";
+
+/**
+ * Template list sizes in bend-v1. The old title picker shuffled each list on first use with the
+ * same seeded stream that picks moves and entries, so the engine still spends those draws to keep
+ * every direction id unchanged. Never edit these numbers.
+ */
+export const LEGACY_TEMPLATE_SIZES: {
+  primary: Record<MoveId, number>;
+  modifier: Record<MoveId, number>;
+} = {
+  primary: { transplant: 8, material: 7, era: 6, constraint: 5, scale: 7, lens: 6 },
+  modifier: { transplant: 5, material: 5, era: 4, constraint: 3, scale: 4, lens: 4 },
+};
 
 export function article(phrase: string): "a" | "an" {
   const p = phrase.trim().toLowerCase();
@@ -108,35 +262,36 @@ export function capitalize(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-export interface TemplateVars {
-  subj: string;
-  head: string;
-  x: string;
-  m: string;
+/** Values for template roles: subj, head, m, and any of obj, mat, era, rule, el, lens. */
+export type TemplateVars = Record<string, string | undefined>;
+
+const TOKEN = /\{([A-Za-z]+(?:-[A-Za-z]+)*)\}/g;
+
+/** Roles a template uses, lowercased, without the article prefix. */
+export function templateRoles(template: string): string[] {
+  const roles = new Set<string>();
+  for (const [, token] of template.matchAll(TOKEN)) {
+    const parts = (token ?? "").toLowerCase().split("-");
+    for (const p of parts[0] === "a" && parts.length > 1 ? parts.slice(1) : parts) roles.add(p);
+  }
+  return [...roles];
 }
 
-export function render(template: string, v: TemplateVars): string {
-  const moodX = `${v.m} ${v.x}`;
-  return template.replace(/\{(Subj|subj|head|X|x|ax|amx|m)\}/g, (_, token: string) => {
-    switch (token) {
-      case "Subj":
-        return capitalize(v.subj);
-      case "subj":
-        return v.subj;
-      case "head":
-        return v.head;
-      case "X":
-        return capitalize(v.x);
-      case "x":
-        return v.x;
-      case "ax":
-        return `${article(v.x)} ${v.x}`;
-      case "amx":
-        return `${article(moodX)} ${moodX}`;
-      case "m":
-        return v.m;
-      default:
-        return token;
-    }
+/** Fill a template. Throws when a role has no value, so a bad template never ships half rendered. */
+export function render(template: string, vars: TemplateVars): string {
+  return template.replace(TOKEN, (_, token: string) => {
+    const parts = token.split("-");
+    const upper = /^[A-Z]/.test(token);
+    const withArticle = parts.length > 1 && parts[0]?.toLowerCase() === "a";
+    const names = withArticle ? parts.slice(1) : parts;
+    const phrase = names
+      .map((n) => {
+        const v = vars[n.toLowerCase()];
+        if (v === undefined || v === "") throw new Error(`Template role {${n}} has no value: ${template}`);
+        return v;
+      })
+      .join(" ");
+    const out = withArticle ? `${article(phrase)} ${phrase}` : phrase;
+    return upper ? capitalize(out) : out;
   });
 }

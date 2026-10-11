@@ -1,11 +1,13 @@
 /**
  * `open_canvas` (spec section 6): open one of the user's canvases, or create one.
- * Free plan: 3 canvases. The inline UI (`ui://banana/canvas`) is registered elsewhere.
+ * Free plan: 3 canvases. The inline UI (`ui://banana/canvas`) is registered in
+ * lib/mcp/resources/canvas.ts and reads `canvas.state` and `canvas.updatedAt` from this result.
  */
 import { z } from "zod";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import { authExtra } from "@/lib/auth";
 import { APP_NAME } from "@/lib/config";
-import { canvasWebUrl, emptyState, itemCount, loadCanvas } from "@/lib/canvas/store";
+import { canvasWebUrl, emptyState, itemCount, loadCanvas, type CanvasState } from "@/lib/canvas/store";
 import { canCreateCanvas, currentPeriod } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -39,7 +41,18 @@ const MESSAGES: Record<string, string> = {
 };
 
 export type OpenCanvasOutput = {
-  canvas: { id: string; title: string; webUrl: string; brief: string | null; items: number; tray: number };
+  canvas: {
+    id: string;
+    title: string;
+    webUrl: string;
+    brief: string | null;
+    items: number;
+    tray: number;
+    /** Version of the saved state; the inline canvas sends it back as `baseUpdatedAt` when it saves. */
+    updatedAt: string;
+    /** Saved state (takedown filtered) for the inline canvas (MCP Apps). */
+    state: CanvasState;
+  };
   created: boolean;
 };
 
@@ -87,6 +100,8 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
             brief: patch.brief ?? loaded.canvas.brief,
             items: itemCount(loaded.state),
             tray: loaded.state.tray.length,
+            updatedAt: loaded.canvas.updatedAt.toISOString(),
+            state: loaded.state,
           },
           created: false,
         };
@@ -109,6 +124,8 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
           brief: canvas.brief,
           items: 0,
           tray: 0,
+          updatedAt: canvas.updatedAt.toISOString(),
+          state: emptyState(),
         },
         created: true,
       };
@@ -123,7 +140,9 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
 const live = lazyTool(createOpenCanvasTool);
 
 export const register: RegisterTool = (server) => {
-  server.registerTool(
+  // registerAppTool also writes the legacy `_meta["ui/resourceUri"]` key for older hosts.
+  registerAppTool(
+    server,
     TOOL_NAME,
     {
       title: `Open ${APP_NAME} canvas`,

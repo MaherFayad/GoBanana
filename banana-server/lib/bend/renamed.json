@@ -1,0 +1,36 @@
+{
+  "constraints": {
+    "one giant number per screen": "a single giant number per screen",
+    "a strict 12 column grid": "a strict 12 column grid, nothing breaks it",
+    "no buttons, only tappable words": "no buttons, only words you tap",
+    "one photo fills the screen": "one photo fills the whole screen",
+    "crop marks everywhere": "footnotes carry the story"
+  },
+  "elements": {
+    "dice": "photo crops",
+    "paint drips": "page numbers",
+    "tape strips": "underlines"
+  },
+  "moods": {
+    "rust orange": "deadpan",
+    "confetti-colored": "playful",
+    "inky": "moody",
+    "soft focus": "dreamy",
+    "candlelit": "cozy"
+  },
+  "materials": {
+    "faux fur": "memory foam"
+  },
+  "traditions": {
+    "Ankara wax fabric": "Celtic knotwork"
+  },
+  "lens:japanese-ma": {
+    "Japanese book cover": "ma negative space"
+  },
+  "lens:swiss-international": {
+    "Swiss book cover": "objective photography poster"
+  },
+  "lens:najdi": {
+    "Masmak fort facade": "triangular wall openings"
+  }
+}

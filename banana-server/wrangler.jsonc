@@ -1,7 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "banana-server",
-  "main": ".open-next/worker.js",
+  // custom-worker.ts wraps the generated .open-next/worker.js and adds the cron handler.
+  "main": "custom-worker.ts",
   // Must not be later than the bundled workerd release (1.20261006).
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -11,6 +12,8 @@
     "binding": "ASSETS"
   },
   "observability": { "enabled": true },
+  // Daily at 03:17 UTC: purge references older than 30 days that are not on a canvas.
+  "triggers": { "crons": ["17 3 * * *"] },
   // User uploads and export files only (never third-party images).
   // Create first: npx wrangler r2 bucket create banana-uploads
   "r2_buckets": [

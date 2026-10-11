@@ -41,7 +41,7 @@
   "Munich 1972 Olympics",
   "Expo 67",
   "Mexico 68 Olympics",
-  "dot-com 1999",
+  { "label": "dot-com 1999", "query": "late 90s web" },
   "1980s computer manual",
   "solarpunk 2050",
   { "label": "1939 World's Fair", "query": "1939 worlds fair" },

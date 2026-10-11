@@ -15,6 +15,13 @@
       "when": 1791706808768,
       "tag": "0001_directions_bend_id",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791708342682,
+      "tag": "0002_takedown_requests",
+      "breakpoints": true
     }
   ]
 }

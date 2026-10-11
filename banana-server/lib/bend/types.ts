@@ -20,6 +20,11 @@ export interface BendInput {
 export interface ListEntry {
   label: string;
   query: string;
+  /**
+   * Stable identity used for picking and for direction ids. Equals the label, except for
+   * entries reworded after launch (lib/bend/renamed.json), which keep their old label here.
+   */
+  key: string;
 }
 
 /** The list entries one direction is built from, keyed by the slot each move fills. */
@@ -39,11 +44,16 @@ export interface Direction {
   /** Moves joined with " + ", primary move first. */
   move: string;
   moves: MoveId[];
-  /** A creative director's one-line pitch. */
+  /** A creative director's pitch of at most 10 words, from the two strongest moves. */
   title: string;
+  /**
+   * One short line (at most 8 words) with the third move or a constraint or scale garnish,
+   * shown after "Twist:". Empty at wildness 1 and 2.
+   */
+  twist: string;
   /** Short image search query (at most 9 words) for search_references. */
   searchQuery: string;
-  /** One line the agent can riff on when sketching the direction. */
+  /** The full combined idea (every move and the twist) for the agent to riff on. */
   prompt: string;
   ingredients: Ingredients;
 }

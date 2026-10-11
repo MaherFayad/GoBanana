@@ -8,13 +8,18 @@ import type { AuthInfo } from "@modelcontextprotocol/server";
 import { APP_NAME, RESOURCE_METADATA_PATH } from "@/lib/config";
 import { tools as defaultTools } from "@/lib/mcp/tools";
 import type { RegisterTool } from "@/lib/mcp/tools/types";
+import { registerCanvasResource } from "@/lib/mcp/resources/canvas";
 
 type VerifyToken = (req: Request, bearerToken?: string) => Promise<AuthInfo | undefined>;
 
-export function buildMcpHandler(tools: RegisterTool[] = defaultTools) {
+/** MCP resources: the inline canvas UI (`ui://banana/canvas`, MCP Apps). */
+export const defaultResources: RegisterTool[] = [(server) => registerCanvasResource(server)];
+
+export function buildMcpHandler(tools: RegisterTool[] = defaultTools, resources: RegisterTool[] = defaultResources) {
   return createMcpHandler(
     (server) => {
       for (const register of tools) register(server);
+      for (const register of resources) register(server);
     },
     { serverInfo: { name: APP_NAME, version: "0.1.0" } },
   );
@@ -31,8 +36,9 @@ export function buildAuthedMcpHandler(opts: {
   verifyToken: VerifyToken;
   publicOrigin?: () => string | undefined;
   tools?: RegisterTool[];
+  resources?: RegisterTool[];
 }) {
-  const mcp = buildMcpHandler(opts.tools);
+  const mcp = buildMcpHandler(opts.tools, opts.resources);
   return (req: Request): Promise<Response> =>
     withMcpAuth(mcp, opts.verifyToken, {
       required: true,

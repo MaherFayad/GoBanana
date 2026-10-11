@@ -1,4 +1,4 @@
-/** Account: plan, usage this month, billing note, delete account. Data loaders are stubs (lib/site/session.ts). */
+/** Account: plan, usage this month, billing note, sign out, delete account. Data loaders: lib/site/session.ts. */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +6,7 @@ import { limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
 import { getAccountUsage, getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
+import { SIGN_OUT_PATH } from "@/lib/web-auth";
 import { DeleteAccount } from "./DeleteAccount";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,11 @@ export default async function AccountPage({ params }: Props) {
     <>
       <h1>{t.title}</h1>
       {user.email ? <p className="note">{user.email}</p> : null}
+      <form method="post" action={SIGN_OUT_PATH}>
+        <button type="submit" className="button secondary">
+          {dict.common.signOut}
+        </button>
+      </form>
 
       <section aria-labelledby="plan-title">
         <h2 id="plan-title">{t.planTitle}</h2>

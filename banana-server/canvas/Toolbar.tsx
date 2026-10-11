@@ -4,9 +4,11 @@
  * Toolbar above the canvas. It sits outside the React Flow area, so it can never
  * cover a focused node (SC 2.4.11).
  */
+import type { Plan } from "@/lib/quota";
 import type { SaveStatus } from "./autosave";
 import { IconFit, IconFrame, IconMinus, IconNote, IconPanel, IconPlus, IconWarning } from "./icons";
 import { LAYOUT_LABELS, LAYOUTS, type LayoutKind } from "./layout-adapter";
+import { UploadButton } from "./UploadButton";
 
 export interface ToolbarProps {
   appName: string;
@@ -24,6 +26,17 @@ export interface ToolbarProps {
   onZoomOut: () => void;
   onFit: () => void;
   onRetrySave: () => void;
+  /**
+   * Web canvas only (`/c/:id`): set it to show Upload and Share. Leave it unset inline
+   * (MCP Apps), where the iframe has no web session to upload or share with.
+   */
+  canvasId?: string;
+  /** Signed-in user's plan; free users see the controls with an upgrade note. */
+  plan?: Plan | null;
+  /** Current share token, if the canvas is shared. */
+  shareToken?: string | null;
+  /** Link for upgrade notes, for example "/en/pricing". */
+  pricingHref?: string;
 }
 
 const STATUS_TEXT: Record<SaveStatus, string> = {
@@ -66,6 +79,8 @@ export function Toolbar(p: ToolbarProps) {
               <span>Add section</span>
             </button>
           </div>
+
+          {p.canvasId && <UploadButton plan={p.plan} pricingHref={p.pricingHref} />}
 
           <div className="bn-toolbar-group" role="group" aria-labelledby="bn-arrange-label">
             <span id="bn-arrange-label" className="bn-toolbar-label">

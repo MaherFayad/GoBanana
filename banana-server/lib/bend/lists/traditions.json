@@ -30,7 +30,7 @@
   "Najdi painted doors",
   { "label": "Al Qatt Al Asiri", "query": "Qatt Asiri painting" },
   "girih tiles",
-  "Celtic knotwork",
+  { "label": "Ankara wax fabric", "query": "Ankara fabric" },
   "Swiss paper cutting",
   "Mexican alebrijes",
   "Japanese noren curtains",

@@ -20,6 +20,7 @@ export const en = {
     },
     language: { label: "Language", switchTo: "العربية", switchToLang: "ar" },
     signIn: "Sign in",
+    signOut: "Sign out",
   },
   landing: {
     title: "{app}: wild design references for your AI agent",

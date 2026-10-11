@@ -1,6 +1,6 @@
 /**
  * MCP contract (spec section 13): the real handler, in process, over Request/Response.
- * tools/list shows all 9 tools with object input schemas; bend_brief runs end to end.
+ * tools/list shows every tool with object input schemas; bend_brief runs end to end.
  */
 import { describe, expect, it } from "vitest";
 import type { AuthInfo } from "@modelcontextprotocol/server";
@@ -44,6 +44,8 @@ const EXPECTED = [
   "get_canvas",
   "extract_palette",
   "export_kit",
+  // App-only (hidden from the model by MCP Apps hosts); the inline canvas saves through it.
+  "save_canvas_state",
 ];
 
 type ListedTool = {
@@ -54,7 +56,7 @@ type ListedTool = {
 };
 
 describe("MCP contract", () => {
-  it("lists all 9 tools in order with input schemas and plain descriptions", async () => {
+  it("lists all tools in order with input schemas and plain descriptions", async () => {
     const { result } = await rpc("tools/list");
     const tools = (result!.tools as ListedTool[]);
     expect(tools.map((t) => t.name)).toEqual(EXPECTED);
