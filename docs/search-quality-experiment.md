@@ -142,7 +142,7 @@ UI_NEG   = -template -kit -free -wireframe
 SURFACE  = app → "app ui" | web → "website ui" | dashboard → "dashboard ui"
 
 fidelity     "{domain} {SURFACE} {UI_NEG}"            site:dribbble.com/shots + site:pinterest.com/pin
-taste        "{style} {component} ui {UI_NEG}"        site:dribbble.com/shots
+taste        "{style} {domain} {component} ui design {UI_NEG}"  site:dribbble.com/shots   (round 9)
 hero         "{style} {coreDomain} app single screen" site:dribbble.com/shots   (app surface only)
 component    "{domain} {component} ui {UI_NEG}"       site:dribbble.com/shots
 inspiration  "{ingredient}"                           site:pinterest.com/pin + site:behance.net/gallery
@@ -155,3 +155,16 @@ dedupe:   by shot id / pin id / gallery id across lanes
 
 Style words to offer (verified): liquid glass, glassmorphism, monochrome, dark mode, luxury, big typography, neumorphism, swiss style, bento grid, editorial, grainy, skeuomorphic.
 Do not offer: aurora gradient, soft 3d, claymorphism, isometric, playful.
+
+## Round 9: keeping the taste lane on topic (15 queries)
+
+Leaving the domain out of the taste lane (round 8) avoided repeats but drifted off topic: "big typography checkout ui" returned sneaker and restaurant checkouts. Repeats are now handled by cross-lane dedupe and the canvas exclude, so the domain goes back in, together with "ui design".
+
+| Template (3 styles: big typography, minimal, glassmorphism) | Good | On-topic titles | New vs fidelity |
+| --- | --- | --- | --- |
+| `{style} {component} ui` | 24 | 1 | 24 |
+| `{style} {domain} {component} ui design` | 21 | **20** | 19 |
+| `{style} {domain} app {component} ui` | 20 | 20 | 17 |
+| `{style} travel {component} app ui` (broader domain) | 26 | 18 | 26 |
+
+New taste template: `{style} {domain} {component} ui design`.
