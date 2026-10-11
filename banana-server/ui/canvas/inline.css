@@ -3,8 +3,7 @@
  * (styles/studio-tokens.css, styles/studio-components.css), the canvas itself styles
  * from canvas/canvas.css. Tokens only, logical properties only.
  *
- * Theme: main.tsx puts the host theme on <html> and on .bn-inline as data-theme; with no
- * host theme the tokens follow prefers-color-scheme.
+ * Theme: dark only (owner decision); main.tsx puts data-theme="dark" on <html> and .bn-inline.
  */
 
 html,

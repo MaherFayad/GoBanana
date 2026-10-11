@@ -105,7 +105,7 @@ export function requiresSignIn(pathname: string): boolean {
 
 /** Small HTML page for sign-in errors (fixed copy only, never request data). */
 export function messagePage(title: string, body: string, status: number, link = { href: "/en", label: "Go to the home page" }): Response {
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${title}</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:40rem;margin:4rem auto;padding:0 1rem;color:#111;background:#fff}a{color:#1a56db}a:focus-visible{outline:2px solid #1a56db;outline-offset:2px}@media (prefers-color-scheme:dark){body{color:#eee;background:#111}a{color:#8ab4ff}}</style></head><body><main><h1>${title}</h1><p>${body}</p><p><a href="${link.href}">${link.label}</a></p></main></body></html>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="color-scheme" content="dark"><title>${title}</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:40rem;margin:4rem auto;padding:0 1rem;color:#f4f4f5;background:#000}a{color:#9bdcff}a:focus-visible{outline:2px solid #9bdcff;outline-offset:2px}@media (prefers-color-scheme:dark){body{color:#eee;background:#111}a{color:#8ab4ff}}</style></head><body><main><h1>${title}</h1><p>${body}</p><p><a href="${link.href}">${link.label}</a></p></main></body></html>`;
   return new Response(html, {
     status,
     headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" },

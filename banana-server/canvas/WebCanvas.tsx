@@ -6,7 +6,7 @@
  * or by the agent. On a conflict, saving stops and a warning alert asks for a reload.
  *
  * Mounts the Studio toast stack once for the whole page (share, upload and canvas toasts).
- * No forced theme: the tokens follow the system, dark when there is no preference.
+ * Dark only: the root layout sets data-theme="dark" on <html>.
  */
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { WarningIcon } from "@/components/studio/icons";

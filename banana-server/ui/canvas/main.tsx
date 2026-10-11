@@ -166,17 +166,16 @@ function useCompact(): boolean {
 
 function Root() {
   const host = useHost();
-  const theme = host.context.theme === "dark" || host.context.theme === "light" ? host.context.theme : undefined;
+  // Dark only (owner decision), whatever the host theme.
+  const theme = "dark" as const;
   const height = useFrameHeight(host.context);
   const compact = useCompact();
   const opened = useMemo(() => (host.result ? readOpenCanvasResult(host.result) : null), [host.result]);
 
-  // The host theme on the root too, so the page canvas, scrollbars and anything portaled to
-  // <body> (tooltips, toasts) match. No host theme: the tokens follow the system.
+  // The theme on the root too, so the page canvas, scrollbars and anything portaled to
+  // <body> (tooltips, toasts) match.
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme) root.dataset.theme = theme;
-    else delete root.dataset.theme;
+    document.documentElement.dataset.theme = theme;
   }, [theme]);
 
   let body: ReactNode;

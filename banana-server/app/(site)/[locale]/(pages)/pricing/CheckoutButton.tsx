@@ -58,14 +58,13 @@ export function CheckoutButton(props: Props) {
         paddle.Initialize({ token: props.clientToken });
         initializedToken = props.clientToken;
       }
-      const dark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
       paddle.Checkout.open(
         buildCheckoutOptions({
           priceId: props.priceId,
           userId: props.userId,
           email: props.email,
           locale: props.locale,
-          theme: dark ? "dark" : "light",
+          theme: "dark",
           successUrl: props.successUrl,
         }),
       );
