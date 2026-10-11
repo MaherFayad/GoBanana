@@ -46,7 +46,7 @@ export function createArrangeCanvasTool(deps: CanvasToolDeps) {
     if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
 
     try {
-      const outcome = await mutateCanvas(deps.repos, userId, input.canvasId, takedownLoader(deps), (state) => {
+      const outcome = await mutateCanvas<ArrangedRect[]>(deps.repos, userId, input.canvasId, takedownLoader(deps), (state) => {
         const result = arrangeState(state, input.layout, input.sectionId);
         if ("error" in result) return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
         return { state: result.state, value: result.items };

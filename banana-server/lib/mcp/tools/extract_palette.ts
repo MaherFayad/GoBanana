@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { appendNodes, canvasWebUrl, itemCount, loadCanvas, mutateCanvas, type NewNode } from "@/lib/canvas/store";
+import { appendNodes, canvasWebUrl, itemCount, loadCanvas, mutateCanvas, type NewNode, type PlacedNode } from "@/lib/canvas/store";
 import {
   DEFAULT_SIZE,
   extractPalette,
@@ -183,7 +183,7 @@ export function createExtractPaletteTool(deps: ExtractPaletteDeps) {
           type: "swatch",
           data: { hex: c.hex, oklch: c.oklch, role: c.role, tag: shipHexes.has(c.hex) ? "ship" : "explore" },
         }));
-        const outcome = await mutateCanvas(deps.repos, userId, input.canvasId, loadMatcher, (state) => {
+        const outcome = await mutateCanvas<PlacedNode[]>(deps.repos, userId, input.canvasId, loadMatcher, (state) => {
           const cap = canAddItems(plan, itemCount(state), nodes.length, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
           if (!cap.ok) return { error: cap.message };
           const { state: next, placed } = appendNodes(state, nodes, () => sectionId, deps.makeId);

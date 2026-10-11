@@ -7,12 +7,14 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { getConfig } from "@/lib/config";
-import { checkSearchQuota, createMemoryUsageStore, type Plan, type UsageStore } from "@/lib/quota";
+import { addToTray as addToCanvasTray, mutateCanvas } from "@/lib/canvas/store";
+import type { Repos } from "@/lib/db/types";
+import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
 import { DEFAULT_SOURCES, SOURCE_SITES, type Reference, type SourceSite } from "@/lib/sources/types";
 import { createWebSearchAdapter, type WebSearchAdapter } from "@/lib/sources/web-search";
-import { loadTakedownMatcher, type TakedownLoader } from "@/lib/takedown";
-import { toolMessage, type RegisterTool } from "./types";
+import { compileTakedowns } from "@/lib/takedown";
+import { liveCanvasDeps, plausibleId, takedownLoader, upgradeUrl } from "./canvas-shared";
+import { lenient, toolMessage, type RegisterTool } from "./types";
 
 export const TOOL_NAME = "search_references";
 
@@ -32,19 +34,28 @@ export const inputSchema = z.object({
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
 
-export type Direction = { id: string; searchQuery: string; canvasId?: string | null };
+export type Direction = {
+  id: string;
+  searchQuery: string;
+  canvasId?: string | null;
+  /** Stable bend_brief id, when the direction came from bend_brief. */
+  bendId?: string | null;
+};
 
 export type SearchReferencesDeps = {
   adapter: Pick<WebSearchAdapter, "run">;
   usage: UsageStore;
   getPlan(userId: string): Promise<Plan>;
-  /** Direction owned by the user, or null. */
-  getDirection(userId: string, directionId: string): Promise<Direction | null>;
   /**
-   * Save references (URLs and metadata only) and put them in the canvas tray.
-   * Returns false when the canvas does not exist or is not the user's.
+   * Direction on one of the user's canvases, by row id or bend_brief id, or null.
+   * `canvasId` narrows the lookup when the call names a canvas.
    */
-  addToTray(userId: string, canvasId: string, references: Reference[]): Promise<boolean>;
+  getDirection(userId: string, directionId: string, canvasId?: string): Promise<Direction | null>;
+  /**
+   * Save references (URLs and metadata only) and put them in the canvas tray, tagged with
+   * the direction they were found for. Returns false when the canvas is not the user's.
+   */
+  addToTray(userId: string, canvasId: string, references: Reference[], directionId?: string): Promise<boolean>;
   upgradeUrl(): string;
   now?(): Date;
 };
@@ -95,13 +106,22 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
     if (!input.directionId && !input.query) {
       return toolMessage("Pass a directionId from bend_brief or a query.");
     }
+    if (input.canvasId && !plausibleId(input.canvasId)) {
+      return toolMessage("That canvas was not found. Call open_canvas to create one, or check the canvasId.");
+    }
 
     try {
       let query = input.query;
+      let directionKey: string | undefined;
       if (!query && input.directionId) {
-        const direction = await deps.getDirection(userId, input.directionId);
-        if (!direction) return toolMessage("That direction was not found. Run bend_brief again or pass a query.");
+        const direction = await deps.getDirection(userId, input.directionId, input.canvasId);
+        if (!direction) {
+          return toolMessage(
+            "That direction was not found. Directions are saved only when bend_brief gets a canvasId. Pass the direction's search text as query instead.",
+          );
+        }
         query = direction.searchQuery;
+        directionKey = direction.bendId ?? direction.id;
       }
       if (!query) return toolMessage("Pass a directionId from bend_brief or a query.");
 
@@ -126,7 +146,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
 
       if (input.canvasId && result.references.length > 0) {
         out.canvasId = input.canvasId;
-        const added = await deps.addToTray(userId, input.canvasId, result.references);
+        const added = await deps.addToTray(userId, input.canvasId, result.references, directionKey);
         if (added) out.addedToTray = true;
         else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
       }
@@ -142,33 +162,43 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
 }
 
 /**
- * Default deps for the live server. Built lazily on the first call so env vars are
- * read at request time (OpenNext fills process.env per request).
+ * Deps over the live database, built lazily on the first call so env vars are read at
+ * request time (OpenNext fills process.env per request).
  *
- * TODO(db): replace each stub below with the Drizzle-backed version once db/ is in.
+ * Without a canvasId nothing is saved: `references.canvas_id` is NOT NULL, and the
+ * result ids (`ref_...`) are stable anyway, so a later search with a canvasId saves them.
  */
-function createDefaultDeps(): SearchReferencesDeps {
-  // TODO(db): load `takedowns.url_or_domain` (spec section 11). Cache for a short time if needed,
-  // but it must be checked on every search (spec section 2 rule 5).
-  const loadTakedownEntries: TakedownLoader = async () => [];
-
-  // TODO(db): usage table (user_id, period) with an upsert for addSearches. In-memory is per isolate.
-  const usage = createMemoryUsageStore();
-
+export function createDbDeps(repos: Repos, appUrl: () => string | undefined): SearchReferencesDeps {
+  const canvasDeps = { repos, appUrl };
   return {
     adapter: createWebSearchAdapter({
       apiKey: process.env.SERPER_API_KEY,
-      loadTakedowns: () => loadTakedownMatcher(loadTakedownEntries),
+      // Read on every search (spec section 2 rule 5); the adapter fails closed when it throws.
+      loadTakedowns: async () => compileTakedowns(await repos.takedowns.list()),
     }),
-    usage,
-    // TODO(db): read users.plan (ensureUser in lib/users.ts returns it).
-    getPlan: async () => "free",
-    // TODO(db): select from directions joined to canvases where canvases.user_id = userId.
-    getDirection: async () => null,
-    // TODO(db): check canvas ownership, insert into references (URLs only), append to the canvas tray.
-    addToTray: async () => false,
-    upgradeUrl: () => `${getConfig().appUrl ?? ""}/pricing`,
+    usage: repos.usage,
+    getPlan: (userId) => repos.users.getPlan(userId),
+    getDirection: async (userId, directionId, canvasId) => {
+      const d = await repos.directions.findForUser(userId, directionId, canvasId);
+      return d ? { id: d.id, searchQuery: d.searchQuery, canvasId: d.canvasId, bendId: d.bendId } : null;
+    },
+    addToTray: async (userId, canvasId, references, directionId) => {
+      const owned = await repos.canvases.getOwned(userId, canvasId);
+      if (!owned) return false;
+      await repos.references.insertMany(canvasId, references);
+      const outcome = await mutateCanvas(repos, userId, canvasId, takedownLoader(canvasDeps), (state) => ({
+        state: addToCanvasTray(state, references, directionId),
+        value: true,
+      }));
+      return outcome.ok;
+    },
+    upgradeUrl: () => upgradeUrl(canvasDeps),
   };
+}
+
+function createDefaultDeps(): SearchReferencesDeps {
+  const live = liveCanvasDeps();
+  return createDbDeps(live.repos, live.appUrl);
 }
 
 let defaultTool: ReturnType<typeof createSearchReferencesTool> | undefined;
@@ -179,12 +209,20 @@ export const register: RegisterTool = (server) => {
     {
       title: "Search references",
       description: TOOL_DESCRIPTION,
-      inputSchema,
+      // Validated in the handler so bad input gets a plain message, not the SDK's raw dump.
+      inputSchema: lenient(inputSchema),
       annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args, ctx) => {
-      defaultTool ??= createSearchReferencesTool(createDefaultDeps());
-      return defaultTool(args, authExtra(ctx)?.userId);
+      const userId = authExtra(ctx)?.userId;
+      if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
+      try {
+        defaultTool ??= createSearchReferencesTool(createDefaultDeps());
+      } catch {
+        console.error("[search_references] not configured");
+        return toolMessage("Search is not available right now. Try again in a minute.");
+      }
+      return defaultTool(args as SearchReferencesInput, userId);
     },
   );
 };

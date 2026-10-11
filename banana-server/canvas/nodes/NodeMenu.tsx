@@ -5,7 +5,7 @@
  * plus node specific items. It is the menu alternative to every drag (SC 2.5.7).
  * Opens from its button or with the M key on a focused node.
  */
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useCanvasActions } from "../context";
 import { IconMore } from "../icons";
 
@@ -48,6 +48,20 @@ export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movab
     },
     [menuFor, nodeId, setMenuFor],
   );
+
+  // Open down or up, whichever has more room inside the canvas, and scroll if needed.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    const button = buttonRef.current;
+    if (!open || !list || !button) return;
+    const area = (button.closest(".react-flow") ?? document.documentElement).getBoundingClientRect();
+    const b = button.getBoundingClientRect();
+    const below = area.bottom - b.bottom - 8;
+    const above = b.top - area.top - 8;
+    const down = below >= list.scrollHeight || below >= above;
+    list.dataset.placement = down ? "down" : "up";
+    list.style.maxHeight = `${Math.max(120, Math.floor(down ? below : above))}px`;
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;

@@ -843,7 +843,7 @@ kbd {
   box-shadow: var(--bn-shadow);
 }
 
-.bn-node-bar:not(.bn-node-bar-top) .bn-menu {
+.bn-menu[data-placement="up"] {
   top: auto;
   bottom: calc(100% + 4px);
 }

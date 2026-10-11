@@ -10,6 +10,7 @@ import {
   canvasWebUrl,
   itemCount,
   mutateCanvas,
+  newNodeId,
   referenceSize,
   siteFromUrl,
   type NewNode,
@@ -35,7 +36,7 @@ export const MAX_ITEMS_PER_CALL = 50;
 
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), notes, color swatches and sections. " +
-  "Pass sectionId to put items in that section; references found for a direction go to its section on their own. " +
+  "Pass sectionId to put items in that section; references found for a saved direction go to that direction's section. " +
   "New items go below what is already there.";
 
 const item = z.discriminatedUnion("type", [
@@ -46,7 +47,11 @@ const item = z.discriminatedUnion("type", [
     hex: z.string().regex(/^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i),
     role: z.string().trim().min(1).max(60).optional(),
   }),
-  z.object({ type: z.literal("section"), title: z.string().trim().min(1).max(120) }),
+  z.object({
+    type: z.literal("section"),
+    title: z.string().trim().min(1).max(120),
+    directionId: z.string().min(1).max(100).optional(),
+  }),
 ]);
 
 export const inputSchema = z.object({
@@ -122,10 +127,12 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
       if (!owned) return toolMessage(CANVAS_NOT_FOUND);
       const saved: Map<string, ReferenceRecord> =
         refIds.length > 0 ? await repos.references.getByIds(input.canvasId, refIds) : new Map();
+      const directions = await repos.directions.listForCanvas(input.canvasId);
+      const directionTitles = new Map(directions.map((d) => [d.bendId ?? d.id, d.title]));
       const loadMatcher = takedownLoader(deps);
       const matcher = await loadMatcher();
 
-      const outcome = await mutateCanvas(repos, userId, input.canvasId, loadMatcher, (state) => {
+      const outcome = await mutateCanvas<{ placed: PlacedNode[]; skipped: { index: number; reason: string }[] }>(repos, userId, input.canvasId, loadMatcher, (state) => {
         if (input.sectionId && !state.nodes.some((n) => n.id === input.sectionId && n.type === "section")) {
           return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
         }
@@ -147,25 +154,48 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               return { node: { type: "swatch", data: { hex, oklch: hexToOklch(hex), role: it.role ?? null, tag: "explore" } } };
             }
             case "section":
-              return { node: { type: "section", data: { title: it.title } } };
+              return { node: { type: "section", data: { title: it.title, ...(it.directionId ? { directionId: it.directionId } : {}) } } };
           }
         });
 
         const nodes = prepared.flatMap((p) => ("node" in p ? [p] : []));
         if (nodes.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? `Item ${i + 1}: ${p.skip}` : "")).filter(Boolean).join("\n") };
-        const cap = canAddItems(plan, itemCount(state), nodes.length, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
-        if (!cap.ok) return { error: cap.message };
 
+        // References found for a saved direction land in that direction's section,
+        // which is created on first use (spec section 11: a direction becomes a section).
         const sectionByDirection = new Map<string, string>();
         for (const n of state.nodes) {
           if (n.type === "section" && n.data.directionId) sectionByDirection.set(n.data.directionId, n.id);
         }
+        for (const p of nodes) {
+          if (p.node.type === "section" && p.node.data.directionId && !p.node.id) {
+            p.node.id = (deps.makeId ?? newNodeId)("sec");
+            sectionByDirection.set(p.node.data.directionId, p.node.id);
+          }
+        }
+        const autoSections: NewNode[] = [];
+        if (!input.sectionId) {
+          for (const p of nodes) {
+            const dir = p.directionId;
+            const title = dir ? directionTitles.get(dir) : undefined;
+            if (!dir || !title || sectionByDirection.has(dir)) continue;
+            const id = (deps.makeId ?? newNodeId)("sec");
+            sectionByDirection.set(dir, id);
+            autoSections.push({ type: "section", id, data: { title, directionId: dir } });
+          }
+        }
+
+        const adding = autoSections.length + nodes.length;
+        const cap = canAddItems(plan, itemCount(state), adding, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
+        if (!cap.ok) return { error: cap.message };
+
+        const all = [...autoSections, ...nodes.map((p) => p.node)];
         const targetFor = (_node: NewNode, i: number): string | null => {
           if (input.sectionId) return input.sectionId;
-          const dir = nodes[i]?.directionId;
+          const dir = nodes[i - autoSections.length]?.directionId;
           return dir ? sectionByDirection.get(dir) ?? null : null;
         };
-        const { state: next, placed } = appendNodes(state, nodes.map((p) => p.node), targetFor, deps.makeId);
+        const { state: next, placed } = appendNodes(state, all, targetFor, deps.makeId);
 
         // Placed references leave the tray, as when the user drags them in.
         const placedRefs = new Set(input.items.flatMap((it, i) => (it.type === "reference" && "node" in prepared[i]! ? [it.referenceId] : [])));

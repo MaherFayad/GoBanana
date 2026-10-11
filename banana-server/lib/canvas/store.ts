@@ -359,7 +359,7 @@ export function appendNodes(
   makeId: (prefix: string) => string = newNodeId,
 ): { state: CanvasState; placed: PlacedNode[] } {
   const nodes: StoredNode[] = state.nodes.map((n) => ({ ...n }));
-  const sections = new Map(nodes.filter((n) => n.type === "section").map((n) => [n.id, n]));
+  const sections = new Map<string, StoredNode>(nodes.filter((n) => n.type === "section").map((n) => [n.id, n]));
   const placed: (PlacedNode | undefined)[] = new Array(incoming.length);
 
   const sized = incoming.map((n) => {
