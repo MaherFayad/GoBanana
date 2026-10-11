@@ -154,7 +154,7 @@ describe("safeReturnTo", () => {
 
 describe("proxy path rules", () => {
   it("runs AuthKit where getWebUser is called", () => {
-    for (const p of ["/c/x", "/en", "/ar/account", "/api/canvas/x", "/api/canvas/x/share", "/auth/sign-out"]) {
+    for (const p of ["/c/x", "/en", "/ar/account", "/api/canvas/x", "/api/canvas/x/share", "/api/uploads", "/api/uploads/abc", "/auth/sign-out"]) {
       expect(needsWebSession(p)).toBe(true);
     }
     for (const p of ["/s/token", "/api/mcp", "/", "/auth/callback", "/english"]) {

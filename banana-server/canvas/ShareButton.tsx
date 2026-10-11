@@ -8,7 +8,7 @@
  * (the old one stops working) or turned off. Talks to `/api/canvas/:id/share`.
  * Keyboard: the panel is a disclosure; Escape closes it and returns focus to the button.
  */
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { shareUrl } from "@/lib/share";
 
 export interface ShareButtonProps {
@@ -22,7 +22,10 @@ type ShareResponse = { token?: string | null; url?: string | null; error?: strin
 export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | null>(initialToken);
-  const [url, setUrl] = useState<string | null>(null);
+  const [serverUrl, setUrl] = useState<string | null>(null);
+  // Until the server answers with a full link, build it from this page's origin.
+  // (The panel only renders after a click, so `window` is always there when it is used.)
+  const url = serverUrl ?? (token && typeof window !== "undefined" ? shareUrl(window.location.origin, token) : null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ message: string; upgradeUrl?: string } | null>(null);
   const [status, setStatus] = useState("");
@@ -32,10 +35,6 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
   const panelId = `bn-share-${useId().replace(/:/g, "")}`;
   const inputId = `${panelId}-link`;
 
-  // Until the server answers with a full link, build it from this page's origin.
-  useEffect(() => {
-    if (token && !url) setUrl(shareUrl(window.location.origin, token));
-  }, [token, url]);
 
   async function call(method: "POST" | "DELETE") {
     setBusy(true);

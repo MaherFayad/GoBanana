@@ -7,7 +7,7 @@
  *    themselves, so this is the place (next.config `headers()` would also work).
  * 2. Site pages (/en/*, /ar/*) get an `x-site-locale` request header so the root
  *    layout can set `<html lang dir>` without knowing the route params.
- * 3. Web sign-in: on /c/*, /api/canvas/* and site pages, AuthKit's `authkit()` reads the
+ * 3. Web sign-in: on /c/*, /api/canvas/*, /api/uploads/* and site pages, AuthKit's `authkit()` reads the
  *    session cookie, refreshes it when it is about to expire and passes it on to
  *    `withAuth()` (lib/web-session.ts). Signed-out visitors to /c/* go straight to
  *    AuthKit. Skipped when sign-in is not configured, for bearer-token API calls, and
@@ -56,5 +56,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/s/:path*", "/c/:path*", "/en/:path*", "/ar/:path*", "/api/canvas/:path*", "/auth/sign-out"],
+  matcher: ["/s/:path*", "/c/:path*", "/en/:path*", "/ar/:path*", "/api/canvas/:path*", "/api/uploads/:path*", "/auth/sign-out"],
 };
