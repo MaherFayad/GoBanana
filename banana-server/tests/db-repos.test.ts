@@ -8,11 +8,11 @@ import { describe, expect, it, vi } from "vitest";
 import type { Db } from "@/db/client";
 import * as schema from "@/db/schema";
 import { countCanvases, getCanvasForOwner, saveCanvasState, updateCanvas } from "@/lib/db/canvases";
-import { findDirectionForUser, upsertDirections } from "@/lib/db/directions";
+import { deleteDirections, findDirectionForUser, upsertDirections } from "@/lib/db/directions";
 import { isUuid, referenceRowId, uuidFromName } from "@/lib/db/ids";
 import { createMemoryRepos } from "@/lib/db/memory";
 import { findOwnedReferences, getReferencesByIds, insertReferences } from "@/lib/db/references";
-import { armStatsSql, blocklistRepo, insertFeedback, readArmStats } from "@/lib/db/feedback";
+import { armStatsSql, blocklistRepo, directionStatsSql, insertFeedback, readArmStats, readDirectionStats } from "@/lib/db/feedback";
 import { PgDialect } from "drizzle-orm/pg-core";
 import { listTakedowns, memoTakedowns } from "@/lib/db/takedowns";
 import { incrementUsage, readUsage } from "@/lib/db/usage";
@@ -243,6 +243,29 @@ describe("search learning repositories", () => {
     expect(sql).toContain("where term_key in ($3, $4) and arm is not null");
     expect(sql).not.toMatch(/select[^(]*\buser_id\b[^(]*from \(/);
     expect(q.params).toEqual([ALICE, ALICE, "inspiration|film frames", "taste|x"]);
+  });
+
+  it("groups direction stats per ingredient in one query, each user once, no user ids out", async () => {
+    const q = new PgDialect().sqlToQuery(directionStatsSql(ALICE, 3));
+    const sql = q.sql.replace(/\s+/g, " ");
+    expect(sql).toContain("where lane = 'direction' and term_key like 'direction|%' group by term_key, user_id ) per_user group by term_key");
+    expect(sql).toContain("having count(*) >= $3 or bool_or(user_id = $4::uuid)");
+    expect(sql).not.toMatch(/select[^(]*\buser_id\b[^(]*from \(/);
+    expect(q.params).toEqual([ALICE, ALICE, 3, ALICE, 5000]);
+    const { db, calls } = fakeDb([[{ term_key: "direction|x", great: 1, bad: 2, users: 3, own_great: 0, own_bad: 1 }]]);
+    expect(await readDirectionStats(db, ALICE, 3)).toEqual([{ termKey: "direction|x", great: 1, bad: 2, users: 3, ownGreat: 0, ownBad: 1 }]);
+    expect(await readDirectionStats(db, "x", 3)).toEqual([]);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("deletes directions of one canvas by row uuid only", async () => {
+    const { db, calls } = fakeDb([[{ id: BOB }]]);
+    expect(await deleteDirections(db, CANVAS, [BOB, "bd-1", BOB])).toBe(1);
+    expect(calls[0]!.sql).toMatch(/^delete from "directions" where \("directions"\."canvas_id" = \$1 and "directions"\."id" in \(\$2\)\) returning "id"$/);
+    expect(calls[0]!.params).toEqual([CANVAS, BOB]);
+    expect(await deleteDirections(db, CANVAS, ["bd-1"])).toBe(0);
+    expect(await deleteDirections(db, "x", [BOB])).toBe(0);
+    expect(calls).toHaveLength(1);
   });
 
   it("maps arm stats rows and skips bad input without a query", async () => {

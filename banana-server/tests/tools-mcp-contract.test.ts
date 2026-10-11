@@ -39,6 +39,7 @@ const EXPECTED = [
   "bend_brief",
   "search_references",
   "rate_references",
+  "rate_directions",
   "open_canvas",
   "add_to_canvas",
   "arrange_canvas",
@@ -81,6 +82,27 @@ describe("MCP contract", () => {
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("lane");
     expect(byName.rate_references!.inputSchema.required).toEqual(["ratings"]);
     expect(Object.keys(byName.rate_references!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
+    expect(byName.rate_directions!.inputSchema.required?.sort()).toEqual(["canvasId", "ratings"]);
+    expect(Object.keys(byName.rate_directions!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
+    const ratings = byName.rate_directions!.inputSchema.properties!.ratings as {
+      minItems: number;
+      maxItems: number;
+      items: { properties: Record<string, { enum?: string[]; items?: { enum?: string[] } }> };
+    };
+    expect([ratings.minItems, ratings.maxItems]).toEqual([1, 20]);
+    expect(ratings.items.properties.verdict!.enum).toEqual(["keep", "drop"]);
+    expect(ratings.items.properties.reasons!.items!.enum).toEqual([
+      "no_ui_path",
+      "no_usable_refs",
+      "off_brief",
+      "duplicate_idea",
+      "too_literal",
+      "strong_salvage",
+      "great_refs",
+    ]);
+    const search = byName.search_references!.inputSchema.properties as Record<string, { enum?: string[] }>;
+    expect(search.mix!.enum).toEqual(["ui", "balanced", "wild"]);
+    expect(search.lane!.enum).toEqual(["inspiration", "taste", "fidelity", "hero", "locale", "bridge"]);
   });
 
   it("runs bend_brief and returns text plus structured directions", async () => {
@@ -101,5 +123,8 @@ describe("MCP contract", () => {
     const rate = await rpc("tools/call", { name: "rate_references", arguments: { ratings: [{ referenceId: "ref_1", verdict: "meh" }] } });
     expect(rate.result!.isError).toBe(true);
     expect((rate.result!.content as { text: string }[])[0]!.text).toContain("verdict of great or bad");
+    const dirs = await rpc("tools/call", { name: "rate_directions", arguments: { canvasId: "c1", ratings: [{ directionId: "bd-1", verdict: "maybe" }] } });
+    expect(dirs.result!.isError).toBe(true);
+    expect((dirs.result!.content as { text: string }[])[0]!.text).toContain("verdict of keep or drop");
   });
 });
