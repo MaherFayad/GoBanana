@@ -32,7 +32,7 @@
     "APP_NAME": "Banana",
     "APP_URL": "https://banana-server.<your-subdomain>.workers.dev",
     "MCP_RESOURCE_URL": "https://banana-server.<your-subdomain>.workers.dev/api/mcp",
-    "WORKOS_CLIENT_ID": "client_REPLACE_ME",
+    "WORKOS_CLIENT_ID": "client_01M4NBKJEZYVMTKFEG0Y7WXFBZ",
     "WORKOS_AUTHKIT_DOMAIN": "https://sensitive-conch-18-staging.authkit.app",
     "IMAGE_HOST_ALLOWLIST": "",
     // Payments are off: every free user gets Pro limits. Remove at launch.
