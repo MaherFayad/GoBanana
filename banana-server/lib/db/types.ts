@@ -40,11 +40,34 @@ export type SaveOptions = {
 
 export type SaveResult = { ok: true; updatedAt: Date } | { ok: false; reason: "not_found" | "conflict" };
 
+/** A reference on a canvas, as the dashboard collage needs it: URLs only, never bytes. */
+export type CanvasPreviewRef = { thumbUrl: string | null; imageUrl: string; sourceUrl: string };
+
+/** One row of the user's canvas list (the /[locale]/canvases dashboard). No full state. */
+export type CanvasSummary = {
+  id: string;
+  title: string;
+  brief: string | null;
+  shareToken: string | null;
+  updatedAt: Date;
+  /** Image references on the board. */
+  referenceCount: number;
+  /** Directions saved for the canvas (bend_brief). */
+  directionCount: number;
+  /** The first few image references on the board, before the takedown filter. */
+  previews: CanvasPreviewRef[];
+};
+
+/** Most image references a summary carries, so the collage still has 4 after the takedown filter. */
+export const SUMMARY_PREVIEWS = 8;
+
 export interface CanvasRepo {
   create(input: NewCanvas): Promise<CanvasRecord>;
   /** The canvas when it exists and belongs to `userId`, else null. Never tells the two apart. */
   getOwned(userId: string, canvasId: string): Promise<CanvasRecord | null>;
   countOwned(userId: string): Promise<number>;
+  /** The user's canvases, most recently updated first, at most `limit` (default 48, max 200). */
+  listOwned(userId: string, opts?: { limit?: number }): Promise<CanvasSummary[]>;
   saveState(userId: string, canvasId: string, state: unknown, opts?: SaveOptions): Promise<SaveResult>;
   /** Set title and or brief. Returns false when the canvas is not the user's. */
   update(

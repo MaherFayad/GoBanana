@@ -76,9 +76,9 @@ Judge every direction for THIS screen. Keep an idea only if all three hold:
 
 How to run it without wasting searches:
 
-1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the best 3 or 4 (or as many as the user asked for, for example "pick 2 or 3"). Drop the rest now.
+1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the best 3 (4 if the user wants more options, or the number they asked for, for example "pick 2"). Each shortlisted idea costs one search, so never shortlist more than 4. Drop the rest now.
 2. **Second pass, after searching** the shortlist (steps 8 and 9): apply (b). An idea whose UI lanes give fewer than 3 usable references is dropped, even if you liked it.
-3. **Keep the best 3 or 4** (fewer if fewer pass). Call `rate_directions` once with the `canvasId` and one rating per idea: `"drop"` with `reasons` for every idea you rejected, `"keep"` for the ones you show. Reasons: `no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal` for drops; `strong_salvage`, `great_refs` for keeps. Dropped directions leave the canvas with their section, the items in it and their tray results, so the board only shows ideas you stand behind. Later bends suggest often dropped ideas less.
+3. **Keep the best 3 or 4 that pass** (fewer if fewer pass; never bend again just to fill the list unless the user asks). Call `rate_directions` once with the `canvasId` and one rating per idea: `"drop"` with `reasons` for every idea you rejected, `"keep"` for the ones you show. Reasons: `no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal` for drops; `strong_salvage`, `great_refs` for keeps. Dropped directions leave the canvas with their section, the items in it and their tray results, so the board only shows ideas you stand behind. Later bends suggest often dropped ideas less.
 
 ### 8. Search references for the shortlist
 

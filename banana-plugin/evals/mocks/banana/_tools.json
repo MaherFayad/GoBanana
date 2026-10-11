@@ -53,6 +53,10 @@
             },
             "minItems": 1,
             "maxItems": 5
+          },
+          "canvasId": {
+            "type": "string",
+            "description": "Canvas from open_canvas. Saves the directions there so search_references can take a directionId."
           }
         }
       }
@@ -60,7 +64,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray. To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve.",
+      "description": "Find design references on Pinterest, Dribbble, Behance and Awwwards. Pass a directionId from bend_brief, or a query. Every result carries its source link: always show it next to the image. Pass canvasId to add the results to that canvas tray. mix sets how much of a direction search is raw idea against UI: \"ui\" (default, mostly UI screens), \"balanced\" or \"wild\" (mostly the raw idea). To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -108,9 +112,19 @@
               "taste",
               "fidelity",
               "hero",
-              "locale"
+              "locale",
+              "bridge"
             ],
             "description": "With directionId and query: search only this lane of the direction, with the query as its words."
+          },
+          "mix": {
+            "type": "string",
+            "enum": [
+              "ui",
+              "balanced",
+              "wild"
+            ],
+            "description": "Direction searches: \"ui\" (default) puts UI screens first with about 20% raw idea, \"balanced\" 40%, \"wild\" 60%."
           }
         }
       }
@@ -165,6 +179,63 @@
                       "great_craft",
                       "on_style",
                       "on_brief"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "rate_directions",
+      "title": "Rate directions",
+      "description": "Keep or drop bend_brief directions on a canvas after you judge them, so the board shows only usable ideas. Free. Pass the canvasId and one rating per directionId: \"drop\" (with reasons) for an idea with no UI path for this screen, too few usable references, off brief or a near duplicate; \"keep\" for the ones you show. A dropped direction leaves the canvas with its section, the items in it and its tray results. Later bends suggest often dropped ideas less.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "ratings"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string",
+            "description": "Canvas the directions were saved to (bend_brief with canvasId)."
+          },
+          "ratings": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "required": [
+                "directionId",
+                "verdict"
+              ],
+              "properties": {
+                "directionId": {
+                  "type": "string"
+                },
+                "verdict": {
+                  "type": "string",
+                  "enum": [
+                    "keep",
+                    "drop"
+                  ]
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "no_ui_path",
+                      "no_usable_refs",
+                      "off_brief",
+                      "duplicate_idea",
+                      "too_literal",
+                      "strong_salvage",
+                      "great_refs"
                     ]
                   }
                 }

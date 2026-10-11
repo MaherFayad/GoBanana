@@ -1,10 +1,19 @@
 /** `canvases` table (spec section 11). Every read and write is scoped to the owner. */
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { canvases } from "@/db/schema";
+import { canvases, directions } from "@/db/schema";
 import { isStateObject, stateHasTaste } from "@/lib/taste";
 import { isUuid } from "./ids";
-import type { CanvasRecord, CanvasRepo, NewCanvas, SaveOptions, SaveResult } from "./types";
+import { clampListLimit, cleanPreviews } from "./summary";
+import {
+  SUMMARY_PREVIEWS,
+  type CanvasRecord,
+  type CanvasRepo,
+  type CanvasSummary,
+  type NewCanvas,
+  type SaveOptions,
+  type SaveResult,
+} from "./types";
 
 const columns = {
   id: canvases.id,
@@ -52,6 +61,43 @@ export async function countCanvases(db: Db, userId: string): Promise<number> {
   if (!isUuid(userId)) return 0;
   const [row] = await db.select({ n: count() }).from(canvases).where(eq(canvases.userId, userId));
   return Number(row?.n ?? 0);
+}
+
+/** `state.nodes` as a jsonb array, or an empty one when the state has none. */
+const stateNodes = sql`(CASE WHEN jsonb_typeof(${canvases.state} -> 'nodes') = 'array' THEN ${canvases.state} -> 'nodes' ELSE '[]'::jsonb END)`;
+
+/**
+ * The user's canvases for the dashboard, newest first. Reads counts and the first few reference
+ * URLs out of the state JSON in SQL, so the full state never leaves the database here.
+ */
+export async function listOwnedCanvases(db: Db, userId: string, opts: { limit?: number } = {}): Promise<CanvasSummary[]> {
+  if (!isUuid(userId)) return [];
+  const limit = clampListLimit(opts.limit);
+  const rows = await db
+    .select({
+      id: canvases.id,
+      title: canvases.title,
+      brief: canvases.brief,
+      shareToken: canvases.shareToken,
+      updatedAt: canvases.updatedAt,
+      referenceCount: sql<number>`(SELECT count(*)::int FROM jsonb_array_elements(${stateNodes}) AS e(n) WHERE e.n ->> 'type' IN ('image', 'upload'))`,
+      directionCount: sql<number>`(SELECT count(*)::int FROM ${directions} WHERE ${directions.canvasId} = ${canvases.id})`,
+      previews: sql<unknown>`(SELECT coalesce(jsonb_agg(p.v ORDER BY p.i), '[]'::jsonb) FROM (SELECT e.i, jsonb_build_object('thumbUrl', e.n -> 'data' -> 'thumbUrl', 'imageUrl', e.n -> 'data' -> 'imageUrl', 'sourceUrl', e.n -> 'data' -> 'sourceUrl') AS v FROM jsonb_array_elements(${stateNodes}) WITH ORDINALITY AS e(n, i) WHERE e.n ->> 'type' IN ('image', 'upload') ORDER BY e.i LIMIT ${SUMMARY_PREVIEWS}) AS p)`,
+    })
+    .from(canvases)
+    .where(eq(canvases.userId, userId))
+    .orderBy(desc(canvases.updatedAt))
+    .limit(limit);
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    brief: r.brief,
+    shareToken: r.shareToken,
+    updatedAt: r.updatedAt instanceof Date ? r.updatedAt : new Date(r.updatedAt),
+    referenceCount: Number(r.referenceCount ?? 0),
+    directionCount: Number(r.directionCount ?? 0),
+    previews: cleanPreviews(r.previews),
+  }));
 }
 
 /**
@@ -113,6 +159,7 @@ export function canvasRepo(db: Db): CanvasRepo {
     create: (input) => createCanvas(db, input),
     getOwned: (userId, canvasId) => getCanvasForOwner(db, userId, canvasId),
     countOwned: (userId) => countCanvases(db, userId),
+    listOwned: (userId, opts) => listOwnedCanvases(db, userId, opts),
     saveState: (userId, canvasId, state, opts) => saveCanvasState(db, userId, canvasId, state, opts),
     update: (userId, canvasId, patch) => updateCanvas(db, userId, canvasId, patch),
   };

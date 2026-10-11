@@ -6,6 +6,7 @@
 import { planOf, type Plan, type Usage } from "@/lib/quota";
 import { isStateObject, stateHasTaste } from "@/lib/taste";
 import { isUuid, referenceRowId } from "./ids";
+import { clampListLimit, referencesFromState } from "./summary";
 import type {
   ArmStatRow,
   CanvasRecord,
@@ -92,6 +93,25 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
       },
       async countOwned(userId) {
         return [...data.canvases.values()].filter((c) => c.userId === userId).length;
+      },
+      async listOwned(userId, opts = {}) {
+        return [...data.canvases.values()]
+          .filter((c) => c.userId === userId)
+          .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+          .slice(0, clampListLimit(opts.limit))
+          .map((c) => {
+            const refs = referencesFromState(c.state);
+            return {
+              id: c.id,
+              title: c.title,
+              brief: c.brief,
+              shareToken: c.shareToken,
+              updatedAt: new Date(c.updatedAt),
+              referenceCount: refs.count,
+              directionCount: data.directions.filter((d) => d.canvasId === c.id).length,
+              previews: refs.previews,
+            };
+          });
       },
       async saveState(userId, canvasId, state, opts = {}) {
         const c = owned(userId, canvasId);
