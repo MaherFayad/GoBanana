@@ -53,7 +53,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
+`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
 
 If your client cannot show the canvas inline, every skill gives you the web link to open it full screen.
 

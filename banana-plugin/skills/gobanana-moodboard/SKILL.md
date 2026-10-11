@@ -19,7 +19,7 @@ Turn the tray of search results into a board people can read: one section per di
 
 ### 1. Find the canvas
 
-Use the `canvasId` from this conversation. If there is none, ask for the board link or id, or call `open_canvas` to create a new one. Then call `get_canvas` to see sections, tray references, notes and palettes.
+Use the `canvasId` from this conversation. If there is none, call `get_canvas` with no `canvasId` to list the user's recent canvases and use the one the user means (ask only if two could fit); call `new_canvas` only when none fits. Then call `get_canvas` to see sections, tray references, notes and palettes.
 
 If the tray is empty, run the gobanana-explore flow first (`bend_brief`, then `search_references` with this `canvasId`).
 

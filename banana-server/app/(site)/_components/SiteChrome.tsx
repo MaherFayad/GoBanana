@@ -42,7 +42,6 @@ export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; s
           items={[
             { href: `${href(locale)}#how`, label: c.nav.how },
             { href: `${href(locale)}#gallery`, label: c.nav.gallery },
-            { href: canvases, label: c.nav.canvases, badge: c.beta },
             { href: href(locale, "pricing"), label: c.nav.pricing },
           ]}
         />

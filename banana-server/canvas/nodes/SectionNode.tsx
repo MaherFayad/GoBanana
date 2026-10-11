@@ -54,6 +54,7 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
               multiline={false}
               initial={data.title}
               label="Section title"
+              selectAll
               onDone={(value) => {
                 if (value !== null && value.trim()) actions.updateData<"section">(id, { title: value.trim() });
                 actions.setEditing(null);

@@ -218,7 +218,7 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     // The raw idea is never searched; it reaches results only through the title-filtered bridge lane.
     expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(false);
     expect(queries.some((q) => q.startsWith("melted chrome ui design"))).toBe(true);
-    expect(queries.some((q) => q.startsWith("arabic app ui"))).toBe(true);
+    expect(queries.some((q) => q.startsWith("arabic flight app ui"))).toBe(true);
     expect((await usage.get("u1", currentPeriod())).searches).toBe(1);
     assertOnlySerper(requests);
     expect(globalRequests).toEqual([]);

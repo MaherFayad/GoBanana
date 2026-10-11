@@ -239,7 +239,8 @@
   --st-btn-radius: 0;
 }
 
-/* Selected toggle (aria-pressed): Studio's fill plus a non-color cue, a 2px bar at the block end. */
+/* Selected toggle (aria-pressed): Studio's fill plus a non-color cue, a 1px ring on the whole
+   button (owner decision: no underline bars on any selected state). */
 .st-btn[aria-pressed="true"] {
   --st-btn-bg: var(--st-overlay-20);
   --st-btn-fg: var(--st-text);
@@ -250,11 +251,9 @@
 .st-btn[aria-pressed="true"]::after {
   content: "";
   position: absolute;
-  inset-inline: max(25%, 6px);
-  inset-block-end: 2px;
-  block-size: 2px;
-  border-radius: 1px;
-  background: currentColor;
+  inset: 0;
+  border: 1px solid var(--st-overlay-50);
+  border-radius: inherit;
   pointer-events: none;
 }
 
@@ -1313,6 +1312,6 @@ textarea.st-input[data-autogrow] {
   }
 
   .st-btn[aria-pressed="true"]::after {
-    background: ButtonText;
+    border-color: ButtonText;
   }
 }

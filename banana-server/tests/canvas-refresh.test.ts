@@ -212,6 +212,14 @@ describe("results panel default", () => {
     expect(initialTrayOpen({ readOnly: false, compact: false, collapsedByDefault: false, preference: false })).toBe(false);
   });
 
+  it("in chat a panel opened in another canvas view does not carry over", () => {
+    // Every chat view shares one sandbox origin, so session storage may say "open" from another canvas.
+    const store = new Map<string, string>([[TRAY_OPEN_KEY, "1"]]);
+    expect(readTrayPreference({ getItem: (k: string) => store.get(k) ?? null })).toBe(true);
+    // The inline canvas reads only this view's own toggle (no storage): it starts collapsed.
+    expect(initialTrayOpen({ readOnly: false, compact: false, collapsedByDefault: true, preference: readTrayPreference(null) })).toBe(false);
+  });
+
   it("remembers the toggle in session storage, or in memory when storage throws", () => {
     const store = new Map<string, string>();
     const storage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };

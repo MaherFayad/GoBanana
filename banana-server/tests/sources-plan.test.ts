@@ -129,6 +129,11 @@ describe("search plan", () => {
     expect(titleHasWord(undefined, "machine")).toBe(false);
   });
 
+  it("keeps only Arabic lane titles that name the subject", () => {
+    const plan = planRequests({ ...LANES, locale: "arabic flight app ui", localeWord: "flight" });
+    expect(plan.find((r) => r.lane === "locale")).toMatchObject({ site: "pinterest", titleWord: "flight" });
+  });
+
   it("puts the Arabic locale query in place of the Pinterest fidelity page", () => {
     const plan = planRequests({ ...LANES, locale: "arabic app ui" });
     expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["fidelity:dribbble", "locale:pinterest", "taste:dribbble", "hero:dribbble"]);

@@ -322,7 +322,9 @@ function CanvasEditor({
       readOnly,
       compact: c,
       collapsedByDefault: trayCollapsedByDefault,
-      preference: readTrayPreference(safeSession()),
+      // In chat, every view of the server shares one sandbox origin, so sessionStorage would carry
+      // an open panel from one canvas to the next; there only this view's own toggle counts.
+      preference: readTrayPreference(trayCollapsedByDefault ? null : safeSession()),
     });
   const [trayOpen, setTrayOpenState] = useState(() => trayStart(compact));
   const [prevCompact, setPrevCompact] = useState(compact);

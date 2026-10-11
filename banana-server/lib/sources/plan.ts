@@ -48,6 +48,8 @@ export type LaneTexts = {
   bridge?: string;
   hero?: string;
   locale?: string;
+  /** The subject the locale lane's titles must name, so off-topic Arabic apps drop out. */
+  localeWord?: string;
 };
 
 /** True when the lanes have anything to search (a brief gave them UI lanes). */
@@ -122,7 +124,8 @@ export type PlanOptions = {
 
 /**
  * Requests in priority order (the budget cuts from the end), one page each:
- * 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {surface}" for Arabic briefs),
+ * 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {core} {surface}" for Arabic
+ * briefs, its titles filtered by the subject like the bridge lane's),
  * 3. taste, 4. and 5. the component lanes, 6. hero, 7. bridge. The 8th request is left for page 2
  * or the fidelity fallback (lib/sources/web-search.ts runPlan).
  * `sources`, when the caller picked them, limits the lanes to those sites: a request on another
@@ -143,7 +146,7 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], 
   };
   const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
   add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
-  if (lanes.locale) add("locale", lanes.locale, "pinterest", true);
+  if (lanes.locale) add("locale", lanes.locale, "pinterest", true, undefined, lanes.localeWord);
   else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
   add("taste", lanes.taste, "dribbble", true);
   for (const c of (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES)) add("component", c, "dribbble", true);

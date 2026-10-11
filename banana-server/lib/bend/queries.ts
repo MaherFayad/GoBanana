@@ -14,7 +14,7 @@
  * - bridge: "{ingredient} ui design" (UI briefs): the idea already applied to UI. Kept only when
  *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
  * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
- * - locale: "arabic {surface}" when the brief is Arabic or right to left.
+ * - locale: "arabic {core} {surface}" when the brief is Arabic or right to left and names a subject.
  *
  * A brief that names no UI ("a poster for a jazz festival") still gets UI forms: fidelity
  * "{subject} app ui", taste "{style} {subject} ui design".
@@ -442,10 +442,24 @@ export function componentAppText(text: string): string {
   return / app ui$/.test(text) ? text : text.replace(/ ui$/, " app ui");
 }
 
-/** Locale lane: "arabic {surface}" when the brief is Arabic or right to left, or null. */
+/**
+ * Locale lane: "arabic {core} {surface}" ("arabic flight app ui") when the brief is Arabic or right
+ * to left, or null. Without a subject there is no lane: a bare "arabic app ui" returns mostly Quran,
+ * prayer and calligraphy apps (live audit, 2026-10-11), so the Pinterest fidelity page runs instead.
+ */
 export function localeQuery(brief: string): string | null {
   const p = briefParts(brief);
-  return p.ui && p.arabic ? `arabic ${SURFACE_WORDS[p.surface]}` : null;
+  const core = localeWord(brief);
+  return p.ui && p.arabic && core ? capWords(`arabic ${core} ${SURFACE_WORDS[p.surface]}`) : null;
+}
+
+/** Words that name the market or script, not the subject ("arabic app" has no subject). */
+const LOCALE_NOT_SUBJECT = /^(arabic|arab|rtl|bilingual|english|gcc|gulf|saudi|ksa|uae|emirati|qatari|kuwaiti|omani|bahraini|khaleeji)$/i;
+
+/** The subject the locale lane's titles must name ("flight"), or undefined. */
+export function localeWord(brief: string): string | undefined {
+  const core = coreNoun(briefParts(brief).domain);
+  return core && !LOCALE_NOT_SUBJECT.test(core) ? core : undefined;
 }
 
 /** One style from the taste list, picked by a stable key (a direction id), so it never changes between calls. */
@@ -484,6 +498,9 @@ export function laneTexts(brief: string | null | undefined, idea: string, taste:
   const hero = heroQuery(b, pickStyle(taste, key, 1));
   if (hero) lanes.hero = hero;
   const locale = localeQuery(b);
-  if (locale) lanes.locale = locale;
+  if (locale) {
+    lanes.locale = locale;
+    lanes.localeWord = localeWord(b);
+  }
   return lanes;
 }

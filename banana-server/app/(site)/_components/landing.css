@@ -1506,20 +1506,10 @@
   translate: 0 -2px;
 }
 
-/* Selected: a stronger border, a lighter surface, weight 600 and a 3px bar (not color alone). */
+/* Selected: a stronger border, a lighter surface and weight 600 (not color alone); no underline bar. */
 .site .export-card[aria-selected="true"] {
   border-color: var(--st-text-bright);
   background: var(--st-bg-surface-2);
-}
-
-.site .export-card[aria-selected="true"]::after {
-  content: "";
-  position: absolute;
-  inset-inline: var(--st-space-xl);
-  inset-block-end: -1px;
-  block-size: 3px;
-  border-radius: 2px;
-  background: var(--st-text-bright);
 }
 
 .site .export-card-name {

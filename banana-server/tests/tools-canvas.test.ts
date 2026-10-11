@@ -6,6 +6,7 @@ import { createArrangeCanvasTool } from "@/lib/mcp/tools/arrange_canvas";
 import { createExportKitTool } from "@/lib/mcp/tools/export_kit";
 import { createGetCanvasTool } from "@/lib/mcp/tools/get_canvas";
 import { CANVAS_UI_URI, createOpenCanvasTool, register as registerOpen, titleFromBrief } from "@/lib/mcp/tools/open_canvas";
+import { createNewCanvasTool, register as registerNew } from "@/lib/mcp/tools/new_canvas";
 import { TOOL_DESCRIPTION as ADD_DESC } from "@/lib/mcp/tools/add_to_canvas";
 import { TOOL_DESCRIPTION as ARRANGE_DESC } from "@/lib/mcp/tools/arrange_canvas";
 import { TOOL_DESCRIPTION as EXPORT_DESC } from "@/lib/mcp/tools/export_kit";
@@ -100,6 +101,36 @@ describe("open_canvas", () => {
     const t = titleFromBrief("A very long brief about a flight checkout screen for a budget airline that feels calm");
     expect(t.length).toBeLessThanOrEqual(60);
     expect(t.endsWith(" ")).toBe(false);
+  });
+});
+
+describe("new_canvas", () => {
+  it("creates a canvas without the inline UI, then open_canvas shows it", async () => {
+    let meta: unknown = "unset";
+    const fake = { registerTool: (_n: string, config: { _meta?: unknown }) => (meta = config._meta) };
+    registerNew(fake as unknown as McpServer);
+    expect(meta).toBeUndefined();
+
+    const { deps, repos } = makeDeps();
+    const res = await createNewCanvasTool(deps)({ brief: "Retail banking app", taste: ["minimal"] }, ALICE);
+    expect(res.isError).toBeFalsy();
+    expect(res._meta).toBeUndefined();
+    const canvas = (res.structuredContent as { canvas: { id: string; webUrl: string } }).canvas;
+    expect(text(res)).toContain("It is not shown yet.");
+    expect((await stored(repos, canvas.id)).taste).toEqual(["minimal"]);
+    expect(await repos.usage.get(ALICE, "2026-10")).toEqual({ searches: 0, canvases: 1 });
+
+    const shown = await createOpenCanvasTool(deps)({ canvasId: canvas.id }, ALICE);
+    expect((shown.structuredContent as { created: boolean }).created).toBe(false);
+    expect(shown._meta).toBeDefined();
+  });
+
+  it("keeps the plan's canvas limit", async () => {
+    const { deps } = makeDeps();
+    const make = createNewCanvasTool(deps);
+    for (let i = 0; i < 3; i++) expect((await make({ title: `Board ${i}` }, ALICE)).isError).toBeFalsy();
+    const fourth = await make({ title: "Board 4" }, ALICE);
+    expect(fourth.isError).toBe(true);
   });
 });
 
@@ -254,6 +285,18 @@ describe("arrange_canvas", () => {
 });
 
 describe("get_canvas", () => {
+  it("lists the user's recent canvases without a canvasId, so a new chat can extend one", async () => {
+    const { deps, repos } = makeDeps();
+    expect(text(await createGetCanvasTool(deps)({}, ALICE))).toContain("No canvases yet");
+    const c = await seedCanvas(repos, ALICE, state([]));
+    await seedCanvas(repos, BOB, state([]));
+    const res = await createGetCanvasTool(deps)({}, ALICE);
+    const out = res.structuredContent as { canvases: { id: string; webUrl: string }[] };
+    expect(out.canvases.map((x) => x.id)).toEqual([c.id]);
+    expect(out.canvases[0]!.webUrl).toBe(`${APP}/c/${c.id}`);
+    expect(text(res)).toContain(`${c.id}: "`);
+  });
+
   it("returns sections, items with source links, palettes and the brief, without taken down items", async () => {
     const { deps, repos } = makeDeps({ takedowns: ["pinterest.com/pin/2"] });
     const c = await seedCanvas(

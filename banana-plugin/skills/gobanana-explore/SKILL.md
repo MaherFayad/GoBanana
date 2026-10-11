@@ -1,6 +1,6 @@
 ---
 name: gobanana-explore
-description: Turn a vague design ask into wild, unexpected directions and pull linked UI references (app screens, web pages, dashboards, components) for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs bend_brief, open_canvas, search_references, rate_references and rate_directions from the GoBanana MCP server. Use gobanana-moodboard to arrange an existing canvas, gobanana-palette for colors, gobanana-design-md for DESIGN.md.
+description: Turn a vague design ask into wild, unexpected directions and pull linked UI references (app screens, web pages, dashboards, components) for them into a GoBanana moodboard canvas. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page, brand or product. Runs new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas and open_canvas from the GoBanana MCP server. Use gobanana-moodboard to arrange an existing canvas, gobanana-palette for colors, gobanana-design-md for DESIGN.md.
 ---
 
 # GoBanana explore
@@ -54,14 +54,19 @@ Ask one short question: "Any 2 to 5 style words for the look you like, or a boar
 
 - **Style words** that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, neumorphism, swiss style, bento grid, editorial, grainy, skeuomorphic. Avoid soft 3d, aurora gradient, claymorphism, isometric and playful: they pull in busy or off-topic results.
 - **Boards or images:** if the user shares a board link or images and you can see them, describe the style in 2 to 5 of the words above (for example "minimal, dark mode, big typography"). The server never looks at images, so taste only reaches it as words. Never download or save the images.
-- Pass them as `taste` to `open_canvas` or `bend_brief` (with the `canvasId`). They are saved on the canvas, and every later search on it uses them. Without taste the server uses minimal, glassmorphism, big typography and dark mode.
+- Pass them as `taste` to `new_canvas` or `bend_brief` (with the `canvasId`). They are saved on the canvas, and every later search on it uses them. Without taste the server uses minimal, glassmorphism, big typography and dark mode.
 
-### 5. Open a canvas
+### 5. Pick the canvas: extend one, or create one (do not show it yet)
 
-Call `open_canvas` with a short `title` (max 80), the `brief` and `taste` if you have it. Open the canvas before you bend, so the directions are saved to it (`rate_directions` and `directionId` searches need that). If a canvas already exists in this conversation, pass its `canvasId` instead of making a new one (free plans have 3 canvases).
+Boards grow over time; do not start from scratch on every request.
 
-- If the client shows the canvas inline, say it is open above.
-- **Always** give the web link too (`webUrl`), because many clients cannot show the inline canvas. If you cannot tell whether it rendered, say: "Open the board here: <webUrl>".
+1. **A canvas already in this conversation:** use its `canvasId`.
+2. **Otherwise call `get_canvas` with no `canvasId`.** It lists the user's recent canvases with their briefs. If one is the same product or project (same app, same screen family, or the user names it: "add to my banking board", "the flight one"), use its `canvasId`: new directions get new sections next to the old ones, and nothing already on it is removed. Call `get_canvas` with that id to see what it holds, so you do not repeat directions or references already there. Tell the user in one line which board you are adding to.
+3. **Only when nothing matches, or the user asks for a new board,** call `new_canvas` with a short `title` (max 80), the `brief` and `taste` if you have it. It creates the board without showing it (free plans have 3 canvases).
+
+Do this before you bend, so the directions are saved to the canvas (`rate_directions` and `directionId` searches need that).
+
+Do **not** call `open_canvas` now: the user should see the board once, finished. You show it in step 10.
 
 ### 6. Bend the brief, wide
 
@@ -72,22 +77,22 @@ Call `bend_brief` with `brief`, `wildness`, `count: 8` and the `canvasId`, plus 
 Judge every direction for THIS screen. Keep an idea only if all three hold:
 
 - **(a) UI path.** Its salvage maps to a concrete UI pattern for the brief's actual screen. Say the pattern to yourself in a few words: "seat map as a woven grid", "fare cards that stack like boarding passes". If you cannot name one, it fails. A pretty texture with no screen idea fails.
-- **(b) Usable references.** After the search and audit (steps 8 and 9) it has at least 3 on-topic, usable UI references.
+- **(b) Usable references.** After the search and audit (steps 8 and 9) it has at least 6 on-topic, usable UI references.
 - **(c) Not a near duplicate** of an idea you already kept (same move and a similar ingredient, or the same UI pattern).
 
 How to run it without wasting searches:
 
 1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the best 3 (4 if the user wants more options, or the number they asked for, for example "pick 2"). Each shortlisted idea costs one search, so never shortlist more than 4. Drop the rest now.
-2. **Second pass, after searching** the shortlist (steps 8 and 9): apply (b). An idea whose UI lanes give fewer than 3 usable references is dropped, even if you liked it.
+2. **Second pass, after searching** the shortlist (steps 8 and 9): apply (b). If a direction has fewer than 6 usable references, retry its weakest lane first (step 9.3). An idea still under 6 after that is dropped, even if you liked it.
 3. **Keep the best 3 or 4 that pass** (fewer if fewer pass; never bend again just to fill the list unless the user asks). Call `rate_directions` once with the `canvasId` and one rating per idea: `"drop"` with `reasons` for every idea you rejected, `"keep"` for the ones you show. Reasons: `no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal` for drops; `strong_salvage`, `great_refs` for keeps. Dropped directions leave the canvas with their section, the items in it and their tray results, so the board only shows ideas you stand behind. Later bends suggest often dropped ideas less.
 
 ### 8. Search references for the shortlist
 
-For each shortlisted direction, call `search_references` with `directionId`, `canvasId` and `count` (8 to 12 is a good default). One call searches several lanes at once and counts as one search. Every lane is UI:
+For each shortlisted direction, call `search_references` with `directionId`, `canvasId` and `count: 12`. One call searches several lanes at once and counts as one search. Every lane is UI:
 
 - `fidelity`: real screens for the brief. `taste`: the user's style on the brief's screen. `hero`: one clean screen.
 - `component`: the parts the brief names ("banking quick actions ui", "flight seat selection ui"). Name them in the brief to get them, for example "Banking app home: balance, quick actions, transactions".
-- `bridge`: the idea already applied to UI ("vending machine ui design"). The server keeps a bridge result only when its title names the idea, so this lane is often empty. That is fine; its places go to the other lanes.
+- `bridge`: the idea already applied to UI ("vending machine ui design"). The server keeps a bridge result only when its title names the idea, so this lane is often empty. That is fine; its places go to the other lanes. A bridge result is often an app for another product (a furniture shop on a banking board): rate it `bad` with `off_topic` unless it shows a screen the brief needs.
 - `locale`: Arabic UI, for Arabic or right to left briefs.
 
 The server drops any result whose title names no UI, so a board never fills with jackets, signs or logos. Do not pass `mix`: it is ignored. Do not pass a direction's `searchQuery` as `query` when you have its id. A plain `query` is searched as UI too ("teletext" becomes "teletext app ui"), so name the screen or product when you can ("banking app home"). Leave `sources` at the default (Pinterest and Dribbble) unless the user wants Behance or Awwwards.
@@ -107,7 +112,8 @@ The server does not look at images. You do. After each `search_references`:
 
 ### 10. Place UI references, put the idea in a note, then present only the kept ideas
 
-- **Placement:** if you add references to the board (`add_to_canvas`), place only UI references from the results in each direction's section. Add one short note per section that carries the wild idea, for example `WILD: fare cards that stack like boarding passes. SALVAGE: stacked fare cards with a tear line.` The idea is words on the board, never images.
+- **Placement:** add references to the board with `add_to_canvas`: **6 to 8 per kept direction**, every usable UI reference you kept, best first, in that direction's section. Never place a result you rated `bad`, and never place an app for another product. Add one short note per section that carries the wild idea, for example `WILD: fare cards that stack like boarding passes. SALVAGE: stacked fare cards with a tear line.` The idea is words on the board, never images. Then `arrange_canvas` once.
+- **Show the board now:** call `open_canvas` with the `canvasId`. The user sees it for the first time, finished. If the client shows it inline, say it is open above. **Always** give the web link too (`webUrl`), because many clients cannot show the inline canvas: "Open the board here: <webUrl>".
 - **Present** only the kept directions, as a numbered list. One line each: a bold title, the move in brackets, and a half-sentence on the UI pattern it gives this screen. Example:
 
 > 1. **Checkout as a frosted vinyl sleeve** (transplant + material). Fare summary slides out like a record.
@@ -131,6 +137,6 @@ End with a short menu, for example:
 ## When things go wrong
 
 - **Quota or plan message** (for example "You have used your 30 free searches this month. Upgrade: <link>"): show the message to the user as is, with the link, once. Do not retry, do not loop, do not try other sources to get around it. `bend_brief` is still free, so the directions stay useful; offer to keep refining them.
-- **Canvas limit** on `open_canvas`: relay the message, and offer to reuse an existing canvas by id.
+- **Canvas limit** on `new_canvas` or `open_canvas`: relay the message, and offer to reuse an existing canvas by id.
 - **Tool error or timeout:** retry once at most. Then tell the user in one line and continue with what you have.
 - **GoBanana tools missing:** the GoBanana MCP server is not connected. Tell the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in), then try again.

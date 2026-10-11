@@ -148,12 +148,12 @@ describe("search_references tool", () => {
       fidelity: "flight app ui",
       component: ["flight checkout ui"],
       bridge: "crushed velvet ui design",
-      locale: "arabic app ui",
+      locale: "arabic flight app ui",
     });
     expect(out.lanes.taste).toMatch(/ flight checkout ui design$/);
     expect(out.lanes.hero).toMatch(/ flight app single screen$/);
     expect(out.queries[0]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[1]).toBe("arabic app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    expect(out.queries[1]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain('component "flight checkout ui"');
     expect(text(res)).not.toContain("inspiration");
     expect(text(res)).not.toContain('idea "');

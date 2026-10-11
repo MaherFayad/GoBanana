@@ -28,9 +28,8 @@ export const TOOL_NAME = "open_canvas";
 export const CANVAS_UI_URI = "ui://banana/canvas";
 
 export const TOOL_DESCRIPTION =
-  "Open a moodboard canvas, or create a new one when you leave out canvasId. " +
-  "Use it before collecting references so results have a place to land. " +
-  "Shows the canvas inline when the client supports it and always returns a web link to share with the user. " +
+  "Show a canvas inline (or create and show one without canvasId) and get its web link. " +
+  "To show a finished board, create it with new_canvas, fill it, then call this with its canvasId. " +
   "Pass taste with a few style words that describe the user's references (for example from their mood boards); searches on this canvas use them.";
 
 export const inputSchema = z.object({
@@ -100,6 +99,42 @@ function text(out: OpenCanvasOutput): string {
   return lines.join("\n");
 }
 
+/**
+ * Creates a canvas within the plan's canvas limit. Shared with new_canvas, which creates one
+ * without showing it, so the inline view can open once the board is built.
+ */
+export async function createCanvas(
+  deps: CanvasToolDeps,
+  userId: string,
+  input: { title?: string; brief?: string },
+  taste: string[],
+): Promise<{ ok: false; message: string } | { ok: true; out: OpenCanvasOutput; view: OpenCanvasViewMeta }> {
+  const { repos } = deps;
+  const plan = await repos.users.getPlan(userId);
+  const owned = await repos.canvases.countOwned(userId);
+  const quota = canCreateCanvas(plan, owned, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
+  if (!quota.ok) return { ok: false, message: quota.message };
+
+  const title = input.title ?? (input.brief ? titleFromBrief(input.brief) : "Untitled moodboard");
+  const state: CanvasState = taste.length > 0 ? { ...emptyState(), taste } : emptyState();
+  const canvas = await repos.canvases.create({ userId, title, brief: input.brief ?? null, state });
+  await repos.usage.addCanvases(userId, currentPeriod(deps.now?.()), 1);
+  const out: OpenCanvasOutput = {
+    canvas: {
+      id: canvas.id,
+      title: canvas.title,
+      webUrl: canvasWebUrl(deps.appUrl(), canvas.id),
+      brief: canvas.brief,
+      ...(taste.length > 0 ? { taste } : {}),
+      items: 0,
+      sections: 0,
+      tray: 0,
+    },
+    created: true,
+  };
+  return { ok: true, out, view: { state, updatedAt: canvas.updatedAt.toISOString() } };
+}
+
 export function createOpenCanvasTool(deps: CanvasToolDeps) {
   return async function openCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
@@ -143,29 +178,9 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
         });
       }
 
-      const plan = await repos.users.getPlan(userId);
-      const owned = await repos.canvases.countOwned(userId);
-      const quota = canCreateCanvas(plan, owned, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
-      if (!quota.ok) return toolMessage(quota.message);
-
-      const title = input.title ?? (input.brief ? titleFromBrief(input.brief) : "Untitled moodboard");
-      const state: CanvasState = taste.length > 0 ? { ...emptyState(), taste } : emptyState();
-      const canvas = await repos.canvases.create({ userId, title, brief: input.brief ?? null, state });
-      await repos.usage.addCanvases(userId, currentPeriod(deps.now?.()), 1);
-      const out: OpenCanvasOutput = {
-        canvas: {
-          id: canvas.id,
-          title: canvas.title,
-          webUrl: canvasWebUrl(deps.appUrl(), canvas.id),
-          brief: canvas.brief,
-          ...(taste.length > 0 ? { taste } : {}),
-          items: 0,
-          sections: 0,
-          tray: 0,
-        },
-        created: true,
-      };
-      return withViewMeta(toolResult(text(out), out), { state, updatedAt: canvas.updatedAt.toISOString() });
+      const made = await createCanvas(deps, userId, input, taste);
+      if (!made.ok) return toolMessage(made.message);
+      return withViewMeta(toolResult(text(made.out), made.out), made.view);
     } catch {
       console.error("[open_canvas] failed");
       return toolMessage(TRY_AGAIN);

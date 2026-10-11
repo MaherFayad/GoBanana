@@ -8,7 +8,7 @@ type NavItem = { href: string; label: string; badge?: string };
 
 /**
  * Main navigation. Links are 44px ghost items; the current page gets Studio's Tabs active
- * treatment (2px underline, weight 600) and aria-current="page", so the state is not color alone.
+ * treatment (brighter, weight 600) and aria-current="page", so the state is not color alone.
  * A badge ("Beta") is a small chip inside the link, so it is part of the link's name.
  */
 export function SiteNav({ label, items }: { label: string; items: NavItem[] }) {

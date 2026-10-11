@@ -40,6 +40,7 @@ const EXPECTED = [
   "search_references",
   "rate_references",
   "rate_directions",
+  "new_canvas",
   "open_canvas",
   "add_to_canvas",
   "arrange_canvas",
@@ -75,7 +76,8 @@ describe("MCP contract", () => {
     expect(byName.extract_palette!.inputSchema.required?.sort()).toEqual(["canvasId", "itemIds"]);
     expect(byName.export_kit!.inputSchema.required?.sort()).toEqual(["canvasId", "formats"]);
     expect(byName.arrange_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "layout"]);
-    expect(byName.get_canvas!.inputSchema.required).toEqual(["canvasId"]);
+    // Optional: without it, get_canvas lists recent canvases.
+    expect(byName.get_canvas!.inputSchema.required ?? []).toEqual([]);
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("canvasId");
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("taste");
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("taste");

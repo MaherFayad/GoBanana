@@ -5,6 +5,7 @@ import { register as searchReferences } from "./search_references";
 import { register as rateReferences } from "./rate_references";
 import { register as rateDirections } from "./rate_directions";
 import { register as openCanvas } from "./open_canvas";
+import { register as newCanvas } from "./new_canvas";
 import { register as addToCanvas } from "./add_to_canvas";
 import { register as arrangeCanvas } from "./arrange_canvas";
 import { register as getCanvas } from "./get_canvas";
@@ -20,6 +21,7 @@ export const tools: RegisterTool[] = [
   searchReferences,
   rateReferences,
   rateDirections,
+  newCanvas,
   openCanvas,
   addToCanvas,
   arrangeCanvas,

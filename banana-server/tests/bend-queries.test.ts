@@ -137,9 +137,11 @@ describe("brief lanes", () => {
     expect(heroQuery("saudi fintech app", "luxury")).toBe("luxury fintech app single screen");
     expect(heroQuery("luxury hotel website", "minimal")).toBeNull();
     expect(heroQuery("logistics dashboard", "minimal")).toBeNull();
-    expect(localeQuery(CANVAS_BRIEF)).toBe("arabic app ui");
-    expect(localeQuery("arabic admin dashboard")).toBe("arabic dashboard ui");
+    expect(localeQuery(CANVAS_BRIEF)).toBe("arabic flight app ui");
+    expect(localeQuery("arabic admin dashboard")).toBe("arabic admin dashboard ui");
     expect(localeQuery("banking app")).toBeNull();
+    // No subject, no lane: a bare "arabic app ui" returns Quran and calligraphy apps.
+    expect(localeQuery("arabic app")).toBeNull();
   });
 
   it("builds every lane for a direction, two styles per direction, only the idea without a brief", () => {
@@ -151,7 +153,8 @@ describe("brief lanes", () => {
       component: ["flight checkout ui"],
       bridge: "crushed velvet ui design",
       hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
-      locale: "arabic app ui",
+      locale: "arabic flight app ui",
+      localeWord: "flight",
     });
     expect(laneTexts(null, "crushed velvet", DEFAULT_TASTE, "bd-1")).toEqual({ idea: "crushed velvet" });
     for (const brief of [CANVAS_BRIEF, "saudi fintech app", "Dashboard for a fleet management company", "pricing page for a saas tool"]) {

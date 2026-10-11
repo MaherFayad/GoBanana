@@ -598,7 +598,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
       const mapped = mapSerperImagesWithStats(images, { sources: [req.site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
       const words = queryWords(query);
-      // Bridge lane precision filter: only titles that name the idea (round 10: 11 of 39 did).
+      // Precision filter for the bridge lane (titles name the idea; round 10: 11 of 39 did) and the
+      // locale lane (titles name the subject, so Quran and calligraphy apps drop out of "arabic flight app ui").
       const word = req.titleWord;
       const onTopic = word ? mapped.references.filter((r) => titleHasWord(r.title, word)) : mapped.references;
       const kept = excluded.size === 0 ? onTopic : onTopic.filter((r) => !excluded.has(itemKey(r.sourceUrl)));

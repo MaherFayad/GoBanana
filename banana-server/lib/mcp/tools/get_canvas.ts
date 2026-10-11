@@ -1,6 +1,8 @@
 /**
  * `get_canvas` (spec section 6): read a canvas back as sections, items with source
- * links and notes, palettes and the brief. Takedown filter applied on load.
+ * links and notes, palettes and the brief. Takedown filter applied on load. Without a canvasId it
+ * lists the user's recent canvases, so an agent in a new chat can extend a board instead of
+ * starting another.
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
@@ -20,9 +22,15 @@ export const TOOL_NAME = "get_canvas";
 
 export const TOOL_DESCRIPTION =
   "Read a canvas: its brief, directions, sections, items with their source links and notes, swatches and palettes. " +
-  "Use it to see what the user kept or changed before you suggest next steps or export.";
+  "Use it to see what the user kept or changed before you suggest next steps or export. " +
+  "Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.";
 
-export const inputSchema = z.object({ canvasId: z.string().min(1).max(100) });
+export const inputSchema = z.object({
+  canvasId: z.string().min(1).max(100).optional().describe("Canvas to read. Leave out to list recent canvases."),
+});
+
+/** Canvases the list shows, most recently updated first. */
+export const RECENT_CANVASES = 10;
 
 export type GetCanvasOutput = { canvas: CanvasSnapshot; tray: TrayReference[] };
 
@@ -72,12 +80,38 @@ export function canvasText(c: CanvasSnapshot, trayCount: number): string {
   return lines.join("\n");
 }
 
+async function listRecent(deps: CanvasToolDeps, userId: string): Promise<ToolResult> {
+  try {
+    const list = await deps.repos.canvases.listOwned(userId, { limit: RECENT_CANVASES });
+    const canvases = list.map((c) => ({
+      id: c.id,
+      title: c.title,
+      brief: c.brief,
+      updatedAt: c.updatedAt.toISOString(),
+      references: c.referenceCount,
+      directions: c.directionCount,
+      webUrl: canvasWebUrl(deps.appUrl(), c.id),
+    }));
+    if (canvases.length === 0) return toolResult("No canvases yet. Create one with new_canvas.", { canvases });
+    const lines = ["Recent canvases, newest first:"];
+    for (const c of canvases) {
+      lines.push(`- ${c.id}: "${c.title}" (${c.references} references, ${c.directions} directions, updated ${c.updatedAt.slice(0, 10)})${c.brief ? ` brief: ${c.brief.replace(/\s+/g, " ").slice(0, 120)}` : ""}`);
+    }
+    lines.push("If the user's request continues one of these, pass its canvasId to bend_brief, search_references and add_to_canvas to add to it.");
+    return toolResult(lines.join("\n"), { canvases });
+  } catch {
+    console.error("[get_canvas] list failed");
+    return toolMessage(TRY_AGAIN);
+  }
+}
+
 export function createGetCanvasTool(deps: CanvasToolDeps) {
   return async function getCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
-    const parsed = parseArgs(inputSchema, raw, {}, "Pass the canvasId from open_canvas.");
+    const parsed = parseArgs(inputSchema, raw, {}, "Pass a canvasId, or nothing to list recent canvases.");
     if (!parsed.ok) return toolMessage(parsed.message);
     const { canvasId } = parsed.data;
+    if (!canvasId) return listRecent(deps, userId);
     if (!plausibleId(canvasId)) return toolMessage(CANVAS_NOT_FOUND);
 
     try {

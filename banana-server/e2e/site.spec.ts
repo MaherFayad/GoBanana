@@ -115,13 +115,14 @@ test("the skip link is the first stop and moves focus to main", async ({ page })
   await expect(page.locator("main#main")).toBeFocused();
 });
 
-test("the current page is marked in the nav by aria-current and an underline", async ({ page }) => {
+test("the current page is marked in the nav by aria-current and weight, with no underline", async ({ page }) => {
   await visit(page, "/ar/pricing");
   const current = page.locator('.site-nav [aria-current="page"]');
   await expect(current).toHaveCount(1);
   await expect(current).toHaveAttribute("href", "/ar/pricing");
-  const bar = await current.evaluate((el) => getComputedStyle(el, "::after").blockSize);
-  expect(bar).toBe("2px");
+  const look = await current.evaluate((el) => ({ weight: getComputedStyle(el).fontWeight, after: getComputedStyle(el, "::after").content }));
+  expect(Number(look.weight)).toBeGreaterThanOrEqual(600);
+  expect(look.after).toBe("none");
 });
 
 test.describe("reflow at 320px", () => {

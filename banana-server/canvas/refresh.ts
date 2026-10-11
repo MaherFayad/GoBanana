@@ -192,7 +192,8 @@ export function resetTrayPreference(): void {
 
 /**
  * Whether the results panel starts open. The web canvas opens it on wide screens; the inline
- * canvas in chat starts collapsed (`collapsedByDefault`); a toggle this session wins.
+ * canvas in chat starts collapsed (`collapsedByDefault`); a toggle wins (this session on the web,
+ * this view in chat).
  */
 export function initialTrayOpen(opts: { readOnly: boolean; compact: boolean; collapsedByDefault: boolean; preference: boolean | null }): boolean {
   if (opts.readOnly) return false;

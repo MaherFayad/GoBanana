@@ -460,12 +460,7 @@
 }
 
 .bn-rail-item.st-btn[aria-pressed="true"]::after {
-  /* Outer edge: away from the panel, in the rail's padding. */
-  inset-inline: calc(-1 * var(--st-space-2xs) - 1px) auto;
-  inset-block: 7px;
-  inline-size: 2px;
-  block-size: 14px;
-  margin-block: auto;
+  border-color: var(--st-accent-3);
 }
 
 .bn-rail-count[data-pulse] {
@@ -1213,17 +1208,27 @@
 }
 
 /* The note editor grows with its text (no scrollbar). */
-.bn-canvas .bn-note textarea.st-input {
+/* Editing happens in place: the text keeps its spot, size and color, with no field border or
+   ring. The selected note's outline and handles show where focus is (SC 2.4.7). */
+.bn-canvas .bn-note textarea.st-input,
+.bn-canvas .bn-note textarea.st-input:hover,
+.bn-canvas .bn-note textarea.st-input:focus,
+.bn-canvas .bn-note textarea.st-input:focus-visible {
   display: block;
   inline-size: 100%;
   block-size: auto;
   min-block-size: 0;
   overflow: hidden;
   resize: none;
-  padding-block: var(--st-space-2xs);
-  border-radius: var(--st-radius-field);
-  font-size: 14px;
-  line-height: 1.45;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  caret-color: currentColor;
 }
 
 /* Swatch: frame chrome, color block on top, tile title row, mono codes, contrast rows. */
@@ -1391,8 +1396,24 @@
   white-space: nowrap;
 }
 
-.bn-section-header .st-input {
+/* The title edits in place, like the note text. */
+.bn-canvas .bn-section-header .st-input,
+.bn-canvas .bn-section-header .st-input:hover,
+.bn-canvas .bn-section-header .st-input:focus,
+.bn-canvas .bn-section-header .st-input:focus-visible {
   flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  line-height: inherit;
 }
 
 .bn-section-count {

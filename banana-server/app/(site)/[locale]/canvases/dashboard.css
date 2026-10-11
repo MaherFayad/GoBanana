@@ -108,21 +108,11 @@
   color: var(--st-text);
 }
 
-/* Current view: a filled row plus a 2px bar on the start edge (not color alone). */
+/* Current view: a filled row and weight 600 (not color alone); no bar. */
 .site .lab-nav-item[aria-current="page"] {
   background: var(--st-overlay-10);
   color: var(--st-text-bright);
   font-weight: var(--st-weight-semibold);
-}
-
-.site .lab-nav-item[aria-current="page"]::before {
-  content: "";
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block: 10px;
-  inline-size: 2px;
-  border-radius: 1px;
-  background: currentColor;
 }
 
 .site .lab-nav-item .st-icon {
@@ -285,7 +275,7 @@
 }
 
 /* The card's ring is the non-color selected cue (SC 1.4.1), so the button drops the
-   studio toggle's underline bar. */
+   studio toggle's ring. */
 .site .lab-details-btn[aria-pressed="true"]::after {
   content: none;
 }

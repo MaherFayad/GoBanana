@@ -194,15 +194,7 @@ body:has(> .site) {
   font-weight: var(--st-weight-semibold);
 }
 
-.site .nav-link[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  inset-inline: var(--st-space-l);
-  inset-block-end: 4px;
-  block-size: 2px;
-  border-radius: 1px;
-  background: currentColor;
-}
+/* The current page is brighter and semibold (a non-color cue); no underline bar. */
 
 /* "Beta" after a nav link: a small outlined pill, part of the link's name. */
 .site .nav-badge {

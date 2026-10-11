@@ -278,9 +278,36 @@
       }
     },
     {
+      "name": "new_canvas",
+      "title": "New canvas",
+      "description": "Create a moodboard canvas without showing it, and get its canvasId. Pass the canvasId to bend_brief, search_references and add_to_canvas, then call open_canvas with it to show the finished board.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "brief": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "taste": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "minItems": 1,
+            "maxItems": 5
+          }
+        }
+      }
+    },
+    {
       "name": "open_canvas",
       "title": "Open moodboard canvas",
-      "description": "Open or create a moodboard canvas. Shows it inline when the client supports it, and always returns a web link.",
+      "description": "Show a canvas inline (or create and show one without canvasId) and get its web link. To show a finished board, create it with new_canvas, fill it, then call this with its canvasId.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -394,12 +421,9 @@
     {
       "name": "get_canvas",
       "title": "Get canvas",
-      "description": "Read a canvas: sections, items with source links and notes, palettes and the brief.",
+      "description": "Read a canvas: sections, items with source links and notes, palettes and the brief. Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.",
       "inputSchema": {
         "type": "object",
-        "required": [
-          "canvasId"
-        ],
         "properties": {
           "canvasId": {
             "type": "string"

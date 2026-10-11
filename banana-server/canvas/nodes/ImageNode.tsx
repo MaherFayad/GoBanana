@@ -198,7 +198,8 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
 
 /**
  * Inline text editor. Ctrl or Cmd + Enter saves, Escape cancels, leaving the field saves.
- * `autoGrow` makes a textarea as tall as its text (sticky notes never scroll).
+ * `autoGrow` makes a textarea as tall as its text (sticky notes never scroll). `selectAll` selects
+ * the text on open (titles: typing replaces "New section"); otherwise the caret goes to the end.
  */
 export function NoteEditor({
   initial,
@@ -206,16 +207,19 @@ export function NoteEditor({
   onDone,
   multiline = true,
   autoGrow = false,
+  selectAll = false,
 }: {
   initial: string;
   label: string;
   onDone: (value: string | null) => void;
   multiline?: boolean;
   autoGrow?: boolean;
+  selectAll?: boolean;
 }) {
   const [value, setValue] = useState(initial);
   const done = useRef(false);
   const areaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const finish = (v: string | null) => {
     if (done.current) return;
     done.current = true;
@@ -228,10 +232,14 @@ export function NoteEditor({
     // scrollHeight leaves out the borders; the field is border-box.
     el.style.blockSize = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
   }, [autoGrow, value]);
-  // The caret goes to the end of the text, ready to type.
+  // The caret goes to the end of the text, ready to type, or the whole text is selected.
   useLayoutEffect(() => {
-    const el = areaRef.current;
-    if (el) el.setSelectionRange(el.value.length, el.value.length);
+    const el = areaRef.current ?? inputRef.current;
+    if (!el) return;
+    if (selectAll) el.select();
+    else el.setSelectionRange(el.value.length, el.value.length);
+    // Open only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const common = {
     autoFocus: true,
@@ -254,6 +262,6 @@ export function NoteEditor({
   return multiline ? (
     <textarea ref={areaRef} {...common} onChange={(e) => setValue(e.target.value)} rows={autoGrow ? 1 : 3} maxLength={2000} />
   ) : (
-    <input {...common} type="text" onChange={(e) => setValue(e.target.value)} maxLength={120} />
+    <input ref={inputRef} {...common} type="text" onChange={(e) => setValue(e.target.value)} maxLength={120} />
   );
 }
