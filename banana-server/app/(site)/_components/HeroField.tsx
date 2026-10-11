@@ -1,26 +1,59 @@
 "use client";
 
 /**
- * The landing page's draggable field: a plane twice the hero's size each way, holding the
- * generative move tiles (TileArt). Structure and behavior after pryzm.design's hero; the art,
- * copy and code are GoBanana's own.
+ * The landing page's draggable field: a plane twice the hero's size each way, holding one tile
+ * per bend move. Structure and behavior after pryzm.design's hero; the copy and code are
+ * GoBanana's own.
+ *
+ * Tiles show real, published references (lib/site/showcase.ts, owner decision "Live references,
+ * linked"): the image is hotlinked from its source with no referrer, the caption names the
+ * creator and the site, and the tile is a link to the work's page (new tab). A small idea button
+ * next to it opens the move's sample idea, which also links to the source. When the takedown list
+ * cannot load the page passes no references and the tiles show GoBanana's own generative art as
+ * buttons, as before; a reference whose image fails to load shows that art too (RefImage).
  *
  * - Pointer: drag anywhere to pan, with light inertia on release. Nothing moves on its own.
  *   Touch keeps vertical page scrolling (touch-action: pan-y); a horizontal drag pans.
  * - Keyboard (SC 2.1.1, 2.5.7): the field is one focusable region; arrow keys pan (Shift for
- *   bigger steps) and Home goes back to the middle. Each tile is a button: Tab reaches it, the
- *   field pans it into view (SC 2.4.11), and Enter or a click opens its sample idea.
+ *   bigger steps) and Home goes back to the middle. Tab reaches each tile link and idea button,
+ *   the field pans it into view (SC 2.4.11), and Enter follows the link or opens the idea.
  * - prefers-reduced-motion: no inertia, and the CSS entrance is off.
  * - The pan writes one transform per frame on a ref; React state only holds the open tile.
  * Geometry is pure and tested: lib/site/pan.ts.
  */
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
-import { CloseIcon } from "@/components/studio/icons";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import { CloseIcon, ExternalIcon, SparkleIcon } from "@/components/studio/icons";
 import type { HeroTile } from "@/lib/site/moves";
 import { centerOffset, clampOffset, DRAG_THRESHOLD, inertiaStep, keyDelta, revealOffset, type Vec } from "@/lib/site/pan";
+import { RefImage } from "./RefImage";
 import { TileArt } from "./TileArt";
 
-export type FieldTile = HeroTile & { name: string; color: string; move: string; title: string; twist: string; caption: string };
+/** A real reference on a tile: hotlinked image, credit and the work's page. */
+export type TileRef = {
+  src: string;
+  /** The work's title (alt text). */
+  alt: string;
+  /** Language of the title. */
+  altLang?: string;
+  href: string;
+  /** "Creator, Site", bidi isolated. */
+  credit: ReactNode;
+  /** "Move: lens", bidi isolated. */
+  what: ReactNode;
+};
+
+export type FieldTile = HeroTile & { name: string; color: string; move: string; title: string; twist: string; caption: string; ref?: TileRef };
 
 export type FieldLabels = {
   label: string;
@@ -29,13 +62,17 @@ export type FieldLabels = {
   twist: string;
   close: string;
   moveLabel: string;
+  /** Idea button name: "Sample idea: {name}" is built from it. */
+  idea: string;
+  openSource: string;
+  newTab: string;
 };
 
 type Drag = { id: number; start: Vec; from: Vec; last: Vec; lastT: number; v: Vec; moved: boolean };
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: FieldLabels }) {
+export function HeroField({ tiles, labels, dir }: { tiles: FieldTile[]; labels: FieldLabels; dir: "ltr" | "rtl" }) {
   const uid = useId();
   const hintId = `${uid}-hint`;
   const viewRef = useRef<HTMLDivElement>(null);
@@ -188,6 +225,11 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
     setOpen((cur) => (cur === i ? null : i));
   }
 
+  /** A drag that ends on a tile link must not follow it. */
+  function guardLink(e: MouseEvent<HTMLAnchorElement>) {
+    if (suppressClick.current) e.preventDefault();
+  }
+
   const close = useCallback((returnFocus: boolean) => {
     setOpen(null);
     if (returnFocus) openerRef.current?.focus();
@@ -201,7 +243,7 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
     reveal(card);
     const onDown = (ev: globalThis.PointerEvent) => {
       const t = ev.target as Element;
-      if (!t.closest(".hero-card") && !t.closest(".hero-tile-btn")) setOpen(null);
+      if (!t.closest(".hero-card") && !t.closest(".hero-tile-btn") && !t.closest(".hero-idea")) setOpen(null);
     };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
@@ -221,7 +263,8 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
       onPointerCancel={(e) => endDrag(e, true)}
       onKeyDown={onKeyDown}
       onFocus={(e) => {
-        if (e.target !== e.currentTarget && (e.target as Element).classList.contains("hero-tile-btn")) reveal(e.target.parentElement);
+        const el = e.target as Element;
+        if (el !== e.currentTarget && (el.classList.contains("hero-tile-btn") || el.classList.contains("hero-idea"))) reveal(el.parentElement);
       }}
     >
       <p id={hintId} className="st-visually-hidden">
@@ -240,21 +283,53 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
               data-size={t.size}
               style={{ "--x": `${t.x}%`, "--y": `${t.y}%`, "--ratio": t.ratio, "--i": i } as CSSProperties}
             >
-              <button
-                type="button"
-                className="hero-tile-btn"
-                aria-expanded={isOpen}
-                aria-controls={isOpen ? cardId : undefined}
-                onClick={(e) => toggle(i, e.currentTarget)}
-              >
-                <span className="hero-art">
-                  <TileArt kind={t.art} uid={`${uid}-${t.art}`} />
-                </span>
-                <span className="hero-caption" dir="auto">
-                  <span className="hero-caption-name">{t.caption}</span>
-                  <span className="hero-caption-move">{t.move}</span>
-                </span>
-              </button>
+              {t.ref ? (
+                <>
+                  <a
+                    className="hero-tile-btn hero-tile-link"
+                    href={t.ref.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    draggable={false}
+                    onClick={guardLink}
+                  >
+                    <span className="hero-art">
+                      <RefImage src={t.ref.src} alt={t.ref.alt} lang={t.ref.altLang} art={t.art} uid={`${uid}-${t.art}`} eager={i < 4} />
+                    </span>
+                    <span className="hero-caption" dir={dir}>
+                      <span className="hero-caption-name">{t.ref.credit}</span>
+                      <span className="hero-caption-move">{t.ref.what}</span>
+                    </span>
+                    <span className="st-visually-hidden"> ({labels.newTab})</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="hero-idea"
+                    aria-label={`${labels.idea}: ${t.name}`}
+                    aria-expanded={isOpen}
+                    aria-controls={isOpen ? cardId : undefined}
+                    onClick={(e) => toggle(i, e.currentTarget)}
+                  >
+                    <SparkleIcon size={16} />
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="hero-tile-btn"
+                  aria-expanded={isOpen}
+                  aria-controls={isOpen ? cardId : undefined}
+                  onClick={(e) => toggle(i, e.currentTarget)}
+                >
+                  <span className="hero-art">
+                    <TileArt kind={t.art} uid={`${uid}-${t.art}`} />
+                  </span>
+                  <span className="hero-caption" dir={dir}>
+                    <span className="hero-caption-name">{t.caption}</span>
+                    <span className="hero-caption-move">{t.move}</span>
+                  </span>
+                </button>
+              )}
               {isOpen ? (
                 <div
                   id={cardId}
@@ -262,7 +337,7 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
                   role="dialog"
                   aria-labelledby={titleId}
                   tabIndex={-1}
-                  dir="auto"
+                  dir={dir}
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
                       e.stopPropagation();
@@ -286,6 +361,16 @@ export function HeroField({ tiles, labels }: { tiles: FieldTile[]; labels: Field
                   <p className="hero-card-twist">
                     <span className="hero-card-label">{labels.twist}:</span> {t.twist}
                   </p>
+                  {t.ref ? (
+                    <p className="hero-card-source">
+                      <span className="hero-card-credit">{t.ref.credit}</span>
+                      <a className="st-btn" data-variant="secondary" data-size="sm" href={t.ref.href} target="_blank" rel="noopener noreferrer">
+                        {labels.openSource}
+                        <ExternalIcon size={12} />
+                        <span className="st-visually-hidden"> ({labels.newTab})</span>
+                      </a>
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>

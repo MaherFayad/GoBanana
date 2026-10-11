@@ -103,7 +103,7 @@ for (const [size, viewport] of Object.entries(SIZES)) {
 
     test("hero tile card en", async ({ page }) => {
       await page.goto("/en");
-      const tile = page.locator(".hero-tile-btn").nth(1);
+      const tile = page.locator(".hero-idea").nth(1);
       await tile.focus();
       await page.keyboard.press("Enter");
       await expect(page.getByRole("dialog")).toBeVisible();

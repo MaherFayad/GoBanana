@@ -7,8 +7,22 @@
  * `role="toolbar"` with one tab stop and arrow-key roving (Home and End too; arrows follow
  * the reading direction). It floats over the board, so CanvasApp pans a focused item clear
  * of its rect (SC 2.4.11); the parent passes `notchRef` for that.
+ *
+ * Add note and Add section: a pointer click starts place mode (a ghost follows the pointer, a
+ * click drops it, Escape cancels); pressing and dragging from the button drops it where the
+ * pointer is let go; Enter or Space (a click with no pointer, `detail` 0) puts it at the
+ * nearest free spot in the middle of the view (SC 2.5.7).
  */
-import { useCallback, useId, useRef, useState, type KeyboardEvent, type RefObject } from "react";
+import {
+  useCallback,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type RefObject,
+} from "react";
 import { ShortcutKeys, usePlatform } from "@/components/studio/Kbd";
 import { toAriaKeyShortcuts } from "@/components/studio/shortcutKeys";
 import { Tooltip } from "@/components/studio/Tooltip";
@@ -22,12 +36,16 @@ export interface NotchProps {
   notchRef: RefObject<HTMLDivElement | null>;
   tool: CanvasTool;
   onTool: (tool: CanvasTool) => void;
-  onAddNote: () => void;
-  onAddSection: () => void;
+  /** "keyboard": place at once in the middle of the view. "place": start place mode. */
+  onAdd: (kind: "note" | "section", how: "keyboard" | "place") => void;
+  /** Pointer down on an Add button: a drag from here drops the item on the board. */
+  onPressAdd: (kind: "note" | "section", e: PointerEvent<HTMLButtonElement>) => void;
+  /** The kind being placed, shown as a pressed button. */
+  placing: "note" | "section" | null;
   onArrange: (layout: LayoutKind) => void;
 }
 
-export function Notch({ notchRef, tool, onTool, onAddNote, onAddSection, onArrange }: NotchProps) {
+export function Notch({ notchRef, tool, onTool, onAdd, onPressAdd, placing, onArrange }: NotchProps) {
   const platform = usePlatform();
   const [active, setActive] = useState(0);
   const [arrangeOpen, setArrangeOpen] = useState(false);
@@ -94,11 +112,27 @@ export function Notch({ notchRef, tool, onTool, onAddNote, onAddSection, onArran
         </button>
       </Tooltip>
       <span className="bn-notch-sep" aria-hidden="true" />
-      <button type="button" className="st-btn" data-variant="ghost" onClick={onAddNote} {...stop(2)}>
+      <button
+        type="button"
+        className="st-btn"
+        data-variant="ghost"
+        data-active={placing === "note" ? "" : undefined}
+        onClick={(e: MouseEvent) => onAdd("note", e.detail === 0 ? "keyboard" : "place")}
+        onPointerDown={(e) => onPressAdd("note", e)}
+        {...stop(2)}
+      >
         <NoteIcon size={16} />
         <span>Add note</span>
       </button>
-      <button type="button" className="st-btn" data-variant="ghost" onClick={onAddSection} {...stop(3)}>
+      <button
+        type="button"
+        className="st-btn"
+        data-variant="ghost"
+        data-active={placing === "section" ? "" : undefined}
+        onClick={(e: MouseEvent) => onAdd("section", e.detail === 0 ? "keyboard" : "place")}
+        onPointerDown={(e) => onPressAdd("section", e)}
+        {...stop(3)}
+      >
         <FrameIcon size={16} />
         <span>Add section</span>
       </button>

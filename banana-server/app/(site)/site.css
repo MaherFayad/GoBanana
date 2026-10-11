@@ -588,6 +588,10 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
   overflow-wrap: anywhere;
 }
 
+.site .code-block pre:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--st-focus-ring-color);
+}
+
 .site .code-block-label[data-prose] {
   font-family: var(--st-font-sans);
 }
@@ -598,11 +602,13 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
   color: var(--st-text-bright);
   font-size: 0.9375rem;
   line-height: var(--st-leading-normal);
-  /* Wrap instead of scrolling, so a 320px screen never scrolls sideways (SC 1.4.10). */
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  /* Lines never wrap mid-word: a long line scrolls inside the block (a focusable region), and the
+     page itself never scrolls sideways (SC 1.4.10). */
+  overflow-x: auto;
+  white-space: pre;
   direction: ltr;
   text-align: start;
+  scrollbar-width: thin;
 }
 
 .site .st-tile .code-block {
@@ -657,6 +663,60 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
 .site .feature-list .st-icon {
   margin-block-start: 0.3em;
   color: var(--st-text-muted);
+}
+
+/* Feature lines with an icon for what each line is about, in a small tile. */
+.site .feature-list.has-icons {
+  gap: var(--st-space-s);
+}
+
+.site .feature-list.has-icons li {
+  align-items: center;
+}
+
+.site .feature-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--st-radius);
+  background: var(--st-overlay-10);
+  color: var(--st-text-bright);
+}
+
+.site .feature-icon .st-icon {
+  margin: 0;
+  color: inherit;
+}
+
+.site [data-feature="noShare"] {
+  color: var(--st-text-muted);
+}
+
+.site [data-feature="noShare"] .feature-icon {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--st-border);
+  color: var(--st-text-subtle);
+}
+
+/* "Beta: Pro for everyone": a stamp on the Pro card, in the ship tone with an icon and words. */
+.site .beta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  padding: var(--st-space-3xs) var(--st-space-m);
+  border: var(--st-border-width-strong) dashed var(--st-ship-fg);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-ship-bg);
+  color: var(--st-ship-fg);
+  font-size: 0.9375rem;
+  font-weight: var(--st-weight-bold);
+  rotate: -2deg;
+}
+
+.site .beta-badge:dir(rtl) {
+  rotate: 2deg;
 }
 
 .site .checkout-error .st-alert {
@@ -767,6 +827,133 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
 
 .site .account-head p {
   margin: 0;
+}
+
+/* ------------------------------------------------------------------ takedown process */
+
+/* Three steps in a row, joined by a dashed line; stacked on small screens. */
+.site .process {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--st-space-3xl);
+  margin: 0 0 var(--st-space-xl);
+  padding: 0;
+  list-style: none;
+  counter-reset: process;
+}
+
+.site .process-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+  max-inline-size: none;
+  margin: 0;
+  padding: var(--st-space-xl);
+  border: var(--st-border-width) solid var(--st-border-muted);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+  counter-increment: process;
+}
+
+.site .process-step + .process-step {
+  margin: 0;
+}
+
+/* The connector to the next step, in the gap between cards. */
+.site .process-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(var(--st-space-xl) + 23px);
+  inset-inline-start: 100%;
+  inline-size: var(--st-space-3xl);
+  border-block-start: var(--st-border-width-strong) dashed var(--st-border-strong);
+}
+
+.site .process-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: var(--st-radius-panel);
+  background: var(--st-bg-surface-3);
+  color: var(--st-text-bright);
+}
+
+.site .process-mark::after {
+  content: counter(process);
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-end: -6px;
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  background: var(--st-text-bright);
+  color: var(--st-bg-body);
+  font-size: 0.8125rem;
+  font-weight: var(--st-weight-bold);
+}
+
+.site .process-title {
+  margin: var(--st-space-s) 0 0;
+  font-size: var(--st-text-xl);
+}
+
+.site .process-step p {
+  margin: 0;
+  color: var(--st-text-muted);
+}
+
+.site .process-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--st-space-s);
+  color: var(--st-text-muted);
+}
+
+.site .process-note .st-icon {
+  flex: none;
+  margin-block-start: 0.3em;
+}
+
+@media (max-width: 52rem) {
+  .site .process {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site .process-step:not(:last-child)::after {
+    inset-block-start: 100%;
+    inset-inline-start: calc(var(--st-space-xl) + 23px);
+    inline-size: 0;
+    block-size: var(--st-space-3xl);
+    border-block-start: 0;
+    border-inline-start: var(--st-border-width-strong) dashed var(--st-border-strong);
+  }
+}
+
+/* Usage bars on the account page (decorative; the numbers are in the text). */
+.site .usage-meter {
+  display: block;
+  inline-size: min(100%, 16rem);
+  block-size: 6px;
+  margin-block-start: var(--st-space-xs);
+  overflow: hidden;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-overlay-10);
+}
+
+.site .usage-meter-fill {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--st-text-bright);
+}
+
+.site .usage-meter[data-full] .usage-meter-fill {
+  background: var(--st-warning);
 }
 
 /* ------------------------------------------------------------------ forms */

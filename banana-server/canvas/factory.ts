@@ -1,5 +1,6 @@
 /** Builders for new nodes. Pure, so they can run in Vitest and on the server (add_to_canvas). */
 import { DEFAULT_PAIRING_ID } from "./fonts";
+import { estimateNoteHeight } from "./note-layout";
 import { siteFromUrl } from "./state";
 import {
   DEFAULT_SIZE,
@@ -56,8 +57,13 @@ export function referenceNode(ref: TrayReference, center: Point, id = newNodeId(
   };
 }
 
+/** Size of a new note: the default width, as tall as its text (one line when empty). */
+export function newNoteSize(text = ""): { w: number; h: number } {
+  return { w: DEFAULT_SIZE.note.w, h: estimateNoteHeight(text, DEFAULT_SIZE.note.w) };
+}
+
 export function noteNode(center: Point, text = "", id = newNodeId("note")): NoteFlowNode {
-  const size = DEFAULT_SIZE.note;
+  const size = newNoteSize(text);
   return { id, type: "note", position: centered(center, size), width: size.w, height: size.h, data: { text, color: "yellow" } };
 }
 

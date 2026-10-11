@@ -1,5 +1,6 @@
 /** lib/canvas/store.ts: save validation, takedown filter on load, placement and snapshots. */
 import { describe, expect, it } from "vitest";
+import { estimateNoteHeight } from "@/canvas/note-layout";
 import {
   addToTray,
   appendNodes,
@@ -106,7 +107,8 @@ describe("appendNodes", () => {
     );
     expect(placed[0]).toMatchObject({ id: "note_1", x: 116, y: 50 + 48 + 210 + 16, sectionId: "s" });
     const section = next.nodes.find((n) => n.id === "s")!;
-    expect(section.h).toBe(48 + 210 + 16 + 140 + 16);
+    // A short note starts as tall as its text (canvas/note-layout.ts), not the 140px default.
+    expect(section.h).toBe(48 + 210 + 16 + estimateNoteHeight("hi", 220) + 16);
     expect(next.nodes.find((n) => n.id === "note_1")?.parentId).toBe("s");
   });
 
@@ -134,8 +136,24 @@ describe("appendNodes", () => {
       [236, 0],
       [472, 0],
       [708, 0],
-      [0, 156],
+      [0, estimateNoteHeight("n", 220) + 16],
     ]);
+  });
+
+  it("gives a long note the height its text needs (no scrolling before the canvas measures it)", () => {
+    const text =
+      "WILD: The whole checkout is one tall seed packet. The order summary is printed on the back like planting instructions.\n" +
+      "SALVAGE: A flippable 'ticket card'. Front shows the total, back shows the line items.";
+    const { state: next, placed } = appendNodes(state(), [{ type: "note", data: { text, color: "yellow" } }], () => null, (p) => p);
+    const h = estimateNoteHeight(text, 220);
+    expect(placed[0]).toMatchObject({ w: 220, h });
+    expect(h).toBeGreaterThan(178);
+    expect(next.nodes[0]?.h).toBe(h);
+  });
+
+  it("keeps a height the caller gives", () => {
+    const { placed } = appendNodes(state(), [{ type: "note", h: 90, data: { text: "a".repeat(800), color: "yellow" } }], () => null, (p) => p);
+    expect(placed[0]?.h).toBe(90);
   });
 });
 

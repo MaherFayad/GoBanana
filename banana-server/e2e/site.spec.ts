@@ -91,11 +91,14 @@ test("Arabic pages are rtl with the Arabic font, while code and the logo stay lt
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   const font = await page.locator(".site").evaluate((el) => getComputedStyle(el).fontFamily);
   expect(font).toMatch(/^"?IBM Plex Sans Arabic/);
-  for (const id of ["code-server-url", "code-claude", "code-cursor"]) {
+  for (const id of ["code-claude", "code-cursor"]) {
     const block = page.getByTestId(id);
     await expect(block).toHaveAttribute("dir", "ltr");
     expect(await block.locator("pre").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   }
+  // The server address is an ltr code run inside an rtl block, so the block still sits at the start.
+  const address = page.getByTestId("code-server-url").locator("code");
+  await expect(address).toHaveAttribute("dir", "ltr");
   expect(await page.locator(".brand").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   // The primary call to action is the yellow Studio primary button.
   const cta = page.locator('.hero .st-btn[data-variant="primary"]');

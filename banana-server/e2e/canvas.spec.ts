@@ -31,7 +31,8 @@ const INITIAL_STATE = {
   viewport: { x: 40, y: 40, zoom: 1 },
   nodes: [
     { id: "sec1", type: "section", x: 560, y: 0, w: 616, h: 420, data: { title: "Glass" } },
-    { id: "note1", type: "note", x: 0, y: 0, w: 220, h: 140, data: { text: "Make it feel cold", color: "yellow" } },
+    // Already as tall as its text: a note that does not fit refits on load and auto-saves.
+    { id: "note1", type: "note", x: 0, y: 0, w: 220, h: 64, data: { text: "Make it feel cold", color: "yellow" } },
     {
       id: "img-broken",
       type: "image",
@@ -289,7 +290,10 @@ test.describe("moodboard canvas", () => {
 
   test("auto-save waits 1 s, saves JSON only, and survives a reload", async ({ page }) => {
     const api = await openCanvas(page);
+    // Add note starts place mode; a click on the board drops the note there.
     await page.getByRole("button", { name: "Add note" }).click();
+    const spot = await emptyBoardPoint(page);
+    await page.mouse.click(spot.x, spot.y);
     const editor = page.getByRole("textbox", { name: "Note text" });
     await expect(editor).toBeFocused();
     await editor.fill("Saved across reloads");
@@ -308,7 +312,8 @@ test.describe("moodboard canvas", () => {
 
   test("saves send the loaded version; a conflict stops saving and asks for a reload", async ({ page }) => {
     const api = await openCanvas(page);
-    await page.getByRole("button", { name: "Add note" }).click();
+    // Enter on Add note places it at once in the middle of the view (keyboard route).
+    await page.getByRole("button", { name: "Add note" }).press("Enter");
     await page.getByRole("textbox", { name: "Note text" }).fill("First");
     await page.getByRole("textbox", { name: "Note text" }).press("Control+Enter");
     await expect.poll(() => api.puts.length, { timeout: 5_000 }).toBe(1);
@@ -316,7 +321,7 @@ test.describe("moodboard canvas", () => {
 
     // Another window saved in between: the server answers 409.
     api.conflict = true;
-    await page.getByRole("button", { name: "Add note" }).click();
+    await page.getByRole("button", { name: "Add note" }).press("Enter");
     await page.getByRole("textbox", { name: "Note text" }).fill("Second");
     await page.getByRole("textbox", { name: "Note text" }).press("Control+Enter");
     const alert = page.getByRole("alert").filter({ hasText: "This canvas changed in another window. Reload to see the latest." });

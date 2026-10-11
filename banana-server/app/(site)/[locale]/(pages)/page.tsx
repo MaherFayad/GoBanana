@@ -5,27 +5,64 @@
  * of tiles in the hero, then the product in a window frame, a graph of the flow, a gallery, the
  * export, set up, pricing, FAQ, a final call to action and the footer, with scroll reveals.
  * The look is GoBanana's own: Studio tokens, light and dark, Inter and IBM Plex Sans Arabic,
- * the yellow primary button, Pixelarticons, and generative art drawn with CSS and SVG only.
+ * the yellow primary button and Pixelarticons.
+ *
+ * Every section shows something (owner feedback, 2026-10-11): the hero and gallery show real,
+ * published references, hotlinked with the creator and source link on each (lib/site/showcase.ts,
+ * filtered by the takedown list, generative art when the list cannot load or an image fails);
+ * the export section previews the six files export_kit really writes; set up shows where to click
+ * in each agent; pricing, FAQ and the final call to action get their own small pictures.
+ *
+ * Rendered per request, so the takedown filter always applies (one cached list read, no Serper).
  */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowEndIcon, CheckIcon, SparkleIcon } from "@/components/studio/icons";
+import type { CSSProperties, ReactNode } from "react";
+import {
+  ArrowEndIcon,
+  CanvasesIcon,
+  ChatIcon,
+  LinkIcon,
+  PlugIcon,
+  SearchIcon,
+  ShieldIcon,
+  SparkleIcon,
+  TerminalIcon,
+  type IconComponent,
+} from "@/components/studio/icons";
 import { APP_NAME, getConfig } from "@/lib/config";
+import { getRepos } from "@/lib/db";
+import { memoTakedowns } from "@/lib/db/takedowns";
 import { betaPlan } from "@/lib/quota";
-import { getDict } from "@/lib/site/dict";
-import { SAMPLE_DESIGN_MD, SAMPLE_TOKENS } from "@/lib/site/export-sample";
-import { fmt, href, isLocale } from "@/lib/site/i18n";
+import { getDict, type Dict } from "@/lib/site/dict";
+import { exportPreview } from "@/lib/site/export-demo";
+import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
 import { GALLERY_BOARDS, HERO_TILES } from "@/lib/site/moves";
-import { planFeatures, priceText } from "@/lib/site/plans";
+import { planFeatureItems, priceText } from "@/lib/site/plans";
+import { FINAL_REFS, GALLERY_REFS, HERO_REFS, showcaseIndex, siteName, type ShowcaseItem } from "@/lib/site/showcase";
+import { loadShowcase } from "@/lib/site/showcase-load";
+import { compileTakedowns } from "@/lib/takedown";
+import { e2eAuthBypass } from "@/lib/web-auth";
+import { bidi, bt } from "../../_components/Bidi";
+import { ClaudeMark, CursorMark } from "../../_components/BrandMarks";
 import { CodeBlock } from "../../_components/CodeBlock";
+import { ExportTabs } from "../../_components/ExportTabs";
+import { GalleryBoard, type BoardRef } from "../../_components/GalleryBoard";
 import { GraphWires } from "../../_components/GraphWires";
-import { HeroField } from "../../_components/HeroField";
+import { HeroField, type TileRef } from "../../_components/HeroField";
+import { ChatGptMock, ClaudeConnectorMock } from "../../_components/InstallMocks";
+import { BetaBadge, PlanFeatureList } from "../../_components/PlanBits";
 import { PricingToggle } from "../../_components/PricingToggle";
 import { ProductFrame } from "../../_components/ProductFrame";
+import { RefImage } from "../../_components/RefImage";
 import { Reveal } from "../../_components/Reveal";
+import { ServerAddress } from "../../_components/ServerAddress";
 import { TileArt } from "../../_components/TileArt";
 import "../../_components/landing.css";
+
+// Per request: the showcase goes through the takedown list on every render (hard rule 5).
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -44,6 +81,39 @@ function mcpUrl(): string {
 function serverName(): string {
   return APP_NAME.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "design";
 }
+
+/**
+ * The visible showcase, or null (fail closed: generative art) when the takedown list cannot load.
+ * The E2E sign-in bypass (never on in a production build) has no database, so it checks against
+ * an empty list.
+ */
+async function visibleShowcase(): Promise<ShowcaseItem[] | null> {
+  const loadMatcher =
+    e2eAuthBypass() && !process.env.DATABASE_URL ? async () => compileTakedowns([]) : () => memoTakedowns(getRepos().takedowns)();
+  return loadShowcase({ loadMatcher });
+}
+
+/** Words for showcase items in one language. */
+function showcaseWords(t: Dict["landing"], locale: Locale) {
+  const sc = t.showcase;
+  const credit = (item: ShowcaseItem): ReactNode =>
+    item.creator ? bt(sc.credit, { creator: item.creator, site: siteName(item.sourceSite) }) : <bdi dir="ltr">{siteName(item.sourceSite)}</bdi>;
+  const what = (item: ShowcaseItem): ReactNode => {
+    const lens = sc.lenses[item.lens];
+    return item.move ? bt(sc.what, { move: sc.moves[item.move], lens }) : lens;
+  };
+  // Source titles are English; Arabic pages mark the alt text as such.
+  const altLang = locale === "ar" ? "en" : undefined;
+  const tileRef = (item: ShowcaseItem): TileRef => ({ src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), what: what(item) });
+  const boardRef = (item: ShowcaseItem | undefined): BoardRef | null =>
+    item ? { src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), title: item.title } : null;
+  return { credit, what, altLang, tileRef, boardRef };
+}
+
+const BOARD_KEYS = ["souq", "transit", "loud", "private"] as const;
+
+/** One icon per FAQ question, in dictionary order. */
+const FAQ_ICONS: IconComponent[] = [SparkleIcon, SearchIcon, LinkIcon, PlugIcon, CanvasesIcon, ShieldIcon];
 
 /** Small picture inside each graph node, so the flow reads at a glance. Decorative. */
 function GraphDeco({ index, moves }: { index: number; moves: string[] }) {
@@ -82,10 +152,12 @@ function GraphDeco({ index, moves }: { index: number; moves: string[] }) {
       );
     default:
       return (
-        <span className="graph-deco graph-deco-files" dir="ltr">
-          <span>DESIGN.md</span>
-          <span>tokens.json</span>
-          <span>tailwind.css</span>
+        <span className="graph-deco graph-deco-files">
+          {["DESIGN.md", "tokens.json", "theme.css"].map((f) => (
+            <span key={f}>
+              <bdi dir="ltr">{f}</bdi>
+            </span>
+          ))}
         </span>
       );
   }
@@ -98,6 +170,7 @@ export default async function LandingPage({ params }: Props) {
   const t = dict.landing;
   const p = dict.pricing;
   const beta = betaPlan() !== null;
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   const url = mcpUrl();
   const name = serverName();
@@ -107,20 +180,47 @@ export default async function LandingPage({ params }: Props) {
   const labelLang = locale === "ar" ? "ar" : undefined;
   const copyLabels = { done: t.copy.done, doneBody: t.copy.doneBody, failed: t.copy.failed, failedBody: t.copy.failedBody };
 
+  const items = await visibleShowcase();
+  const refs = items ? showcaseIndex(items) : null;
+  const words = showcaseWords(t, locale);
+
   const tiles = HERO_TILES.map((tile, i) => {
     const move = t.moves[i]!;
-    return { ...tile, ...move, caption: fmt(t.field.caption, { name: move.name, color: move.color }) };
+    const item = refs?.get(HERO_REFS[tile.art]);
+    return {
+      ...tile,
+      ...move,
+      caption: fmt(t.field.caption, { name: move.name, color: move.color }),
+      ...(item ? { ref: words.tileRef(item) } : {}),
+    };
   });
+  const finalRefs = refs ? FINAL_REFS.map((id) => refs.get(id)).filter((i): i is ShowcaseItem => i !== undefined) : [];
   const graphMoves = t.moves.slice(0, 6).map((m) => m.move).filter((m, i, all) => all.indexOf(m) === i);
   const monthly = priceText("pro_monthly", p);
   const yearly = priceText("pro_yearly", p);
   const free = priceText("free", p);
+  const files = exportPreview();
+  const c = t.clients;
 
   return (
     <>
       {/* ------------------------------------------------------------ hero */}
       <section className="hero" aria-labelledby="hero-title">
-        <HeroField tiles={tiles} labels={t.field} />
+        <HeroField
+          tiles={tiles}
+          dir={dir}
+          labels={{
+            label: t.field.label,
+            hint: refs ? t.field.hintRefs : t.field.hint,
+            sample: t.field.sample,
+            twist: t.field.twist,
+            close: t.field.close,
+            moveLabel: t.field.moveLabel,
+            idea: t.field.idea,
+            openSource: t.field.openSource,
+            newTab: t.field.newTab,
+          }}
+        />
         <div className="hero-copy">
           <div className="wrap hero-copy-grid">
             <div className="hero-copy-start">
@@ -133,16 +233,21 @@ export default async function LandingPage({ params }: Props) {
               </h1>
             </div>
             <div className="hero-copy-end">
-              <p className="hero-lead">{fmt(t.heroLead)}</p>
+              <p className="hero-lead">{bt(t.heroLead)}</p>
               <div className="actions">
                 <a className="st-btn" data-variant="primary" data-size="lg" href="#install">
-                  {t.ctaAdd}
+                  {bidi(t.ctaAdd)}
                   <ArrowEndIcon size={16} />
                 </a>
                 <a className="st-btn" data-variant="secondary" data-size="lg" href="#gallery">
                   {t.ctaExample}
                 </a>
               </div>
+              {refs ? (
+                <p className="hero-notice">
+                  {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -176,26 +281,26 @@ export default async function LandingPage({ params }: Props) {
             <h2 id="how" tabIndex={-1}>
               {t.graph.title}
             </h2>
-            <p className="band-lead">{fmt(t.graph.lead)}</p>
+            <p className="band-lead">{bt(t.graph.lead)}</p>
           </Reveal>
           <Reveal index={1} className="graph">
             <div className="graph-canvas">
-            <ol id="graph-nodes" className="graph-nodes" aria-label={t.graph.label}>
-              {t.graph.nodes.map((node, i) => (
-                <li key={node.title} className="graph-node" data-node="" data-step={i + 1}>
-                  <span className="graph-kind">
-                    <span className="graph-step" dir="ltr">
-                      {String(i + 1).padStart(2, "0")}
+              <ol id="graph-nodes" className="graph-nodes" aria-label={t.graph.label}>
+                {t.graph.nodes.map((node, i) => (
+                  <li key={node.title} className="graph-node" data-node="" data-step={i + 1}>
+                    <span className="graph-kind">
+                      <span className="graph-step" dir="ltr">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {node.kind}
                     </span>
-                    {node.kind}
-                  </span>
-                  <h3>{node.title}</h3>
-                  <p>{node.body}</p>
-                  <GraphDeco index={i} moves={graphMoves} />
-                </li>
-              ))}
-            </ol>
-            <GraphWires targetId="graph-nodes" />
+                    <h3>{node.title}</h3>
+                    <p>{bidi(node.body)}</p>
+                    <GraphDeco index={i} moves={graphMoves} />
+                  </li>
+                ))}
+              </ol>
+              <GraphWires targetId="graph-nodes" />
             </div>
           </Reveal>
         </div>
@@ -207,27 +312,35 @@ export default async function LandingPage({ params }: Props) {
           <Reveal className="band-head">
             <p className="eyebrow">{t.gallery.eyebrow}</p>
             <h2 id="gallery" tabIndex={-1}>
-              {fmt(t.gallery.title)}
+              {bt(t.gallery.title)}
             </h2>
-            <p className="band-lead">{t.gallery.lead}</p>
+            <p className="band-lead">{refs ? t.gallery.lead : t.gallery.leadArt}</p>
           </Reveal>
           <ul className="gallery">
             {t.gallery.cards.map((card, i) => (
               <Reveal as="li" key={card.title} index={i} className="gallery-card">
-                <span className="gallery-art">
-                  {GALLERY_BOARDS[i]!.map((kind, j) => (
-                    <TileArt key={`${kind}-${j}`} kind={kind} uid={`gallery-${i}-${j}`} />
-                  ))}
-                </span>
-                <h3>{card.title}</h3>
-                <p>{card.body}</p>
-                <span className="gallery-tags">
-                  {card.tags.map((tag) => (
-                    <span key={tag} className="st-chip">
-                      {tag}
-                    </span>
-                  ))}
-                </span>
+                <GalleryBoard
+                  index={i}
+                  board={BOARD_KEYS[i]!}
+                  title={card.title}
+                  body={bidi(card.body)}
+                  twist={bidi(card.twist)}
+                  tags={card.tags}
+                  palette={card.palette}
+                  arts={GALLERY_BOARDS[i]!}
+                  refs={refs ? GALLERY_REFS[i]!.map((id) => words.boardRef(refs.get(id))) : null}
+                  labels={{
+                    openExample: t.gallery.openExample,
+                    exampleEyebrow: t.gallery.exampleEyebrow,
+                    twist: t.gallery.twist,
+                    paletteLabel: t.gallery.paletteLabel,
+                    paletteTitle: t.gallery.paletteTitle,
+                    sources: t.showcase.sources,
+                    sourcesTitle: t.gallery.sourcesTitle,
+                    newTab: t.field.newTab,
+                    close: dict.common.close,
+                  }}
+                />
               </Reveal>
             ))}
           </ul>
@@ -241,47 +354,27 @@ export default async function LandingPage({ params }: Props) {
             <Reveal className="ship-text">
               <p className="eyebrow">{t.ship.eyebrow}</p>
               <h2 id="ship-title">{t.ship.title}</h2>
-              <p className="band-lead">{t.ship.lead}</p>
+              <p className="band-lead">{bidi(t.ship.lead)}</p>
             </Reveal>
             <Reveal index={1} className="ship-cta">
               <a className="st-btn" data-variant="secondary" data-size="lg" href="#install">
-                {t.ship.cta}
+                {bidi(t.ship.cta)}
                 <ArrowEndIcon size={16} />
               </a>
             </Reveal>
           </div>
-          <Reveal as="ul" index={1} className="formats">
-            {t.ship.formats.map((f) => (
-              <li key={f.name}>
-                <span className="format-name" dir="ltr">
-                  {f.name}
-                </span>
-                <span className="format-body">{f.body}</span>
-              </li>
-            ))}
-          </Reveal>
-          <Reveal index={2}>
-            <figure className="code-window" aria-label={t.ship.previewLabel} dir="ltr">
-              <div className="code-window-bar">
-                <span className="frame-dot" />
-                <span className="frame-dot" />
-                <span className="frame-dot" />
-              </div>
-              <div className="code-window-panes">
-                <div className="code-pane">
-                  <p className="code-pane-label">{t.ship.codeLabel}</p>
-                  <pre>
-                    <code>{SAMPLE_DESIGN_MD}</code>
-                  </pre>
-                </div>
-                <div className="code-pane">
-                  <p className="code-pane-label">{t.ship.tokensLabel}</p>
-                  <pre>
-                    <code>{SAMPLE_TOKENS}</code>
-                  </pre>
-                </div>
-              </div>
-            </figure>
+          <Reveal index={1}>
+            <ExportTabs
+              label={t.ship.tabsLabel}
+              tabs={files.map((f, i) => ({
+                format: f.format,
+                label: bidi(t.ship.formats[i]!.label),
+                body: bidi(t.ship.formats[i]!.body),
+                fileName: f.name,
+                content: f.content,
+                windowLabel: fmt(t.ship.windowLabel, { file: f.name }),
+              }))}
+            />
           </Reveal>
         </div>
       </section>
@@ -294,57 +387,46 @@ export default async function LandingPage({ params }: Props) {
             <h2 id="install" tabIndex={-1}>
               {t.installTitle}
             </h2>
-            <p className="band-lead">{t.installLead}</p>
+            <p className="band-lead">{bidi(t.installLead)}</p>
           </Reveal>
           <Reveal index={1} className="install-url">
-            <CodeBlock
-              code={url}
-              label={t.serverUrlLabel}
-              labelLang={labelLang}
-              copyLabel={t.copy.address}
-              labels={copyLabels}
-              testId="code-server-url"
-            />
+            <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
           </Reveal>
           <div className="install-grid">
-            <Reveal as="article" index={1} className="panel" aria-labelledby="install-claude">
-              <h3 id="install-claude">{t.clients.claude.title}</h3>
-              <ol>
-                {t.clients.claude.steps.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ol>
+            <Reveal as="article" index={1} className="install-card" aria-labelledby="install-claude">
+              <ClientHead id="install-claude" title={c.claudeApp.title} mark={<ClaudeMark size={20} />} />
+              <ClaudeConnectorMock t={c.claudeApp} url={url} name={name} />
+              <Steps steps={c.claudeApp.steps} />
+            </Reveal>
+            <Reveal as="article" index={2} className="install-card" aria-labelledby="install-claude-code">
+              <ClientHead id="install-claude-code" title={c.claudeCode.title} mark={<ClaudeMark size={20} />} badge={<TerminalIcon size={16} />} />
               <CodeBlock
                 code={claudeCmd}
-                label={t.clients.claude.codeLabel}
+                label={c.claudeCode.codeLabel}
                 labelLang={labelLang}
                 copyLabel={t.copy.command}
                 labels={copyLabels}
                 testId="code-claude"
+                variant="terminal"
               />
+              <Steps steps={c.claudeCode.steps} />
             </Reveal>
-            <Reveal as="article" index={2} className="panel" aria-labelledby="install-chatgpt">
-              <h3 id="install-chatgpt">{t.clients.chatgpt.title}</h3>
-              <ol>
-                {t.clients.chatgpt.steps.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ol>
+            <Reveal as="article" index={1} className="install-card" aria-labelledby="install-chatgpt">
+              <ClientHead id="install-chatgpt" title={c.chatgpt.title} mark={<ChatIcon size={24} />} />
+              <ChatGptMock t={c.chatgpt} url={url} name={name} />
+              <Steps steps={c.chatgpt.steps} />
             </Reveal>
-            <Reveal as="article" index={3} className="panel" aria-labelledby="install-cursor">
-              <h3 id="install-cursor">{t.clients.cursor.title}</h3>
-              <ol>
-                {t.clients.cursor.steps.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ol>
+            <Reveal as="article" index={2} className="install-card" aria-labelledby="install-cursor">
+              <ClientHead id="install-cursor" title={c.cursor.title} mark={<CursorMark size={20} />} />
               <CodeBlock
                 code={cursorJson}
-                label={t.clients.cursor.codeLabel}
+                label={c.cursor.codeLabel}
                 copyLabel={t.copy.config}
                 labels={copyLabels}
                 testId="code-cursor"
+                variant="file"
               />
+              <Steps steps={c.cursor.steps} />
             </Reveal>
           </div>
         </div>
@@ -355,8 +437,8 @@ export default async function LandingPage({ params }: Props) {
         <div className="wrap">
           <Reveal className="band-head is-center">
             <p className="eyebrow">{t.pricing.eyebrow}</p>
-            <h2 id="pricing-title">{t.pricing.title}</h2>
-            <p className="band-lead">{beta ? t.pricing.lead : t.pricing.leadPaid}</p>
+            <h2 id="pricing-title">{bidi(t.pricing.title)}</h2>
+            <p className="band-lead">{bidi(beta ? t.pricing.lead : t.pricing.leadPaid)}</p>
           </Reveal>
           <Reveal index={1}>
             <PricingToggle
@@ -367,43 +449,33 @@ export default async function LandingPage({ params }: Props) {
                 <li className="plan">
                   <h3>{p.plans.free.name}</h3>
                   <p className="plan-price">
-                    <span dir="ltr">{free.amount}</span> <small>{free.period}</small>
+                    <bdi className="plan-amount" dir="ltr">{free.amount}</bdi> <small>{free.period}</small>
                   </p>
                   <p className="plan-blurb">{p.plans.free.blurb}</p>
-                  <ul className="feature-list">
-                    {planFeatures("free", p).map((f) => (
-                      <li key={f}>
-                        <CheckIcon size={16} />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <PlanFeatureList items={planFeatureItems("free", p)} />
                   <a className="st-btn plan-cta" data-variant="secondary" data-size="lg" href="#install">
-                    {t.pricing.ctaFree}
+                    {bidi(t.pricing.ctaFree)}
                   </a>
                 </li>
                 <li className="plan is-pro">
                   <div className="plan-head">
-                    <h3>{p.proName}</h3>
-                    <span className="st-chip" data-tone="ship">
-                      {beta ? t.pricing.betaChip : t.pricing.popular}
-                    </span>
+                    <h3>{bidi(p.proName)}</h3>
+                    {beta ? (
+                      <BetaBadge>{bidi(t.pricing.betaBadge)}</BetaBadge>
+                    ) : (
+                      <span className="st-chip" data-tone="ship">
+                        {t.pricing.popular}
+                      </span>
+                    )}
                   </div>
                   <p className="plan-price period-month">
-                    <span dir="ltr">{monthly.amount}</span> <small>{monthly.period}</small>
+                    <bdi className="plan-amount" dir="ltr">{monthly.amount}</bdi> <small>{monthly.period}</small>
                   </p>
                   <p className="plan-price period-year">
-                    <span dir="ltr">{yearly.amount}</span> <small>{yearly.period}</small>
+                    <bdi className="plan-amount" dir="ltr">{yearly.amount}</bdi> <small>{yearly.period}</small>
                   </p>
                   <p className="plan-blurb">{p.plans.pro_monthly.blurb}</p>
-                  <ul className="feature-list">
-                    {planFeatures("pro_monthly", p).map((f) => (
-                      <li key={f}>
-                        <CheckIcon size={16} />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <PlanFeatureList items={planFeatureItems("pro_monthly", p)} />
                   <Link className="st-btn plan-cta" data-variant="secondary" data-size="lg" href={href(locale, "pricing")}>
                     {t.pricing.cta}
                   </Link>
@@ -412,7 +484,7 @@ export default async function LandingPage({ params }: Props) {
             </PricingToggle>
           </Reveal>
           <Reveal index={2}>
-            <p className="plans-note">{t.pricing.founding}</p>
+            <p className="plans-note">{bidi(t.pricing.founding)}</p>
           </Reveal>
         </div>
       </section>
@@ -427,12 +499,20 @@ export default async function LandingPage({ params }: Props) {
             </Reveal>
           </div>
           <div className="faq-list">
-            {t.faq.items.map((item, i) => (
-              <Reveal key={item.q} index={i % 3} className="faq-item">
-                <h3>{fmt(item.q)}</h3>
-                <p>{fmt(item.a)}</p>
-              </Reveal>
-            ))}
+            {t.faq.items.map((item, i) => {
+              const Icon = FAQ_ICONS[i] ?? SparkleIcon;
+              return (
+                <Reveal key={item.q} index={i % 3} className="faq-item">
+                  <span className="faq-icon" aria-hidden="true">
+                    <Icon size={24} />
+                  </span>
+                  <div className="faq-text">
+                    <h3>{bt(item.q)}</h3>
+                    <p>{bt(item.a)}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -440,14 +520,31 @@ export default async function LandingPage({ params }: Props) {
       {/* ------------------------------------------------------------ final call */}
       <section className="final" aria-labelledby="final-title">
         <div className="wrap">
+          {finalRefs.length > 0 ? (
+            <Reveal className="final-collage-wrap">
+              <ul className="final-collage" aria-label={t.showcase.collageLabel}>
+                {finalRefs.map((item, i) => (
+                  <li key={item.id} className="final-tile" style={{ "--i": i } as CSSProperties}>
+                    <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      <span className="final-art">
+                        <RefImage src={item.thumbUrl} alt={item.title} lang={words.altLang} art={HERO_TILES[i % HERO_TILES.length]!.art} uid={`final-${i}`} />
+                      </span>
+                      <span className="final-credit">{words.credit(item)}</span>
+                      <span className="st-visually-hidden"> ({t.field.newTab})</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          ) : null}
           <Reveal blur>
             <h2 id="final-title">{t.final.title}</h2>
           </Reveal>
           <Reveal index={1}>
-            <p className="band-lead">{fmt(t.final.lead)}</p>
+            <p className="band-lead">{bt(t.final.lead)}</p>
             <div className="actions">
               <a className="st-btn" data-variant="primary" data-size="lg" href="#install">
-                {t.ctaAdd}
+                {bidi(t.ctaAdd)}
                 <ArrowEndIcon size={16} />
               </a>
               <Link className="st-btn" data-variant="secondary" data-size="lg" href={href(locale, "pricing")}>
@@ -459,5 +556,29 @@ export default async function LandingPage({ params }: Props) {
         </div>
       </section>
     </>
+  );
+}
+
+/** Logo and name of an agent on its set-up card. */
+function ClientHead({ id, title, mark, badge }: { id: string; title: string; mark: ReactNode; badge?: ReactNode }) {
+  return (
+    <div className="install-card-head">
+      <span className="install-logo" aria-hidden="true">
+        {mark}
+        {badge ? <span className="install-logo-badge">{badge}</span> : null}
+      </span>
+      <h3 id={id}>{bidi(title)}</h3>
+    </div>
+  );
+}
+
+/** Numbered steps as circles on a line. */
+function Steps({ steps }: { steps: string[] }) {
+  return (
+    <ol className="steps">
+      {steps.map((s) => (
+        <li key={s}>{bidi(s)}</li>
+      ))}
+    </ol>
   );
 }

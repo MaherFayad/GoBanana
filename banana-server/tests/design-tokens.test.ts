@@ -135,6 +135,10 @@ function pairs(theme: Theme): Pair[] {
   for (const n of NOTES) {
     text("note text", "note-ink", n);
     text("empty note hint", ["note-ink-subtle", n], n);
+    // WILD / SALVAGE label chips and the compact "+N lines" hint: ink on an ink tint over the paper.
+    text("note label chip", "note-ink", ["note-label-bg", n]);
+    // The paper band sits above the text, never under it; text stays readable on the band anyway.
+    text("note text on the paper band", "note-ink", ["note-band", n]);
   }
   text("badge on selection", "canvas-node-badge-text", "canvas-selection-ring-color");
 

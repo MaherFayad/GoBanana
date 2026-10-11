@@ -17,8 +17,10 @@ import { getConfig } from "@/lib/config";
 import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
-import { planFeatures, priceText } from "@/lib/site/plans";
+import { planFeatureItems, priceText } from "@/lib/site/plans";
 import { getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
+import { bidi } from "../../../_components/Bidi";
+import { BetaBadge, PlanFeatureList } from "../../../_components/PlanBits";
 import { PricingToggle } from "../../../_components/PricingToggle";
 import { Reveal } from "../../../_components/Reveal";
 import { CheckoutButton } from "./CheckoutButton";
@@ -111,7 +113,7 @@ export default async function PricingPage({ params }: Props) {
     return (
       <>
         <div className="plan-head">
-          <h2 id={`plan-${plan}`}>{t.plans[plan].name}</h2>
+          <h2 id={`plan-${plan}`}>{bidi(t.plans[plan].name)}</h2>
           {current ? (
             <span className="st-chip" data-tone="success">
               <CheckIcon size={12} />
@@ -122,23 +124,14 @@ export default async function PricingPage({ params }: Props) {
               {t.foundingChip}
             </span>
           ) : plan !== "free" && beta ? (
-            <span className="st-chip" data-tone="ship">
-              {dict.landing.pricing.betaChip}
-            </span>
+            <BetaBadge>{bidi(dict.landing.pricing.betaBadge)}</BetaBadge>
           ) : null}
         </div>
         <p className={`plan-price ${extraClass}`}>
-          <span dir="ltr">{price.amount}</span> <small>{price.period}</small>
+          <bdi className="plan-amount" dir="ltr">{price.amount}</bdi> <small>{price.period}</small>
         </p>
         <p className="plan-blurb">{t.plans[plan].blurb}</p>
-        <ul className="feature-list">
-          {planFeatures(plan, t).map((f) => (
-            <li key={f}>
-              <CheckIcon size={16} />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
+        <PlanFeatureList items={planFeatureItems(plan, t)} />
         {plan === "founding" && seatsLeft !== null && seatsLeft > 0 ? (
           <p className="note">{fmt(t.seatsLeft, { n: seatsLeft })}</p>
         ) : null}
@@ -151,7 +144,7 @@ export default async function PricingPage({ params }: Props) {
     <div className="wrap page">
       <Reveal className="band-head is-center">
         <p className="eyebrow">{t.eyebrow}</p>
-        <h1 className="pricing-title">{dict.landing.pricing.title}</h1>
+        <h1 className="pricing-title">{bidi(dict.landing.pricing.title)}</h1>
         <p className="band-lead">{t.lead}</p>
       </Reveal>
 
@@ -161,8 +154,8 @@ export default async function PricingPage({ params }: Props) {
             <InfoIcon size={16} />
           </span>
           <div className="st-alert-content">
-            <p className="st-alert-title">{onBeta ? t.betaTitle : t.betaAllTitle}</p>
-            <p>{onBeta ? t.betaBody : t.betaAllBody}</p>
+            <p className="st-alert-title">{bidi(onBeta ? t.betaTitle : t.betaAllTitle)}</p>
+            <p>{bidi(onBeta ? t.betaBody : t.betaAllBody)}</p>
           </div>
         </div>
       ) : null}
@@ -195,7 +188,7 @@ export default async function PricingPage({ params }: Props) {
               <td />
               {PLAN_ORDER.map((plan) => (
                 <th key={plan} scope="col">
-                  {t.plans[plan].name}
+                  {bidi(t.plans[plan].name)}
                 </th>
               ))}
             </tr>
@@ -205,7 +198,11 @@ export default async function PricingPage({ params }: Props) {
               <th scope="row">{t.rows.price}</th>
               {PLAN_ORDER.map((plan) => {
                 const p = priceText(plan, t);
-                return <td key={plan}>{`${p.amount} ${p.period}`}</td>;
+                return (
+                  <td key={plan}>
+                    <bdi dir="ltr">{p.amount}</bdi> {p.period}
+                  </td>
+                );
               })}
             </tr>
             <tr>
@@ -235,14 +232,14 @@ export default async function PricingPage({ params }: Props) {
             <tr>
               <th scope="row">{t.rows.exports}</th>
               {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{plan === "free" ? t.exportsFree : t.exportsAll}</td>
+                <td key={plan}>{bidi(plan === "free" ? t.exportsFree : t.exportsAll)}</td>
               ))}
             </tr>
           </tbody>
         </table>
       </div>
 
-      <p className="note">{t.billingNote}</p>
+      <p className="note">{bidi(t.billingNote)}</p>
     </div>
   );
 }

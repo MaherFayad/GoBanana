@@ -1,8 +1,14 @@
-/** Takedown request page (spec section 3, hard rule 5). Posts to /api/takedown. */
+/**
+ * Takedown request page (spec section 3, hard rule 5). Posts to /api/takedown.
+ * "What happens next" is a three-step picture (send, review, blocked everywhere) with the
+ * fourth point, about the image itself, as a note under it.
+ */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDict } from "@/lib/site/dict";
-import { fmt, isLocale } from "@/lib/site/i18n";
+import { ClockIcon, InfoIcon, SendIcon, ShieldIcon } from "@/components/studio/icons";
+import { isLocale } from "@/lib/site/i18n";
+import { bidi, bt } from "../../../_components/Bidi";
 import { TakedownForm } from "./TakedownForm";
 
 type Props = {
@@ -27,15 +33,30 @@ export default async function TakedownPage({ params, searchParams }: Props) {
   return (
     <div className="wrap page">
       <h1>{t.title}</h1>
-      <p className="lead">{fmt(t.lead)}</p>
+      <p className="lead">{bt(t.lead)}</p>
 
       <section className="section" aria-labelledby="process-title">
         <h2 id="process-title">{t.processTitle}</h2>
-        <ol>
-          {t.process.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
+        <ol className="process">
+          {t.processSteps.map((title, i) => {
+            const Icon = [SendIcon, ClockIcon, ShieldIcon][i] ?? ShieldIcon;
+            return (
+              <li key={title} className="process-step">
+                <span className="process-mark" aria-hidden="true">
+                  <Icon size={24} />
+                </span>
+                <h3 className="process-title">{title}</h3>
+                <p>{bidi(t.process[i] ?? "")}</p>
+              </li>
+            );
+          })}
         </ol>
+        {t.process.slice(t.processSteps.length).map((note) => (
+          <p key={note} className="process-note">
+            <InfoIcon size={16} />
+            <span>{bidi(note)}</span>
+          </p>
+        ))}
       </section>
 
       <section className="section" aria-labelledby="form-title">

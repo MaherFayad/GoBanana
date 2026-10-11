@@ -12,6 +12,7 @@ import { APP_NAME } from "@/lib/config";
 import type { Dict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
 import { SIGN_IN_PATH } from "@/lib/site/session";
+import { bt } from "./Bidi";
 import { LanguageSwitch, SiteNav } from "./SiteNav";
 
 export function Brand({ locale, className = "brand" }: { locale: Locale; className?: string }) {
@@ -99,7 +100,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
         <div className="footer-top">
           <div className="footer-brand">
             <Brand locale={locale} className="footer-logo" />
-            <p>{fmt(f.blurb)}</p>
+            <p>{bt(f.blurb)}</p>
           </div>
           <nav className="footer-columns" aria-label={t.common.footerLabel}>
             {columns.map((col) => (
@@ -117,8 +118,11 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
           </nav>
         </div>
         <div className="footer-fine">
-          <p>{fmt(f.note)}</p>
-          <p dir="ltr">{fmt(f.rights, { year: new Date().getUTCFullYear() })}</p>
+          <p>{bt(f.note)}</p>
+          {/* Latin in both languages: isolated inline, so the line still sits at the page's start. */}
+          <p>
+            <bdi dir="ltr">{fmt(f.rights, { year: new Date().getUTCFullYear() })}</bdi>
+          </p>
         </div>
       </div>
     </footer>

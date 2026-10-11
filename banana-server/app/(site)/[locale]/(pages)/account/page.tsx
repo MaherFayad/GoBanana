@@ -12,7 +12,19 @@ import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
 import { getAccountUsage, getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
 import { SIGN_OUT_PATH } from "@/lib/web-auth";
+import { bidi, bt } from "../../../_components/Bidi";
 import { DeleteAccount } from "./DeleteAccount";
+
+/** A usage bar under a limit line. Decorative: the words next to it carry the numbers. */
+function Meter({ used, limit }: { used: number; limit: number }) {
+  if (!Number.isFinite(limit) || limit <= 0) return null;
+  const pct = Math.min(100, Math.round((used / limit) * 100));
+  return (
+    <span className="usage-meter" aria-hidden="true" data-full={pct >= 100 ? "" : undefined}>
+      <span className="usage-meter-fill" style={{ inlineSize: `${pct}%` }} />
+    </span>
+  );
+}
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +88,7 @@ export default async function AccountPage({ params }: Props) {
 
       <section className="section" aria-labelledby="canvases-title">
         <h2 id="canvases-title">{t.canvasesTitle}</h2>
-        <p>{fmt(t.canvasesBody)}</p>
+        <p>{bt(t.canvasesBody)}</p>
         <div className="actions flush-start">
           <Link className="st-btn" data-variant="primary" data-size="lg" href={href(locale, "canvases")}>
             {t.canvasesLink}
@@ -89,7 +101,7 @@ export default async function AccountPage({ params }: Props) {
         <h2 id="plan-title">{t.planTitle}</h2>
         <dl className="facts">
           <dt>{t.planLabel}</dt>
-          <dd>{dict.pricing.plans[user.plan].name}</dd>
+          <dd>{bidi(dict.pricing.plans[user.plan].name)}</dd>
         </dl>
         {onBeta ? (
           <div className="st-alert alert-gap" data-tone="info" role="note">
@@ -97,8 +109,8 @@ export default async function AccountPage({ params }: Props) {
               <InfoIcon size={16} />
             </span>
             <div className="st-alert-content">
-              <p className="st-alert-title">{t.betaPlan}</p>
-              <p>{t.betaBody}</p>
+              <p className="st-alert-title">{bidi(t.betaPlan)}</p>
+              <p>{bidi(t.betaBody)}</p>
             </div>
           </div>
         ) : (
@@ -110,7 +122,7 @@ export default async function AccountPage({ params }: Props) {
         )}
         <h3>{t.manageBilling}</h3>
         {/* TODO(billing): link to the Paddle customer portal once a portal session endpoint exists. */}
-        <p>{t.manageBillingNote}</p>
+        <p>{bidi(t.manageBillingNote)}</p>
       </section>
 
       <section className="section" aria-labelledby="usage-title">
@@ -118,9 +130,15 @@ export default async function AccountPage({ params }: Props) {
         {usage ? (
           <dl className="facts">
             <dt>{t.searches}</dt>
-            <dd>{ofLimit(usage.searches, limits.searchesPerMonth)}</dd>
+            <dd>
+              {ofLimit(usage.searches, limits.searchesPerMonth)}
+              <Meter used={usage.searches} limit={limits.searchesPerMonth} />
+            </dd>
             <dt>{t.canvases}</dt>
-            <dd>{ofLimit(usage.canvases, limits.canvases)}</dd>
+            <dd>
+              {ofLimit(usage.canvases, limits.canvases)}
+              <Meter used={usage.canvases} limit={limits.canvases} />
+            </dd>
           </dl>
         ) : (
           <p>{t.usageUnavailable}</p>
@@ -129,7 +147,7 @@ export default async function AccountPage({ params }: Props) {
 
       <section className="section danger" aria-labelledby="delete-title">
         <h2 id="delete-title">{t.deleteTitle}</h2>
-        <p>{t.deleteBody}</p>
+        <p>{bidi(t.deleteBody)}</p>
         <DeleteAccount
           afterDeleteHref={href(locale)}
           labels={{

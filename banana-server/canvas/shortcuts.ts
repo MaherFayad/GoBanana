@@ -80,6 +80,7 @@ export const SHORTCUTS = [
     test: (e) => (plain(e) && (e.key === "m" || e.key === "M" || e.key === "ContextMenu")) || (e.shiftKey && plain(e) && e.key === "F10"),
   },
   { id: "edit", label: "Edit a note, title or role", keys: ["F2"], scope: "item", test: (e) => plain(e) && !e.shiftKey && e.key === "F2" },
+  { id: "preview", label: "Preview an image", keys: ["Space"], scope: "item", test: (e) => plain(e) && !e.shiftKey && (e.key === " " || e.key === "Spacebar") },
   { id: "remove", label: "Remove the item", keys: ["Delete", "Backspace"], scope: "item", test: (e) => plain(e) && (e.key === "Delete" || e.key === "Backspace") },
   { id: "toggleSelect", label: "Add to or take out of the selection", keys: ["Shift+Click"], scope: "item", gesture: true },
   { id: "altDrag", label: "Drag a copy", keys: ["Alt+Drag"], scope: "item", gesture: true },

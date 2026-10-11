@@ -41,7 +41,8 @@ const STATE = {
   version: 1,
   viewport: { x: 40, y: 40, zoom: 1 },
   nodes: [
-    { id: "note1", type: "note", x: 0, y: 0, w: 220, h: 140, data: { text: "Make it feel cold", color: "yellow" } },
+    // Already as tall as its text: a note that does not fit refits on load and auto-saves.
+    { id: "note1", type: "note", x: 0, y: 0, w: 220, h: 64, data: { text: "Make it feel cold", color: "yellow" } },
     {
       id: "img-pin",
       type: "image",
@@ -121,7 +122,9 @@ function hostPage(openResult: unknown, { theme = "light", width = 1200 }: HostOp
   const send = (msg) => frame().contentWindow.postMessage(msg, "*");
   function answer(params) {
     if (params.name === "load_canvas_state") {
-      return { content: [{ type: "text", text: "Loaded." }], structuredContent: { ok: true, state: ${JSON.stringify(STATE)}, updatedAt: ${JSON.stringify(T0)}, title: "Cold checkout", removed: 0 } };
+      // window.__server stands in for a later save by an agent tool (add_to_canvas, search).
+      const srv = window.__server || { state: ${JSON.stringify(STATE)}, updatedAt: ${JSON.stringify(T0)} };
+      return { content: [{ type: "text", text: "Loaded." }], structuredContent: { ok: true, state: srv.state, updatedAt: srv.updatedAt, title: "Cold checkout", removed: 0 } };
     }
     if (params.name !== "save_canvas_state") {
       return { isError: true, content: [{ type: "text", text: "Unknown tool" }] };
@@ -207,7 +210,10 @@ async function openInHost(
 }
 
 const node = (frame: FrameLocator, id: string) => frame.locator(`.react-flow__node[data-id="${id}"]`);
-const calls = (page: Page) => page.evaluate(() => (window as unknown as { __calls: Call[] }).__calls);
+/** Every tools/call the view made, live-refresh polls included. */
+const allCalls = (page: Page) => page.evaluate(() => (window as unknown as { __calls: Call[] }).__calls);
+/** Tool calls other than the live refresh's load_canvas_state polls. */
+const calls = async (page: Page) => (await allCalls(page)).filter((c) => c.name !== "load_canvas_state");
 
 async function position(locator: Locator): Promise<{ x: number; y: number }> {
   const t = await locator.evaluate((el) => (el as HTMLElement).style.transform);
@@ -240,14 +246,14 @@ test.describe("inline canvas in an MCP Apps host", () => {
     const { _meta: _dropped, ...withoutMeta } = OPEN_RESULT;
     const { frame } = await openInHost(page, withoutMeta);
     await expect(frame.locator(".react-flow__node")).toHaveCount(3);
-    const [load] = await calls(page);
+    const [load] = await allCalls(page);
     expect(load!.name).toBe("load_canvas_state");
     expect(load!.arguments.canvasId).toBe(CANVAS_ID);
     // Saves still carry the version the load returned.
     await node(frame, "note1").focus();
     await node(frame, "note1").press("ArrowRight");
-    await expect.poll(async () => (await calls(page)).length, { timeout: 5_000 }).toBe(2);
-    const save = (await calls(page))[1]!;
+    await expect.poll(async () => (await calls(page)).length, { timeout: 5_000 }).toBe(1);
+    const save = (await calls(page))[0]!;
     expect(save.name).toBe("save_canvas_state");
     expect(save.arguments.baseUpdatedAt).toBe(T0);
   });
@@ -380,6 +386,46 @@ test.describe("inline canvas in an MCP Apps host", () => {
     // Fonts are separate files, never inlined into the HTML.
     expect(CANVAS_HTML).not.toMatch(/data:font|font\/woff2;base64|application\/font-woff/);
     expect(cspErrors).toEqual([]);
+  });
+
+  test("the results panel starts collapsed inline, with the count on its toggle", async ({ page }) => {
+    const { frame } = await openInHost(page);
+    await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+    const toggle = frame.getByRole("button", { name: /^Search results, \d+ waiting$/ });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(frame.getByRole("heading", { name: "Search results" })).toHaveCount(0);
+  });
+
+  test("a change saved on the server shows up without a reload, and new results do not open the panel", async ({ page }) => {
+    const { frame } = await openInHost(page);
+    await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+    const later = new Date(Date.parse(T0) + 3_600_000).toISOString();
+    const added = { id: "note-agent", type: "note", x: 0, y: 300, w: 220, h: 64, data: { text: "Added by the agent", color: "blue" } };
+    const result = {
+      id: "r9",
+      thumbUrl: "https://i.pinimg.com/236x/r9.jpg",
+      imageUrl: "https://i.pinimg.com/736x/r9.jpg",
+      sourceUrl: "https://www.pinterest.com/pin/9/",
+      sourceSite: "pinterest.com",
+      title: "Fresh result",
+    };
+    await page.evaluate(
+      ({ state, updatedAt }) => {
+        (window as unknown as { __server: unknown }).__server = { state, updatedAt };
+      },
+      { state: { ...STATE, nodes: [...STATE.nodes, added], tray: [result] }, updatedAt: later },
+    );
+    // Polls every 4 s with focus and 15 s without; no reload, no new open_canvas result.
+    await expect(node(frame, "note-agent")).toBeVisible({ timeout: 20_000 });
+    await expect(frame.locator(".react-flow__node")).toHaveCount(4);
+    const toggle = frame.getByRole("button", { name: /^Search results, 1 waiting$/ });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(frame.locator(".bn-rail-count")).toHaveAttribute("data-pulse", "");
+    await expect(frame.getByText("1 new result", { exact: false })).toHaveCount(1);
+    // Later saves build on the version that was applied: no conflict.
+    await node(frame, "note1").focus();
+    await node(frame, "note1").press("ArrowRight");
+    await expect.poll(async () => (await calls(page)).at(-1)?.arguments.baseUpdatedAt, { timeout: 5_000 }).toBe(later);
   });
 
   test("a narrow frame switches the view to compact", async ({ page }) => {

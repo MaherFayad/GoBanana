@@ -6,11 +6,17 @@
  * resizable from 260 to 520px by a splitter that also works with the keyboard.
  *
  * Each tile can be dragged onto the canvas, or focused and added with Enter (SC 2.5.7: drag
- * has a single pointer and keyboard alternative). Thumbnails load from the source host;
- * nothing is fetched in JS. On rtl pages the rail sits at the inline start, the right edge.
+ * has a single pointer and keyboard alternative). A separate Preview button on the thumbnail
+ * opens the image preview, so a click on the tile still only adds it and a drag still only
+ * drags it. Thumbnails load from the source host; nothing is fetched in JS. On rtl pages the
+ * rail sits at the inline start, the right edge.
+ *
+ * New results never open the panel: the rail's count badge pulses instead (CanvasApp
+ * announces "N new results").
  */
 import { useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent, type PointerEvent } from "react";
 import { Tooltip } from "@/components/studio/Tooltip";
+import { PreviewIcon } from "@/components/studio/icons";
 import { SearchIcon } from "./icons";
 import { SourceChip } from "./nodes/chips";
 import { siteName } from "./labels";
@@ -50,6 +56,10 @@ export interface TrayProps {
   id: string;
   items: readonly TrayReference[];
   onAdd: (ref: TrayReference) => void;
+  /** Open the image preview on this result. */
+  onPreview?: (ref: TrayReference) => void;
+  /** Bumped when new results arrive while the panel is closed: the count badge pulses. */
+  pulse?: number;
   open: boolean;
   onToggle: () => void;
   /** Show the 42px rail. Off in compact frames, where the top bar has the results button. */
@@ -57,7 +67,7 @@ export interface TrayProps {
   readOnly?: boolean;
 }
 
-export function Tray({ id, items, onAdd, open, onToggle, rail = true, readOnly = false }: TrayProps) {
+export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, rail = true, readOnly = false }: TrayProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const [width, setWidth] = useState(PANEL_DEFAULT);
   const drag = useRef<{ x: number; w: number; rtl: boolean } | null>(null);
@@ -131,7 +141,7 @@ export function Tray({ id, items, onAdd, open, onToggle, rail = true, readOnly =
           >
             <SearchIcon size={16} />
             {items.length > 0 && (
-              <span className="bn-rail-count" aria-hidden="true">
+              <span key={pulse} className="bn-rail-count" data-pulse={pulse > 0 ? "" : undefined} aria-hidden="true">
                 {items.length > 99 ? "99+" : items.length}
               </span>
             )}
@@ -177,6 +187,21 @@ export function Tray({ id, items, onAdd, open, onToggle, rail = true, readOnly =
                       <TrayThumb src={ref.thumbUrl || ref.imageUrl} />
                       <span className="bn-tray-title">{title}</span>
                     </button>
+                    {onPreview && (
+                      <Tooltip content="Preview" side="top">
+                        <button
+                          type="button"
+                          className="st-btn bn-tray-preview"
+                          data-variant="ghost"
+                          data-size="xs"
+                          data-icon-only=""
+                          aria-label={`Preview ${title}`}
+                          onClick={() => onPreview(ref)}
+                        >
+                          <PreviewIcon size={16} />
+                        </button>
+                      </Tooltip>
+                    )}
                     <SourceChip site={site} url={ref.sourceUrl} />
                   </li>
                 );

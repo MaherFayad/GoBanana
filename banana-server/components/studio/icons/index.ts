@@ -57,6 +57,7 @@ import { SquareAlert } from "pixelarticons/react/SquareAlert.js";
 import { Upload } from "pixelarticons/react/Upload.js";
 import { User } from "pixelarticons/react/User.js";
 import { WarningDiamond } from "pixelarticons/react/WarningDiamond.js";
+import { ZoomIn } from "pixelarticons/react/ZoomIn.js";
 import { Braces } from "pixelarticons/react/Braces.js";
 import { CheckboxOn } from "pixelarticons/react/CheckboxOn.js";
 import { ClipboardNote } from "pixelarticons/react/ClipboardNote.js";
@@ -134,3 +135,5 @@ export const SendIcon = createIcon("send", Send, { mirror: true });
 export const PlugIcon = createIcon("plug", Plug);
 export const ImageIcon = createIcon("image", Image);
 export const ChatIcon = createIcon("chat", Message);
+/** Open the image preview (canvas tiles and search results): a magnifier with a plus. */
+export const PreviewIcon = createIcon("preview", ZoomIn);

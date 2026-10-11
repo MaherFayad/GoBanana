@@ -336,9 +336,14 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
                   <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
                   <div className="lab-card-body">
                     <h2 className="lab-card-title" id={titleId}>
-                      <Link href={canvasHref(card.id)}>{card.title}</Link>
+                      <Link href={canvasHref(card.id)} dir="auto">
+                        {card.title}
+                      </Link>
                     </h2>
-                    <p className="lab-card-brief">{card.brief ?? t.noBrief}</p>
+                    {/* User text keeps its own direction (dir="auto"): a Latin brief on an Arabic page is cut at its end, not its start. */}
+                    <p className="lab-card-brief" dir={card.brief ? "auto" : undefined}>
+                      {card.brief ?? t.noBrief}
+                    </p>
                     <p className="lab-card-meta">
                       <ClockIcon size={12} />
                       <time dateTime={card.updatedAt}>{card.updatedRelative}</time>
@@ -405,10 +410,12 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
         {current ? (
           <div className="lab-details-body" aria-live="polite">
             <Collage card={current} label={t.collageLabel.replace("{title}", current.title)} large />
-            <h3 className="lab-details-title">{current.title}</h3>
+            <h3 className="lab-details-title" dir="auto">
+              {current.title}
+            </h3>
             <dl className="lab-facts">
               <dt>{t.brief}</dt>
-              <dd>{current.brief ?? t.noBrief}</dd>
+              <dd dir={current.brief ? "auto" : undefined}>{current.brief ?? t.noBrief}</dd>
               <dt>{t.updated}</dt>
               <dd>
                 <time dateTime={current.updatedAt}>{current.updatedLong}</time>

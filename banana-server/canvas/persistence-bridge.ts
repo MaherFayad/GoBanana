@@ -107,6 +107,13 @@ export interface BridgePersistence extends CanvasPersistence {
   acceptLatest(): void;
   /** Overwrite the newer version with `state` (by default the one that failed). Resolves when saved. */
   keepMine(state?: CanvasState): Promise<void>;
+  /**
+   * Live refresh: the latest saved state through `load_canvas_state`, without changing the
+   * base version. Rejects on a transport or tool error (the poller backs off).
+   */
+  fetchLatest(): Promise<{ state: unknown; updatedAt: string }>;
+  /** The view now shows the version saved at `updatedAt`; later saves build on it. */
+  adopt(updatedAt: string): void;
 }
 
 export interface BridgePersistenceOptions {
@@ -185,6 +192,22 @@ export function createBridgePersistence(opts: BridgePersistenceOptions): BridgeP
         throw new ConflictError();
       }
       await send(state, base);
+    },
+    async fetchLatest() {
+      let result: ToolCallResult;
+      try {
+        result = await opts.app.callServerTool({ name: LOAD_TOOL, arguments: { canvasId: opts.canvasId } });
+      } catch {
+        throw new PersistenceError("Could not reach the server to refresh this canvas.");
+      }
+      const out: Record<string, unknown> = isObj(result.structuredContent) ? result.structuredContent : {};
+      if (result.isError || out.ok !== true || !isObj(out.state) || typeof out.updatedAt !== "string") {
+        throw new PersistenceError(resultText(result) || "Could not refresh this canvas.", out.reason === "not_found" ? 404 : undefined);
+      }
+      return { state: out.state, updatedAt: out.updatedAt };
+    },
+    adopt(updatedAt) {
+      base = updatedAt;
     },
     acceptLatest() {
       if (!conflict) return;

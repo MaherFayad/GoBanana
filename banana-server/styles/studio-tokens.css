@@ -226,6 +226,11 @@
   /* A11y change. Studio uses 45% alpha (about 2.6:1). 72% keeps placeholder text at 4.5:1. */
   --st-note-ink-subtle: rgba(31, 33, 38, 0.72);
   --st-note-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 0, 0, 0.18);
+  /* Note paper details (ink tints, so they sit on every paper color): the faint band along the
+     top edge, the rule between labeled segments, and the WILD / SALVAGE label chip. */
+  --st-note-band: rgba(31, 33, 38, 0.07);
+  --st-note-rule: rgba(31, 33, 38, 0.16);
+  --st-note-label-bg: rgba(31, 33, 38, 0.09);
 
   /* Site art: the generative tiles on the landing page (CSS and SVG only, no images). Like the
      note paper, a picture is the same in both themes. Decorative only: every tile carries its
@@ -258,6 +263,31 @@
   --st-art-line: rgba(255, 255, 255, 0.18);
   --st-art-shade: rgba(0, 0, 0, 0.28);
   --st-art-rule: rgba(28, 26, 25, 0.12);
+
+  /* Gallery board palettes: five colors per example board, extracted on 2026-10-11 from the
+     board's four showcase references (decoded in memory, never stored), darkest first. Like the
+     art, the same in both themes; each swatch is named in text next to it, so none needs a
+     contrast pair. */
+  --st-board-souq-1: #2c3a42;
+  --st-board-souq-2: #96172c;
+  --st-board-souq-3: #40627b;
+  --st-board-souq-4: #8a5b41;
+  --st-board-souq-5: #b3c9d7;
+  --st-board-transit-1: #0f181c;
+  --st-board-transit-2: #28323f;
+  --st-board-transit-3: #586068;
+  --st-board-transit-4: #c3c6cd;
+  --st-board-transit-5: #e0f0fa;
+  --st-board-loud-1: #5e5b5d;
+  --st-board-loud-2: #cc3b7f;
+  --st-board-loud-3: #a28a95;
+  --st-board-loud-4: #e6bc5a;
+  --st-board-loud-5: #e4ebe5;
+  --st-board-private-1: #1b1b1b;
+  --st-board-private-2: #2d464e;
+  --st-board-private-3: #535b5b;
+  --st-board-private-4: #8c857a;
+  --st-board-private-5: #b8aa92;
 }
 
 /* Arabic: Plex Sans Arabic first, Inter for Latin runs inside Arabic text, taller lines. */

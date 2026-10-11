@@ -244,6 +244,13 @@
 
 /* The board: inset into the black shell with a rounded start-start corner (Studio's silhouette).
    overflow: clip, never hidden, so focus never scrolls the board. */
+.bn-canvas {
+  /* Canvas zoom and its inverse, written by CanvasApp (ZoomVars) on the board. Node chrome is
+     counter-scaled by --bn-chrome so it keeps one on-screen size at any zoom. */
+  --bn-zoom: 1;
+  --bn-chrome: 1;
+}
+
 .bn-flow {
   position: relative;
   flex: 1 1 auto;
@@ -461,6 +468,26 @@
   margin-block: auto;
 }
 
+.bn-rail-count[data-pulse] {
+  animation: bn-pulse 1.2s var(--st-ease-standard) 2;
+}
+
+@keyframes bn-pulse {
+  50% {
+    scale: 1.35;
+    background: var(--st-primary-fill);
+    color: var(--st-primary-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bn-rail-count[data-pulse] {
+    animation: none;
+    background: var(--st-primary-fill);
+    color: var(--st-primary-text);
+  }
+}
+
 .bn-rail-count {
   position: absolute;
   inset-block-start: -4px;
@@ -666,8 +693,8 @@
 
 .bn-canvas .react-flow .react-flow__node {
   border-radius: var(--st-radius);
-  outline: 2px solid transparent;
-  outline-offset: 6px;
+  outline: calc(2px * var(--bn-chrome)) solid transparent;
+  outline-offset: calc(6px * var(--bn-chrome));
 }
 
 /* Hover: an inset 1px ring drawn over the content. */
@@ -681,14 +708,15 @@
 }
 
 .bn-canvas .react-flow .react-flow__node:hover::after {
-  box-shadow: inset 0 0 0 1px var(--st-canvas-hover-ring-color);
+  box-shadow: inset 0 0 0 calc(1px * var(--bn-chrome)) var(--st-canvas-hover-ring-color);
 }
 
 /* Selected: a 2px outline in selection green, 2px off the edge, with an ink halo in light. */
+/* Outline, offset and halo are divided by the zoom: 2px on screen at any zoom. */
 .bn-canvas .react-flow .react-flow__node.selected {
-  outline: var(--st-canvas-selection-width) solid var(--st-canvas-selection-ring-color);
-  outline-offset: var(--st-canvas-selection-offset);
-  box-shadow: 0 0 0 calc(var(--st-canvas-selection-offset) + var(--st-canvas-selection-width) + 1px) var(--st-canvas-selection-halo);
+  outline: calc(var(--st-canvas-selection-width) * var(--bn-chrome)) solid var(--st-canvas-selection-ring-color);
+  outline-offset: calc(var(--st-canvas-selection-offset) * var(--bn-chrome));
+  box-shadow: 0 0 0 calc((var(--st-canvas-selection-offset) + var(--st-canvas-selection-width) + 1px) * var(--bn-chrome)) var(--st-canvas-selection-halo);
 }
 
 .bn-canvas .react-flow .react-flow__node.selected:hover::after {
@@ -697,16 +725,18 @@
 
 /* Keyboard focus: the halo ring, kept outside the selection outline so both show. */
 .bn-canvas .react-flow .react-flow__node:focus-visible {
-  outline: 2px solid transparent;
-  outline-offset: 6px;
-  box-shadow: 0 0 0 6px var(--st-focus-halo-color), 0 0 0 8px var(--st-focus-ring-color);
+  outline: calc(2px * var(--bn-chrome)) solid transparent;
+  outline-offset: calc(6px * var(--bn-chrome));
+  box-shadow:
+    0 0 0 calc(6px * var(--bn-chrome)) var(--st-focus-halo-color),
+    0 0 0 calc(8px * var(--bn-chrome)) var(--st-focus-ring-color);
 }
 
 .bn-canvas .react-flow .react-flow__node.selected:focus-visible {
   box-shadow:
-    0 0 0 5px var(--st-canvas-selection-halo),
-    0 0 0 6px var(--st-focus-halo-color),
-    0 0 0 8px var(--st-focus-ring-color);
+    0 0 0 calc(5px * var(--bn-chrome)) var(--st-canvas-selection-halo),
+    0 0 0 calc(6px * var(--bn-chrome)) var(--st-focus-halo-color),
+    0 0 0 calc(8px * var(--bn-chrome)) var(--st-focus-ring-color);
 }
 
 /* Bars of chips and controls laid over a node. */
@@ -730,6 +760,79 @@
   flex: 0 1 auto;
 }
 
+/* Image chrome keeps one on-screen size at any zoom (the Figma behavior): each bar is
+   counter-scaled from its corner, and its width limit is the tile's on-screen width. */
+.bn-image .bn-node-bar {
+  --bn-bar-inset: calc(var(--st-space-xs) * var(--bn-chrome));
+
+  max-inline-size: calc((100% - 2 * var(--bn-bar-inset)) * var(--bn-zoom));
+  scale: var(--bn-chrome);
+  transition: opacity var(--st-duration-base) var(--st-ease), visibility 0s linear var(--st-duration-base);
+}
+
+.bn-image .bn-node-bar-source {
+  inset-inline: var(--bn-bar-inset) auto;
+  inset-block-end: var(--bn-bar-inset);
+  transform-origin: bottom left;
+}
+
+.bn-image .bn-node-bar-top {
+  inset-inline: auto var(--bn-bar-inset);
+  inset-block: var(--bn-bar-inset) auto;
+  transform-origin: top right;
+}
+
+.bn-image .bn-node-bar-source:dir(rtl) {
+  transform-origin: bottom right;
+}
+
+.bn-image .bn-node-bar-top:dir(rtl) {
+  transform-origin: top left;
+}
+
+/* Small on screen: the source chip shows its icon only; the site name stays its accessible name. */
+.bn-image:is([data-chrome="icon"], [data-chrome="tiny"]) .bn-source > span:not(.st-visually-hidden) {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Tiny on screen: chrome would cover the image; it shows on hover, focus and selection
+   (focus-within keeps it keyboard reachable). */
+.bn-image[data-chrome="tiny"] .bn-node-bar {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.react-flow__node:is(:hover, :focus-within, .selected) .bn-image[data-chrome="tiny"] .bn-node-bar {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--st-duration-base) var(--st-ease);
+}
+
+/* The full image fades in over the thumbnail once it has loaded. */
+.bn-image-frame img.bn-image-full {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.bn-image-frame img.bn-image-full[data-ready] {
+  position: static;
+  opacity: 1;
+}
+
+.bn-image .bn-image-frame {
+  cursor: zoom-in;
+}
+
+.bn-resizer {
+  display: contents;
+}
+
 .bn-grow {
   flex: 1 1 auto;
 }
@@ -748,7 +851,8 @@
 .react-flow__node:hover .bn-menu-button,
 .react-flow__node:focus-within .bn-menu-button,
 .react-flow__node.selected .bn-menu-button,
-.bn-menu-button[aria-expanded="true"] {
+.bn-menu-button[aria-expanded="true"],
+.bn-menu-button:focus-visible {
   opacity: 1;
 }
 
@@ -851,21 +955,41 @@
   text-underline-offset: 0.2em;
 }
 
-/* Sticky notes: fixed paper in both themes, ink text. */
+/* Sticky notes: fixed paper in both themes, ink text. Sizes are board pixels and match
+   canvas/note-layout.ts (the server estimate and the compact rule use the same numbers). A note
+   never scrolls: it fits its text, or shows the compact presentation below. */
 .bn-note {
-  padding-block: var(--st-space-l) var(--st-space-9xl);
-  padding-inline: var(--st-space-l);
+  --bn-paper: var(--st-note-yellow);
+
   border-radius: var(--st-radius-sm);
-  background: var(--st-note-yellow);
+  background: var(--bn-paper);
   color: var(--st-note-ink);
   box-shadow: var(--st-note-shadow);
 }
 
-.bn-note[data-color="yellow"] { background: var(--st-note-yellow); }
-.bn-note[data-color="blue"] { background: var(--st-note-blue); }
-.bn-note[data-color="pink"] { background: var(--st-note-pink); }
-.bn-note[data-color="green"] { background: var(--st-note-green); }
-.bn-note[data-color="gray"] { background: var(--st-note-gray); }
+.bn-note[data-color="yellow"],
+.bn-note-peek[data-color="yellow"] { --bn-paper: var(--st-note-yellow); }
+.bn-note[data-color="blue"],
+.bn-note-peek[data-color="blue"] { --bn-paper: var(--st-note-blue); }
+.bn-note[data-color="pink"],
+.bn-note-peek[data-color="pink"] { --bn-paper: var(--st-note-pink); }
+.bn-note[data-color="green"],
+.bn-note-peek[data-color="green"] { --bn-paper: var(--st-note-green); }
+.bn-note[data-color="gray"],
+.bn-note-peek[data-color="gray"] { --bn-paper: var(--st-note-gray); }
+
+/* The glued end: a faint ink band along the top edge. */
+.bn-note::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 6px;
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  background: var(--st-note-band);
+  pointer-events: none;
+}
 
 .bn-canvas .react-flow .react-flow__node-note {
   border-radius: var(--st-radius-sm);
@@ -876,22 +1000,132 @@
   box-shadow: none;
 }
 
+.bn-note-body,
+.bn-note-peek {
+  padding-block: 16px 14px;
+  padding-inline: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .bn-note-text {
-  block-size: 100%;
   margin: 0;
-  overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: var(--st-text-m);
-  line-height: var(--st-leading-normal);
 }
 
 .bn-note-empty {
   color: var(--st-note-ink-subtle);
 }
 
-.bn-note .st-input {
+/* Labeled segments (WILD:, SALVAGE:): a small caps chip above each paragraph, a light rule between. */
+.bn-note-seg + .bn-note-seg {
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--st-note-rule);
+}
+
+.bn-note-label {
+  display: block;
+  inline-size: fit-content;
+  block-size: 18px;
+  margin-block-end: 4px;
+  padding-inline: 6px;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-note-label-bg);
+  color: var(--st-note-ink);
+  font-size: 10px;
+  font-weight: var(--st-weight-bold);
+  letter-spacing: 0.06em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+
+/* Compact: the user made the note shorter than its text. Smaller type, clipped with a soft
+   fade and "+N lines"; the full text is in the popover. The measuring pass turns this off. */
+.bn-note[data-compact]:not([data-measuring]) .bn-note-body {
   block-size: 100%;
+  overflow: hidden;
+  padding-block: 12px 26px;
+  padding-inline: 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.bn-note[data-compact]:not([data-measuring]) .bn-note-seg + .bn-note-seg {
+  margin-block-start: 6px;
+  padding-block-start: 6px;
+}
+
+.bn-note[data-compact]:not([data-measuring]) .bn-note-label {
+  block-size: 15px;
+  margin-block-end: 2px;
+  font-size: 9px;
+  line-height: 15px;
+}
+
+.bn-note[data-compact]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 44px;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  background: linear-gradient(to bottom, transparent, var(--bn-paper) 62%);
+  pointer-events: none;
+}
+
+.bn-note-more {
+  position: absolute;
+  inset-inline-start: 10px;
+  inset-block-end: 6px;
+  z-index: 1;
+  padding-inline: 6px;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-note-label-bg);
+  color: var(--st-note-ink);
+  font-size: 11px;
+  font-weight: var(--st-weight-semibold);
+  line-height: 16px;
+  pointer-events: none;
+}
+
+/* The full text of a compact note, floating next to it on hover, focus or selection. Drawn
+   outside the zoomed board (React Flow NodeToolbar), so it is readable at any zoom and never
+   clipped by a section. */
+.bn-note-peek {
+  --bn-paper: var(--st-note-yellow);
+
+  box-sizing: border-box;
+  inline-size: 300px;
+  max-inline-size: calc(100vw - 32px);
+  border-radius: var(--st-radius-sm);
+  background: var(--bn-paper);
+  color: var(--st-note-ink);
+  box-shadow: var(--st-note-shadow), var(--st-shadow-menu);
+}
+
+.bn-note-peek[data-length="mid"] {
+  inline-size: 380px;
+}
+
+.bn-note-peek[data-length="long"] {
+  inline-size: 480px;
+}
+
+/* Editing: the editor shows the raw text and grows with it; the note grows over its neighbors
+   while it is open (an auto note also grows its node as you type). */
+.bn-note[data-editing] {
+  block-size: auto;
+  min-block-size: 100%;
+}
+
+.bn-canvas .react-flow .react-flow__node:has(> .bn-note[data-editing]) {
+  z-index: 2000 !important;
+}
+
+.bn-note .st-input {
   border-color: var(--st-note-ink-subtle);
   background: transparent;
   color: var(--st-note-ink);
@@ -903,13 +1137,15 @@
   box-shadow: 0 0 0 2px var(--st-note-ink);
 }
 
-/* Note chrome: a pill above the note with five color swatches (second route next to the menu). */
+/* Note chrome: a pill above the note with five color swatches and the menu (a second route to
+   the color next to the menu). Kept at one on-screen size at any zoom. */
 .bn-note-chrome {
   position: absolute;
-  inset-block-end: calc(100% + var(--st-space-xs));
+  inset-block-end: calc(100% + 6px * var(--bn-chrome));
   inset-inline-start: 0;
   z-index: 4;
   display: flex;
+  align-items: center;
   gap: var(--st-space-4xs);
   padding: var(--st-space-4xs);
   border: 1px solid var(--st-border-muted);
@@ -918,15 +1154,39 @@
   box-shadow: var(--st-shadow-menu);
   opacity: 0;
   visibility: hidden;
+  scale: var(--bn-chrome);
+  transform-origin: bottom left;
   transition: opacity var(--st-duration-base) var(--st-ease), visibility 0s linear var(--st-duration-base);
+}
+
+.bn-note-chrome:dir(rtl) {
+  transform-origin: bottom right;
 }
 
 .react-flow__node:hover .bn-note-chrome,
 .react-flow__node:focus-within .bn-note-chrome,
-.react-flow__node.selected .bn-note-chrome {
+.react-flow__node.selected .bn-note-chrome,
+.bn-note-chrome:has([aria-expanded="true"]) {
   opacity: 1;
   visibility: visible;
   transition: opacity var(--st-duration-base) var(--st-ease);
+}
+
+.bn-note-swatches {
+  display: flex;
+  gap: var(--st-space-4xs);
+}
+
+.bn-note-chrome-sep {
+  flex: none;
+  inline-size: 1px;
+  block-size: 16px;
+  margin-inline: var(--st-space-4xs);
+  background: var(--st-border-muted);
+}
+
+.bn-note-chrome .bn-menu-wrap {
+  display: flex;
 }
 
 .bn-swatch-button {
@@ -952,13 +1212,18 @@
   visibility: hidden;
 }
 
-/* Inline editors use .st-input. The note editor fills its note. */
+/* The note editor grows with its text (no scrollbar). */
 .bn-canvas .bn-note textarea.st-input {
-  block-size: 100%;
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  min-block-size: 0;
+  overflow: hidden;
   resize: none;
-  padding-block: var(--st-space-xs);
+  padding-block: var(--st-space-2xs);
   border-radius: var(--st-radius-field);
-  line-height: var(--st-leading-normal);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 /* Swatch: frame chrome, color block on top, tile title row, mono codes, contrast rows. */
@@ -1140,9 +1405,16 @@
   --st-btn-bg: transparent;
 }
 
+/* Header buttons never grow past their on-screen size when zoomed in. */
+.bn-section-header .st-btn {
+  scale: min(1, var(--bn-chrome));
+}
+
 /* Resize handles: 9px squares with a 24px hit area (SC 2.5.8); edges are invisible strips. */
 .bn-canvas .react-flow__resize-control.handle.bn-resize-handle {
   z-index: 5;
+  /* One on-screen size at any zoom (React Flow's autoScale only covers zooming out). */
+  scale: var(--bn-chrome);
   inline-size: var(--st-canvas-handle-size);
   block-size: var(--st-canvas-handle-size);
   border: 1px solid var(--st-canvas-resize-handle-border);
@@ -1165,12 +1437,12 @@
 
 .bn-canvas .react-flow__resize-control.line.bn-resize-line.left,
 .bn-canvas .react-flow__resize-control.line.bn-resize-line.right {
-  inline-size: 12px;
+  inline-size: calc(12px * var(--bn-chrome));
 }
 
 .bn-canvas .react-flow__resize-control.line.bn-resize-line.top,
 .bn-canvas .react-flow__resize-control.line.bn-resize-line.bottom {
-  block-size: 12px;
+  block-size: calc(12px * var(--bn-chrome));
 }
 
 /* Marquee (React Flow's user selection) and the multi-selection box. */
@@ -1352,4 +1624,213 @@
   .bn-snap-guide {
     background: Highlight;
   }
+}
+
+/* ------------------------------------------------------------------ search result preview button */
+
+.bn-tray-item {
+  position: relative;
+}
+
+.bn-tray-preview.st-btn {
+  --st-btn-bg: var(--st-bg-surface);
+  --st-btn-bg-hover: var(--st-bg-surface-3);
+
+  position: absolute;
+  inset-block-start: calc(var(--st-space-xs) + var(--st-space-2xs));
+  inset-inline-end: calc(var(--st-space-xs) + var(--st-space-2xs));
+  opacity: 0;
+  transition: opacity var(--st-duration-base) var(--st-ease);
+}
+
+.bn-tray-item:hover .bn-tray-preview,
+.bn-tray-item:focus-within .bn-tray-preview {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .bn-tray-preview.st-btn {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ place mode (Add note, Add section) */
+
+.bn-flow[data-placing],
+.bn-flow[data-placing] .react-flow__pane,
+.bn-flow[data-placing] .react-flow__node {
+  cursor: crosshair;
+}
+
+.bn-notch .st-btn[data-active] {
+  --st-btn-bg: var(--st-bg-surface-3);
+}
+
+.bn-place-ghost {
+  position: absolute;
+  inset-block-start: var(--gy);
+  inset-inline-start: var(--gx);
+  z-index: var(--st-z-canvas-overlay);
+  inline-size: var(--gw);
+  block-size: var(--gh);
+  margin-block-start: calc(var(--gh) / -2);
+  margin-inline-start: calc(var(--gw) / -2);
+  border-radius: var(--st-radius-sm);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.bn-place-ghost[data-kind="note"] {
+  background: var(--st-note-yellow);
+  box-shadow: var(--st-note-shadow);
+}
+
+.bn-place-ghost[data-kind="section"] {
+  border: 2px dashed var(--st-canvas-selection-ring-color);
+  border-radius: var(--st-radius);
+  background: var(--st-bg-surface-2);
+}
+
+.bn-drop-caption.bn-place-hint {
+  inset-block: auto var(--st-space-5xl);
+  translate: -50% 0;
+}
+
+:where([dir="rtl"]) .bn-drop-caption.bn-place-hint {
+  translate: 50% 0;
+}
+
+/* ------------------------------------------------------------------ image preview dialog */
+
+.st-dialog.bn-preview {
+  inline-size: min(1200px, calc(100vw - 2 * var(--st-space-5xl)));
+  block-size: calc(100dvh - 2 * var(--st-space-5xl));
+  max-block-size: none;
+}
+
+.st-dialog.bn-preview::backdrop {
+  background: color-mix(in srgb, var(--st-bg-body) 86%, transparent);
+}
+
+.bn-preview .st-dialog-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.bn-preview-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.bn-preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-3xs);
+  padding-block: var(--st-space-2xs);
+  padding-inline: var(--st-space-l);
+  border-block-end: var(--st-border-width) solid var(--st-border);
+}
+
+.bn-preview-zoom {
+  min-inline-size: 48px;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* The image layer never mirrors: pan math is physical. */
+.bn-preview-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden;
+  direction: ltr;
+  background: var(--st-canvas-bg);
+  cursor: zoom-in;
+  touch-action: none;
+  user-select: none;
+}
+
+.bn-preview-stage[data-pannable] {
+  cursor: grab;
+}
+
+.bn-preview-stage[data-pannable]:active {
+  cursor: grabbing;
+}
+
+.bn-preview-stage:focus-visible {
+  outline: 2px solid var(--st-focus-ring-color);
+  outline-offset: -2px;
+}
+
+.bn-preview-image {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  max-inline-size: none;
+  transform-origin: 0 0;
+  -webkit-user-drag: none;
+}
+
+.bn-preview-stage[data-animate] .bn-preview-image {
+  transition: transform var(--st-duration-base) var(--st-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bn-preview-stage[data-animate] .bn-preview-image {
+    transition: none;
+  }
+}
+
+.bn-preview-missing {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  margin: 0;
+  padding: var(--st-space-5xl);
+  color: var(--st-text-muted);
+  text-align: center;
+}
+
+.bn-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-s);
+  inline-size: 100%;
+}
+
+.bn-preview-source {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--st-target-min);
+  color: var(--st-link);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 719.98px) {
+  .st-dialog.bn-preview {
+    inline-size: 100vw;
+    block-size: 100dvh;
+    max-inline-size: 100vw;
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
+/* Menu buttons inside swatch and type sample layouts: never bigger on screen than at 100%. */
+.bn-node-bar-static .bn-menu-button.st-btn,
+.bn-type .bn-node-bar .bn-menu-button.st-btn {
+  scale: min(1, var(--bn-chrome));
+  transform-origin: bottom right;
 }

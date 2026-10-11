@@ -50,9 +50,16 @@ export function fitView(image: Size, stage: Size): View {
   return clampPan({ scale: fitScale(image, stage), x: 0, y: 0 }, image, stage);
 }
 
+/** Zoom range for this image: a tiny image may fit above 800%, and a huge one below 5%. */
+export function scaleRange(image: Size, stage: Size): { min: number; max: number } {
+  const fit = fitScale(image, stage);
+  return { min: Math.min(PREVIEW_MIN_SCALE, fit), max: Math.max(PREVIEW_MAX_SCALE, fit * 2) };
+}
+
 /** Zoom to `scale` keeping the stage point `at` (default: the stage center) fixed on screen. */
 export function zoomTo(view: View, scale: number, image: Size, stage: Size, at?: { x: number; y: number }): View {
-  const s = clampScale(scale);
+  const range = scaleRange(image, stage);
+  const s = clampScale(scale, range.min, range.max);
   const p = at ?? { x: stage.w / 2, y: stage.h / 2 };
   const k = s / view.scale;
   return clampPan({ scale: s, x: p.x - (p.x - view.x) * k, y: p.y - (p.y - view.y) * k }, image, stage);

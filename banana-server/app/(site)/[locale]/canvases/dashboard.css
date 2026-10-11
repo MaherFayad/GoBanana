@@ -343,6 +343,14 @@
   text-decoration: underline;
 }
 
+/* User text (titles, briefs) keeps its own direction with dir="auto", but still lines up with the
+   page's start edge: match-parent resolves "start" against the parent's direction. */
+.site .lab-card-brief[dir="auto"],
+.site .lab-details-title[dir="auto"],
+.site .lab-details dd[dir="auto"] {
+  text-align: match-parent;
+}
+
 .site .lab-card-brief {
   overflow: hidden;
   color: var(--st-text-muted);

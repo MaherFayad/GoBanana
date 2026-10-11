@@ -21,6 +21,7 @@ import {
   type TakedownField,
 } from "@/lib/site/takedown-form";
 import { CheckIcon, ErrorIcon } from "@/components/studio/icons";
+import { bidi } from "../../../_components/Bidi";
 
 type Errors = Partial<Record<TakedownField, TakedownErrorCode>>;
 type Status = "idle" | "sending" | "sent" | "failed" | "invalid";
@@ -80,7 +81,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
         <ErrorIcon size={16} />
         <span>
           <span className="st-visually-hidden">{t.errorPrefix} </span>
-          {t.errors[errors[field]!]}
+          {bidi(t.errors[errors[field]!])}
         </span>
       </p>
     ) : null;
@@ -125,7 +126,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
               {errorList.map((f) => (
                 <li key={f}>
                   <a href={`#${f === "reason" || f === "role" ? `${f}-0` : f}`}>
-                    {fieldLabel(f)}: {t.errors[errors[f]!]}
+                    {fieldLabel(f)}: {bidi(t.errors[errors[f]!])}
                   </a>
                 </li>
               ))}
@@ -162,7 +163,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
             {req}
           </label>
           <p id="email-hint" className="hint">
-            {t.fields.email.hint}
+            {bidi(t.fields.email.hint)}
           </p>
           <input
             id="email"
@@ -185,7 +186,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
             {req}
           </label>
           <p id="target-hint" className="hint">
-            {t.fields.target.hint}
+            {bidi(t.fields.target.hint)}
           </p>
           <input
             id="target"
@@ -251,7 +252,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
             {req}
           </label>
           <p id="details-hint" className="hint">
-            {t.fields.details.hint}
+            {bidi(t.fields.details.hint)}
           </p>
           <textarea
             id="details"

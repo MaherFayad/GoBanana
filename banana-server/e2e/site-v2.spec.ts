@@ -60,9 +60,9 @@ test.describe("hero field", () => {
     await expect(page.locator(".hero-card")).toHaveCount(0);
   });
 
-  test("Enter on a tile opens its sample idea; Escape closes it and returns focus", async ({ page }) => {
+  test("Enter on a tile's idea button opens its sample idea; Escape closes it and returns focus", async ({ page }) => {
     await page.goto("/en");
-    const tile = page.locator(".hero-tile-btn").first();
+    const tile = page.locator(".hero-idea").first();
     await tile.focus();
     await page.keyboard.press("Enter");
     const card = page.getByRole("dialog");

@@ -23,6 +23,7 @@ import {
   SelectionMode,
   useNodesState,
   useReactFlow,
+  useStoreApi,
   type NodeChange,
   type NodeMouseHandler,
   type OnNodeDrag,
@@ -39,7 +40,9 @@ import {
   type DragEvent,
   type FocusEvent,
   type KeyboardEvent,
+  type CSSProperties,
   type PointerEvent,
+  type RefObject,
 } from "react";
 import { dismissToast, pushToast } from "@/components/studio/toastBus";
 import { InfoIcon } from "@/components/studio/icons";
@@ -55,9 +58,15 @@ import {
   reparent,
   sectionAt,
   selectedIds,
+  growSectionToFit,
   toggleCollapsed,
 } from "./geometry";
-import { newNodeId, noteNode, referenceNode, sectionNode } from "./factory";
+import { ImagePreview, type PreviewItem } from "./ImagePreview";
+import { siteName } from "./labels";
+import { applyLifts, freeSpot, placementZ, takenRects } from "./placement";
+import { decideRefresh, initialTrayOpen, readTrayPreference, writeTrayPreference, type RefreshDecision } from "./refresh";
+import { chromeScale } from "./zoom-chrome";
+import { newNodeId, newNoteSize, noteNode, referenceNode, sectionNode } from "./factory";
 import { directionWord, nudgeDelta, resizeBy } from "./keyboard";
 import { arrangeNodes, LAYOUT_LABELS, type LayoutKind } from "./layout-adapter";
 import { nodeLabel } from "./labels";
@@ -72,7 +81,7 @@ import { collectPeerRects, computeSnap, guidesEqual, unionRect, type SnapGuide }
 import { deserializeState, orderNodes, serializeState, stateKey, type Deserialized, type IsBlocked } from "./state";
 import { Toolbar, type ToolbarProps } from "./Toolbar";
 import { Tray, TRAY_DND_TYPE } from "./Tray";
-import { MIN_SIZE, type CanvasFlowNode, type CanvasState, type TrayReference } from "./types";
+import { DEFAULT_SIZE, MIN_SIZE, type CanvasFlowNode, type CanvasState, type TrayReference } from "./types";
 import {
   clearanceBelow,
   FIT_PADDING,
@@ -109,7 +118,50 @@ export interface CanvasAppProps {
   onSaved?: (state: CanvasState) => void;
   /** Web canvas only: shows Upload and Share in the toolbar. Leave unset inline (MCP Apps). */
   web?: Pick<ToolbarProps, "plan" | "shareToken" | "pricingHref">;
+  /**
+   * Start with the search results panel closed, even on a wide frame (the inline canvas in
+   * chat). A toggle this session wins. New results never open it; the count badge pulses.
+   */
+  trayCollapsedByDefault?: boolean;
+  /** Filled with the live-refresh handle (the inline canvas polls the server and offers newer states). */
+  refreshRef?: RefObject<CanvasRefreshHandle | null>;
 }
+
+/** A newer state from the server, offered by a live refresh. */
+export interface RemoteState {
+  state: unknown;
+  updatedAt: string;
+}
+
+export interface CanvasRefreshHandle {
+  /**
+   * Offer a state that is newer than the last one this view loaded or saved. Applies it when
+   * the user has no unsaved changes and is not dragging, resizing or editing (keeping the
+   * viewport and selection); otherwise saves first ("flush", a conflict then takes the
+   * existing path) or waits for the next poll ("defer").
+   */
+  offer(remote: RemoteState, opts: { conflict: boolean }): RefreshDecision;
+}
+
+/** Where the board stores the zoom for CSS (chrome keeps one on-screen size at any zoom). */
+function ZoomVars({ target }: { target: RefObject<HTMLElement | null> }) {
+  const store = useStoreApi();
+  useEffect(() => {
+    let last = -1;
+    const write = (zoom: number) => {
+      const el = target.current;
+      if (!el || zoom === last) return;
+      last = zoom;
+      el.style.setProperty("--bn-zoom", String(zoom));
+      el.style.setProperty("--bn-chrome", String(chromeScale(zoom)));
+    };
+    write(store.getState().transform[2]);
+    return store.subscribe((s) => write(s.transform[2]));
+  }, [store, target]);
+  return null;
+}
+
+type PlaceKind = "note" | "section";
 
 /**
  * Accessible names on nodes, cached per node object so React Flow only re-renders
@@ -184,7 +236,7 @@ export function CanvasApp(props: CanvasAppProps) {
 
 const ARIA_LABELS = {
   "node.a11yDescription.default":
-    "Press Enter or Space to select. Arrow keys move the item 8 pixels, Shift and arrow keys 32 pixels. Plus and minus resize it. M opens its menu. Delete removes it. Question mark lists every shortcut.",
+    "Press Enter to select. On an image, Space opens the preview. Arrow keys move the item 8 pixels, Shift and arrow keys 32 pixels. Plus and minus resize it. M opens its menu. Delete removes it. Question mark lists every shortcut.",
   "node.a11yDescription.keyboardDisabled": "View only.",
   "node.a11yDescription.ariaLiveMessage": ({ direction, x, y }: { direction: string; x: number; y: number }) =>
     `Moved ${direction} to ${x}, ${y}`,
@@ -198,6 +250,53 @@ function isEditable(el: HTMLElement | null): boolean {
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
+/** sessionStorage, or null where touching it throws (sandboxed, opaque-origin frames). */
+function safeSession(): Storage | null {
+  try {
+    return typeof window === "undefined" ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+/** Images in the same section (or all loose images), in reading order: the preview's previous and next. */
+function previewList(nodes: readonly CanvasFlowNode[], id: string): { items: PreviewItem[]; index: number } | null {
+  const node = nodes.find((n) => n.id === id);
+  if (!node || (node.type !== "image" && node.type !== "upload")) return null;
+  const peers = nodes
+    .filter((n) => (n.type === "image" || n.type === "upload") && !n.hidden && (n.parentId ?? null) === (node.parentId ?? null))
+    .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+  const items = peers.flatMap((n): PreviewItem[] =>
+    n.type === "image" || n.type === "upload"
+      ? [
+          {
+            key: n.id,
+            title: n.data.title || (n.type === "upload" ? "Your image" : "Untitled reference"),
+            imageUrl: n.data.imageUrl,
+            thumbUrl: n.data.thumbUrl,
+            sourceUrl: n.data.sourceUrl,
+            site: n.type === "upload" ? "Your upload" : siteName(n.data.sourceSite, n.data.sourceUrl),
+            upload: n.type === "upload",
+          },
+        ]
+      : [],
+  );
+  return { items, index: Math.max(0, items.findIndex((it) => it.key === id)) };
+}
+
+function trayPreviewList(tray: readonly TrayReference[], id: string): { items: PreviewItem[]; index: number } {
+  const items = tray.map((r) => ({
+    key: r.id,
+    title: r.title || "Untitled reference",
+    imageUrl: r.imageUrl,
+    thumbUrl: r.thumbUrl,
+    sourceUrl: r.sourceUrl,
+    site: siteName(r.sourceSite, r.sourceUrl),
+    upload: false,
+  }));
+  return { items, index: Math.max(0, items.findIndex((it) => it.key === id)) };
+}
+
 function CanvasEditor({
   canvasId,
   appName,
@@ -210,17 +309,37 @@ function CanvasEditor({
   theme,
   web,
   initial,
+  trayCollapsedByDefault = false,
+  refreshRef,
+  isBlocked,
 }: CanvasAppProps & { initial: Deserialized }) {
   const rf = useReactFlow<CanvasFlowNode>();
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<CanvasFlowNode>(initial.nodes);
   const [tray, setTray] = useState<TrayReference[]>(initial.tray);
   const [viewport, setViewport] = useState<Viewport>(initial.viewport);
-  const [trayOpen, setTrayOpen] = useState(!readOnly && !compact);
+  const trayStart = (c: boolean) =>
+    initialTrayOpen({
+      readOnly,
+      compact: c,
+      collapsedByDefault: trayCollapsedByDefault,
+      preference: readTrayPreference(safeSession()),
+    });
+  const [trayOpen, setTrayOpenState] = useState(() => trayStart(compact));
   const [prevCompact, setPrevCompact] = useState(compact);
   if (compact !== prevCompact) {
     setPrevCompact(compact);
-    setTrayOpen(!readOnly && !compact);
+    setTrayOpenState(trayStart(compact));
   }
+  const toggleTray = useCallback(() => {
+    setTrayOpenState((o) => {
+      writeTrayPreference(!o, safeSession());
+      return !o;
+    });
+  }, []);
+  const [trayPulse, setTrayPulse] = useState(0);
+  const [preview, setPreview] = useState<{ items: PreviewItem[]; index: number } | null>(null);
+  const [placing, setPlacing] = useState<{ kind: PlaceKind; drag: boolean } | null>(null);
+  const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [menuFor, setMenuForState] = useState<{ id: string; point: { x: number; y: number } | null } | null>(null);
   const [editingId, setEditing] = useState<string | null>(null);
@@ -419,7 +538,15 @@ function CanvasEditor({
       if (!n) return;
       const size = resizeBy(nodeSize(n), direction, MIN_SIZE[n.type], n.type === "image" || n.type === "upload");
       setNodes((nds) =>
-        nds.map((x) => (x.id === id ? ({ ...x, width: size.w, height: size.h } as CanvasFlowNode) : x)),
+        growSectionToFit(
+          nds.map((x) => {
+            if (x.id !== id) return x;
+            // + and - are the keyboard route of the resize drag: a note keeps the height it gets.
+            const data = x.type === "note" ? { ...x.data, manualHeight: true } : x.data;
+            return { ...x, width: size.w, height: size.h, data } as CanvasFlowNode;
+          }),
+          id,
+        ),
       );
       announce(`Size ${size.w} by ${size.h}`);
     },
@@ -486,6 +613,17 @@ function CanvasEditor({
       setEditing,
       announce,
       focusNode,
+      setNodeHeight: (id, height) =>
+        setNodes((nds) =>
+          growSectionToFit(
+            nds.map((n) => (n.id === id ? ({ ...n, height } as CanvasFlowNode) : n)),
+            id,
+          ),
+        ),
+      openPreview: (id) => {
+        const list = previewList(nodesRef.current, id);
+        if (list && list.items.length > 0) setPreview(list);
+      },
     }),
     [readOnly, loadFonts, sections, remove, resize, menuFor, setMenuFor, duplicateIds, editingId, announce, focusNode, setNodes],
   );
@@ -496,6 +634,8 @@ function CanvasEditor({
       const center = dropPoint ?? viewportCenter();
       let node = referenceNode(ref, center);
       if (!dropPoint) node = { ...node, position: cascade(node.position, nodesRef.current) };
+      // New items go on top of everything already on the board.
+      node = { ...node, zIndex: placementZ(nodesRef.current, "image", absoluteRect(node, nodesRef.current)).z };
       const sec = dropPoint ? sectionAt(center, nodesRef.current) : undefined;
       setNodes((nds) => {
         const out = [...nds, node];
@@ -512,21 +652,125 @@ function CanvasEditor({
     [announce, focusNode, readOnly, setNodes, viewportCenter],
   );
 
-  const addNote = useCallback(() => {
-    const n = noteNode(viewportCenter());
-    const node = { ...n, position: cascade(n.position, nodesRef.current) };
-    setNodes((nds) => [...nds, node]);
-    setEditing(node.id);
-    announce("Note added. Type your note, then press Control and Enter to finish.");
-  }, [announce, setNodes, viewportCenter]);
+  /**
+   * Put a new note or section on the board, on top, selected, and open its editor. The
+   * pointer route drops it centered on `center` (a note inside a section joins it; a section
+   * never nests). The keyboard route moves it to the nearest free spot around the view center.
+   */
+  const placeNew = useCallback(
+    (kind: PlaceKind, center: { x: number; y: number }, how: "pointer" | "keyboard") => {
+      const base = kind === "note" ? noteNode(center) : sectionNode(center);
+      const size = kind === "note" ? newNoteSize() : DEFAULT_SIZE.section;
+      const current = nodesRef.current;
+      const position = how === "keyboard" ? freeSpot(center, size, takenRects(current)) : base.position;
+      const { z, lifts } = placementZ(current, kind, { ...position, ...size });
+      const node = { ...base, position, zIndex: z, selected: true } as CanvasFlowNode;
+      const sec = kind === "note" && how === "pointer" ? sectionAt(center, current) : undefined;
+      setNodes((nds) => {
+        let out = applyLifts(
+          nds.map((n) => (n.selected ? ({ ...n, selected: false } as CanvasFlowNode) : n)),
+          lifts,
+        );
+        out = kind === "section" ? orderNodes([...out, node]) : [...out, node];
+        return sec ? growSectionToFit(reparent(out, node.id, sec.id), node.id) : out;
+      });
+      setEditing(node.id);
+      announce(
+        kind === "note"
+          ? `Note added${sec && sec.type === "section" ? ` to section ${sec.data.title}` : ""}. Type your note, then press Control and Enter. Use arrow keys to move it.`
+          : "Section added. Type a title, then press Enter. Use arrow keys to move it.",
+      );
+    },
+    [announce, setNodes],
+  );
 
-  const addSection = useCallback(() => {
-    const n = sectionNode(viewportCenter());
-    const node = { ...n, position: cascade(n.position, nodesRef.current) };
-    setNodes((nds) => orderNodes([...nds, node]));
-    setEditing(node.id);
-    announce("Section added. Type a title, then press Enter.");
-  }, [announce, setNodes, viewportCenter]);
+  // Place mode: a ghost follows the pointer; a click drops the item; Escape cancels.
+  const placingRef = useRef(placing);
+  useLayoutEffect(() => {
+    placingRef.current = placing;
+  });
+  const cancelPlace = useCallback(() => {
+    setPlacing(null);
+    setGhost(null);
+  }, []);
+  const startPlace = useCallback(
+    (kind: PlaceKind, how: "keyboard" | "place") => {
+      if (readOnly) return;
+      if (how === "keyboard") {
+        cancelPlace();
+        placeNew(kind, viewportCenter(), "keyboard");
+        return;
+      }
+      setPlacing({ kind, drag: false });
+      setGhost(null);
+      announce(`Click on the canvas to place the ${kind}. Press Escape to cancel.`);
+    },
+    [announce, cancelPlace, placeNew, readOnly, viewportCenter],
+  );
+
+  /** Screen point -> ghost position relative to the board's inline-start edge. */
+  const ghostAt = useCallback((clientX: number, clientY: number) => {
+    const r = flowRef.current?.getBoundingClientRect();
+    if (!r) return null;
+    const rtl = flowRef.current ? getComputedStyle(flowRef.current).direction === "rtl" : false;
+    return { x: rtl ? r.right - clientX : clientX - r.left, y: clientY - r.top };
+  }, []);
+
+  const overBoard = useCallback((clientX: number, clientY: number) => {
+    const r = flowRef.current?.getBoundingClientRect();
+    const notch = notchRef.current?.getBoundingClientRect();
+    if (!r || clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return false;
+    return !(notch && clientX >= notch.left && clientX <= notch.right && clientY >= notch.top && clientY <= notch.bottom);
+  }, []);
+
+  /** Press on Add note or Add section and drag straight onto the board. */
+  const suppressClick = useRef(false);
+  const pressPlace = useCallback(
+    (kind: PlaceKind, e: PointerEvent<HTMLButtonElement>) => {
+      if (readOnly || e.button !== 0) return;
+      const start = { x: e.clientX, y: e.clientY };
+      let dragging = false;
+      const move = (ev: globalThis.PointerEvent) => {
+        if (!dragging && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 4) return;
+        if (!dragging) {
+          dragging = true;
+          setPlacing({ kind, drag: true });
+        }
+        setGhost(ghostAt(ev.clientX, ev.clientY));
+      };
+      const up = (ev: globalThis.PointerEvent) => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", up);
+        if (!dragging) return;
+        suppressClick.current = true;
+        requestAnimationFrame(() => (suppressClick.current = false));
+        cancelPlace();
+        if (ev.type === "pointerup" && overBoard(ev.clientX, ev.clientY)) {
+          placeNew(kind, rf.screenToFlowPosition({ x: ev.clientX, y: ev.clientY }), "pointer");
+        } else {
+          announce("Not added");
+        }
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", up);
+    },
+    [announce, cancelPlace, ghostAt, overBoard, placeNew, readOnly, rf],
+  );
+
+  useEffect(() => {
+    if (!placing) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      cancelPlace();
+      announce("Not added");
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [announce, cancelPlace, placing]);
 
   // ------------------------------------------------------------------ viewport
   // While a discrete zoom animates, the next step counts from where it is going, not from
@@ -582,7 +826,16 @@ function CanvasEditor({
     if (!el.classList?.contains("react-flow__node")) return;
     const id = el.getAttribute("data-id");
     const node = id ? nodesRef.current.find((n) => n.id === id) : undefined;
-    if (!id || !node || readOnly) return;
+    if (!id || !node) return;
+    // Space previews an image (Enter still selects it); it works in the view-only share too.
+    if (matches("preview", e) && (node.type === "image" || node.type === "upload")) {
+      if (e.repeat) return;
+      e.preventDefault();
+      e.stopPropagation();
+      actions.openPreview(id);
+      return;
+    }
+    if (readOnly) return;
 
     // With a selection that includes this item, moves and removals act on the whole selection.
     const group = () => {
@@ -728,6 +981,20 @@ function CanvasEditor({
   // A pointer down on the empty board focuses it, so the board keys work after a click.
   const onBoardPointerDown = (e: PointerEvent<HTMLElement>) => {
     const t = e.target as HTMLElement;
+    // Place mode: this click drops the new item (no marquee, no selection change).
+    const p = placingRef.current;
+    if (p && !p.drag) {
+      if (t.closest(".bn-notch")) {
+        cancelPlace();
+        return;
+      }
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      cancelPlace();
+      placeNew(p.kind, rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }), "pointer");
+      return;
+    }
     if (!t.closest(".react-flow__pane")) return;
     const flow = flowRef.current;
     if (flow && !flow.contains(document.activeElement)) flow.focus({ preventScroll: true });
@@ -812,6 +1079,47 @@ function CanvasEditor({
     addReference(ref, rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }));
   };
 
+  // ------------------------------------------------------------------ live refresh (inline canvas)
+  const liveRef = useRef({ editingId, viewport, trayOpen });
+  useLayoutEffect(() => {
+    liveRef.current = { editingId, viewport, trayOpen };
+  });
+  useLayoutEffect(() => {
+    if (!refreshRef) return;
+    const applyRemote = (remote: RemoteState) => {
+      const data = deserializeState(remote.state, { isBlocked });
+      const selected = new Set(selectedIds(nodesRef.current));
+      const next = data.nodes.map((n) => (selected.has(n.id) ? ({ ...n, selected: true } as CanvasFlowNode) : n));
+      const known = new Set(trayRef.current.map((r) => r.id));
+      const added = data.tray.filter((r) => !known.has(r.id)).length;
+      setNodes(next);
+      setTray(data.tray);
+      // The server already has this; only changes made after it are saved.
+      saver.markSaved(serializeState(next, liveRef.current.viewport, data.tray));
+      if (added > 0) {
+        announce(`${added} new ${plural(added, "result", "results")}`);
+        if (!liveRef.current.trayOpen) setTrayPulse((n) => n + 1);
+      }
+    };
+    refreshRef.current = {
+      offer(remote, { conflict }) {
+        const busy =
+          dragSession.current ||
+          placingRef.current !== null ||
+          liveRef.current.editingId !== null ||
+          nodesRef.current.some((n) => n.dragging || n.resizing);
+        const dirty = saver.status === "pending" || saver.status === "saving" || saver.status === "error";
+        const decision = decideRefresh({ newer: true, dirty, busy, conflict });
+        if (decision === "flush") void saver.flush();
+        if (decision === "apply") applyRemote(remote);
+        return decision;
+      },
+    };
+    return () => {
+      refreshRef.current = null;
+    };
+  }, [refreshRef, isBlocked, saver, setNodes, announce]);
+
   // ------------------------------------------------------------------ render
   const viewNodes = useMemo(() => nodes.map(withLabel), [nodes]);
 
@@ -831,7 +1139,7 @@ function CanvasEditor({
           onHelp={() => setSheetOpen(true)}
           results={
             compact && !readOnly
-              ? { open: trayOpen, count: tray.length, controls: trayId, onToggle: () => setTrayOpen((o) => !o) }
+              ? { open: trayOpen, count: tray.length, controls: trayId, onToggle: toggleTray }
               : undefined
           }
           {...(web && !readOnly ? { canvasId, ...web } : {})}
@@ -855,8 +1163,10 @@ function CanvasEditor({
               id={trayId}
               items={tray}
               onAdd={(r) => addReference(r)}
+              onPreview={(r) => setPreview(trayPreviewList(trayRef.current, r.id))}
+              pulse={trayPulse}
               open={trayOpen}
-              onToggle={() => setTrayOpen((o) => !o)}
+              onToggle={toggleTray}
               rail={!compact}
               readOnly={readOnly}
             />
@@ -868,10 +1178,13 @@ function CanvasEditor({
             aria-label="Canvas"
             aria-describedby={boardHintId}
             data-tool={tool}
+            data-placing={placing ? placing.kind : undefined}
             data-drop-active={dropActive ? "true" : undefined}
             data-canvas-id={canvasId}
             onKeyDownCapture={onKeyDownCapture}
             onPointerDownCapture={onBoardPointerDown}
+            onPointerMove={placing && !placing.drag ? (e) => setGhost(ghostAt(e.clientX, e.clientY)) : undefined}
+            onPointerLeave={placing && !placing.drag ? () => setGhost(null) : undefined}
             onFocus={onBoardFocus}
             onDragOver={onDragOver}
             onDragLeave={() => setDropActive(false)}
@@ -921,18 +1234,39 @@ function CanvasEditor({
               aria-label={`Moodboard: ${title}`}
             >
               <SnapGuides guides={guides} />
+              <ZoomVars target={flowRef} />
             </ReactFlow>
             {!readOnly && (
               <Notch
                 notchRef={notchRef}
                 tool={tool}
                 onTool={chooseTool}
-                onAddNote={addNote}
-                onAddSection={addSection}
+                onAdd={(kind, how) => {
+                  if (suppressClick.current) return;
+                  startPlace(kind, how);
+                }}
+                onPressAdd={pressPlace}
+                placing={placing?.kind ?? null}
                 onArrange={arrangeAll}
               />
             )}
             {dropActive && <p className="bn-drop-caption">Drop to add to the canvas</p>}
+            {placing && ghost && (
+              <div
+                className="bn-place-ghost"
+                data-kind={placing.kind}
+                aria-hidden="true"
+                style={
+                  {
+                    "--gx": `${ghost.x}px`,
+                    "--gy": `${ghost.y}px`,
+                    "--gw": `${(placing.kind === "note" ? newNoteSize() : DEFAULT_SIZE.section).w * rf.getZoom()}px`,
+                    "--gh": `${(placing.kind === "note" ? newNoteSize() : DEFAULT_SIZE.section).h * rf.getZoom()}px`,
+                  } as CSSProperties
+                }
+              />
+            )}
+            {placing && <p className="bn-drop-caption bn-place-hint">Click to place. Esc to cancel</p>}
             {nodes.length === 0 && (
               <div className="bn-empty-hint">
                 <p>
@@ -947,6 +1281,12 @@ function CanvasEditor({
           {message}
         </div>
         <ShortcutSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+        <ImagePreview
+          items={preview?.items ?? []}
+          index={preview ? preview.index : null}
+          onIndex={(index) => setPreview((p) => (p ? { ...p, index } : p))}
+          onClose={() => setPreview(null)}
+        />
       </div>
     </CanvasActionsContext.Provider>
   );

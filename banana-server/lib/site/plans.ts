@@ -14,15 +14,22 @@ export function priceText(plan: Plan, t: Dict["pricing"]): { amount: string; per
   return { amount: `$${p.amountUsd}`, period };
 }
 
-export function planFeatures(plan: Plan, t: Dict["pricing"]): string[] {
+/** What a plan line is about, so the site can draw an icon next to it. */
+export type PlanFeatureKey = "searches" | "canvases" | "items" | "share" | "noShare" | "exports";
+
+export function planFeatureItems(plan: Plan, t: Dict["pricing"]): { key: PlanFeatureKey; text: string }[] {
   const l = PLAN_LIMITS[plan];
   return [
-    fmt(t.features.searches, { n: l.searchesPerMonth }),
-    Number.isFinite(l.canvases) ? fmt(t.features.canvases, { n: l.canvases }) : t.features.canvasesUnlimited,
-    fmt(t.features.items, { n: l.itemsPerCanvas }),
-    l.shareLinks ? t.features.share : t.features.noShare,
-    plan === "free" ? t.features.exportsFree : t.features.exportsAll,
+    { key: "searches", text: fmt(t.features.searches, { n: l.searchesPerMonth }) },
+    { key: "canvases", text: Number.isFinite(l.canvases) ? fmt(t.features.canvases, { n: l.canvases }) : t.features.canvasesUnlimited },
+    { key: "items", text: fmt(t.features.items, { n: l.itemsPerCanvas }) },
+    l.shareLinks ? { key: "share", text: t.features.share } : { key: "noShare", text: t.features.noShare },
+    { key: "exports", text: plan === "free" ? t.features.exportsFree : t.features.exportsAll },
   ];
+}
+
+export function planFeatures(plan: Plan, t: Dict["pricing"]): string[] {
+  return planFeatureItems(plan, t).map((f) => f.text);
 }
 
 /** Whole percent saved by paying yearly instead of 12 monthly payments (35 for $39 vs $5). */

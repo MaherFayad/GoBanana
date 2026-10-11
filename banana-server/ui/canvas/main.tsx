@@ -36,7 +36,8 @@ import {
   type McpUiHostContext,
   type McpUiToolResultNotification,
 } from "@modelcontextprotocol/ext-apps";
-import { CanvasApp } from "@/canvas/CanvasApp";
+import { CanvasApp, type CanvasRefreshHandle } from "@/canvas/CanvasApp";
+import { createRefreshScheduler, isNewer } from "@/canvas/refresh";
 import { ExternalIcon, WarningIcon } from "@/components/studio/icons";
 import { ToastProvider } from "@/components/studio/Toast";
 import type { CanvasPersistence } from "@/canvas/persistence";
@@ -79,10 +80,32 @@ const useHost = () => useSyncExternalStore(subscribe, () => hostState);
 
 const app = new App({ name: `${APP_NAME} canvas`, version: "0.1.0" }, {}, { autoResize: true });
 
+/**
+ * Host events that may mean the board changed (another tool result, a context change). The
+ * host only sends this view the result of the call that opened it, so these are hints; the
+ * live refresh polls load_canvas_state as well (canvas/refresh.ts).
+ */
+const hostPokes = new Set<() => void>();
+const pokeRefresh = () => {
+  for (const p of hostPokes) p();
+};
+
 // Register before connect so the one-shot notifications are never missed.
-app.addEventListener("toolresult", (result) => setHost({ result, cancelled: false }));
+app.addEventListener("toolresult", (result) => {
+  // A second result for the same canvas is a refresh, not a new view.
+  const same = hostState.result && readOpenCanvasResult(hostState.result);
+  const next = readOpenCanvasResult(result);
+  if (same?.ok && next.ok && same.canvas.id === next.canvas.id) {
+    pokeRefresh();
+    return;
+  }
+  setHost({ result, cancelled: false });
+});
 app.addEventListener("toolcancelled", () => setHost({ cancelled: true }));
-app.addEventListener("hostcontextchanged", (ctx) => setHost({ context: { ...hostState.context, ...ctx } }));
+app.addEventListener("hostcontextchanged", (ctx) => {
+  setHost({ context: { ...hostState.context, ...ctx } });
+  pokeRefresh();
+});
 
 // Source links (`target="_blank"`) open through the host: sandboxed frames may block popups.
 document.addEventListener(
@@ -246,6 +269,37 @@ function InlineCanvas({
     state: canvas.state,
     persistence: mountPersistence(persistence),
   }));
+  const refreshRef = useRef<CanvasRefreshHandle | null>(null);
+
+  // Live refresh: poll while visible (faster with focus), refresh at once when the frame comes
+  // back or the host pokes, back off on errors. Newer server states are offered to the board,
+  // which applies them unless the user has unsaved work or is mid-gesture.
+  useEffect(() => {
+    const scheduler = createRefreshScheduler(
+      async () => {
+        if (persistence.conflict) return;
+        const latest = await persistence.fetchLatest();
+        if (!isNewer(latest.updatedAt, persistence.baseUpdatedAt)) return;
+        const decision = refreshRef.current?.offer(latest, { conflict: persistence.conflict !== null });
+        if (decision === "apply") persistence.adopt(latest.updatedAt);
+      },
+      { isVisible: () => document.visibilityState === "visible", isFocused: () => document.hasFocus() },
+    );
+    const update = () => scheduler.update();
+    const poke = () => scheduler.poke();
+    document.addEventListener("visibilitychange", update);
+    window.addEventListener("focus", poke);
+    window.addEventListener("blur", update);
+    hostPokes.add(poke);
+    scheduler.start();
+    return () => {
+      scheduler.stop();
+      document.removeEventListener("visibilitychange", update);
+      window.removeEventListener("focus", poke);
+      window.removeEventListener("blur", update);
+      hostPokes.delete(poke);
+    };
+  }, [persistence]);
 
   // Move focus to the conflict choices when they appear, so keyboard users find them.
   const hasConflict = conflict !== null;
@@ -377,6 +431,8 @@ function InlineCanvas({
         theme={theme}
         compact={compact}
         onSaved={onSaved}
+        trayCollapsedByDefault
+        refreshRef={refreshRef}
       />
     </>
   );
