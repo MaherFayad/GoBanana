@@ -27,7 +27,7 @@ If the tray is empty, run the banana-explore flow first (`bend_brief`, then `sea
 Call `add_to_canvas` with `canvasId` and `items`:
 
 1. One `{ "type": "section", "title": "<direction title>" }` per direction, unless sections already exist.
-2. The references for each direction as `{ "type": "reference", "referenceId": "..." }`, passing that direction's `sectionId`.
+2. The references for each direction as `{ "type": "reference", "referenceId": "..." }`, passing that direction's `sectionId`. UI references first (lanes fidelity, taste, bridge, hero, locale), then at most 2 inspiration references per section, unless the user asked for a wilder mix.
 3. One short `{ "type": "note", "text": "..." }` per section saying what to steal from it ("type as the only hierarchy", "misregistered two-ink print"). Keep notes under 12 words.
 4. If a palette exists, add swatches as `{ "type": "swatch", "hex": "...", "role": "..." }`.
 
