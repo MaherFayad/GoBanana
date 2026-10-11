@@ -1,0 +1,4 @@
+Exported 1 file for canvas cv_demo. Write each file to disk as named.
+--- file: figjam-spec.json (application/json) ---
+{"sections":[{"title":"Your screen as a frosted vinyl sleeve","x":0,"y":0,"w":296,"h":900,"items":[{"type":"image","x":8,"y":40,"w":280,"h":210,"imageUrl":"https://cdn.dribbble.com/userupload/10000001/file/original.png","sourceUrl":"https://dribbble.com/shots/10000001-frosted-sleeve-checkout"},{"type":"note","x":8,"y":266,"w":280,"h":60,"text":"Payment slides out like a record","sourceUrl":"https://dribbble.com/shots/10000001-frosted-sleeve-checkout"}]},{"title":"Brutalist receipt, type only","x":312,"y":0,"w":296,"h":900,"items":[{"type":"image","x":320,"y":40,"w":280,"h":400,"imageUrl":"https://i.pinimg.com/originals/00/00/04/receipt.jpg","sourceUrl":"https://www.pinterest.com/pin/100000000000000004/"}]}]}
+--- end file ---
