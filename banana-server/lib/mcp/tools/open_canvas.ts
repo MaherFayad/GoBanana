@@ -1,7 +1,9 @@
 /**
  * `open_canvas` (spec section 6): open one of the user's canvases, or create one.
  * Free plan: 3 canvases. The inline UI (`ui://banana/canvas`) is registered in
- * lib/mcp/resources/canvas.ts and reads `canvas.state` and `canvas.updatedAt` from this result.
+ * lib/mcp/resources/canvas.ts. It reads the board from the result `_meta["banana/canvas"]`
+ * (`state`, `updatedAt`), which MCP Apps hosts hand to the view but not to the model, so the
+ * model only pays for the small `structuredContent`.
  */
 import { z } from "zod";
 import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
@@ -47,14 +49,28 @@ export type OpenCanvasOutput = {
     webUrl: string;
     brief: string | null;
     items: number;
+    sections: number;
     tray: number;
-    /** Version of the saved state; the inline canvas sends it back as `baseUpdatedAt` when it saves. */
-    updatedAt: string;
-    /** Saved state (takedown filtered) for the inline canvas (MCP Apps). */
-    state: CanvasState;
   };
   created: boolean;
 };
+
+/** Key of the view-only payload in the result `_meta`. */
+export const VIEW_META_KEY = "banana/canvas";
+
+/** View-only payload: the board for the inline canvas (MCP Apps). Never shown to the model. */
+export type OpenCanvasViewMeta = {
+  /** Saved state (takedown filtered). */
+  state: CanvasState;
+  /** Version of that state; the inline canvas sends it back as `baseUpdatedAt` when it saves. */
+  updatedAt: string;
+};
+
+function withViewMeta(result: ToolResult, meta: OpenCanvasViewMeta): ToolResult {
+  return { ...result, _meta: { [VIEW_META_KEY]: meta } };
+}
+
+const sectionCount = (state: CanvasState) => state.nodes.filter((n) => n.type === "section").length;
 
 /** "Flight checkout for a budget airline ..." -> a title of at most 60 characters on a word boundary. */
 export function titleFromBrief(brief: string): string {
@@ -99,13 +115,15 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
             webUrl: canvasWebUrl(deps.appUrl(), loaded.canvas.id),
             brief: patch.brief ?? loaded.canvas.brief,
             items: itemCount(loaded.state),
+            sections: sectionCount(loaded.state),
             tray: loaded.state.tray.length,
-            updatedAt: loaded.canvas.updatedAt.toISOString(),
-            state: loaded.state,
           },
           created: false,
         };
-        return toolResult(text(out), out);
+        return withViewMeta(toolResult(text(out), out), {
+          state: loaded.state,
+          updatedAt: loaded.canvas.updatedAt.toISOString(),
+        });
       }
 
       const plan = await repos.users.getPlan(userId);
@@ -123,13 +141,12 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
           webUrl: canvasWebUrl(deps.appUrl(), canvas.id),
           brief: canvas.brief,
           items: 0,
+          sections: 0,
           tray: 0,
-          updatedAt: canvas.updatedAt.toISOString(),
-          state: emptyState(),
         },
         created: true,
       };
-      return toolResult(text(out), out);
+      return withViewMeta(toolResult(text(out), out), { state: emptyState(), updatedAt: canvas.updatedAt.toISOString() });
     } catch {
       console.error("[open_canvas] failed");
       return toolMessage(TRY_AGAIN);

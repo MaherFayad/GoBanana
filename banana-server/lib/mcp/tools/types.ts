@@ -14,6 +14,8 @@ export type ToolResult = {
   content: { type: "text"; text: string }[];
   structuredContent?: Record<string, unknown>;
   isError?: boolean;
+  /** Result metadata. MCP Apps hosts pass it to the view but not to the model. */
+  _meta?: Record<string, unknown>;
 };
 
 /** Plain-message result for the agent. Never throw raw errors at the agent (spec section 6). */
