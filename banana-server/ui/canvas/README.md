@@ -13,12 +13,15 @@ same `canvas/CanvasApp` as the web canvas at `/c/:id`, built into one HTML file.
 | `ui://banana/canvas` resource, mime type and CSP | `lib/mcp/resources/canvas.ts` |
 | Load and save over the host bridge | `canvas/persistence-bridge.ts` |
 | App-only save tool (hidden from the model) | `lib/mcp/tools/save_canvas_state.ts` |
+| App-only load tool (fallback when a host drops result `_meta`) | `lib/mcp/tools/load_canvas_state.ts` |
 
 1. The agent calls `open_canvas`. Its tool listing has `_meta.ui.resourceUri: "ui://banana/canvas"`.
 2. The host reads the resource (`text/html;profile=mcp-app`) and renders it in a sandboxed
    iframe with a CSP built from `_meta.ui.csp`.
-3. The host sends the tool result to the view. `structuredContent.canvas` carries `id`,
-   `title`, `webUrl`, `state` and `updatedAt`.
+3. The host sends the tool result to the view. `structuredContent.canvas` is small (`id`,
+   `title`, `webUrl`, counts) because some hosts show it to the model. The board itself
+   (`state`, `updatedAt`) is in the result `_meta["banana/canvas"]`, which goes to the view
+   only. If a host drops it, the view calls `load_canvas_state`.
 4. Each change auto-saves after 1 second through `save_canvas_state` (host proxied
    `tools/call`), with `baseUpdatedAt` set to the last version the view saw.
 5. If an agent tool or the web canvas saved in between, the view shows a choice:

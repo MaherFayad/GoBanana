@@ -33,6 +33,10 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npx vitest run
+      - name: Build Worker (OpenNext, runs build:ui first)
+        run: npx opennextjs-cloudflare build
+      - name: Worker size (gzipped; Workers Free limit 3 MB, Paid 10 MB)
+        run: npm run worker:size
       - name: Migrations are consistent
         run: npx drizzle-kit check
       - name: Schema has a migration
