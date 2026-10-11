@@ -5,7 +5,7 @@
  * or focused and added with Enter (SC 2.5.7: drag has a single pointer and keyboard
  * alternative). Thumbnails load from the source host; nothing is fetched in JS.
  */
-import { useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 import { SourceChip } from "./nodes/chips";
 import { siteName } from "./labels";
 import type { TrayReference } from "./types";
@@ -39,6 +39,18 @@ export interface TrayProps {
 }
 
 export function Tray({ id, items, onAdd, readOnly = false }: TrayProps) {
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // The added tile leaves the tray; keep keyboard focus at the same spot in the list.
+  const add = (ref: TrayReference, index: number) => {
+    onAdd(ref);
+    requestAnimationFrame(() => {
+      const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(".bn-tray-add");
+      if (!buttons || buttons.length === 0) return;
+      buttons[Math.min(index, buttons.length - 1)]?.focus();
+    });
+  };
+
   const onDragStart = (e: DragEvent<HTMLButtonElement>, ref: TrayReference) => {
     e.dataTransfer.setData(TRAY_DND_TYPE, ref.id);
     e.dataTransfer.setData("text/plain", ref.sourceUrl);
@@ -60,8 +72,8 @@ export function Tray({ id, items, onAdd, readOnly = false }: TrayProps) {
       {items.length === 0 ? (
         <p className="bn-tray-empty">Ask your agent to search for references. Results show up here.</p>
       ) : (
-        <ul className="bn-tray-list" aria-label="Search results">
-          {items.map((ref) => {
+        <ul ref={listRef} className="bn-tray-list" aria-label="Search results">
+          {items.map((ref, index) => {
             const title = ref.title || "Untitled reference";
             const site = siteName(ref.sourceSite, ref.sourceUrl);
             return (
@@ -72,7 +84,7 @@ export function Tray({ id, items, onAdd, readOnly = false }: TrayProps) {
                   draggable={!readOnly}
                   disabled={readOnly}
                   onDragStart={(e) => onDragStart(e, ref)}
-                  onClick={() => onAdd(ref)}
+                  onClick={() => add(ref, index)}
                   aria-label={`Add to canvas: ${title}, from ${site}`}
                 >
                   <TrayThumb src={ref.thumbUrl || ref.imageUrl} />

@@ -27,8 +27,9 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
   ];
 
   return (
-    <div className="bn-node bn-section" data-collapsed={collapsed ? "true" : "false"}>
+    <>
       {!collapsed && <Resizer type="section" selected={selected} />}
+      <div className="bn-node bn-section" data-collapsed={collapsed ? "true" : "false"}>
       <div className="bn-section-header">
         {!actions.readOnly && (
           <button
@@ -64,5 +65,6 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
         <NodeMenu nodeId={id} label={`section ${data.title}`} items={items} movable={false} />
       </div>
     </div>
+    </>
   );
 }

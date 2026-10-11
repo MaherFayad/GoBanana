@@ -24,8 +24,9 @@ export function TypeSampleNode({ id, data, selected, parentId }: NodeProps<TypeS
   ];
 
   return (
-    <div className="bn-node bn-type">
+    <>
       <Resizer type="typeSample" selected={selected} />
+      <div className="bn-node bn-type">
       {/* React 19 hoists this stylesheet into <head>. Off when the host blocks font CSS. */}
       {actions.loadFonts && pairing?.url && <link rel="stylesheet" href={pairing.url} precedence="default" />}
       <p className="bn-type-name">{pairing?.name ?? data.pairingId}</p>
@@ -46,5 +47,6 @@ export function TypeSampleNode({ id, data, selected, parentId }: NodeProps<TypeS
         <NodeMenu nodeId={id} label="type sample" parentId={parentId} items={items} />
       </div>
     </div>
+    </>
   );
 }

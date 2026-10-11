@@ -58,8 +58,9 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
   if (data.tag) items.push({ label: "Clear Ship or Explore mark", onSelect: () => actions.updateData<"image">(id, { tag: null }) });
 
   return (
-    <div className="bn-node bn-image" data-testid={`tile-${id}`}>
+    <>
       <Resizer type={type} selected={selected} keepAspectRatio />
+      <div className="bn-node bn-image" data-testid={`tile-${id}`}>
       <div className="bn-image-frame">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element -- third-party image loaded from its source host on purpose
@@ -99,6 +100,7 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
         <SourceChip site={site} url={data.sourceUrl} />
       </div>
     </div>
+    </>
   );
 }
 

@@ -37,12 +37,13 @@ export function NoteNode({ id, data, selected, parentId }: NodeProps<NoteFlowNod
   ];
 
   return (
+    <>
+    <Resizer type="note" selected={selected} />
     <div
       className="bn-node bn-note"
       data-color={color}
       onDoubleClick={() => !actions.readOnly && actions.setEditing(id)}
     >
-      <Resizer type="note" selected={selected} />
       {editing ? (
         <NoteEditor
           initial={data.text}
@@ -63,5 +64,6 @@ export function NoteNode({ id, data, selected, parentId }: NodeProps<NoteFlowNod
         <NodeMenu nodeId={id} label="note" parentId={parentId} items={items} />
       </div>
     </div>
+    </>
   );
 }
