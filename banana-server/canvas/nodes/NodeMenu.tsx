@@ -32,23 +32,22 @@ export interface NodeMenuProps {
 
 export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movable = true, resizable = true }: NodeMenuProps) {
   const actions = useCanvasActions();
-  const [open, setOpen] = useState(false);
+  const [openLocal, setOpen] = useState(false);
+  // Also opened by the M key on the focused node (CanvasApp sets menuFor).
+  const open = openLocal || actions.menuFor === nodeId;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const menuId = useId();
 
-  const close = useCallback((refocus: boolean) => {
-    setOpen(false);
-    if (refocus) buttonRef.current?.focus();
-  }, []);
-
-  // Keyboard shortcut from the canvas (M on a focused node).
-  useEffect(() => {
-    if (actions.menuFor === nodeId) {
-      setOpen(true);
-      actions.setMenuFor(null);
-    }
-  }, [actions, nodeId]);
+  const { menuFor, setMenuFor } = actions;
+  const close = useCallback(
+    (refocus: boolean) => {
+      setOpen(false);
+      if (menuFor === nodeId) setMenuFor(null);
+      if (refocus) buttonRef.current?.focus();
+    },
+    [menuFor, nodeId, setMenuFor],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -56,11 +55,11 @@ export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movab
     first?.focus();
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node | null;
-      if (t && !listRef.current?.contains(t) && !buttonRef.current?.contains(t)) setOpen(false);
+      if (t && !listRef.current?.contains(t) && !buttonRef.current?.contains(t)) close(false);
     };
     document.addEventListener("pointerdown", onDown, true);
     return () => document.removeEventListener("pointerdown", onDown, true);
-  }, [open]);
+  }, [open, close]);
 
   if (actions.readOnly) {
     return null;
@@ -104,7 +103,7 @@ export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movab
       close(true);
       return;
     } else if (e.key === "Tab") {
-      setOpen(false);
+      close(false);
       return;
     }
     // Keep arrow keys and Delete inside the menu from reaching the canvas.
@@ -128,7 +127,8 @@ export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movab
         title="Options (M)"
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((o) => !o);
+          if (open) close(false);
+          else setOpen(true);
         }}
       >
         <IconMore />
@@ -146,7 +146,7 @@ export function NodeMenu({ nodeId, label, parentId, items = [], sourceUrl, movab
                 data-danger={item.danger ? "true" : undefined}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpen(false);
+                  close(false);
                   item.onSelect();
                   // Keep focus on this node unless the item removed it or opened an editor.
                   if (!item.danger) {

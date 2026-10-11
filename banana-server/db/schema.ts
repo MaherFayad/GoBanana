@@ -13,6 +13,7 @@ import {
   smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -57,11 +58,17 @@ export const directions = pgTable(
     canvasId: uuid("canvas_id")
       .notNull()
       .references(() => canvases.id, { onDelete: "cascade" }),
+    /** Stable id from bend_brief (for example "bd-3kq9x1ma"), so agents can pass it as directionId. */
+    bendId: text("bend_id"),
     move: text("move").notNull(),
     title: text("title").notNull(),
     searchQuery: text("search_query").notNull(),
   },
-  (t) => [index("directions_canvas_id_idx").on(t.canvasId)],
+  (t) => [
+    index("directions_canvas_id_idx").on(t.canvasId),
+    uniqueIndex("directions_canvas_bend_idx").on(t.canvasId, t.bendId),
+    index("directions_bend_id_idx").on(t.bendId),
+  ],
 );
 
 /** Reference images: URLs only. Rows not placed on a canvas are purged after 30 days. */

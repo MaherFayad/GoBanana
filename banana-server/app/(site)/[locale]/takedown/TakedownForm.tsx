@@ -164,7 +164,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
           </legend>
           {TAKEDOWN_REASONS.map((r, i) => (
             <label key={r} className="choice" htmlFor={`reason-${i}`}>
-              <input id={`reason-${i}`} type="radio" name="reason" value={r} required aria-invalid={invalid("reason")} aria-describedby={errorIds("reason") || undefined} />
+              <input id={`reason-${i}`} type="radio" name="reason" value={r} required aria-describedby={errorIds("reason") || undefined} />
               {t.reasons[r]}
             </label>
           ))}
@@ -178,7 +178,7 @@ export function TakedownForm({ t, locale, initialStatus }: { t: Dict["takedown"]
           </legend>
           {TAKEDOWN_ROLES.map((r, i) => (
             <label key={r} className="choice" htmlFor={`role-${i}`}>
-              <input id={`role-${i}`} type="radio" name="role" value={r} required aria-invalid={invalid("role")} aria-describedby={errorIds("role") || undefined} />
+              <input id={`role-${i}`} type="radio" name="role" value={r} required aria-describedby={errorIds("role") || undefined} />
               {t.roles[r]}
             </label>
           ))}

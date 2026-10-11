@@ -19,7 +19,17 @@ import {
   type OnNodeDrag,
   type Viewport,
 } from "@xyflow/react";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type KeyboardEvent,
+} from "react";
 import { createAutoSaver, type SaveStatus } from "./autosave";
 import { CanvasActionsContext, type CanvasActions } from "./context";
 import { cascade, absoluteRect, bringForward, nodeSize, removeNode, reparent, sectionAt, toggleCollapsed } from "./geometry";
@@ -52,6 +62,20 @@ export interface CanvasAppProps {
   theme?: "light" | "dark";
   /** Called after each successful save. */
   onSaved?: (state: CanvasState) => void;
+}
+
+/**
+ * Accessible names on nodes, cached per node object so React Flow only re-renders
+ * nodes that changed. Node objects are immutable, so a WeakMap is safe.
+ */
+const labelCache = new WeakMap<CanvasFlowNode, CanvasFlowNode>();
+function withLabel(n: CanvasFlowNode): CanvasFlowNode {
+  let v = labelCache.get(n);
+  if (!v) {
+    v = { ...n, ariaLabel: nodeLabel(n) } as CanvasFlowNode;
+    labelCache.set(n, v);
+  }
+  return v;
 }
 
 type LoadState = { status: "ready"; data: Deserialized } | { status: "loading" } | { status: "error" };
@@ -140,10 +164,13 @@ function CanvasEditor({
   const [message, setMessage] = useState("");
   const [dropActive, setDropActive] = useState(false);
   const flowRef = useRef<HTMLDivElement>(null);
+  // Latest nodes and tray for event handlers (kept in sync after each commit).
   const nodesRef = useRef(nodes);
-  nodesRef.current = nodes;
   const trayRef = useRef(tray);
-  trayRef.current = tray;
+  useLayoutEffect(() => {
+    nodesRef.current = nodes;
+    trayRef.current = tray;
+  }, [nodes, tray]);
   const trayId = `bn-tray-${useId().replace(/:/g, "")}`;
 
   // ------------------------------------------------------------------ auto-save
@@ -410,20 +437,7 @@ function CanvasEditor({
   };
 
   // ------------------------------------------------------------------ render
-  // Accessible names on nodes, cached per node object so React Flow does not re-render every node.
-  const labelCache = useRef(new WeakMap<CanvasFlowNode, CanvasFlowNode>());
-  const viewNodes = useMemo(
-    () =>
-      nodes.map((n) => {
-        let v = labelCache.current.get(n);
-        if (!v) {
-          v = { ...n, ariaLabel: nodeLabel(n) } as CanvasFlowNode;
-          labelCache.current.set(n, v);
-        }
-        return v;
-      }),
-    [nodes],
-  );
+  const viewNodes = useMemo(() => nodes.map(withLabel), [nodes]);
 
   const isDefaultViewport = initial.viewport.x === 0 && initial.viewport.y === 0 && initial.viewport.zoom === 1;
 

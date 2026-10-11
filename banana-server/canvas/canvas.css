@@ -882,3 +882,10 @@ kbd {
     animation: none !important;
   }
 }
+
+/* Full-screen web page wrapper (/c/:id). */
+.bn-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+}

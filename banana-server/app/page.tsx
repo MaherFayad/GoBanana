@@ -1,14 +1,9 @@
-import { APP_NAME } from "@/lib/config";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { href } from "@/lib/site/i18n";
 
-// Placeholder home page until the site pages land (M7/M8).
-export default function Home() {
-  return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "4rem 1.5rem", fontFamily: "system-ui, sans-serif", lineHeight: 1.5 }}>
-      <h1>{APP_NAME}</h1>
-      <p>Wild design references and a moodboard canvas for your AI agent.</p>
-      <p>
-        Connect your agent to <code>/api/mcp</code> to get started.
-      </p>
-    </main>
-  );
+// "/" sends Arabic-first browsers to /ar and everyone else to /en.
+export default async function Home() {
+  const accept = (await headers()).get("accept-language") ?? "";
+  redirect(href(/^\s*ar\b/i.test(accept) ? "ar" : "en"));
 }
