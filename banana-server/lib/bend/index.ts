@@ -2,7 +2,8 @@ import { BendInputError, parseBendInput } from "./input";
 import { getLens, lensEntries, LISTS, STOP_WORDS } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53, mulberry32, shuffle, stableId, type Rng } from "./prng";
-import { fidelityQuery, inspirationQuery } from "./queries";
+import { cleanTaste, DEFAULT_TASTE } from "@/lib/taste";
+import { fidelityQuery, inspirationQuery, pickStyle, tasteQuery } from "./queries";
 import { extractSubject } from "./subject";
 import {
   LEGACY_TEMPLATE_SIZES,
@@ -32,7 +33,16 @@ export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COU
 export { LENSES, LENS_IDS, LISTS } from "./lists";
 export { WILDNESS } from "./wildness";
 export { MOVES } from "./types";
-export { MAX_FOCUSED_QUERY_WORDS, fidelityQuery, inspirationFromQuery, inspirationQuery, isUiBrief } from "./queries";
+export {
+  MAX_FOCUSED_QUERY_WORDS,
+  MAX_LANE_WORDS,
+  fidelityQuery,
+  inspirationFromQuery,
+  inspirationQuery,
+  isUiBrief,
+  pickStyle,
+  tasteQuery,
+} from "./queries";
 export type { BendInput, BendResult, Direction, MoveId, Wildness } from "./types";
 
 /** Hard cap on any search query length, in words (focused queries are capped lower, at MAX_FOCUSED_QUERY_WORDS). */
@@ -223,6 +233,9 @@ export function bendBrief(raw: BendInput): BendResult {
   const parsed = parseBendInput(raw);
   if (!parsed.ok) throw new BendInputError(parsed.message);
   const input = parsed.input;
+  // Style words for the taste lane. Never part of the seed, so they never move an id.
+  const userTaste = cleanTaste(raw.taste);
+  const taste = userTaste.length > 0 ? userTaste : [...DEFAULT_TASTE];
   const wildness = input.wildness;
   const rule = WILDNESS[wildness];
   const lens = input.lens ? getLens(input.lens) : undefined;
@@ -408,8 +421,8 @@ export function bendBrief(raw: BendInput): BendResult {
     // Inspiration lane: the lead headline ingredient alone (stacked ideas return tag and search pages).
     const lead = headline[0] ?? moves[0]!;
     const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
-    const searchQueries = searchQuery === fidelity ? [searchQuery] : [searchQuery, fidelity];
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
+    const searchQueries = [...new Set([searchQuery, tasteQuery(input.brief, pickStyle(taste, id)), fidelity])];
 
     directions.push({
       id,

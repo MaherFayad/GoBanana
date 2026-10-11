@@ -28,7 +28,7 @@
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
 import { bigEnough, isJunk, rankReferences, upgradeImage } from "./quality";
-import { buildSearchQuery, normalizeSources } from "./query";
+import { buildSourceQuery, normalizeSources } from "./query";
 import {
   SOURCE_DOMAINS,
   type Reference,
@@ -77,6 +77,8 @@ export type WebSearchResult = SourceSearchResult & {
   ok: boolean;
   /** Results dropped as list pages or low quality (stock, shop listings, small images). Set when above 0. */
   dropped?: number;
+  /** Serper requests sent (one credit each). Set once the adapter got as far as searching. */
+  requests?: number;
 };
 
 export type WebSearchAdapter = SourceAdapter & {
@@ -102,12 +104,25 @@ const MAX_TITLE = 200;
 export const SERPER_PAGE_SIZE = 10;
 
 /**
- * Most pages one query may fetch (one Serper credit each). The quality filters drop a lot, so a
- * query keeps paging until it has `count` references, a page comes back short, or this cap.
+ * Most pages one source query may fetch (one Serper credit each). The quality filters drop a lot,
+ * so a query keeps paging until it has `count` references, a page comes back short, or a cap.
  */
 export const SERPER_MAX_PAGES = 3;
 
-/** Pages a query may fetch: `maxPages` when given, never more than SERPER_MAX_PAGES. */
+/**
+ * Serper allows 5 requests per second (HTTP 429 above that). At most 4 requests are in flight,
+ * and one search_references call sends at most 8 requests (8 credits) in total.
+ */
+export const SERPER_MAX_IN_FLIGHT = 4;
+export const SERPER_MAX_REQUESTS = 8;
+
+/** Requests one run may send: `maxRequests` when given, never more than SERPER_MAX_REQUESTS. */
+export function requestBudget(maxRequests?: number): number {
+  if (maxRequests === undefined || !Number.isFinite(maxRequests)) return SERPER_MAX_REQUESTS;
+  return Math.min(SERPER_MAX_REQUESTS, Math.max(1, Math.floor(maxRequests)));
+}
+
+/** Pages one source may fetch per run: `maxPages` when given, never more than SERPER_MAX_PAGES. */
 export function serperPages(maxPages?: number): number {
   if (maxPages === undefined || !Number.isFinite(maxPages)) return SERPER_MAX_PAGES;
   return Math.min(SERPER_MAX_PAGES, Math.max(1, Math.floor(maxPages)));
@@ -317,14 +332,56 @@ function failure(note: string): WebSearchResult {
   return { references: [], note, ok: false };
 }
 
+type PageOutcome = { ok: true; images: unknown[] } | { ok: false; status: number };
+
+/** Run `fn` over `items` with at most `limit` calls in flight, keeping the order of results. */
+export async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]!);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
 export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapter {
   const doFetch: FetchLike | undefined =
     config.fetch ?? (typeof fetch === "function" ? (input, init) => fetch(input, init) : undefined);
   const timeoutMs = config.timeoutMs ?? 8000;
 
+  /** One Serper request. Never throws; the status code is logged, never the body. */
+  async function fetchPage(apiKey: string, q: string, page: number): Promise<PageOutcome> {
+    const init: RequestInit = {
+      method: "POST",
+      headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify(page === 1 ? { q, num: SERPER_PAGE_SIZE } : { q, num: SERPER_PAGE_SIZE, page }),
+    };
+    if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+      init.signal = AbortSignal.timeout(timeoutMs);
+    }
+    try {
+      const res = await doFetch!(SERPER_IMAGES_ENDPOINT, init);
+      if (res.status !== 200) {
+        // Status code only: the body or headers may echo request details.
+        console.warn(`[search] serper page ${page} status ${res.status}`);
+        return { ok: false, status: res.status };
+      }
+      const json: unknown = await res.json();
+      const images = json && typeof json === "object" ? (json as { images?: unknown }).images : undefined;
+      return { ok: true, images: Array.isArray(images) ? images : [] };
+    } catch {
+      // Network error, timeout or bad JSON. Never surface the raw error (it may echo request details).
+      return { ok: false, status: 0 };
+    }
+  }
+
   async function run(q: SourceQuery): Promise<WebSearchResult> {
     const count = Math.min(50, Math.max(1, Math.floor(q.count)));
-    const sources = normalizeSources(q.sources);
+    const selected = normalizeSources(q.sources);
     const allowlist = config.allowlist ?? allowlistFromEnv();
 
     const apiKey = config.apiKey?.trim();
@@ -340,50 +397,65 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       }
     }
 
-    const searchQuery = buildSearchQuery(q.query, sources);
+    const budget = requestBudget(q.maxRequests);
+    // With fewer requests than sources, search a rotating subset so lanes cover different sources.
+    const offset = Math.max(0, Math.floor(q.sourceOffset ?? 0));
+    const sources =
+      budget >= selected.length ? selected : Array.from({ length: budget }, (_, i) => selected[(offset + i) % selected.length]!);
+    const lanes = sources.map((site) => ({
+      site,
+      query: buildSourceQuery(q.query, site),
+      images: [] as unknown[],
+      full: true,
+      refs: [] as Reference[],
+      dropped: 0,
+    }));
     const pages = serperPages(q.maxPages);
-    const images: unknown[] = [];
+    let requests = 0;
     let references: Reference[] = [];
-    let dropped = 0;
+    let anyAnswered = false;
+    let rateLimited = false;
 
-    for (let page = 1; page <= pages; page++) {
-      const init: RequestInit = {
-        method: "POST",
-        headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify(
-          page === 1 ? { q: searchQuery, num: SERPER_PAGE_SIZE } : { q: searchQuery, num: SERPER_PAGE_SIZE, page },
-        ),
-      };
-      if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
-        init.signal = AbortSignal.timeout(timeoutMs);
-      }
-
-      let json: unknown;
-      try {
-        const res = await doFetch(SERPER_IMAGES_ENDPOINT, init);
-        if (res.status !== 200) {
-          // Status code only: the body or headers may echo request details.
-          console.warn(`[search] serper page ${page} status ${res.status}`);
-          if (page > 1) break; // keep what earlier pages found
-          return failure(res.status === 429 ? NOTES.rateLimited : NOTES.unavailable);
+    for (let page = 1; page <= pages && requests < budget; page++) {
+      // Page 1 for every source; later pages only where the last page was full, fewest results first.
+      const due = lanes
+        .filter((l) => l.full)
+        .sort((a, b) => a.refs.length - b.refs.length)
+        .slice(0, budget - requests);
+      if (due.length === 0) break;
+      requests += due.length;
+      const outcomes = await mapLimit(due, SERPER_MAX_IN_FLIGHT, (l) => fetchPage(apiKey, l.query, page));
+      due.forEach((lane, i) => {
+        const out = outcomes[i]!;
+        if (!out.ok) {
+          // A failed or rate limited request keeps what the other requests found.
+          lane.full = false;
+          if (out.status === 429) rateLimited = true;
+          return;
         }
-        json = await res.json();
-      } catch {
-        // Network error, timeout or bad JSON. Never surface the raw error (it may echo request details).
-        if (page > 1) break;
-        return failure(NOTES.unavailable);
-      }
-
-      const pageImages = json && typeof json === "object" ? (json as { images?: unknown }).images : undefined;
-      if (!Array.isArray(pageImages) || pageImages.length === 0) break;
-      images.push(...pageImages);
-      ({ references, dropped } = mapSerperImagesWithStats(images, { sources, allowlist, takedowns, count }));
-      if (references.length >= count || pageImages.length < SERPER_PAGE_SIZE) break;
+        anyAnswered = true;
+        lane.full = out.images.length >= SERPER_PAGE_SIZE;
+        if (out.images.length === 0) return;
+        lane.images.push(...out.images);
+        const mapped = mapSerperImagesWithStats(lane.images, { sources: [lane.site], allowlist, takedowns, count });
+        lane.refs = mapped.references;
+        lane.dropped = mapped.dropped;
+      });
+      if (!anyAnswered) break;
+      references = interleaveReferences(
+        lanes.map((l) => l.refs),
+        count,
+      );
+      if (references.length >= count) break;
     }
 
-    const result: WebSearchResult = { references, ok: true };
+    if (!anyAnswered) {
+      return { ...failure(rateLimited ? NOTES.rateLimited : NOTES.unavailable), requests };
+    }
+    const result: WebSearchResult = { references, ok: true, requests };
     const note = countNote(references.length, count);
     if (note) result.note = note;
+    const dropped = lanes.reduce((n, l) => n + l.dropped, 0);
     if (dropped > 0) result.dropped = dropped;
     return result;
   }

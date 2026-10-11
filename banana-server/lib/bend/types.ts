@@ -14,6 +14,8 @@ export interface BendInput {
   lens?: string;
   /** Number of directions, 1 to 8. Defaults to 6. */
   count?: number;
+  /** Style words for the taste lane (lib/taste.ts). Defaults to DEFAULT_TASTE. Never changes ids. */
+  taste?: readonly string[];
 }
 
 /** A word list entry: the label reads well in titles, the query is short and image-searchable. */
@@ -59,8 +61,9 @@ export interface Direction {
    */
   searchQuery: string;
   /**
-   * Focused queries search_references runs for a directionId: the inspiration query, then the
-   * fidelity query (the brief's domain and screen type, shared by every direction of a brief).
+   * Focused queries search_references runs for a directionId, one per lane: inspiration (same as
+   * searchQuery), taste (brief domain and component plus one style word) and fidelity (the brief's
+   * domain and screen type, shared by every direction of a brief). At most 6 words each.
    */
   searchQueries: string[];
   /** The full combined idea (every move and the twist) for the agent to riff on. */

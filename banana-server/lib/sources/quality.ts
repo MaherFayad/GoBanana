@@ -129,6 +129,11 @@ const DESIGN_WORDS =
 const LISTING_WORDS =
   /\b(sale|buy|price|sticker|stickers|mug|t-?shirt|shirt|hoodie|tee|gift|gifts|wall art|art print|invitation|invitations|wedding|bundle|amazon|ebay|aliexpress|wallpaper|decor)\b/i;
 
+/** Uncluttered work (a single card or widget, a clean concept) scores up a little. */
+const UNCLUTTERED_WORDS = /\b(card|cards|widget|widgets|component|components|minimal|minimalist|concept|clean)\b/i;
+/** Busy multi-screen dumps and kits score down a little. */
+const CLUTTERED_WORDS = /\b(ui kit|app ui kit|screens|full app|templates?|complete)\b/i;
+
 function sizeScore(ref: Reference): number {
   if (!ref.width || !ref.height) return 1;
   const side = Math.max(ref.width, ref.height);
@@ -150,12 +155,17 @@ function siteScore(ref: Reference): number {
   }
 }
 
-/** Higher is better. Larger images, curated sites and design-work titles score up; listings down. */
+/**
+ * Higher is better. Larger images, curated sites and design-work titles score up; listings down;
+ * a small nudge toward uncluttered work. Metadata only: the server never looks at the pixels.
+ */
 export function qualityScore(ref: Reference): number {
   const title = ref.title ?? "";
   let score = sizeScore(ref) + siteScore(ref);
   if (DESIGN_WORDS.test(title)) score += 2;
   if (LISTING_WORDS.test(title)) score -= 2;
+  if (UNCLUTTERED_WORDS.test(title)) score += 1;
+  if (CLUTTERED_WORDS.test(title)) score -= 1;
   return score;
 }
 

@@ -9,7 +9,8 @@ import { z } from "zod";
 import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import { authExtra } from "@/lib/auth";
 import { APP_NAME } from "@/lib/config";
-import { canvasWebUrl, emptyState, itemCount, loadCanvas, type CanvasState } from "@/lib/canvas/store";
+import { canvasWebUrl, emptyState, itemCount, loadCanvas, mutateCanvas, type CanvasState } from "@/lib/canvas/store";
+import { cleanTaste } from "@/lib/taste";
 import { canCreateCanvas, currentPeriod } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -17,6 +18,7 @@ import {
   plausibleId,
   takedownLoader,
   TRY_AGAIN,
+  tasteInputSchema,
   upgradeUrl,
   type CanvasToolDeps,
 } from "./canvas-shared";
@@ -28,18 +30,21 @@ export const CANVAS_UI_URI = "ui://banana/canvas";
 export const TOOL_DESCRIPTION =
   "Open a moodboard canvas, or create a new one when you leave out canvasId. " +
   "Use it before collecting references so results have a place to land. " +
-  "Shows the canvas inline when the client supports it and always returns a web link to share with the user.";
+  "Shows the canvas inline when the client supports it and always returns a web link to share with the user. " +
+  "Pass taste with a few style words that describe the user's references (for example from their mood boards); searches on this canvas use them.";
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100).optional().describe("Canvas to open. Leave out to create a new canvas."),
   title: z.string().trim().min(1).max(80).optional().describe("Canvas title, up to 80 characters."),
   brief: z.string().trim().min(1).max(500).optional().describe("The design brief, up to 500 characters."),
+  taste: tasteInputSchema.optional(),
 });
 
 const MESSAGES: Record<string, string> = {
   canvasId: "canvasId must be an id from open_canvas.",
   title: "title must be 1 to 80 characters.",
   brief: "brief must be 1 to 500 characters.",
+  taste: "taste must be 1 to 5 short style words, for example soft 3d or minimal.",
 };
 
 export type OpenCanvasOutput = {
@@ -48,6 +53,8 @@ export type OpenCanvasOutput = {
     title: string;
     webUrl: string;
     brief: string | null;
+    /** Style words saved on the canvas for searches, if any. */
+    taste?: string[];
     items: number;
     sections: number;
     tray: number;
@@ -89,6 +96,7 @@ function text(out: OpenCanvasOutput): string {
     `It has ${c.items} items and ${c.tray} results in its tray.`,
     "Next: pass this canvasId to bend_brief and search_references so directions and results land here, then add_to_canvas to place them.",
   ];
+  if (c.taste) lines.splice(2, 0, `Taste for searches: ${c.taste.join(", ")}.`);
   return lines.join("\n");
 }
 
@@ -98,12 +106,20 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
     const parsed = parseArgs(inputSchema, raw, MESSAGES, "Check the input: canvasId, title and brief are all optional.");
     if (!parsed.ok) return toolMessage(parsed.message);
     const input = parsed.data;
+    const taste = cleanTaste(input.taste);
     try {
       const { repos } = deps;
       if (input.canvasId) {
         if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
-        const loaded = await loadCanvas(repos, userId, input.canvasId, takedownLoader(deps));
+        let loaded = await loadCanvas(repos, userId, input.canvasId, takedownLoader(deps));
         if (!loaded) return toolMessage(CANVAS_NOT_FOUND);
+        if (taste.length > 0) {
+          const saved = await mutateCanvas(repos, userId, input.canvasId, takedownLoader(deps), (state) => ({
+            state: { ...state, taste },
+            value: true,
+          }));
+          if (saved.ok) loaded = { ...loaded, state: saved.state, canvas: saved.canvas };
+        }
         const patch: { title?: string; brief?: string } = {};
         if (input.title && input.title !== loaded.canvas.title) patch.title = input.title;
         if (input.brief && input.brief !== loaded.canvas.brief) patch.brief = input.brief;
@@ -114,6 +130,7 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
             title: patch.title ?? loaded.canvas.title,
             webUrl: canvasWebUrl(deps.appUrl(), loaded.canvas.id),
             brief: patch.brief ?? loaded.canvas.brief,
+            ...(loaded.state.taste ? { taste: loaded.state.taste } : {}),
             items: itemCount(loaded.state),
             sections: sectionCount(loaded.state),
             tray: loaded.state.tray.length,
@@ -132,7 +149,8 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
       if (!quota.ok) return toolMessage(quota.message);
 
       const title = input.title ?? (input.brief ? titleFromBrief(input.brief) : "Untitled moodboard");
-      const canvas = await repos.canvases.create({ userId, title, brief: input.brief ?? null, state: emptyState() });
+      const state: CanvasState = taste.length > 0 ? { ...emptyState(), taste } : emptyState();
+      const canvas = await repos.canvases.create({ userId, title, brief: input.brief ?? null, state });
       await repos.usage.addCanvases(userId, currentPeriod(deps.now?.()), 1);
       const out: OpenCanvasOutput = {
         canvas: {
@@ -140,13 +158,14 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
           title: canvas.title,
           webUrl: canvasWebUrl(deps.appUrl(), canvas.id),
           brief: canvas.brief,
+          ...(taste.length > 0 ? { taste } : {}),
           items: 0,
           sections: 0,
           tray: 0,
         },
         created: true,
       };
-      return withViewMeta(toolResult(text(out), out), { state: emptyState(), updatedAt: canvas.updatedAt.toISOString() });
+      return withViewMeta(toolResult(text(out), out), { state, updatedAt: canvas.updatedAt.toISOString() });
     } catch {
       console.error("[open_canvas] failed");
       return toolMessage(TRY_AGAIN);

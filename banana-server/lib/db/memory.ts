@@ -4,6 +4,7 @@
  * only; nothing is shared across Workers isolates.
  */
 import { planOf, type Plan, type Usage } from "@/lib/quota";
+import { isStateObject, stateHasTaste } from "@/lib/taste";
 import { isUuid, referenceRowId } from "./ids";
 import type {
   CanvasRecord,
@@ -86,7 +87,10 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         if (opts.ifUpdatedAt && opts.ifUpdatedAt.getTime() !== c.updatedAt.getTime()) {
           return { ok: false, reason: "conflict" };
         }
-        c.state = clone(state);
+        // Same as saveCanvasState: a save without `taste` keeps the stored one.
+        const prev = c.state;
+        const keep = isStateObject(state) && !stateHasTaste(state) && isStateObject(prev) && stateHasTaste(prev);
+        c.state = keep ? { ...clone(state), taste: clone(prev.taste) } : clone(state);
         c.updatedAt = tick();
         return { ok: true, updatedAt: c.updatedAt };
       },

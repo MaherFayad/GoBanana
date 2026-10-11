@@ -6,16 +6,22 @@
  * ui"). What works is two lanes:
  * - inspiration: one raw ingredient with at most one anchor word ("Sadu weaving pattern",
  *   "garment care label design"). No UI words.
+ * - taste: the brief's domain and component plus one style word from the user's taste
+ *   ("flight checkout ui soft 3d"). Style words pull toward uncluttered, high-craft shots.
  * - fidelity: the brief's domain and screen type in common words ("flight checkout app ui").
  *   It depends on the brief only, so every direction of a brief shares it.
  */
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
+import { DEFAULT_TASTE } from "@/lib/taste";
 import { MOVE_DEFS } from "./moves";
+import { cyrb53 } from "./prng";
 import { extractSubject } from "./subject";
 import { MOVES, type ListEntry, type MoveId } from "./types";
 
-/** Hard cap on a focused query, in words. */
-export const MAX_FOCUSED_QUERY_WORDS = 5;
+/** Hard cap on a focused query (any lane), in words. */
+export const MAX_FOCUSED_QUERY_WORDS = 6;
+/** Inspiration and fidelity queries stay at 5 words or fewer; taste may use the sixth for its style. */
+export const MAX_LANE_WORDS = 5;
 
 /** One anchor per move: what kind of picture the ingredient should come back as. */
 const ANCHOR: Record<MoveId, string> = {
@@ -44,9 +50,9 @@ export function inspirationQuery(move: MoveId, entryQuery: string): string {
   const anchor = words(ANCHOR[move]);
   const skip = core.some((w) => PICTURE_NOUNS.has(w.toLowerCase())) || anchor.some((w) => lower.has(w));
   let out = skip ? core : [...core, ...anchor];
-  if (out.length > MAX_FOCUSED_QUERY_WORDS) out = [...core, ...anchor.slice(-1)];
-  if (out.length > MAX_FOCUSED_QUERY_WORDS) out = core;
-  return out.slice(0, MAX_FOCUSED_QUERY_WORDS).join(" ");
+  if (out.length > MAX_LANE_WORDS) out = [...core, ...anchor.slice(-1)];
+  if (out.length > MAX_LANE_WORDS) out = core;
+  return out.slice(0, MAX_LANE_WORDS).join(" ");
 }
 
 type IndexedEntry = { move: MoveId; query: string; needle: string };
@@ -60,7 +66,10 @@ function allEntries(): IndexedEntry[] {
   const out: IndexedEntry[] = [];
   const add = (move: MoveId, entries: readonly ListEntry[]) => {
     for (const e of entries) {
-      const needle = ` ${words(e.query.toLowerCase()).join(" ")} `;
+      // The needle carries the move's prefix ("oversized emoji"), as stacked queries did, so the
+      // same words in two lists ("emoji") still map back to the right move.
+      const prefix = MOVE_DEFS[move].prefix;
+      const needle = ` ${words(`${prefix} ${e.query}`.toLowerCase()).join(" ")} `;
       if (seen.has(needle)) continue;
       seen.add(needle);
       out.push({ move, query: e.query, needle });
@@ -94,7 +103,7 @@ export function inspirationFromQuery(text: string): string {
 const UI_BRIEF_WORDS = new Set([
   "screen", "screens", "app", "apps", "checkout", "dashboard", "dashboards", "onboarding", "page", "pages",
   "flow", "flows", "website", "websites", "ui", "ux", "mobile", "landing", "interface", "portal", "web",
-  "homepage", "booking", "cart", "player", "tracker", "login", "signup", "ticketing",
+  "homepage", "booking", "cart", "player", "tracker", "login", "signup", "ticketing", "widget", "widgets",
 ]);
 
 /** Screen or product nouns a UI query keeps ("flight checkout app ui"). */
@@ -148,26 +157,33 @@ function domainWord(t: Token, screen: string | undefined): boolean {
   );
 }
 
-/**
- * The fidelity lane: real product UI for the brief's domain and screen type, in common words.
- * UI brief: "<domain> <screen noun> app ui" ("flight checkout app ui", "fleet management dashboard
- * ui", "coffee shop website design"). Other briefs: the subject plus "design" ("jazz festival
- * poster design"). Acronyms (GCC, OTA), numbers and vague words are left out.
- */
-export function fidelityQuery(brief: string): string {
+type BriefParts = {
+  ui: boolean;
+  /** Up to two domain words ("flight", "fleet management"). */
+  domain: string[];
+  /** Screen or product noun ("checkout", "dashboard"). */
+  screen?: string;
+  /** Platform words for the fidelity lane: "app ui", "dashboard ui" or "website design". */
+  suffix: string[];
+  /** Visual component named in the brief ("card", "widget", "ticket", "checkout"). */
+  component?: string;
+  /** Brief text without bracketed asides. */
+  main: string;
+};
+
+/** Components a taste query can be about. Card, widget, ticket and chart read as objects; the rest get "ui". */
+const COMPONENTS = ["card", "widget", "ticket", "chart", "dashboard", "checkout", "wallet", "player", "calendar"];
+const OBJECT_COMPONENTS = new Set(["card", "widget", "ticket", "chart"]);
+const PLURALS: Record<string, string> = { cards: "card", widgets: "widget", tickets: "ticket", charts: "chart" };
+
+function briefParts(brief: string): BriefParts {
   // Asides in brackets are detail ("(mobile, bilingual)"): they set the platform, never the domain.
   const main = brief.replace(/\([^)]*\)?|\[[^\]]*\]?/g, " ");
   const all = tokens(brief);
   const has = (...ws: string[]) => all.some((t) => ws.includes(t.word));
-
-  if (!isUiBrief(brief)) {
-    const subject = words(extractSubject(main, 1).full);
-    const out = subject.includes("design") ? subject : [...subject, "design"];
-    return out.slice(-MAX_FOCUSED_QUERY_WORDS).join(" ");
-  }
-
   const mainTokens = tokens(main);
   const screen = SCREEN_NOUNS.find((n) => mainTokens.some((t) => t.word === n)) ?? SCREEN_NOUNS.find((n) => has(n));
+  const component = COMPONENTS.find((c) => mainTokens.some((t) => (PLURALS[t.word] ?? t.word) === c));
 
   // Domain: content words of the first clause; when it has none, of the clause after "for", "about" or "of".
   const chunks: Token[][] = [[]];
@@ -176,15 +192,21 @@ export function fidelityQuery(brief: string): string {
     else chunks[chunks.length - 1]!.push(t);
   }
   let domain: string[] = [];
-  // A clause of only screen nouns ("checkout and payment flow") names no domain.
+  // A clause of only screen nouns or components ("checkout and payment flow") names no domain.
   for (const chunk of chunks) {
-    const found = [...new Set(chunk.filter((t) => domainWord(t, screen)).map((t) => t.word))];
+    const found = [
+      ...new Set(chunk.filter((t) => domainWord(t, screen) && (PLURALS[t.word] ?? t.word) !== component).map((t) => t.word)),
+    ];
     if (found.some((w) => !SCREEN_NOUNS.includes(w))) {
       domain = found;
       break;
     }
   }
   domain = domain.slice(-2);
+  if (domain.length === 0) {
+    const subject = words(extractSubject(main, 2).title).filter((w) => w !== screen && w !== component);
+    domain = subject.slice(-2);
+  }
 
   let suffix: string[];
   if (screen === "dashboard" || has("dashboard", "dashboards")) suffix = ["dashboard", "ui"];
@@ -192,12 +214,61 @@ export function fidelityQuery(brief: string): string {
   else if (has("website", "websites", "landing", "homepage", "web", "site", "portal", "page", "pages")) suffix = ["website", "design"];
   else suffix = ["app", "ui"];
 
+  return { ui: isUiBrief(brief), domain, ...(screen ? { screen } : {}), ...(component ? { component } : {}), suffix, main };
+}
+
+function joinUnique(parts: readonly string[], max: number): string {
   const out: string[] = [];
-  for (const w of [...domain, ...(screen ? [screen] : []), ...suffix]) if (!out.includes(w)) out.push(w);
-  if (out.length === suffix.length) {
-    // Nothing but the platform: fall back to the subject.
-    const subject = words(extractSubject(main, 2).title).filter((w) => !out.includes(w));
-    out.unshift(...subject.slice(-(MAX_FOCUSED_QUERY_WORDS - suffix.length)));
+  for (const p of parts) for (const w of words(p)) if (!out.includes(w)) out.push(w);
+  return out.slice(-max).join(" ");
+}
+
+/**
+ * The fidelity lane: real product UI for the brief's domain and screen type, in common words.
+ * UI brief: "<domain> <screen noun> app ui" ("flight checkout app ui", "fleet management dashboard
+ * ui", "coffee shop website design"). Other briefs: the subject plus "design" ("jazz festival
+ * poster design"). Acronyms (GCC, OTA), numbers and vague words are left out.
+ */
+export function fidelityQuery(brief: string): string {
+  const p = briefParts(brief);
+  if (!p.ui) {
+    const subject = words(extractSubject(p.main, 1).full);
+    return joinUnique([...subject, "design"], MAX_LANE_WORDS);
   }
-  return out.slice(-MAX_FOCUSED_QUERY_WORDS).join(" ");
+  return joinUnique([...p.domain, ...(p.screen ? [p.screen] : []), ...p.suffix], MAX_LANE_WORDS);
+}
+
+/**
+ * The taste lane: "{domain} {component} {style}", for example "flight checkout ui soft 3d" or
+ * "travel app ui glassmorphism". Style words move results toward uncluttered, high-craft shots
+ * (single cards and widgets, soft 3D, frosted glass, dark with one accent), which domain queries
+ * alone do not reach. At most MAX_FOCUSED_QUERY_WORDS words: domain words go first, then "ui".
+ */
+export function tasteQuery(brief: string, style: string): string {
+  const p = briefParts(brief);
+  const styleWords = words(style.toLowerCase())
+    .filter((w) => !STOP_WORDS.has(w))
+    .slice(0, 3);
+  let middle: string[];
+  if (!p.ui) middle = [];
+  else if (p.component && OBJECT_COMPONENTS.has(p.component)) middle = [p.component];
+  else if (p.component) middle = [p.component, "ui"];
+  else if (p.suffix[0] === "website") middle = ["website"];
+  else middle = [...p.suffix];
+  const head = p.ui ? p.domain : words(extractSubject(p.main, 2).title).slice(-3);
+  const build = (h: string[], m: string[]) => {
+    const out: string[] = [];
+    for (const w of [...h, ...m, ...styleWords]) if (!out.includes(w)) out.push(w);
+    return out;
+  };
+  let out = build(head, middle);
+  if (out.length > MAX_FOCUSED_QUERY_WORDS) out = build(head.slice(-1), middle);
+  if (out.length > MAX_FOCUSED_QUERY_WORDS) out = build(head.slice(-1), middle.filter((w) => w !== "ui"));
+  return out.slice(0, MAX_FOCUSED_QUERY_WORDS).join(" ");
+}
+
+/** One style from the taste list, picked by a stable key (a direction id), so it never changes between calls. */
+export function pickStyle(taste: readonly string[], key: string): string {
+  const list = taste.length > 0 ? taste : DEFAULT_TASTE;
+  return list[cyrb53(`taste|${key}`) % list.length]!;
 }

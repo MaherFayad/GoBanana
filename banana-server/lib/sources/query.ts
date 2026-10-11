@@ -1,4 +1,4 @@
-import { DEFAULT_SOURCES, SOURCE_DOMAINS, SOURCE_SITES, type SourceSite } from "./types";
+import { DEFAULT_SOURCES, SOURCE_SITES, type SourceSite } from "./types";
 
 /**
  * Keep the selected sources in a stable order (the order of SOURCE_SITES),
@@ -10,25 +10,33 @@ export function normalizeSources(sources?: readonly string[] | null): SourceSite
   return out.length > 0 ? out : [...DEFAULT_SOURCES];
 }
 
-/** `site:` filter for the selected sources, e.g. `(site:pinterest.com OR site:dribbble.com)`. */
-export function buildSiteFilter(sources?: readonly string[] | null): string {
-  const sites = normalizeSources(sources).map((s) => `site:${SOURCE_DOMAINS[s]}`);
-  return `(${sites.join(" OR ")})`;
-}
+/**
+ * Path-scoped `site:` filter per source. A live test (DECISIONS.md, 2026-10-11) on 6 queries x 10
+ * results: `site:pinterest.com/pin` gave 60/60 item pages and `site:dribbble.com/shots` 60/60,
+ * against 28/60 for `(site:dribbble.com OR site:pinterest.com)`. So every source gets its own
+ * query, and the OR form is never used.
+ */
+export const SOURCE_SCOPES: Record<SourceSite, string> = {
+  pinterest: "pinterest.com/pin",
+  dribbble: "dribbble.com/shots",
+  behance: "behance.net/gallery",
+  awwwards: "awwwards.com/sites",
+};
 
 /**
- * Build the web search query (spec section 8):
- * `{searchQuery} (site:pinterest.com OR site:dribbble.com OR ...)`.
- *
- * Any `site:` operators the caller typed are removed first, so a query can never
- * widen the search to sites outside the selection.
+ * Remove any `site:` operators, OR and brackets the caller typed, so a query can never widen
+ * the search to other sites.
  */
-export function buildSearchQuery(searchQuery: string, sources?: readonly string[] | null): string {
-  const cleaned = searchQuery
+export function cleanQuery(searchQuery: string): string {
+  return searchQuery
     .replace(/-?\bsite:\S+/gi, " ")
     .replace(/\bOR\b/g, " ")
     .replace(/[()]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  return `${cleaned} ${buildSiteFilter(sources)}`.trim();
+}
+
+/** Web search query for one source (spec section 8): `{query} site:pinterest.com/pin`. */
+export function buildSourceQuery(searchQuery: string, source: SourceSite): string {
+  return `${cleanQuery(searchQuery)} site:${SOURCE_SCOPES[source]}`.trim();
 }

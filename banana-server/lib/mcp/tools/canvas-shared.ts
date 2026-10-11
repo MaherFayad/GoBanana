@@ -5,10 +5,12 @@
  * Every tool takes `CanvasToolDeps`, so tests pass in-memory repos (lib/db/memory.ts)
  * and the live server passes the Drizzle ones, built lazily so env is read per request.
  */
+import { z } from "zod";
 import { getConfig } from "@/lib/config";
 import { getRepos, memoTakedowns } from "@/lib/db";
 import type { Repos } from "@/lib/db/types";
 import type { LoadMatcher, MutateOutcome } from "@/lib/canvas/store";
+import { MAX_TASTE_TERM_LENGTH, MAX_TASTE_TERMS } from "@/lib/taste";
 import { toolMessage, type ToolResult } from "./types";
 
 export type CanvasToolDeps = {
@@ -29,6 +31,15 @@ export function liveCanvasDeps(): CanvasToolDeps {
     appUrl: () => getConfig().appUrl,
   };
 }
+
+/** `taste` tool input (bend_brief, search_references, open_canvas): up to 5 short style terms. */
+export const tasteInputSchema = z
+  .array(z.string().trim().min(1).max(MAX_TASTE_TERM_LENGTH))
+  .min(1)
+  .max(MAX_TASTE_TERMS)
+  .describe(
+    'Up to 5 short style words for the look the user likes, for example ["soft 3d", "minimal", "dark with one accent"]. Describe their reference boards in words. Saved on the canvas for later searches.',
+  );
 
 /** Pricing page for upgrade messages (app/(site)/[locale]/pricing). */
 export function upgradeUrl(deps: Pick<CanvasToolDeps, "appUrl">): string {

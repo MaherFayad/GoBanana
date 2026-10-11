@@ -6,8 +6,11 @@ import {
   bendBrief,
   LENSES,
   LISTS,
+  MAX_FOCUSED_QUERY_WORDS,
+  MAX_LANE_WORDS,
   MAX_QUERY_WORDS,
   MAX_TITLE_WORDS,
+  fidelityQuery,
   MAX_TWIST_WORDS,
   MOVES,
   parseBendInput,
@@ -113,15 +116,15 @@ describe("wildness rules", () => {
     expect(new Set(moves)).toEqual(new Set(MOVES));
   });
 
-  it("keeps layout words in the query at 1 and drops them at 2 and up", () => {
-    for (const d of bendBrief({ brief: "flight checkout screen", wildness: 1 }).directions) {
-      expect(d.searchQuery).toContain("flight checkout screen");
-    }
-    for (const w of [2, 3, 4, 5] as Wildness[]) {
+  it("keeps the brief out of the inspiration query and puts it only in the taste and fidelity lanes", () => {
+    for (const w of LEVELS) {
       for (const brief of SAMPLE_BRIEFS) {
         for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
           const briefLayout = words(brief.toLowerCase()).filter((x) => LAYOUT_WORDS.has(x));
           for (const lw of briefLayout) expect(words(d.searchQuery.toLowerCase())).not.toContain(lw);
+          expect(d.searchQueries[0]).toBe(d.searchQuery);
+          expect(d.searchQueries.at(-1)).toBe(fidelityQuery(brief));
+          expect(d.searchQueries).toHaveLength(3);
         }
       }
     }
@@ -171,7 +174,10 @@ describe("count, moves and lens", () => {
         for (const d of result.directions) {
           expect(d.moves).toContain("lens");
           expect(lens.terms).toContain(d.ingredients.tradition);
-          expect(lens.terms.some((t) => d.searchQuery.includes(t))).toBe(true);
+          // The inspiration lane is the lead headline ingredient; when that is the lens, it is the lens term.
+          if (splitMoves(d.moves, true).headline[0] === "lens") {
+            expect(d.searchQuery).toContain(d.ingredients.tradition);
+          }
         }
       }
     }
@@ -217,8 +223,9 @@ describe("output quality", () => {
     for (const brief of SAMPLE_BRIEFS) {
       for (const w of LEVELS) {
         for (const d of bendBrief({ brief, wildness: w, count: 8 }).directions) {
-          expect(words(d.searchQuery).length).toBeLessThanOrEqual(MAX_QUERY_WORDS);
+          expect(words(d.searchQuery).length).toBeLessThanOrEqual(MAX_LANE_WORDS);
           expect(words(d.searchQuery).length).toBeGreaterThanOrEqual(2);
+          for (const q of d.searchQueries) expect(words(q).length, q).toBeLessThanOrEqual(MAX_FOCUSED_QUERY_WORDS);
           expect(d.title.length).toBeGreaterThan(5);
           expect(d.prompt).toMatch(/^Redesign the /);
         }

@@ -67,7 +67,7 @@ describe("MCP contract", () => {
       expect(t.description, t.name).not.toMatch(/[\u2014\u2013]/);
     }
     const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
-    expect(Object.keys(byName.open_canvas!.inputSchema.properties ?? {}).sort()).toEqual(["brief", "canvasId", "title"]);
+    expect(Object.keys(byName.open_canvas!.inputSchema.properties ?? {}).sort()).toEqual(["brief", "canvasId", "taste", "title"]);
     expect(byName.open_canvas!._meta).toMatchObject({ ui: { resourceUri: "ui://banana/canvas" } });
     expect(byName.add_to_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "items"]);
     expect(byName.extract_palette!.inputSchema.required?.sort()).toEqual(["canvasId", "itemIds"]);
@@ -75,6 +75,8 @@ describe("MCP contract", () => {
     expect(byName.arrange_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "layout"]);
     expect(byName.get_canvas!.inputSchema.required).toEqual(["canvasId"]);
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("canvasId");
+    expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("taste");
+    expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("taste");
   });
 
   it("runs bend_brief and returns text plus structured directions", async () => {

@@ -10,6 +10,7 @@
  * - Load runs a takedown predicate and hides blocked items and tray results (rule 5).
  */
 import type { CanvasItem } from "@/lib/canvas/types";
+import { cleanTaste } from "@/lib/taste";
 import {
   type CanvasFlowNode,
   type CanvasNodeType,
@@ -242,7 +243,14 @@ export function parseState(raw: unknown): CanvasState {
     traySeen.add(ref.id);
     tray.push(ref);
   }
-  return { version: STATE_VERSION, viewport: parseViewport(src.viewport), nodes: orderStored(nodes), tray };
+  const taste = cleanTaste(src.taste);
+  return {
+    version: STATE_VERSION,
+    viewport: parseViewport(src.viewport),
+    nodes: orderStored(nodes),
+    tray,
+    ...(taste.length > 0 ? { taste } : {}),
+  };
 }
 
 function orderStored(nodes: StoredNode[]): StoredNode[] {

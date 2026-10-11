@@ -116,6 +116,11 @@ export interface CanvasState {
   viewport: StoredViewport;
   nodes: StoredNode[];
   tray: TrayReference[];
+  /**
+   * Style words for searches (lib/taste.ts), set by the MCP tools. The canvas UI never edits it;
+   * a save without it keeps the stored one (lib/db/canvases.ts saveCanvasState).
+   */
+  taste?: string[];
 }
 
 /** Default sizes for new nodes, in canvas pixels. */

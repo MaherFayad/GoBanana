@@ -2,6 +2,7 @@
 import { and, count, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { canvases } from "@/db/schema";
+import { isStateObject, stateHasTaste } from "@/lib/taste";
 import { isUuid } from "./ids";
 import type { CanvasRecord, CanvasRepo, NewCanvas, SaveOptions, SaveResult } from "./types";
 
@@ -53,6 +54,16 @@ export async function countCanvases(db: Db, userId: string): Promise<number> {
   return Number(row?.n ?? 0);
 }
 
+/**
+ * New state for a save. The canvas UI does not know about `taste` (lib/taste.ts), so a save
+ * without it keeps the stored one, in the same statement (no extra read, no race).
+ */
+function keepTaste(state: unknown): unknown {
+  if (!isStateObject(state) || stateHasTaste(state)) return state;
+  const json = JSON.stringify(state);
+  return sql`CASE WHEN ${canvases.state} ? 'taste' THEN ${json}::jsonb || jsonb_build_object('taste', ${canvases.state} -> 'taste') ELSE ${json}::jsonb END`;
+}
+
 export async function saveCanvasState(
   db: Db,
   userId: string,
@@ -64,7 +75,11 @@ export async function saveCanvasState(
   const updatedAt = new Date();
   const owner = and(eq(canvases.id, canvasId), eq(canvases.userId, userId));
   const where = opts.ifUpdatedAt ? and(owner, sql`${updatedAtMs} = ${opts.ifUpdatedAt.toISOString()}`) : owner;
-  const rows = await db.update(canvases).set({ state, updatedAt }).where(where).returning({ id: canvases.id });
+  const rows = await db
+    .update(canvases)
+    .set({ state: keepTaste(state), updatedAt })
+    .where(where)
+    .returning({ id: canvases.id });
   if (rows.length > 0) return { ok: true, updatedAt };
   if (!opts.ifUpdatedAt) return { ok: false, reason: "not_found" };
   const exists = await getCanvasForOwner(db, userId, canvasId);

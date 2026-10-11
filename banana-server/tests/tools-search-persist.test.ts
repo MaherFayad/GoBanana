@@ -121,12 +121,13 @@ describe("search_references with the database", () => {
       await tool({ query: "poster" }, ALICE);
       await tool({ query: "poster" }, ALICE);
       expect(list).toHaveBeenCalledTimes(2);
-      expect(serper).toHaveBeenCalledTimes(2);
+      // One path-scoped request per source (pinterest.com/pin, dribbble.com/shots) per search.
+      expect(serper).toHaveBeenCalledTimes(4);
 
       list.mockRejectedValueOnce(new Error("db down"));
       const res = await tool({ query: "poster" }, ALICE);
       expect((res.structuredContent as { references: unknown[] } | undefined)?.references ?? []).toHaveLength(0);
-      expect(serper).toHaveBeenCalledTimes(2);
+      expect(serper).toHaveBeenCalledTimes(4);
     } finally {
       vi.unstubAllGlobals();
       vi.unstubAllEnvs();
