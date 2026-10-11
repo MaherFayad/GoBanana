@@ -21,6 +21,12 @@ async function mockCdn(page: Page, fail: RegExp | null = null) {
   });
 }
 
+/** Opens a page and waits for hydration (Reveal puts .reveal-on on <html> once React runs). */
+async function open(page: Page, url: string) {
+  await page.goto(url);
+  await expect(page.locator("html")).toHaveClass(/reveal-on/);
+}
+
 async function axe(page: Page, include: string, label: string) {
   const results = await new AxeBuilder({ page }).include(include).withTags(TAGS).analyze();
   expect(results.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), label).toEqual([]);
@@ -29,7 +35,7 @@ async function axe(page: Page, include: string, label: string) {
 test.describe("hero references", () => {
   test("each tile links to its source in a new tab, credits the creator, and loads with no referrer", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/en");
+    await open(page, "/en");
     const links = page.locator(".hero-tile-link");
     await expect(links).toHaveCount(14);
     for (const i of [0, 2, 5]) {
@@ -47,7 +53,7 @@ test.describe("hero references", () => {
 
   test("an image that does not load falls back to the generative art", async ({ page }) => {
     await mockCdn(page, /dribbble/);
-    await page.goto("/en");
+    await open(page, "/en");
     const tile = page.locator(".hero-tile").nth(2);
     await expect(tile.locator(".art")).toHaveCount(1);
     await expect(tile.locator("img")).toHaveCount(0);
@@ -57,7 +63,7 @@ test.describe("hero references", () => {
 
   test("the idea button opens the sample idea with an Open source link", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/en");
+    await open(page, "/en");
     const idea = page.locator(".hero-idea").first();
     await idea.focus();
     await page.keyboard.press("Enter");
@@ -73,7 +79,7 @@ test.describe("hero references", () => {
 test.describe("export file tabs", () => {
   test("arrow keys move along the cards and switch the window", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/en");
+    await open(page, "/en");
     const tabs = page.getByRole("tab");
     await expect(tabs).toHaveCount(6);
     await tabs.first().focus();
@@ -90,7 +96,7 @@ test.describe("export file tabs", () => {
 
   test("Arabic: ArrowLeft moves forward, and every label sits at the right (inline start)", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/ar");
+    await open(page, "/ar");
     const tabs = page.getByRole("tab");
     await tabs.first().focus();
     await page.keyboard.press("ArrowLeft");
@@ -117,7 +123,7 @@ test.describe("export file tabs", () => {
 test.describe("gallery boards", () => {
   test("Open example shows the board with every reference linked", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/en");
+    await open(page, "/en");
     const card = page.locator(".gallery-card").first();
     await card.locator(".gallery-reveal .st-btn").focus();
     await expect(card.locator(".gallery-reveal")).toHaveCSS("opacity", "1");
@@ -133,7 +139,7 @@ test.describe("gallery boards", () => {
 
   test("the sources disclosure lists four links", async ({ page }) => {
     await mockCdn(page);
-    await page.goto("/en");
+    await open(page, "/en");
     const sources = page.locator(".gallery-sources").first();
     await sources.locator("summary").click();
     await expect(sources.getByRole("link")).toHaveCount(4);
@@ -143,7 +149,7 @@ test.describe("gallery boards", () => {
 test("the server address copies with a Copied toast", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await mockCdn(page);
-  await page.goto("/en");
+  await open(page, "/en");
   await page.getByRole("button", { name: "Copy address" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Copied" })).toHaveCount(1);
   expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/api\/mcp$/);
@@ -151,7 +157,7 @@ test("the server address copies with a Copied toast", async ({ page, context }) 
 
 test("Arabic copy keeps punctuation outside Latin terms", async ({ page }) => {
   await mockCdn(page);
-  await page.goto("/ar");
+  await open(page, "/ar");
   const body = page.getByRole("tab").nth(2).locator(".export-card-body");
   await expect(body.locator("bdi")).toHaveText("JSON");
   await expect(body).toHaveText("الألوان والخطوط بصيغة JSON.");

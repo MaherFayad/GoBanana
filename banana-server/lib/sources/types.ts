@@ -21,13 +21,19 @@ export const SOURCE_DOMAINS: Record<SourceSite, string> = {
 };
 
 /**
- * Search lanes of a direction search (lib/sources/plan.ts). Inspiration is the raw idea; the
- * others are UI lanes. Bridge is the idea already applied to UI ("vending machine ui design").
+ * Search lanes of a direction search (lib/sources/plan.ts). Every lane is a UI lane: search
+ * returns UI images only (app screens, web pages, dashboards, components). The direction's wild
+ * idea is never searched raw; it reaches results only through the bridge lane ("vending machine
+ * ui design", title must name the idea) and through style words.
  */
-export const LANE_NAMES = ["inspiration", "taste", "fidelity", "hero", "locale", "bridge"] as const;
+export const LANE_NAMES = ["fidelity", "taste", "component", "hero", "bridge", "locale"] as const;
 export type LaneName = (typeof LANE_NAMES)[number];
 
-/** How much of a direction search goes to the raw idea (inspiration) against UI lanes. */
+/**
+ * Accepted for backward compatibility only and ignored: results are always UI ("ui"). Older
+ * clients sent "balanced" or "wild" to mix in the raw idea; that lane was removed (owner decision,
+ * DECISIONS.md 2026-10-11).
+ */
 export const MIXES = ["ui", "balanced", "wild"] as const;
 export type Mix = (typeof MIXES)[number];
 export const DEFAULT_MIX: Mix = "ui";

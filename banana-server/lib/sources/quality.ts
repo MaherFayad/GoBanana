@@ -179,3 +179,52 @@ export function rankReferences(refs: readonly Reference[]): Reference[] {
     .sort((a, b) => b.score - a.score || a.i - b.i)
     .map((x) => x.ref);
 }
+
+// ---------------------------------------------------------------------------
+// UI title gate (owner: "100% of all search results are UI images, and component images, no
+// matter what I ask"). Ported from the round 11 audit (docs/search-quality-experiment.md,
+// rounds 11a and 11b): about 460 live results, every kept one UI by eye.
+
+/** Whole word or phrase, any case, Unicode aware (like Python's `\b` on str). */
+const wordsRe = (alternatives: string) => new RegExp(`(?<![\\p{L}\\p{N}_])(?:${alternatives})(?![\\p{L}\\p{N}_])`, "iu");
+
+/** Words that name a UI: the title must have one. */
+const UI_TITLE_WORDS = wordsRe(
+  "app|apps|ui|ux|dashboard|website|web ?site|landing|interface|screens?|mobile|ios|android|saas|onboarding|checkout|login|sign ?up|component|widget|widgets|design system|figma|web ?app|homepage|home screen|admin|cards? ui|player|tracker",
+);
+/** Words that name other design work: such a title passes only with a strong UI word too. */
+const NON_UI_TITLE_WORDS = wordsRe(
+  "logo|logos|logotype|branding|brand identity|identity|illustrations?|poster|character|mascot|3d model|icon set|icons|packaging|t-?shirt|print|lettering|typeface|font",
+);
+const STRONG_UI_TITLE_WORDS = wordsRe("app|ui|dashboard|website");
+
+/** True when `text` has a UI word (the gate's word list): "banking app home", "checkout". */
+export function hasUiWord(text: string | undefined): boolean {
+  return Boolean(text) && UI_TITLE_WORDS.test(text!);
+}
+
+/** An Awwwards site page is a website by definition; its title is the site's name. */
+function isAwwwardsSite(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return /(^|\.)awwwards\.com$/i.test(u.hostname) && /^\/sites\//i.test(u.pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The UI gate, applied to every search result (metadata only, the server never looks at pixels).
+ * Keep a result when its title has a UI word, unless it also names other design work (logo,
+ * branding, poster, illustration, packaging, ...) without saying app, ui, dashboard or website.
+ * Untitled results are dropped (Pinterest often has no title). An Awwwards site page with a title
+ * passes: it is a website.
+ */
+export function isUiResult(title: string | undefined, url?: string): boolean {
+  const t = (title ?? "").replace(/\s+/g, " ").trim();
+  if (!t) return false;
+  if (isAwwwardsSite(url)) return true;
+  if (!UI_TITLE_WORDS.test(t)) return false;
+  return !(NON_UI_TITLE_WORDS.test(t) && !STRONG_UI_TITLE_WORDS.test(t));
+}

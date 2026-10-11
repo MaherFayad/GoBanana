@@ -1,40 +1,59 @@
 /**
  * Search plan for a direction (pure): which query goes to which source, in what order, and how
- * the lanes share the results. Grammar verified on 386 live queries (DECISIONS.md, 2026-10-11;
- * docs/search-quality-experiment.md, "The grammar"), bridge lane on 32 more (round 10):
+ * the lanes share the results. Search returns UI images only (owner decision, DECISIONS.md
+ * 2026-10-11; docs/search-quality-experiment.md rounds 11a and 11b): every lane is a UI form, and
+ * every result passes the UI title gate (lib/sources/quality.ts isUiResult). The direction's wild
+ * idea is never searched raw; it reaches results only through the bridge lane and style words.
  *
  *   UI_NEG       -template -kit -free -wireframe
- *   inspiration  "{ingredient}"                            pinterest.com/pin + behance.net/gallery
- *   fidelity     "{domain} {surface} {UI_NEG}"             dribbble.com/shots + pinterest.com/pin
- *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
- *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
- *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
+ *   fidelity     "{domain} {surface} {UI_NEG}"             dribbble.com/shots, then pinterest.com/pin
  *   locale (ar)  "arabic {surface} {UI_NEG}"               replaces the fidelity Pinterest page
+ *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
+ *   component    "{core} {component} ui {UI_NEG}"          dribbble.com/shots, up to 2 from the brief
+ *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
+ *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
  * what the base plan leaves is spent on page 2 and fallbacks (fidelity retried with the core noun).
+ *
+ * A plain query (no direction) is forced into UI forms too (plainQueryPlan): searched as is when
+ * it already names a UI, else as "{q} app ui" and "{q} ui design", at most 4 requests.
  */
-import { DEFAULT_MIX, SOURCE_SITES, type LaneName, type Mix, type Reference, type SourceSite } from "./types";
+import { hasUiWord } from "./quality";
+import { cleanQuery } from "./query";
+import { SOURCE_SITES, type LaneName, type Mix, type Reference, type SourceSite } from "./types";
 
 /** Negatives for UI lanes: they cut template, kit and wireframe sales sheets. */
 export const UI_NEG = "-template -kit -free -wireframe";
 
 export type { LaneName, Mix };
 
+/** Most component lanes a direction search plans. */
+export const MAX_COMPONENT_LANES = 2;
+
 /** Plain lane words (no negatives, no site operator), as bend_brief and the tool output show them. */
 export type LaneTexts = {
-  inspiration: string;
-  /** Pinterest wording of the inspiration lane when it differs ("Uzbek suzani pattern"). */
-  inspirationPinterest?: string;
+  /**
+   * The direction's wild idea (its lead ingredient, "Sadu weaving"). Never searched raw: it only
+   * feeds the bridge lane and its title filter, and the learning term keys.
+   */
+  idea: string;
   taste?: string;
   fidelity?: string;
   /** Fidelity with the domain cut to its core noun ("saudi fintech" to "fintech"), when different. */
   fidelityCore?: string;
+  /** Component lanes from the brief: "{core} {component} ui" ("banking quick actions ui"), at most 2. */
+  component?: string[];
   /** The idea applied to UI: "{ingredient} ui design" (UI briefs whose ingredient has a head word). */
   bridge?: string;
   hero?: string;
   locale?: string;
 };
+
+/** True when the lanes have anything to search (a brief gave them UI lanes). */
+export function hasUiLanes(lanes: LaneTexts): boolean {
+  return Boolean(lanes.fidelity || lanes.taste || lanes.component?.length || lanes.bridge || lanes.hero || lanes.locale);
+}
 
 export type PlannedRequest = {
   lane: LaneName;
@@ -95,49 +114,53 @@ export function titleHasWord(title: string | undefined, word: string): boolean {
 
 export type PlanOptions = {
   /**
-   * Head word the bridge lane's titles must have. Defaults to bridgeHead(lanes.inspiration);
-   * pass it when the inspiration words were changed (an arm), so it stays the direction's idea.
+   * Head word the bridge lane's titles must have. Defaults to bridgeHead(lanes.idea); pass it
+   * when the bridge words were changed (an arm), so it stays the direction's idea.
    */
   bridgeWord?: string | null;
 };
 
 /**
- * Requests in priority order (the budget cuts from the end): one page each. Bridge comes after
- * fidelity and taste and before hero.
- * `sources`, when the caller picked them, limits the UI lanes to those sites: a request on
- * another site moves to the first picked site, and repeats are dropped. The inspiration lane is
- * not UI, so it always uses Pinterest pins and Behance galleries (the best sources for raw
- * material, craft and identity work), whatever the caller picked.
+ * Requests in priority order (the budget cuts from the end), one page each:
+ * 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {surface}" for Arabic briefs),
+ * 3. taste, 4. and 5. the component lanes, 6. hero, 7. bridge. The 8th request is left for page 2
+ * or the fidelity fallback (lib/sources/web-search.ts runPlan).
+ * `sources`, when the caller picked them, limits the lanes to those sites: a request on another
+ * site moves to the first picked site, and repeats are dropped.
  * The bridge lane is planned only when there is a head word to filter its titles by.
  */
 export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], opts: PlanOptions = {}): PlannedRequest[] {
   const out: PlannedRequest[] = [];
-  const add = (lane: LaneName, text: string | undefined, site: SourceSite, ui: boolean, fallback?: string, titleWord?: string) => {
+  const add = (lane: LaneName, text: string | undefined, site: SourceSite, neg: boolean, fallback?: string, titleWord?: string) => {
     if (!text) return;
     out.push({
       lane,
-      query: ui ? withNeg(text) : text,
+      query: neg ? withNeg(text) : text,
       site,
-      ...(fallback ? { fallback: ui ? withNeg(fallback) : fallback } : {}),
+      ...(fallback ? { fallback: neg ? withNeg(fallback) : fallback } : {}),
       ...(titleWord ? { titleWord } : {}),
     });
   };
-  const head = opts.bridgeWord === undefined ? bridgeHead(lanes.inspiration) : opts.bridgeWord;
-  add("inspiration", lanes.inspirationPinterest ?? lanes.inspiration, "pinterest", false);
+  const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
   add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
-  add("taste", lanes.taste, "dribbble", true);
-  if (head) add("bridge", lanes.bridge, "dribbble", true, undefined, head);
-  add("inspiration", lanes.inspiration, "behance", false);
-  add("hero", lanes.hero, "dribbble", false);
   if (lanes.locale) add("locale", lanes.locale, "pinterest", true);
   else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
+  add("taste", lanes.taste, "dribbble", true);
+  for (const c of (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES)) add("component", c, "dribbble", true);
+  add("hero", lanes.hero, "dribbble", false);
+  if (head) add("bridge", lanes.bridge, "dribbble", true, undefined, head);
+  return onSources(out, sources);
+}
 
-  if (!sources || sources.length === 0) return out;
+/** Move requests on unpicked sites to the first picked site, dropping repeats. No pick, no change. */
+function onSources<T extends { query: string; site: SourceSite; page?: number }>(reqs: T[], sources?: readonly SourceSite[]): T[] {
+  if (!sources || sources.length === 0) return reqs;
   const picked = SOURCE_SITES.filter((s) => sources.includes(s));
+  if (picked.length === 0) return reqs;
   const seen = new Set<string>();
-  const kept: PlannedRequest[] = [];
-  for (const r of out) {
-    const site = r.lane === "inspiration" || picked.includes(r.site) ? r.site : picked[0]!;
+  const kept: T[] = [];
+  for (const r of reqs) {
+    const site = picked.includes(r.site) ? r.site : picked[0]!;
     const key = `${r.query}|${site}|${r.page ?? 1}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -146,60 +169,79 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], 
   return kept;
 }
 
-/** Inspiration's share of a direction search per mix. */
-export const MIX_INSPIRATION: Record<Mix, number> = { ui: 0.2, balanced: 0.4, wild: 0.6 };
+// ---------------------------------------------------------------------------
+// Plain query path (search_references with `query` and no directionId)
 
-/**
- * Inspiration's quota: "ui" about 20%, rounded down but at least 1 (2 of 12, 3 of 16), "balanced"
- * 40% and "wild" 60%, rounded.
- */
-export function inspirationQuota(count: number, mix: Mix = DEFAULT_MIX): number {
-  const share = count * MIX_INSPIRATION[mix];
-  return Math.min(count, mix === "ui" ? Math.max(1, Math.floor(share)) : Math.round(share));
+/** Most requests a plain query sends. */
+export const PLAIN_MAX_REQUESTS = 4;
+/** A plain query that keeps fewer than this many results is retried once with its short form. */
+export const PLAIN_MIN_GOOD = 4;
+
+export type PlainRequest = { query: string; site: SourceSite };
+
+/** "{text} app ui": a lane-only re-search's words with UI forced in when they name no UI. */
+export function forceUi(text: string): string {
+  const q = cleanQuery(text);
+  return hasUiWord(q) ? q : `${q} app ui`;
 }
 
 /**
- * Lane order for merging: in the "ui" mix the UI lanes go first and inspiration last, so the
- * result list leads with UI; otherwise inspiration first, as before. Order is otherwise kept.
+ * Requests for a plain query, at most PLAIN_MAX_REQUESTS. A query that already names a UI (the
+ * gate's word list) is searched as is on every picked source. Otherwise it is forced into UI
+ * forms: "{q} app ui" and "{q} ui design" on Dribbble, and "{q} app ui" on Pinterest (moved to the
+ * first picked source when Dribbble or Pinterest is not picked).
  */
-export function laneOrder(lanes: readonly LaneName[], mix: Mix = DEFAULT_MIX): LaneName[] {
-  const ui = lanes.filter((l) => l !== "inspiration");
-  if (!lanes.includes("inspiration")) return ui;
-  return mix === "ui" ? [...ui, "inspiration"] : ["inspiration", ...ui];
+export function plainQueryPlan(query: string, sources: readonly SourceSite[]): PlainRequest[] {
+  const q = cleanQuery(query);
+  if (!q) return [];
+  const picked = SOURCE_SITES.filter((s) => sources.includes(s));
+  const sites = picked.length > 0 ? picked : (["pinterest", "dribbble"] as SourceSite[]);
+  if (hasUiWord(q)) return sites.slice(0, PLAIN_MAX_REQUESTS).map((site) => ({ query: q, site }));
+  const forced: PlainRequest[] = [
+    { query: withNeg(`${q} app ui`), site: "dribbble" },
+    { query: withNeg(`${q} ui design`), site: "dribbble" },
+    { query: withNeg(`${q} app ui`), site: "pinterest" },
+  ];
+  return onSources(forced, sites).slice(0, PLAIN_MAX_REQUESTS);
+}
+
+/** Words dropped from the short form of a plain query: filler and UI words. */
+const SHORT_STOP = new Set([
+  "a", "an", "the", "and", "or", "of", "for", "to", "with", "in", "on", "at", "by", "from", "as", "into", "it", "is",
+  "my", "me", "make", "cool", "style", "inspired", "like", "design", "designs", "ui", "ux", "app", "apps",
+]);
+
+/**
+ * The retry form of a plain query: numbers and years stripped ("1980s", "1985", "'80s"), filler
+ * and UI words dropped, cut to its last 2 words, then "ui design". "teletext 1980s" gives
+ * "teletext ui design". Null when nothing is left or it was already sent (`sent`, plain words).
+ */
+export function plainRetryQuery(query: string, sent: readonly string[] = []): string | null {
+  const tokens = (cleanQuery(query).toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? [])
+    .map((t) => t.replace(/['’-]+$/, ""))
+    .filter((t) => t && /\p{L}/u.test(t) && !/^['’]?\d+(s|th|st|nd|rd)?$/i.test(t) && !SHORT_STOP.has(t) && !hasUiWord(t));
+  if (tokens.length === 0) return null;
+  const words = `${tokens.slice(-2).join(" ")} ui design`;
+  const plain = (s: string) => cleanQuery(s.replace(/(^|\s)-\S+/g, " ")).toLowerCase();
+  if (sent.some((s) => plain(s) === words)) return null;
+  return withNeg(words);
 }
 
 /**
- * How many results each lane may place: inspiration its mix share (inspirationQuota), the rest
- * split evenly over the UI lanes in order (earlier lanes get the rounding). One lane takes everything.
+ * How many results each lane may place: split evenly over the lanes in order (earlier lanes get
+ * the rounding). One lane takes everything.
  */
-export function laneQuotas(count: number, lanes: readonly LaneName[], mix: Mix = DEFAULT_MIX): Map<LaneName, number> {
+export function laneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneName, number> {
   const quotas = new Map<LaneName, number>();
   if (lanes.length === 0) return quotas;
-  if (lanes.length === 1) return quotas.set(lanes[0]!, count);
-  const hasInspiration = lanes.includes("inspiration");
-  const first = hasInspiration ? inspirationQuota(count, mix) : 0;
-  const rest = lanes.filter((l) => l !== "inspiration");
-  let left = count - first;
-  for (const lane of lanes) {
-    if (lane === "inspiration") {
-      quotas.set(lane, first);
-      continue;
-    }
-    const i = rest.indexOf(lane);
-    const share = Math.ceil(left / (rest.length - i));
+  let left = count;
+  lanes.forEach((lane, i) => {
+    const share = Math.ceil(left / (lanes.length - i));
     quotas.set(lane, share);
     left -= share;
-  }
+  });
   return quotas;
 }
-
-export type MergeOptions = {
-  /**
-   * "ui" mix: leftover places go to the UI lanes before inspiration, and the merged list puts
-   * every UI result before the inspiration ones (both keep their order).
-   */
-  uiFirst?: boolean;
-};
 
 /**
  * Merge lane lists: round robin across lanes (in the map's order), each lane up to its quota,
@@ -211,9 +253,8 @@ export function mergeLanes(
   quotas: ReadonlyMap<LaneName, number>,
   count: number,
   keyOf: (ref: Reference) => string[],
-  opts: MergeOptions = {},
 ): Reference[] {
-  const out: { ref: Reference; lane: LaneName }[] = [];
+  const out: Reference[] = [];
   const seen = new Set<string>();
   const cursor = new Map<LaneName, number>();
   const placed = new Map<LaneName, number>();
@@ -232,29 +273,22 @@ export function mergeLanes(
     cursor.set(lane, i);
     return undefined;
   };
-  const roundRobin = (pool: readonly LaneName[], capped: boolean) => {
+  const roundRobin = (capped: boolean) => {
     let progress = true;
     while (out.length < count && progress) {
       progress = false;
-      for (const lane of pool) {
+      for (const lane of lanes) {
         if (out.length >= count) break;
         if (capped && (placed.get(lane) ?? 0) >= (quotas.get(lane) ?? 0)) continue;
         const ref = nextFrom(lane);
         if (!ref) continue;
-        out.push({ ref, lane });
+        out.push(ref);
         placed.set(lane, (placed.get(lane) ?? 0) + 1);
         progress = true;
       }
     }
   };
-  roundRobin(lanes, true);
-  if (opts.uiFirst) {
-    roundRobin(
-      lanes.filter((l) => l !== "inspiration"),
-      false,
-    );
-  }
-  roundRobin(lanes, false);
-  if (!opts.uiFirst) return out.map((o) => o.ref);
-  return [...out.filter((o) => o.lane !== "inspiration"), ...out.filter((o) => o.lane === "inspiration")].map((o) => o.ref);
+  roundRobin(true);
+  roundRobin(false);
+  return out;
 }
