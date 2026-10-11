@@ -76,12 +76,30 @@ export function planOf(value: string | null | undefined): Plan {
   return (PLANS as readonly string[]).includes(value ?? "") ? (value as Plan) : "free";
 }
 
+/**
+ * Beta override while payments are off: BETA_PLAN=pro (or any plan id) gives every
+ * free user that plan's limits. Stored plans are never changed. Remove the env var
+ * when billing goes live. Read per call because Workers fill process.env per request.
+ */
+export function betaPlan(env: Record<string, string | undefined> = process.env): Plan | null {
+  const raw = env.BETA_PLAN?.trim().toLowerCase();
+  if (!raw) return null;
+  const plan = raw === "pro" ? "pro_monthly" : planOf(raw);
+  return plan === "free" ? null : plan;
+}
+
+/** The plan whose limits apply: the stored plan, upgraded by BETA_PLAN when that is set. */
+export function effectivePlan(plan: Plan | string | null | undefined): Plan {
+  const stored = planOf(plan);
+  return stored === "free" ? (betaPlan() ?? stored) : stored;
+}
+
 export function limitsFor(plan: Plan | string | null | undefined): PlanLimits {
-  return PLAN_LIMITS[planOf(plan)];
+  return PLAN_LIMITS[effectivePlan(plan)];
 }
 
 export function isPaid(plan: Plan | string | null | undefined): boolean {
-  return planOf(plan) !== "free";
+  return effectivePlan(plan) !== "free";
 }
 
 /** Usage period key `YYYY-MM` in UTC (spec section 11 `usage.period`). */
