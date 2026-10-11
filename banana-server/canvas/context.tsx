@@ -35,6 +35,13 @@ export interface CanvasActions {
   announce(message: string): void;
   /** Return focus to the node wrapper (after a menu or editor closes). */
   focusNode(id: string): void;
+  /**
+   * Set a node's height without a user gesture (a note fitting its text). Grows the section
+   * that holds it when needed. Not announced.
+   */
+  setNodeHeight(id: string, height: number): void;
+  /** Open the image preview dialog on this image or upload node. */
+  openPreview(id: string): void;
 }
 
 const noop = () => {};
@@ -58,6 +65,8 @@ export const CanvasActionsContext = createContext<CanvasActions>({
   setEditing: noop,
   announce: noop,
   focusNode: noop,
+  setNodeHeight: noop,
+  openPreview: noop,
 });
 
 export function useCanvasActions(): CanvasActions {

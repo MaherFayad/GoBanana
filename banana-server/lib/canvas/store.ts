@@ -13,6 +13,7 @@
 import { z } from "zod";
 import { filterBlocked, parseState, stateToItems, siteFromUrl, emptyState } from "@/canvas/state";
 import { arrangeNodes } from "@/canvas/layout-adapter";
+import { estimateNoteHeight } from "@/canvas/note-layout";
 import { flowNodeToStored, stateToNodes } from "@/canvas/state";
 import {
   DEFAULT_SIZE,
@@ -374,7 +375,11 @@ export function appendNodes(
 
   const sized = incoming.map((n) => {
     const def = DEFAULT_SIZE[n.type];
-    return { node: n, w: n.w ?? def.w, h: n.h ?? def.h, id: n.id ?? makeId(PREFIX[n.type]) };
+    const w = n.w ?? def.w;
+    // Notes start as tall as their text (canvas/note-layout.ts), so the board looks right
+    // before the canvas measures them.
+    const h = n.h ?? (n.type === "note" ? estimateNoteHeight(n.data.text, w) : def.h);
+    return { node: n, w, h, id: n.id ?? makeId(PREFIX[n.type]) };
   });
 
   // 1. New sections, to the right of current top-level content.

@@ -5,11 +5,17 @@ requires.
 
 | Asset | Package and version | Licence | Where it is used |
 | --- | --- | --- | --- |
-| Pixelarticons (24 glyphs, plus one glyph derived from "image") | `pixelarticons` 2.4.2 | MIT | `components/studio/icons/` |
+| Pixelarticons (49 glyphs, plus one glyph derived from "image") | `pixelarticons` 2.4.2 | MIT | `components/studio/icons/` |
 | Inter (variable, latin and latin-ext subsets) | `@fontsource-variable/inter` 5.3.0 | SIL Open Font License 1.1 | `styles/fonts.css` |
 | IBM Plex Sans Arabic (arabic subset, 400 to 700) | `@fontsource/ibm-plex-sans-arabic` 5.3.0 | SIL Open Font License 1.1 | `styles/fonts.css` |
+| Simple Icons path data for the Claude and Cursor marks (copied, not a dependency) | `simple-icons` 16.35.0 | CC0 1.0 (data); the marks are their owners' trademarks, used only to say which agents GoBanana works with | `app/(site)/_components/BrandMarks.tsx` |
 
 The font files are served unmodified, as separate files (never inlined into code).
+
+Simple Icons is released under CC0 1.0 and needs no notice; it is listed so the source of the two
+paths is on record. Its disclaimer asks users to respect each brand's guidelines: the marks appear
+only next to the client's written name in the set-up section, in one neutral color. The OpenAI
+mark was removed from Simple Icons in 16.0, so ChatGPT is shown with a neutral pixel glyph.
 
 ## Pixelarticons (MIT)
 

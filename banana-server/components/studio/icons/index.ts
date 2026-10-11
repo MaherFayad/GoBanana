@@ -16,6 +16,10 @@
  *   Site and dashboard: arrow -> arrow-right   docs -> book-open    feedback -> mail
  *   sign-out -> logout   account -> user   collapse -> arrow-bar-left   expand -> arrow-bar-right
  *   sparkle -> sparkle   canvases -> images   clock -> clock
+ *   Landing page visuals: terminal -> terminal   copy -> copy   file -> file-text
+ *   checklist -> checkbox-on   swatch -> colors-swatch   code -> braces   sticky -> sticky-note
+ *   brief -> clipboard-note   shield -> shield   send -> send   plug -> plug   image -> image
+ *   chat -> message (a neutral mark for ChatGPT: simple-icons dropped the OpenAI logo in v16)
  */
 import { ArrowBarLeft } from "pixelarticons/react/ArrowBarLeft.js";
 import { ArrowBarRight } from "pixelarticons/react/ArrowBarRight.js";
@@ -53,6 +57,19 @@ import { SquareAlert } from "pixelarticons/react/SquareAlert.js";
 import { Upload } from "pixelarticons/react/Upload.js";
 import { User } from "pixelarticons/react/User.js";
 import { WarningDiamond } from "pixelarticons/react/WarningDiamond.js";
+import { Braces } from "pixelarticons/react/Braces.js";
+import { CheckboxOn } from "pixelarticons/react/CheckboxOn.js";
+import { ClipboardNote } from "pixelarticons/react/ClipboardNote.js";
+import { ColorsSwatch } from "pixelarticons/react/ColorsSwatch.js";
+import { Copy } from "pixelarticons/react/Copy.js";
+import { FileText } from "pixelarticons/react/FileText.js";
+import { Image } from "pixelarticons/react/Image.js";
+import { Message } from "pixelarticons/react/Message.js";
+import { Plug } from "pixelarticons/react/Plug.js";
+import { Send } from "pixelarticons/react/Send.js";
+import { Shield } from "pixelarticons/react/Shield.js";
+import { StickyNote } from "pixelarticons/react/StickyNote.js";
+import { Terminal } from "pixelarticons/react/Terminal.js";
 import { createIcon } from "./Icon";
 import { ImageOffGlyph } from "./glyphs";
 
@@ -103,3 +120,17 @@ export const ExpandIcon = createIcon("expand", ArrowBarRight, { mirror: true });
 export const SparkleIcon = createIcon("sparkle", Sparkle);
 export const CanvasesIcon = createIcon("canvases", Images);
 export const ClockIcon = createIcon("clock", Clock);
+
+export const TerminalIcon = createIcon("terminal", Terminal);
+export const CopyIcon = createIcon("copy", Copy);
+export const FileIcon = createIcon("file", FileText);
+export const ChecklistIcon = createIcon("checklist", CheckboxOn);
+export const SwatchIcon = createIcon("swatch", ColorsSwatch);
+export const CodeIcon = createIcon("code", Braces);
+export const StickyIcon = createIcon("sticky", StickyNote);
+export const BriefIcon = createIcon("brief", ClipboardNote);
+export const ShieldIcon = createIcon("shield", Shield);
+export const SendIcon = createIcon("send", Send, { mirror: true });
+export const PlugIcon = createIcon("plug", Plug);
+export const ImageIcon = createIcon("image", Image);
+export const ChatIcon = createIcon("chat", Message);

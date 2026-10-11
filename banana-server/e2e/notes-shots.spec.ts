@@ -50,8 +50,8 @@ const NOTES_STATE = {
 
 const IMAGE_STATE = (zoom: number) => ({
   version: 1,
-  // Center the 280 x 210 tile in the 1440 x 900 window (minus the 42px rail and 36px bar).
-  viewport: { x: 700 - 140 * zoom, y: 430 - 105 * zoom, zoom },
+  // Center the 280 x 210 tile on the board (1440 x 900 window, minus the 362px tray and 36px bar).
+  viewport: { x: 539 - 140 * zoom, y: 432 - 105 * zoom, zoom },
   nodes: [
     {
       id: "img1",

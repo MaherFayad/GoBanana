@@ -121,7 +121,11 @@ export function cleanData<K extends CanvasNodeType>(type: K, raw: unknown): Node
     case "upload":
       return referenceData(d) as NodeDataByType[K] | null;
     case "note": {
-      const out: NoteNodeData = compact({ text: typeof d.text === "string" ? d.text.slice(0, 2000) : "", color: str(d.color, 32) ?? null });
+      const out: NoteNodeData = compact({
+        text: typeof d.text === "string" ? d.text.slice(0, 2000) : "",
+        color: str(d.color, 32) ?? null,
+        manualHeight: d.manualHeight === true ? true : undefined,
+      });
       return out as NodeDataByType[K];
     }
     case "swatch": {
@@ -403,8 +407,10 @@ export function stateToItems(state: CanvasState): CanvasItem[] {
         const { width: _w, height: _h, ...d } = n.data;
         return { ...geo, type: "upload", ...d };
       }
-      case "note":
-        return { ...geo, type: "note", ...n.data };
+      case "note": {
+        const { manualHeight: _m, ...d } = n.data;
+        return { ...geo, type: "note", ...d };
+      }
       case "swatch":
         return { ...geo, type: "swatch", ...n.data };
       case "typeSample":

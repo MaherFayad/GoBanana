@@ -181,3 +181,33 @@ export function duplicateNodes(
 export function selectedIds(nodes: readonly CanvasFlowNode[]): string[] {
   return nodes.filter((n) => n.selected && !n.hidden).map((n) => n.id);
 }
+
+/** Inner padding a section keeps around its contents (same as canvas/layout-adapter.ts SECTION_PAD). */
+const SECTION_INNER_PAD = 16;
+
+/**
+ * Grow the section that holds `childId` so the child fits inside it with the frame's padding
+ * (a note that grew to fit its text, a resize past the edge). Sections never shrink here. A
+ * collapsed section keeps its header height and grows the height it restores to.
+ */
+export function growSectionToFit(nodes: readonly CanvasFlowNode[], childId: string): CanvasFlowNode[] {
+  const child = nodes.find((n) => n.id === childId);
+  if (!child?.parentId) return nodes as CanvasFlowNode[];
+  const section = nodes.find((n) => n.id === child.parentId);
+  if (!section || section.type !== "section") return nodes as CanvasFlowNode[];
+  const c = nodeSize(child);
+  const s = nodeSize(section);
+  const needW = child.position.x + c.w + SECTION_INNER_PAD;
+  const needH = child.position.y + c.h + SECTION_INNER_PAD;
+  if (section.data.collapsed) {
+    const restore = section.data.expandedHeight ?? DEFAULT_SIZE.section.h;
+    if (needW <= s.w && needH <= restore) return nodes as CanvasFlowNode[];
+    return nodes.map((n) =>
+      n.id === section.id && n.type === "section"
+        ? { ...n, width: Math.max(s.w, needW), data: { ...n.data, expandedHeight: Math.max(restore, needH) } }
+        : n,
+    );
+  }
+  if (needW <= s.w && needH <= s.h) return nodes as CanvasFlowNode[];
+  return nodes.map((n) => (n.id === section.id ? ({ ...n, width: Math.max(s.w, needW), height: Math.max(s.h, needH) } as CanvasFlowNode) : n));
+}

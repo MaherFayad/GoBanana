@@ -8,8 +8,9 @@
  * - Other layouts on the whole canvas: each section's contents are arranged inside it,
  *   sections sit in a row, loose items are arranged below them.
  */
-import { arrange, byDirection, GAP, type LayoutItem, type LayoutKind, type Rect } from "@/lib/layout";
+import { arrange, byDirection, COLUMN_WIDTH, GAP, type LayoutItem, type LayoutKind, type Rect } from "@/lib/layout";
 import { nodeSize } from "./geometry";
+import { estimateNoteHeight } from "./note-layout";
 import { SECTION_HEADER_HEIGHT } from "./state";
 import { type CanvasFlowNode, MIN_SIZE } from "./types";
 
@@ -34,6 +35,11 @@ function toLayoutItem(n: CanvasFlowNode): LayoutItem {
   if ((n.type === "image" || n.type === "upload") && n.data.width && n.data.height) {
     item.aspectRatio = n.data.width / n.data.height;
   }
+  // An auto-height note is as tall as its text at the column width, not its old aspect ratio
+  // (a 220 x 140 note used to come out 280 x 178 and scroll).
+  if (n.type === "note" && !n.data.manualHeight) {
+    item.aspectRatio = COLUMN_WIDTH / estimateNoteHeight(n.data.text, COLUMN_WIDTH);
+  }
   if (n.parentId) item.sectionId = n.parentId;
   return item;
 }
@@ -44,7 +50,9 @@ function applyPatches(nodes: readonly CanvasFlowNode[], patches: Map<string, Pat
   return nodes.map((n) => {
     const p = patches.get(n.id);
     if (!p) return n;
-    const next = { ...n, position: { x: p.x, y: p.y }, width: p.w, height: p.h } as CanvasFlowNode;
+    // Square grid and hero cells are taller than most notes; an auto note keeps its text height.
+    const h = n.type === "note" && !n.data.manualHeight ? Math.min(p.h, estimateNoteHeight(n.data.text, p.w)) : p.h;
+    const next = { ...n, position: { x: p.x, y: p.y }, width: p.w, height: h } as CanvasFlowNode;
     if (p.parentId === null) delete next.parentId;
     else if (p.parentId) next.parentId = p.parentId;
     return next;

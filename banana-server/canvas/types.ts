@@ -32,7 +32,14 @@ export type UploadNodeData = Omit<UploadItem, Geometry> & {
   width?: number | null;
   height?: number | null;
 };
-export type NoteNodeData = Omit<NoteItem, Geometry>;
+export type NoteNodeData = Omit<NoteItem, Geometry> & {
+  /**
+   * The user set this note's height (resize drag, + and -, "Compact"). Missing means auto:
+   * the note grows and shrinks to fit its text (canvas/note-layout.ts). A manual height
+   * shorter than the text shows the compact presentation instead of a scrollbar.
+   */
+  manualHeight?: boolean;
+};
 export type SwatchNodeData = Omit<SwatchItem, Geometry>;
 export type TypeSampleNodeData = Omit<TypeSampleItem, Geometry>;
 export type SectionNodeData = Omit<SectionItem, Geometry> & {
@@ -137,7 +144,9 @@ export const DEFAULT_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
 export const MIN_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   image: { w: 120, h: 96 },
   upload: { w: 120, h: 96 },
-  note: { w: 140, h: 96 },
+  // One line of note text with room around it (canvas/note-layout.ts NOTE_MIN_HEIGHT). The note's
+  // controls sit in the pill above it, not inside, so it can be this short.
+  note: { w: 140, h: 64 },
   swatch: { w: 200, h: 230 },
   typeSample: { w: 220, h: 140 },
   section: { w: 296, h: 48 },
