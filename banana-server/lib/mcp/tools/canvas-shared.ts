@@ -20,8 +20,14 @@ export type CanvasToolDeps = {
   now?(): Date;
 };
 
+/** Live deps. `repos` is read lazily, so input checks run even when the database is not configured. */
 export function liveCanvasDeps(): CanvasToolDeps {
-  return { repos: getRepos(), appUrl: () => getConfig().appUrl };
+  return {
+    get repos() {
+      return getRepos();
+    },
+    appUrl: () => getConfig().appUrl,
+  };
 }
 
 /** Pricing page for upgrade messages (app/(site)/[locale]/pricing). */
@@ -46,20 +52,16 @@ export function mutateError(outcome: Exclude<MutateOutcome<unknown>, { ok: true 
   return toolMessage(CANVAS_NOT_FOUND);
 }
 
-/** Lazily builds a tool from live deps on first call, so env is read at request time. */
+/**
+ * Builds a tool over live deps on first call. Tools must touch `deps.repos` only inside
+ * their try block, so a missing DATABASE_URL becomes a plain message, never a raw error.
+ */
 export function lazyTool<I, R>(
   build: (deps: CanvasToolDeps) => (input: I, userId: string | undefined) => Promise<R>,
-): (input: I, userId: string | undefined) => Promise<R | ToolResult> {
+): (input: I, userId: string | undefined) => Promise<R> {
   let tool: ((input: I, userId: string | undefined) => Promise<R>) | undefined;
-  return async (input, userId) => {
-    if (!userId) return toolMessage(NOT_SIGNED_IN);
-    try {
-      tool ??= build(liveCanvasDeps());
-    } catch {
-      // For example DATABASE_URL missing. Never pass the raw error to the agent.
-      console.error("[mcp] canvas tools are not configured");
-      return toolMessage(TRY_AGAIN);
-    }
+  return (input, userId) => {
+    tool ??= build(liveCanvasDeps());
     return tool(input, userId);
   };
 }

@@ -13,7 +13,9 @@ import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
 import { DEFAULT_SOURCES, SOURCE_SITES, type Reference, type SourceSite } from "@/lib/sources/types";
 import { createWebSearchAdapter, type WebSearchAdapter } from "@/lib/sources/web-search";
 import { compileTakedowns } from "@/lib/takedown";
-import { liveCanvasDeps, plausibleId, takedownLoader, upgradeUrl } from "./canvas-shared";
+import { getConfig } from "@/lib/config";
+import { getRepos } from "@/lib/db";
+import { plausibleId, takedownLoader, upgradeUrl } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool } from "./types";
 
 export const TOOL_NAME = "search_references";
@@ -146,7 +148,9 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
 
       if (input.canvasId && result.references.length > 0) {
         out.canvasId = input.canvasId;
-        const added = await deps.addToTray(userId, input.canvasId, result.references, directionKey);
+        const added = directionKey
+          ? await deps.addToTray(userId, input.canvasId, result.references, directionKey)
+          : await deps.addToTray(userId, input.canvasId, result.references);
         if (added) out.addedToTray = true;
         else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
       }
@@ -168,25 +172,35 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
  * Without a canvasId nothing is saved: `references.canvas_id` is NOT NULL, and the
  * result ids (`ref_...`) are stable anyway, so a later search with a canvasId saves them.
  */
-export function createDbDeps(repos: Repos, appUrl: () => string | undefined): SearchReferencesDeps {
-  const canvasDeps = { repos, appUrl };
+export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string | undefined): SearchReferencesDeps {
+  const r = typeof repos === "function" ? repos : () => repos;
+  const canvasDeps = {
+    get repos() {
+      return r();
+    },
+    appUrl,
+  };
   return {
     adapter: createWebSearchAdapter({
       apiKey: process.env.SERPER_API_KEY,
       // Read on every search (spec section 2 rule 5); the adapter fails closed when it throws.
-      loadTakedowns: async () => compileTakedowns(await repos.takedowns.list()),
+      loadTakedowns: async () => compileTakedowns(await r().takedowns.list()),
     }),
-    usage: repos.usage,
-    getPlan: (userId) => repos.users.getPlan(userId),
+    usage: {
+      get: (userId, period) => r().usage.get(userId, period),
+      addSearches: (userId, period, by) => r().usage.addSearches(userId, period, by),
+    },
+    getPlan: (userId) => r().users.getPlan(userId),
     getDirection: async (userId, directionId, canvasId) => {
-      const d = await repos.directions.findForUser(userId, directionId, canvasId);
+      const d = await r().directions.findForUser(userId, directionId, canvasId);
       return d ? { id: d.id, searchQuery: d.searchQuery, canvasId: d.canvasId, bendId: d.bendId } : null;
     },
     addToTray: async (userId, canvasId, references, directionId) => {
-      const owned = await repos.canvases.getOwned(userId, canvasId);
+      const db = r();
+      const owned = await db.canvases.getOwned(userId, canvasId);
       if (!owned) return false;
-      await repos.references.insertMany(canvasId, references);
-      const outcome = await mutateCanvas(repos, userId, canvasId, takedownLoader(canvasDeps), (state) => ({
+      await db.references.insertMany(canvasId, references);
+      const outcome = await mutateCanvas(db, userId, canvasId, takedownLoader(canvasDeps), (state) => ({
         state: addToCanvasTray(state, references, directionId),
         value: true,
       }));
@@ -196,9 +210,9 @@ export function createDbDeps(repos: Repos, appUrl: () => string | undefined): Se
   };
 }
 
+/** Live deps: the database is reached lazily, so input checks still run without it. */
 function createDefaultDeps(): SearchReferencesDeps {
-  const live = liveCanvasDeps();
-  return createDbDeps(live.repos, live.appUrl);
+  return createDbDeps(getRepos, () => getConfig().appUrl);
 }
 
 let defaultTool: ReturnType<typeof createSearchReferencesTool> | undefined;
@@ -214,15 +228,8 @@ export const register: RegisterTool = (server) => {
       annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args, ctx) => {
-      const userId = authExtra(ctx)?.userId;
-      if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
-      try {
-        defaultTool ??= createSearchReferencesTool(createDefaultDeps());
-      } catch {
-        console.error("[search_references] not configured");
-        return toolMessage("Search is not available right now. Try again in a minute.");
-      }
-      return defaultTool(args as SearchReferencesInput, userId);
+      defaultTool ??= createSearchReferencesTool(createDefaultDeps());
+      return defaultTool(args as SearchReferencesInput, authExtra(ctx)?.userId);
     },
   );
 };

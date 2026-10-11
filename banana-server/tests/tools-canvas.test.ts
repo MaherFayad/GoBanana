@@ -20,7 +20,7 @@ const stored = async (repos: ReturnType<typeof makeDeps>["repos"], id: string) =
 describe("tool copy", () => {
   it("is short and plain", () => {
     for (const d of [OPEN_DESC, ADD_DESC, ARRANGE_DESC, GET_DESC, EXPORT_DESC]) {
-      expect(d).not.toMatch(/[—–]/);
+      expect(d).not.toMatch(/[\u2014\u2013]/);
       expect(d.length).toBeLessThan(400);
     }
   });

@@ -69,9 +69,8 @@ export function createOpenCanvasTool(deps: CanvasToolDeps) {
     const parsed = parseArgs(inputSchema, raw, MESSAGES, "Check the input: canvasId, title and brief are all optional.");
     if (!parsed.ok) return toolMessage(parsed.message);
     const input = parsed.data;
-    const { repos } = deps;
-
     try {
+      const { repos } = deps;
       if (input.canvasId) {
         if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
         const loaded = await loadCanvas(repos, userId, input.canvasId, takedownLoader(deps));

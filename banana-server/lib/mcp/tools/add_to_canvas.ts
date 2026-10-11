@@ -118,9 +118,8 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
     if (!parsed.ok) return toolMessage(parsed.message);
     const input = parsed.data;
     if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
-    const { repos } = deps;
-
     try {
+      const { repos } = deps;
       const plan = await repos.users.getPlan(userId);
       const refIds = input.items.flatMap((i) => (i.type === "reference" ? [i.referenceId] : []));
       const owned = await repos.canvases.getOwned(userId, input.canvasId);
