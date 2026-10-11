@@ -101,6 +101,8 @@ describe("rewrite arms", () => {
     expect(builtInArms("taste", LANES, VARIANTS)).toEqual(["default", "app", "core"]);
     expect(builtInArms("taste", LANES)).toEqual(["default"]);
     expect(builtInArms("hero", LANES)).toEqual(["default"]);
+    expect(builtInArms("bridge", LANES)).toEqual(["default"]);
+    expect(builtInArms("bridge", { ...LANES, bridge: "oversized film frames ui design" })).toEqual(["default", "app"]);
     expect(agentArm("35mm Film strip -stock site:pinterest.com macro")).toBe("agent:35mm film strip macro");
   });
 
@@ -131,6 +133,16 @@ describe("rewrite arms", () => {
     expect(show({ taste: "nonsense" })[2]).toBe(`taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`);
   });
 
+  it("applies the bridge arms and keeps the idea's title word whatever the inspiration arm", () => {
+    const lanes = { ...LANES, bridge: "oversized film frames ui design" };
+    const bridgeOf = (arms: Parameters<typeof planWithArms>[1]) => planWithArms(lanes, arms, undefined, VARIANTS).find((r) => r.lane === "bridge");
+    expect(bridgeOf({})).toEqual({ lane: "bridge", query: `oversized film frames ui design ${UI_NEG}`, site: "dribbble", titleWord: "frames" });
+    expect(bridgeOf({ bridge: "app" })?.query).toBe(`oversized film frames app ui ${UI_NEG}`);
+    expect(bridgeOf({ bridge: "app", inspiration: "poster@pinterest+behance" })?.titleWord).toBe("frames");
+    expect(bridgeOf({ bridge: "agent:film strip checkout ui" })?.query).toBe(`film strip checkout ui ${UI_NEG}`);
+    expect(planWithArms(lanes, {}).map((r) => r.lane)).toEqual(["inspiration", "fidelity", "taste", "bridge", "inspiration", "hero", "fidelity"]);
+  });
+
   it("plans one lane with the agent's words", () => {
     expect(planLane("inspiration", "35mm film strip macro").map((r) => buildSourceQuery(r.query, r.site))).toEqual([
       "35mm film strip macro site:pinterest.com/pin",
@@ -141,6 +153,11 @@ describe("rewrite arms", () => {
     ]);
     expect(planLane("fidelity", "fintech wallet app ui").map((r) => r.site)).toEqual(["dribbble", "pinterest"]);
     expect(planLane("fidelity", "x", ["dribbble"]).map((r) => r.site)).toEqual(["dribbble"]);
+    expect(planLane("bridge", "vending machine kiosk ui", undefined, "vending machine")).toEqual([
+      { lane: "bridge", query: `vending machine kiosk ui ${UI_NEG}`, site: "dribbble", titleWord: "machine" },
+    ]);
+    // A bridge re-search without the direction's idea has nothing to filter titles by: no request.
+    expect(planLane("bridge", "vending machine kiosk ui")).toEqual([]);
   });
 });
 
@@ -219,6 +236,8 @@ describe("hints for bad ratings", () => {
     expect(badHint("inspiration", ["off_topic"])).toContain("describe the visual, not the object");
     expect(badHint("inspiration", ["stock_or_shop"])).toContain("poster");
     expect(badHint("taste", ["not_ui"])).toContain("ui design");
+    expect(badHint("bridge", ["off_topic"])).toContain('lane "bridge"');
+    expect(badHint("bridge", ["off_topic"])).toContain("main word");
     expect(badHint("hero", ["cluttered"])).toContain("single screen");
     expect(badHint("fidelity", ["duplicate"])).toContain("blocked");
     expect(badHint(null, [])).toContain("will not come back");

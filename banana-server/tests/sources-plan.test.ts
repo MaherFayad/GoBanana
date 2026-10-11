@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  bridgeHead,
   DEFAULT_IMAGE_HOSTS,
+  inspirationQuota,
+  laneOrder,
   NOTES,
   SERPER_MAX_REQUESTS,
   buildSourceQuery,
@@ -10,6 +13,7 @@ import {
   mergeLanes,
   parseAllowlist,
   planRequests,
+  titleHasWord,
   UI_NEG,
   type FetchLike,
   type LaneTexts,
@@ -66,6 +70,50 @@ describe("search plan", () => {
     for (const r of plan) expect(buildSourceQuery(r.query, r.site)).not.toMatch(/\bOR\b/);
   });
 
+  it("plans the bridge lane on Dribbble after fidelity and taste, before hero, with a title word", () => {
+    const plan = planRequests({ ...LANES, bridge: "vending machine ui design", inspiration: "vending machine" });
+    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual([
+      "inspiration:pinterest",
+      "fidelity:dribbble",
+      "taste:dribbble",
+      "bridge:dribbble",
+      "inspiration:behance",
+      "hero:dribbble",
+      "fidelity:pinterest",
+    ]);
+    expect(plan[3]).toEqual({ lane: "bridge", query: `vending machine ui design ${UI_NEG}`, site: "dribbble", titleWord: "machine" });
+    expect(buildSourceQuery(plan[3]!.query, plan[3]!.site)).toBe(`vending machine ui design ${UI_NEG} site:dribbble.com/shots`);
+    // No head word, no bridge request.
+    expect(planRequests({ ...LANES, bridge: "3d ui design", inspiration: "3d" }).some((r) => r.lane === "bridge")).toBe(false);
+    // A picked source list moves it like any UI lane.
+    expect(planRequests({ ...LANES, bridge: "vending machine ui design", inspiration: "vending machine" }, ["pinterest"]).find((r) => r.lane === "bridge")?.site).toBe("pinterest");
+  });
+
+  it("finds the ingredient's head word", () => {
+    expect(bridgeHead("vending machine")).toBe("machine");
+    expect(bridgeHead("Sadu weaving")).toBe("weaving");
+    expect(bridgeHead("oversized numerals")).toBe("numerals");
+    expect(bridgeHead("Art Nouveau 1900")).toBe("nouveau");
+    expect(bridgeHead("map of the")).toBe("map");
+    expect(bridgeHead("3d ui")).toBeNull();
+    expect(bridgeHead("")).toBeNull();
+    expect(bridgeHead(undefined)).toBeNull();
+  });
+
+  it("matches the head word in titles on word boundaries, any case, singular or plural", () => {
+    expect(titleHasWord("Vending Machine UI by Ana on Dribbble", "machine")).toBe(true);
+    expect(titleHasWord("Smart vending machines kiosk", "machine")).toBe(true);
+    expect(titleHasWord("MACHINE checkout", "machine")).toBe(true);
+    expect(titleHasWord("Machinery dashboard", "machine")).toBe(false);
+    expect(titleHasWord("Time-machine travel app", "machine")).toBe(true);
+    expect(titleHasWord("Big numeral clock", "numerals")).toBe(true);
+    expect(titleHasWord("Glasses store app", "glass")).toBe(true);
+    expect(titleHasWord("Frosted glass card", "glasses")).toBe(true);
+    expect(titleHasWord("Hourglass timer", "glass")).toBe(false);
+    expect(titleHasWord("Travel app UI", "weaving")).toBe(false);
+    expect(titleHasWord(undefined, "machine")).toBe(false);
+  });
+
   it("puts the Arabic locale query in place of the Pinterest fidelity page", () => {
     const plan = planRequests({ ...LANES, locale: "arabic app ui" });
     expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual([
@@ -91,10 +139,36 @@ describe("search plan", () => {
     expect(planRequests({ inspiration: "crushed velvet" }).map((r) => r.site)).toEqual(["pinterest", "behance"]);
   });
 
-  it("gives inspiration about 40% and splits the rest", () => {
-    expect([...laneQuotas(12, ["inspiration", "fidelity", "taste", "hero"]).values()]).toEqual([5, 3, 2, 2]);
-    expect([...laneQuotas(8, ["inspiration", "fidelity", "taste"]).values()]).toEqual([3, 3, 2]);
+  it("gives inspiration its mix share and splits the rest over the UI lanes", () => {
+    // "ui" (the default): about 20%, at most 2 of 12 and 3 of 16, never 0.
+    expect(Object.fromEntries(laneQuotas(12, ["fidelity", "taste", "bridge", "hero", "inspiration"]))).toEqual({
+      fidelity: 3,
+      taste: 3,
+      bridge: 2,
+      hero: 2,
+      inspiration: 2,
+    });
+    expect(laneQuotas(16, ["fidelity", "taste", "inspiration"]).get("inspiration")).toBe(3);
+    expect([4, 8, 12, 16, 24].map((n) => inspirationQuota(n, "ui"))).toEqual([1, 1, 2, 3, 4]);
+    // "balanced" is the old 40%, "wild" 60%.
+    expect([...laneQuotas(12, ["inspiration", "fidelity", "taste", "hero"], "balanced").values()]).toEqual([5, 3, 2, 2]);
+    expect([...laneQuotas(8, ["inspiration", "fidelity", "taste"], "balanced").values()]).toEqual([3, 3, 2]);
+    expect(Object.fromEntries(laneQuotas(12, ["inspiration", "fidelity", "taste", "hero"], "wild"))).toEqual({
+      inspiration: 7,
+      fidelity: 2,
+      taste: 2,
+      hero: 1,
+    });
     expect([...laneQuotas(8, ["inspiration"]).values()]).toEqual([8]);
+    expect([...laneQuotas(8, ["taste", "fidelity"]).values()]).toEqual([4, 4]);
+  });
+
+  it("orders lanes UI first for the ui mix, inspiration first otherwise", () => {
+    const lanes = ["inspiration", "fidelity", "taste", "bridge", "hero"] as const;
+    expect(laneOrder(lanes, "ui")).toEqual(["fidelity", "taste", "bridge", "hero", "inspiration"]);
+    expect(laneOrder(lanes)).toEqual(laneOrder(lanes, "ui"));
+    expect(laneOrder(["fidelity", "inspiration", "taste"], "balanced")).toEqual(["inspiration", "fidelity", "taste"]);
+    expect(laneOrder(["fidelity", "taste"], "wild")).toEqual(["fidelity", "taste"]);
   });
 
   it("merges lanes round robin by quota, fills from leftovers, never repeats a key", () => {
@@ -111,6 +185,24 @@ describe("search plan", () => {
     ] as const);
     const out = mergeLanes(lists, quotas, 6, (r) => [r.id]);
     expect(out.map((r) => r.id)).toEqual(["a1", "b1", "a2", "b2", "a3", "a4"]);
+  });
+
+  it("ui mix: UI results lead, leftovers go to UI lanes before inspiration", () => {
+    const ref = (id: string): Reference => ({ id, thumbUrl: `https://t/${id}`, imageUrl: `https://i/${id}`, sourceUrl: `https://s/${id}`, sourceSite: "x" });
+    const lists = new Map([
+      ["fidelity", ["f1", "f2", "f3", "f4", "f5"].map(ref)],
+      ["bridge", [] as Reference[]],
+      ["taste", ["t1", "t2"].map(ref)],
+      ["inspiration", ["i1", "i2", "i3", "i4"].map(ref)],
+    ] as const);
+    const quotas = laneQuotas(8, [...lists.keys()], "ui");
+    expect(Object.fromEntries(quotas)).toEqual({ fidelity: 3, bridge: 2, taste: 2, inspiration: 1 });
+    const out = mergeLanes(lists, quotas, 8, (r) => [r.id], { uiFirst: true });
+    // The empty bridge lane's places go to fidelity, not to inspiration, and inspiration comes last.
+    expect(out.map((r) => r.id)).toEqual(["f1", "t1", "f2", "t2", "f3", "f4", "f5", "i1"]);
+    // Inspiration fills only when the UI lanes run dry.
+    const short = mergeLanes(new Map([["taste", [ref("t1")]], ["inspiration", ["i1", "i2", "i3"].map(ref)]]), laneQuotas(4, ["taste", "inspiration"], "ui"), 4, (r) => [r.id], { uiFirst: true });
+    expect(short.map((r) => r.id)).toEqual(["t1", "i1", "i2", "i3"]);
   });
 });
 
@@ -134,9 +226,22 @@ describe("runPlan", () => {
     expect(result.requests).toBe(plan.length);
     expect(fetchMock.mock.calls.every(([, init]) => bodyOf(init).num === 10 && bodyOf(init).page === undefined)).toBe(true);
     expect(result.references).toHaveLength(12);
-    // Inspiration first, then the UI lanes, round robin.
-    expect(result.references[0]!.sourceSite).toBe("pinterest.com");
-    expect(new Set(result.references.map((r) => r.sourceSite))).toEqual(new Set(["pinterest.com", "dribbble.com", "behance.net"]));
+    // "ui" mix: the UI lanes first, round robin, then 2 of 12 from inspiration (Pinterest and Behance).
+    expect(result.references.map((r) => r.lane)).toEqual([
+      "fidelity",
+      "taste",
+      "hero",
+      "fidelity",
+      "taste",
+      "hero",
+      "fidelity",
+      "taste",
+      "hero",
+      "fidelity",
+      "inspiration",
+      "inspiration",
+    ]);
+    expect(new Set(result.references.slice(-2).map((r) => r.sourceSite))).toEqual(new Set(["pinterest.com", "behance.net"]));
     // Dribbble originals: ?resize stripped.
     expect(result.references.filter((r) => r.sourceSite === "dribbble.com").every((r) => !r.imageUrl.includes("resize"))).toBe(true);
   });
@@ -299,6 +404,109 @@ describe("runPlan", () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result.report?.some((r) => r.page2)).toBe(false);
+  });
+});
+
+describe("runPlan with the bridge lane and mixes", () => {
+  const BRIDGE: LaneTexts = { ...LANES, inspiration: "vending machine", bridge: "vending machine ui design" };
+  /** Bridge page: Dribbble shots with the given titles. */
+  const bridgePage = (q: string, titles: string[]) => ({
+    images: titles.map((title, i) => ({
+      title,
+      link: `https://dribbble.com/shots/9${i}${q.length}-bridge`,
+      imageUrl: `https://cdn.dribbble.com/u/bridge-${q.length}-${i}.png`,
+    })),
+  });
+
+  it("keeps only bridge results whose title names the idea", async () => {
+    const titles = [
+      "Vending Machine UI by Ana on Dribbble",
+      "Smart vending machines kiosk",
+      "Machinery dashboard",
+      "Travel app",
+      "Coffee machine order screen",
+      "Ticket kiosk",
+      "Snack MACHINE checkout",
+      "Grocery app",
+      "Machines of loving grace",
+      "Arcade cabinet",
+    ];
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const q = bodyOf(init).q;
+      return jsonResponse(q.startsWith("vending machine ui design") ? bridgePage(q, titles) : pageFor(q));
+    });
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(BRIDGE), { count: 24, userId: "u" });
+    expect(fetchMock).toHaveBeenCalledTimes(7);
+    const bridge = result.references.filter((r) => r.lane === "bridge");
+    expect(bridge.map((r) => r.title).sort()).toEqual(
+      ["Coffee machine order screen", "Machines of loving grace", "Smart vending machines kiosk", "Snack MACHINE checkout", "Vending Machine UI by Ana on Dribbble"].sort(),
+    );
+    expect(result.report?.find((r) => r.lane === "bridge")).toMatchObject({ good: 5, site: "dribbble" });
+    expect(result.dropped).toBeGreaterThanOrEqual(5);
+  });
+
+  it("an idea with no UI titles (sadu) leaves the bridge lane empty and its places go to the other UI lanes", async () => {
+    const lanes: LaneTexts = { ...LANES, inspiration: "Sadu weaving", bridge: "Sadu weaving ui design" };
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const q = bodyOf(init).q;
+      return jsonResponse(q.startsWith("Sadu weaving ui design") ? bridgePage(q, Array.from({ length: 10 }, (_, i) => `Travel app UI ${i}`)) : pageFor(q));
+    });
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(lanes), { count: 12, userId: "u" });
+    // No page 2 and no fallback for an empty bridge: 7 requests.
+    expect(fetchMock).toHaveBeenCalledTimes(7);
+    expect(result.report?.find((r) => r.lane === "bridge")).toMatchObject({ good: 0 });
+    expect(result.references).toHaveLength(12);
+    expect(result.references.some((r) => r.lane === "bridge")).toBe(false);
+    expect(result.references.filter((r) => r.lane === "inspiration")).toHaveLength(2);
+    expect(result.references.slice(0, 10).every((r) => r.lane !== "inspiration")).toBe(true);
+  });
+
+  it("keeps bridge, page 2 and the fallback within 8 requests, page 2 first", async () => {
+    const plan = planRequests(BRIDGE);
+    expect(plan).toHaveLength(7);
+    const tasteQ = buildSourceQuery(plan[2]!.query, plan[2]!.site);
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const { q, page } = bodyOf(init);
+      // Both fidelity requests are thin (fallback cases); the taste page is mostly on the canvas (page 2 case).
+      if (q.startsWith("saudi fintech")) return jsonResponse(pageFor(q, 2));
+      if (q.startsWith("vending machine ui design")) return jsonResponse(bridgePage(q, ["Vending machine app"]));
+      return jsonResponse(pageFor(q, 10, page === 2 ? "-p2" : ""));
+    });
+    const exclude = pageFor(tasteQ).images.slice(0, 8).map((i) => i.link);
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(plan, { count: 24, userId: "u", exclude });
+    const bodies = fetchMock.mock.calls.map(([, init]) => bodyOf(init));
+    expect(bodies).toHaveLength(SERPER_MAX_REQUESTS);
+    expect(result.requests).toBe(8);
+    expect(bodies.at(-1)).toEqual({ q: tasteQ, num: 10, page: 2 });
+    expect(result.report?.some((r) => r.retried)).toBe(false);
+    expect(result.references.some((r) => r.lane === "bridge")).toBe(true);
+  });
+
+  it("spends the one request left on the first thin fidelity fallback", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => {
+      const q = bodyOf(init).q;
+      return jsonResponse(q.startsWith("saudi fintech") ? pageFor(q, 2) : pageFor(q));
+    });
+    const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(BRIDGE), { count: 24, userId: "u" });
+    const queries = fetchMock.mock.calls.map(([, init]) => bodyOf(init).q);
+    expect(queries).toHaveLength(8);
+    expect(queries.at(-1)).toBe(`fintech app ui ${UI_NEG} site:dribbble.com/shots`);
+    expect(result.report?.filter((r) => r.retried)).toHaveLength(1);
+  });
+
+  it("orders and shares results by mix", async () => {
+    const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
+    const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
+    const count = (refs: Reference[]) => refs.filter((r) => r.lane === "inspiration").length;
+    const ui = await adapter.runPlan(planRequests(LANES), { count: 16, userId: "u" });
+    expect(count(ui.references)).toBe(3);
+    expect(ui.references.slice(0, 13).every((r) => r.lane !== "inspiration")).toBe(true);
+    const balanced = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u", mix: "balanced" });
+    expect(count(balanced.references)).toBe(5);
+    expect(balanced.references[0]!.lane).toBe("inspiration");
+    const wild = await adapter.runPlan(planRequests(LANES), { count: 12, userId: "u", mix: "wild" });
+    expect(count(wild.references)).toBe(7);
+    expect(wild.references[0]!.lane).toBe("inspiration");
   });
 });
 
