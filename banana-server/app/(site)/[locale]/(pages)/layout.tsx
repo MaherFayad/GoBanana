@@ -1,12 +1,14 @@
 /**
  * Public pages (landing, pricing, account, takedown, terms, privacy): header, main and footer.
- * The header shows "Your canvases" when someone is signed in, else "Sign in".
+ * The header (the desktop menu bar) shows "Your canvases" when someone is signed in, else
+ * "Sign in". The dock sits at the bottom of every public page.
  */
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { getDict } from "@/lib/site/dict";
 import { isLocale } from "@/lib/site/i18n";
 import { isSignedIn } from "@/lib/site/session";
+import { Dock } from "../../_components/desktop/Dock";
 import { SiteFooter, SiteHeader } from "../../_components/SiteChrome";
 
 type Props = { children: ReactNode; params: Promise<{ locale: string }> };
@@ -24,6 +26,7 @@ export default async function PagesLayout({ children, params }: Props) {
         {children}
       </main>
       <SiteFooter locale={locale} t={t} />
+      <Dock locale={locale} t={t} />
     </>
   );
 }

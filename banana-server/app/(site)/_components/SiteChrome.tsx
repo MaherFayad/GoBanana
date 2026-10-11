@@ -14,7 +14,11 @@ import type { Dict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
 import { SIGN_IN_PATH } from "@/lib/site/session";
 import { bt } from "./Bidi";
+import { docsHref } from "./desktop/Dock";
+import { MenuClock } from "./desktop/MenuClock";
+import { RollLabel } from "./desktop/RollButton";
 import { LanguageSwitch, SiteNav } from "./SiteNav";
+import "./desktop/desktop.css";
 
 /**
  * The header shows the mark alone; the footer keeps the name next to it, the one place the
@@ -29,42 +33,45 @@ export function Brand({ locale, className = "brand", withName = false }: { local
   );
 }
 
+/**
+ * The menu bar of the GoBanana desktop (docs/site-redesign-spec.md): the Bend mark and the nav at
+ * the start; the language switch, a live clock, Sign in and the "Add to Claude" pill at the end.
+ * Sticky at the top as one slim glass bar (html gets scroll-padding for it in desktop.css, so it
+ * never hides a focused element, SC 2.4.11). Under 768px the nav moves to the dock.
+ */
 export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; signedIn: boolean }) {
   const c = t.common;
   const other: Locale = c.language.switchToLang === "ar" ? "ar" : "en";
   const canvases = href(locale, "canvases");
   return (
-    <header className="site-header">
-      <div className="wrap">
+    <header className="site-header menubar">
+      <div className="menubar-start">
         <Brand locale={locale} />
         <SiteNav
           label={c.navLabel}
           items={[
             { href: `${href(locale)}#how`, label: c.nav.how },
             { href: `${href(locale)}#gallery`, label: c.nav.gallery },
+            { href: docsHref(locale), label: c.nav.docs },
             { href: href(locale, "pricing"), label: c.nav.pricing },
           ]}
         />
-        <div className="header-actions">
-          <LanguageSwitch to={other} label={c.language.label} name={c.language.switchTo} />
-          <a className="st-btn" data-variant="primary" data-size="sm" href={`${href(locale)}#install`}>
-            {c.addToClaude}
+      </div>
+      <div className="menubar-end">
+        <LanguageSwitch to={other} label={c.language.label} name={c.language.switchTo} />
+        <MenuClock locale={locale} />
+        {signedIn ? (
+          <Link className="menubar-link" href={canvases}>
+            {c.yourCanvases}
+          </Link>
+        ) : (
+          <a className="menubar-link" href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(canvases)}`}>
+            {c.signIn}
           </a>
-          {signedIn ? (
-            <Link className="st-btn" data-variant="secondary" data-size="sm" href={canvases}>
-              {c.yourCanvases}
-            </Link>
-          ) : (
-            <a
-              className="st-btn"
-              data-variant="secondary"
-              data-size="sm"
-              href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(canvases)}`}
-            >
-              {c.signIn}
-            </a>
-          )}
-        </div>
+        )}
+        <a className="menubar-pill" href={`${href(locale)}#install`}>
+          <RollLabel>{c.addToClaude}</RollLabel>
+        </a>
       </div>
     </header>
   );
@@ -86,7 +93,8 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
     {
       title: f.help,
       links: [
-        { href: `${home}#install`, label: f.setup },
+        { href: docsHref(locale), label: f.docs },
+        { href: docsHref(locale, "start/install/"), label: f.setup },
         { href: href(locale, "account"), label: f.account },
         { href: href(locale, "takedown"), label: f.takedown },
       ],
@@ -113,7 +121,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
                 <h2 className="footer-title">{col.title}</h2>
                 <ul>
                   {col.links.map((l) => (
-                    <li key={l.href}>
+                    <li key={l.label}>
                       <Link href={l.href}>{l.label}</Link>
                     </li>
                   ))}

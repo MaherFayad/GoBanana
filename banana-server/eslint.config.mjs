@@ -22,6 +22,8 @@ export default defineConfig([
     "build/**",
     "coverage/**",
     "db/migrations/**",
+    // Built docs (banana-docs, copied in before the OpenNext build): generated output.
+    "public/docs/**",
     "next-env.d.ts",
     "cloudflare-env.d.ts",
   ]),

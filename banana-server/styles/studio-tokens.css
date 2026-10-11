@@ -288,6 +288,50 @@
   --st-board-private-3: #535b5b;
   --st-board-private-4: #8c857a;
   --st-board-private-5: #b8aa92;
+
+  /* The GoBanana desktop (marketing pages, docs/site-redesign-spec.md). Dark only, so these sit
+     in the theme-free block. Black desk with film grain, glass windows over it, two-tone
+     headings (a grey first line, a white second line), and a menu bar, dock and notifications
+     drawn as translucent glass with a backdrop blur. Contrast pairs: tests/design-tokens.test.ts. */
+  --st-font-desk: "Instrument Sans", "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --st-font-desk-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Instrument Sans", "Inter Variable", system-ui, sans-serif;
+  --st-desk-bg: #000000;
+  /* Window glass and its parts. */
+  --st-desk-glass: #1f1f1f87;
+  --st-desk-glass-strong: #161616e0;
+  --st-desk-glass-solid: #141414;
+  --st-desk-glass-border: #ffffff1f;
+  --st-desk-glass-edge: #ffffff12;
+  --st-desk-glass-hover: #ffffff0f;
+  --st-desk-titlebar: #ffffff08;
+  --st-desk-menubar: #000000b8;
+  --st-desk-dock: #1c1c1ca6;
+  --st-desk-scrim: #000000a6;
+  --st-desk-shadow: 0 30px 80px -20px #000000d9, 0 0 0 1px #00000066;
+  --st-desk-shadow-soft: 0 12px 32px -12px #000000cc;
+  /* Two-tone headings and body copy on the desk. */
+  --st-desk-heading-dim: #b9b9b9;
+  --st-desk-heading: #ffffff;
+  --st-desk-body: #a3a3a3;
+  --st-desk-body-lift: #ffffff;
+  --st-desk-meta: #8f8f8f;
+  /* Traffic lights. */
+  --st-desk-light-close: #ff5f57;
+  --st-desk-light-min: #febc2e;
+  --st-desk-light-zoom: #28c840;
+  --st-desk-light-ink: #4d0000b3;
+  /* Glass mark fallback (the static picture behind the hero when WebGL is off). */
+  --st-desk-mark-glass: #d9d9d9;
+  --st-desk-mark-glow: #ffd84d33;
+  /* Film grain: drawn over the desk, under the text. */
+  --st-desk-grain-opacity: 0.14;
+  --st-desk-blur: 24px;
+  --st-desk-blur-strong: 40px;
+  --st-desk-radius: 1rem;
+  --st-desk-tracking: -0.04em;
+  --st-desk-leading: 0.9;
+  --st-desk-roll: 0.3s;
+  --st-desk-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Arabic: Plex Sans Arabic first, Inter for Latin runs inside Arabic text, taller lines. */
@@ -816,6 +860,7 @@
    zero, so every component that uses them is covered without !important. */
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --st-desk-roll: 0ms;
     --st-duration-instant: 0ms;
     --st-duration-fast: 0ms;
     --st-duration-quick: 0ms;

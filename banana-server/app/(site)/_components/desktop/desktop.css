@@ -1,0 +1,1459 @@
+/*
+ * The GoBanana desktop (docs/site-redesign-spec.md): marketing pages drawn as a dark desktop.
+ * Black desk with film grain, a glass menu bar, glass windows with traffic lights, a dock, a
+ * notification stack, two-tone headings set tight, rolling button labels. Under 768px the desk
+ * becomes a phone home screen: stacked full-width windows, an app grid, a bottom dock.
+ *
+ * Rules (tests enforce them): colors only through --st-* tokens (styles/studio-tokens.css,
+ * the --st-desk-* group), logical properties only so Arabic mirrors everything, motion through
+ * --st-desk-roll, which is 0ms under prefers-reduced-motion.
+ */
+
+/* ------------------------------------------------------------------ type and desk */
+
+.site {
+  --st-font-sans: var(--st-font-desk);
+  --desk-bar: 2.25rem;
+
+  position: relative;
+  z-index: 0;
+  background: var(--st-desk-bg);
+  font-family: var(--st-font-sans);
+}
+
+.site:lang(ar),
+.site :lang(ar) {
+  --st-font-sans: var(--st-font-desk-arabic);
+}
+
+.site :lang(en) {
+  --st-font-sans: var(--st-font-desk);
+}
+
+/* Film grain: an SVG noise tile over the whole desk, under every piece of content (z-index -1
+   inside the .site stacking context). */
+.site::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--st-desk-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+html:has(.site .menubar) {
+  scroll-padding-block: calc(var(--desk-bar) + 1rem) 6rem;
+}
+
+/* ------------------------------------------------------------------ two-tone headings */
+
+.site .tt {
+  margin: 0 0 var(--st-space-l);
+  color: var(--st-desk-heading);
+  font-size: clamp(1.75rem, 1.2rem + 1.4vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+  line-height: var(--st-desk-leading);
+  text-wrap: balance;
+}
+
+.site .tt > span {
+  display: block;
+}
+
+.site .tt-dim {
+  color: var(--st-desk-heading-dim);
+}
+
+.site .tt-bright {
+  color: var(--st-desk-heading);
+}
+
+.site .tt:lang(ar) {
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.site .tt.is-hero {
+  font-size: clamp(2.3rem, 1.6rem + 1.4vw, 2.85rem);
+}
+
+.site .tt.is-callout {
+  margin-block-end: var(--st-space-s);
+  font-size: clamp(1.5rem, 1.2rem + 0.6vw, 1.85rem);
+}
+
+.site .tt.is-window {
+  margin-block-end: 0;
+  font-size: 1.85rem;
+  text-align: center;
+}
+
+.site .desk-lead,
+.site .callout p {
+  margin: 0;
+  max-inline-size: 60ch;
+  color: var(--st-desk-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ rolling labels */
+
+.site .roll {
+  display: inline-grid;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.site .roll-a,
+.site .roll-b {
+  grid-area: 1 / 1;
+  transition: translate var(--st-desk-roll) var(--st-desk-ease);
+}
+
+.site .roll-b {
+  translate: 0 110%;
+}
+
+.site :is(.roll-btn, .menubar-pill):is(:hover, :focus-visible) .roll-a {
+  translate: 0 -110%;
+}
+
+.site :is(.roll-btn, .menubar-pill):is(:hover, :focus-visible) .roll-b {
+  translate: 0 0;
+}
+
+.site .roll-btn {
+  border-radius: var(--st-radius-pill);
+}
+
+/* ------------------------------------------------------------------ menu bar */
+
+.site .site-header.menubar {
+  position: sticky;
+  z-index: var(--st-z-topbar);
+  inset-block-start: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--st-space-xl);
+  min-block-size: var(--desk-bar);
+  padding-inline: var(--st-space-xl);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: var(--st-desk-menubar);
+  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.4);
+  font-size: 0.875rem;
+}
+
+.site .menubar-start,
+.site .menubar-end {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  min-inline-size: 0;
+}
+
+.site .menubar .brand {
+  min-inline-size: 2rem;
+  min-block-size: 1.75rem;
+}
+
+.site .menubar .brand-mark {
+  block-size: 1.05rem;
+}
+
+.site .menubar .site-nav {
+  margin: 0;
+}
+
+.site .menubar .nav-list {
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.site .menubar .nav-link,
+.site .menubar-link,
+.site .menubar .lang-switch {
+  min-block-size: 1.75rem;
+  padding-inline: var(--st-space-s);
+  border-radius: var(--st-radius-field);
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site .menubar-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.site .menubar .lang-switch {
+  background: none;
+}
+
+.site .menubar .nav-link:hover,
+.site .menubar-link:hover,
+.site .menubar .lang-switch:hover {
+  background: var(--st-desk-glass-hover);
+}
+
+.site .menubar-clock {
+  display: inline-flex;
+  gap: var(--st-space-s);
+  min-inline-size: 7.5rem;
+  padding-inline: var(--st-space-s);
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  justify-content: end;
+}
+
+.site .menubar-pill {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 1.75rem;
+  margin-inline-start: var(--st-space-2xs);
+  padding-inline: var(--st-space-l);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-primary-fill);
+  color: var(--st-primary-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site .menubar-pill:hover {
+  background: var(--st-primary-fill-hover);
+}
+
+/* ------------------------------------------------------------------ windows */
+
+.site .dwin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
+  box-shadow: var(--st-desk-shadow);
+  color: var(--st-text);
+  overflow: clip;
+}
+
+.site .dwin[data-controls] {
+  z-index: 2;
+}
+
+.site .dwin[data-controls]:focus-within,
+.site .dwin[data-dragging] {
+  z-index: 4;
+}
+
+.site .dwin-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--st-space-s);
+  min-block-size: 2.25rem;
+  padding-inline: var(--st-space-l);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: var(--st-desk-titlebar);
+  user-select: none;
+}
+
+.site .dwin[data-minimised] .dwin-bar {
+  border-block-end-color: transparent;
+}
+
+.site .dwin-bar[data-can-move] {
+  cursor: grab;
+  touch-action: none;
+}
+
+.site .dwin[data-dragging] .dwin-bar {
+  cursor: grabbing;
+}
+
+.site .dwin-lights {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-self: start;
+}
+
+.site .dwin-light {
+  position: relative;
+  flex: none;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--st-desk-light-close);
+}
+
+.site .dwin-light[data-light="min"] {
+  background: var(--st-desk-light-min);
+}
+
+.site .dwin-light[data-light="zoom"] {
+  background: var(--st-desk-light-zoom);
+}
+
+/* Plain windows: the lights are a picture, so they sit back. */
+.site .dwin:not([data-controls]) .dwin-light {
+  opacity: 0.5;
+}
+
+/* 24px target around each 12px light (SC 2.5.8); centres are 24px apart. */
+button.dwin-light {
+  cursor: pointer;
+}
+
+.site button.dwin-light::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+.site button.dwin-light[aria-disabled="true"] {
+  cursor: default;
+}
+
+.site .dwin-title {
+  justify-self: center;
+  overflow: hidden;
+  max-inline-size: 100%;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .dwin-handle {
+  min-block-size: 1.5rem;
+  padding-inline: var(--st-space-s);
+  border: 0;
+  border-radius: var(--st-radius-field);
+  background: none;
+  font-family: inherit;
+  cursor: inherit;
+}
+
+.site .dwin-tools {
+  justify-self: end;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .dwin-body {
+  min-inline-size: 0;
+  padding: var(--st-space-3xl);
+}
+
+.site .dwin-reopen {
+  align-self: center;
+  min-block-size: var(--st-control-h-lg);
+  padding-inline: var(--st-space-2xl);
+  border: var(--st-border-width) dashed var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass);
+  color: var(--st-desk-heading);
+  font: inherit;
+  cursor: pointer;
+}
+
+.site .dwin-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ hero desktop */
+
+.site .desk-hero {
+  position: relative;
+  min-block-size: calc(100svh - var(--desk-bar));
+  padding: var(--st-space-5xl) var(--site-gutter) 7.5rem;
+  overflow: clip;
+}
+
+.site .desk-hero-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 26rem) minmax(0, 1fr);
+  gap: var(--st-space-5xl);
+  max-inline-size: 92rem;
+  min-block-size: calc(100svh - var(--desk-bar) - 11rem);
+  margin-inline: auto;
+}
+
+.site .desk-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--st-space-5xl);
+  min-inline-size: 0;
+}
+
+.site .desk-col.is-end {
+  align-items: end;
+}
+
+.site .desk-col.is-end > .callout {
+  inline-size: min(100%, 20rem);
+}
+
+.site .desk-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.site .callout {
+  max-inline-size: 21rem;
+}
+
+.site .callout.is-hero {
+  max-inline-size: 26rem;
+}
+
+.site .callout.is-hero .actions {
+  margin-block-start: var(--st-space-3xl);
+}
+
+/* The glass mark behind the hero window. */
+.site .glass-mark {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  --glass-intensity: 0.8;
+
+  inline-size: min(56rem, 76vw);
+  aspect-ratio: 4 / 3;
+  margin-inline: auto;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+.site .glass-mark-still,
+.site .glass-mark-gl {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 1.2s var(--st-desk-ease);
+}
+
+.site .glass-mark-still .brand-mark {
+  inline-size: 72%;
+  block-size: auto;
+  color: var(--st-desk-mark-glass);
+  opacity: 0.13;
+  filter: drop-shadow(0 0 60px var(--st-desk-mark-glow));
+}
+
+.site .glass-mark-gl {
+  opacity: 0;
+}
+
+.site .glass-mark-gl canvas {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.site .glass-mark[data-live] .glass-mark-gl {
+  opacity: 1;
+}
+
+.site .glass-mark[data-live] .glass-mark-still {
+  opacity: 0;
+}
+
+/* The "Add to Claude" window. */
+.site .add-window .dwin-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--st-space-l);
+  padding: var(--st-space-5xl) var(--st-space-3xl) var(--st-space-3xl);
+  text-align: center;
+}
+
+.site .add-window .dwin-body > p {
+  margin: 0;
+}
+
+.site .add-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  margin-block-end: var(--st-space-s);
+  border-radius: 1.1rem;
+  background: var(--st-primary-fill);
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+.site .add-mark .brand-mark {
+  inline-size: 68%;
+  block-size: auto;
+  color: var(--st-primary-text);
+}
+
+.site .add-lead {
+  color: var(--st-desk-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.site .add-window .server-address {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--st-space-l);
+  inline-size: 100%;
+  padding: var(--st-space-xl);
+  border-color: var(--st-desk-glass-border);
+  background: var(--st-desk-glass-strong);
+  box-shadow: none;
+  text-align: start;
+}
+
+.site .add-window :is(.server-address-mark, .server-address-hint) {
+  display: none;
+}
+
+.site .add-window .server-address-url code {
+  font-size: 0.95rem;
+}
+
+.site .add-window .server-address-copy {
+  inline-size: 100%;
+  justify-content: center;
+}
+
+.site .add-steps-title {
+  align-self: stretch;
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: start;
+}
+
+.site .add-window .steps {
+  align-self: stretch;
+  margin: 0;
+  text-align: start;
+  font-size: 0.9rem;
+}
+
+.site .add-more,
+.site .add-fine {
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+/* ------------------------------------------------------------------ notification stack */
+
+.site .notes {
+  position: relative;
+  z-index: 6;
+  inline-size: min(100%, 21rem);
+}
+
+.site .notes-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .note-card {
+  grid-area: 1 / 1;
+  z-index: calc(10 - var(--i));
+  max-inline-size: none;
+  translate: 0 0;
+  scale: calc(1 - var(--i) * 0.04);
+  transform-origin: 50% 0;
+  transition:
+    translate var(--st-desk-roll) var(--st-desk-ease),
+    scale var(--st-desk-roll) var(--st-desk-ease);
+}
+
+.site .note-card + .note-card {
+  margin: 0;
+}
+
+.site .note-card:not(:first-child) {
+  opacity: 0;
+  transition:
+    translate var(--st-desk-roll) var(--st-desk-ease),
+    scale var(--st-desk-roll) var(--st-desk-ease),
+    opacity var(--st-desk-roll) var(--st-desk-ease);
+}
+
+/* At rest the cards behind the first are hidden under it (no sliver of a link is ever a tiny
+   target, SC 2.5.8); the edges peeking out below the first card are a picture (box-shadow).
+   Hover, or Tab into any card, fans the real cards out. */
+.site .notes:not(:hover, :focus-within) .note-card:first-child .note-link {
+  box-shadow:
+    0 0.55rem 0 -0.3rem var(--st-desk-glass-solid),
+    0 0.55rem 0 -0.25rem var(--st-desk-glass-border),
+    var(--st-desk-shadow-soft);
+}
+
+.site .notes:is(:hover, :focus-within) .note-card {
+  translate: 0 calc(var(--i) * (100% + 0.5rem));
+  scale: 1;
+}
+
+.site .notes:is(:hover, :focus-within) .note-card {
+  opacity: 1;
+}
+
+.site .note-link {
+  display: grid;
+  gap: var(--st-space-3xs);
+  padding: var(--st-space-l) var(--st-space-xl);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur));
+  box-shadow: var(--st-desk-shadow-soft);
+  color: var(--st-desk-heading);
+  text-decoration: none;
+}
+
+.site .note-app {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  color: var(--st-desk-meta);
+  font-size: 0.75rem;
+}
+
+.site .note-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  border-radius: 0.3rem;
+  background: var(--st-primary-fill);
+}
+
+.site .note-icon .brand-mark {
+  inline-size: 72%;
+  block-size: auto;
+  color: var(--st-primary-text);
+}
+
+.site .note-when {
+  margin-inline-start: auto;
+}
+
+.site .note-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.site .note-body {
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------ desktop icons */
+
+.site .desk-icons-wrap {
+  position: relative;
+  z-index: 5;
+}
+
+.site .desk-icons {
+  display: grid;
+  grid-template-columns: repeat(2, 6rem);
+  gap: var(--st-space-l);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .desk-icons > li {
+  margin: 0;
+}
+
+.site .desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--st-space-xs);
+  inline-size: 100%;
+  padding: var(--st-space-xs);
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: var(--st-desk-heading);
+  font: inherit;
+  cursor: pointer;
+}
+
+.site .desk-icon:hover,
+.site .desk-icon[aria-expanded="true"] {
+  background: var(--st-desk-glass-hover);
+}
+
+.site .desk-icon-art {
+  display: block;
+  overflow: hidden;
+  inline-size: 4rem;
+  block-size: 4rem;
+  border-radius: 0.9rem;
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+.site .desk-icon-art :is(img, .art) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.site .desk-icon-name {
+  display: -webkit-box;
+  overflow: hidden;
+  max-inline-size: 100%;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.site .quicklook {
+  position: absolute;
+  inset-block-start: calc(100% + 0.5rem);
+  inset-inline-end: 0;
+  inline-size: min(22rem, 80vw);
+  z-index: 8;
+}
+
+.site .quicklook .dwin-body {
+  display: grid;
+  gap: var(--st-space-s);
+  padding: var(--st-space-l);
+}
+
+.site .quicklook .dwin-body > p {
+  margin: 0;
+}
+
+.site .quicklook-art :is(img, .art) {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 0.6rem;
+  object-fit: cover;
+}
+
+.site .quicklook-credit {
+  color: var(--st-desk-heading);
+  font-weight: 600;
+}
+
+.site .quicklook-what {
+  color: var(--st-desk-body);
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------ sections below */
+
+.site .desk-section {
+  position: relative;
+  padding-block: clamp(5rem, 9vw, 8.5rem) 0;
+}
+
+.site .desk-head {
+  max-inline-size: 42rem;
+  margin-block-end: var(--st-space-6xl);
+}
+
+.site .desk-head.is-center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.site .desk-head.is-center .desk-lead {
+  margin-inline: auto;
+}
+
+/* Windows wrapping existing pictures drop the pictures' own frames. */
+.site .desk .is-frame .dwin-body,
+.site .desk .is-graph .dwin-body,
+.site .desk .is-mail .dwin-body {
+  padding: 0;
+}
+
+.site .desk .is-frame .frame {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.site .desk .is-frame .frame-bar {
+  display: none;
+}
+
+.site .desk .is-graph .graph {
+  border: 0;
+  border-radius: 0;
+}
+
+.site .desk .is-finder .dwin-body {
+  padding: var(--st-space-3xl);
+}
+
+.site .desk .is-finder .gallery-card,
+.site .desk .is-install .install-card,
+.site .desk .is-plan .plan {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.site .desk .is-finder .gallery-card {
+  border-radius: 0.75rem;
+  background: var(--st-desk-glass-strong);
+}
+
+.site .desk .is-editor .dwin-body {
+  padding: var(--st-space-xl);
+}
+
+.site .desk .is-install {
+  block-size: 100%;
+}
+
+.site .desk .is-install .dwin-body {
+  flex: 1;
+}
+
+.site .desk .install-grid > * {
+  min-inline-size: 0;
+}
+
+.site .desk .install-url .server-address {
+  border-color: var(--st-desk-glass-border);
+  background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur));
+}
+
+/* Plans as windows. */
+.site .desk-plans > li {
+  display: flex;
+  margin: 0;
+}
+
+.site .desk-plans .dwin {
+  flex: 1;
+}
+
+.site .desk-plans .dwin-body.plan {
+  flex: 1;
+  padding: var(--st-space-6xl);
+}
+
+.site .desk-plans .is-pro-win {
+  border-color: var(--st-desk-heading-dim);
+}
+
+/* ------------------------------------------------------------------ recordings */
+
+.site .clips-track {
+  display: grid;
+  grid-auto-columns: min(78%, 21rem);
+  grid-auto-flow: column;
+  gap: var(--st-space-2xl);
+  margin: 0;
+  padding: 0 0 var(--st-space-xl);
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+}
+
+.site .clip {
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+.site .clip-figure {
+  margin: 0;
+}
+
+.site .clip-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-solid);
+}
+
+.site .clip-media :is(.clip-poster, .clip-video) {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.site .clip-poster {
+  opacity: 0.55;
+}
+
+.site .clip-soon {
+  position: absolute;
+  inset-block-end: var(--st-space-l);
+  inset-inline-start: var(--st-space-l);
+  padding: var(--st-space-3xs) var(--st-space-l);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur));
+  color: var(--st-desk-heading);
+  font-size: 0.8125rem;
+}
+
+.site .clip-toggle {
+  position: absolute;
+  inset-block-end: var(--st-space-l);
+  inset-inline-end: var(--st-space-l);
+}
+
+.site .clip-caption {
+  display: flex;
+  gap: var(--st-space-s);
+  margin-block-start: var(--st-space-l);
+  color: var(--st-desk-heading);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.site .clip-num {
+  color: var(--st-desk-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.site .clips-controls {
+  display: flex;
+  justify-content: end;
+  gap: var(--st-space-s);
+  margin-block-start: var(--st-space-l);
+}
+
+/* ------------------------------------------------------------------ mail */
+
+.site .mail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--st-space-l);
+  padding: var(--st-space-l) var(--st-space-2xl);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .mail-inbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  color: var(--st-desk-heading);
+  font-weight: 600;
+}
+
+.site .mail-list {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  grid-template-rows: repeat(var(--rows), auto) 1fr;
+  min-block-size: 30rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .mail-item {
+  display: contents;
+}
+
+.site .mail-row {
+  grid-column: 1;
+  display: grid;
+  gap: var(--st-space-3xs);
+  padding: var(--st-space-l) var(--st-space-2xl);
+  border: 0;
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  border-inline-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.site .mail-row:hover {
+  background: var(--st-desk-glass-hover);
+}
+
+.site .mail-row[data-open] {
+  background: var(--st-overlay-10);
+}
+
+.site .mail-from {
+  color: var(--st-desk-meta);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.site .mail-subject {
+  color: var(--st-desk-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.site .mail-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.site .mail-read {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  padding: var(--st-space-5xl) var(--st-space-6xl);
+}
+
+.site .mail-read-subject {
+  margin: 0 0 var(--st-space-l);
+  color: var(--st-desk-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+  line-height: 1.1;
+}
+
+.site .mail-read-subject:lang(ar) {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.site .mail-read-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  margin: 0 0 var(--st-space-2xl);
+  padding-block-end: var(--st-space-l);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .mail-avatar {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: 50%;
+  background: var(--st-primary-fill);
+}
+
+.site .mail-to {
+  margin-inline-start: auto;
+}
+
+.site .mail-read-body {
+  color: var(--st-text);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------------ final, footer, dock */
+
+.site .desk-final {
+  padding-block: clamp(6rem, 10vw, 9rem) var(--st-space-9xl);
+}
+
+.site .desk-final .tt {
+  max-inline-size: 22ch;
+  margin-inline: auto;
+  font-size: clamp(2.25rem, 1.4rem + 2.6vw, 3.6rem);
+  letter-spacing: var(--st-desk-tracking);
+  line-height: var(--st-desk-leading);
+}
+
+.site .desk-final .tt:lang(ar) {
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.site .desk-final .desk-lead {
+  margin-inline: auto;
+  margin-block-end: var(--st-space-3xl);
+}
+
+.site .site-footer {
+  padding-block-end: 7rem;
+  border-block-start-color: var(--st-desk-glass-edge);
+  background: transparent;
+}
+
+.site .dock {
+  position: fixed;
+  z-index: var(--st-z-topbar);
+  inset-block-end: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  inset-inline: 0;
+  inline-size: max-content;
+  max-inline-size: calc(100% - 1.5rem);
+  margin-inline: auto;
+  padding: 0.4rem;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: 1.35rem;
+  background: var(--st-desk-dock);
+  backdrop-filter: blur(var(--st-desk-blur-strong)) saturate(1.4);
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+.site .dock-list {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .dock-item {
+  margin: 0;
+}
+
+.site .dock-link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: 0.9rem;
+  background: var(--st-desk-glass-solid);
+  color: var(--st-desk-heading);
+  text-decoration: none;
+  transition:
+    scale var(--st-desk-roll) var(--st-desk-ease),
+    translate var(--st-desk-roll) var(--st-desk-ease);
+}
+
+.site .dock-link:is(:hover, :focus-visible) {
+  scale: 1.14;
+  translate: 0 -0.3rem;
+}
+
+.site .dock-item.is-home .dock-link {
+  background: var(--st-primary-fill);
+  color: var(--st-primary-text);
+}
+
+.site .dock-icon {
+  display: grid;
+  place-items: center;
+}
+
+.site .dock-icon .brand-mark {
+  inline-size: 1.7rem;
+  block-size: auto;
+  color: var(--st-primary-text);
+}
+
+/* The name is always in the link; it shows as a label over the icon on hover and focus. */
+.site .dock-label {
+  position: absolute;
+  inset-block-end: calc(100% + 0.6rem);
+  inset-inline: auto;
+  padding: var(--st-space-3xs) var(--st-space-s);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-radius-field);
+  background: var(--st-desk-glass-solid);
+  color: var(--st-desk-heading);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--st-desk-roll) var(--st-desk-ease);
+}
+
+.site .dock-link:is(:hover, :focus-visible) .dock-label {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ pricing page */
+
+.site .desk-page-head {
+  margin-block-end: var(--st-space-5xl);
+}
+
+.site .desk-page .plans.is-three > li {
+  margin: 0;
+}
+
+/* The li keeps its display, so the Monthly / Yearly switch can still hide one of them. */
+.site .desk-page .plans.is-three .dwin {
+  block-size: 100%;
+}
+
+.site .desk-page .plans.is-three .dwin-body.plan {
+  flex: 1;
+  padding: var(--st-space-5xl);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.site .desk-page .table-scroll {
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur));
+}
+
+.site .compare-cards {
+  display: none;
+}
+
+.site .compare-card-title {
+  margin: 0 0 var(--st-space-l);
+  font-size: 1.25rem;
+}
+
+/* ------------------------------------------------------------------ phone home screen */
+
+@media (max-width: 379.98px) {
+  .site .menubar-clock {
+    display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .site {
+    --desk-bar: 2.75rem;
+  }
+
+  .site .site-header.menubar {
+    gap: var(--st-space-s);
+    padding-inline: var(--st-space-l);
+  }
+
+  .site .menubar .site-nav,
+  .site .menubar-day {
+    display: none;
+  }
+
+  .site .menubar-clock {
+    min-inline-size: 0;
+    padding-inline: var(--st-space-2xs);
+  }
+
+  .site .menubar-end {
+    gap: 0;
+  }
+
+  .site .menubar .lang-switch,
+  .site .menubar-link {
+    padding-inline: var(--st-space-xs);
+  }
+
+  .site .desk-hero {
+    min-block-size: 0;
+    padding: var(--st-space-5xl) var(--site-gutter) var(--st-space-6xl);
+  }
+
+  .site .desk-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-5xl);
+    min-block-size: 0;
+  }
+
+  .site .desk-col {
+    display: contents;
+  }
+
+  .site .callout.is-hero {
+    order: 0;
+  }
+
+  .site .desk-center {
+    order: 1;
+  }
+
+  .site .notes {
+    order: 2;
+    inline-size: 100%;
+  }
+
+  .site .desk-icons-wrap {
+    order: 3;
+  }
+
+  .site .desk-col > .callout:not(.is-hero) {
+    order: 4;
+    inline-size: auto;
+  }
+
+  /* On a phone the mark sits behind the window, never behind the headline and lead. */
+  .site .glass-mark {
+    --glass-intensity: 0.45;
+
+    inset-block-start: 31rem;
+    inline-size: 130vw;
+    margin-inline: -15vw;
+    translate: none;
+  }
+
+  /* Notifications stack as plain rows on a phone. */
+  .site .note-card {
+    grid-area: auto;
+    translate: none;
+    scale: 1;
+  }
+
+  .site .notes-list {
+    gap: var(--st-space-s);
+  }
+
+  .site .note-card:not(:first-child) {
+    opacity: 1;
+  }
+
+  .site .notes:is(:hover, :focus-within) .note-card {
+    translate: none;
+  }
+
+  /* Desktop icons become a home screen app grid. */
+  .site .desk-icons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--st-space-s);
+  }
+
+  .site .desk-icon-art {
+    inline-size: 3.6rem;
+    block-size: 3.6rem;
+  }
+
+  .site .quicklook {
+    position: relative;
+    inset: auto;
+    inline-size: 100%;
+    margin-block-start: var(--st-space-l);
+  }
+
+  .site .dwin-body {
+    padding: var(--st-space-xl);
+  }
+
+  .site .desk .is-finder .dwin-body {
+    padding: var(--st-space-l);
+  }
+
+  .site .desk-plans .dwin-body.plan,
+  .site .desk-page .plans.is-three .dwin-body.plan {
+    padding: var(--st-space-3xl);
+  }
+
+  /* Mail: one accordion. */
+  .site .mail-list {
+    display: block;
+    min-block-size: 0;
+  }
+
+  .site .mail-item {
+    display: block;
+    border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  }
+
+  .site .mail-row {
+    inline-size: 100%;
+    border: 0;
+  }
+
+  .site .mail-preview {
+    display: none;
+  }
+
+  .site .mail-read {
+    padding: var(--st-space-l) var(--st-space-2xl) var(--st-space-2xl);
+  }
+
+  .site .mail-read-subject {
+    display: none;
+  }
+
+  .site .dock {
+    inline-size: calc(100% - 1.5rem);
+    inset-block-end: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .site .dock-list {
+    justify-content: space-between;
+  }
+
+  .site .dock-link {
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+  }
+
+  .site .site-footer {
+    padding-block-end: 6.5rem;
+  }
+
+  /* Compare table turns into one card per plan. */
+  .site .desk-page .table-scroll {
+    display: none;
+  }
+
+  .site .compare-cards {
+    display: grid;
+    gap: var(--st-space-xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site .compare-cards > li {
+    margin: 0;
+  }
+
+  .site .compare-cards dl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--st-space-s) var(--st-space-xl);
+    margin: 0;
+  }
+
+  .site .compare-cards dt {
+    color: var(--st-desk-body);
+  }
+
+  .site .compare-cards dd {
+    margin: 0;
+    color: var(--st-desk-heading);
+    font-weight: 500;
+    text-align: end;
+  }
+}

@@ -4,6 +4,10 @@
  * cards), Studio skin: price at text-6xl, the current plan marked by a chip with words (not a
  * thick border), and the comparison table in the DataTable style. Payments are off for the beta
  * (BETA_PLAN): everyone sees that in an info alert, and plans show "Checkout is not open yet."
+ *
+ * GoBanana desktop (docs/site-redesign-spec.md): a two-tone heading, every plan in a glass window,
+ * and under 768px the comparison table becomes one card per plan (desktop.css swaps them; the
+ * table stays the source for wide screens and both carry the same facts).
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -23,6 +27,8 @@ import { bidi } from "../../../_components/Bidi";
 import { BetaBadge, PlanFeatureList } from "../../../_components/PlanBits";
 import { PricingToggle } from "../../../_components/PricingToggle";
 import { Reveal } from "../../../_components/Reveal";
+import { TwoToneHeading } from "../../../_components/desktop/TwoToneHeading";
+import { Window } from "../../../_components/desktop/Window";
 import { CheckoutButton } from "./CheckoutButton";
 import "../../../_components/landing.css";
 
@@ -141,11 +147,10 @@ export default async function PricingPage({ params }: Props) {
   }
 
   return (
-    <div className="wrap page">
-      <Reveal className="band-head is-center">
-        <p className="eyebrow">{t.eyebrow}</p>
-        <h1 className="pricing-title">{bidi(dict.landing.pricing.title)}</h1>
-        <p className="band-lead">{t.lead}</p>
+    <div className="wrap page desk-page">
+      <Reveal className="desk-head is-center desk-page-head">
+        <TwoToneHeading as="h1" className="is-hero" dim={bidi(dict.landing.desk.pricingPage.dim)} bright={bidi(dict.landing.desk.pricingPage.bright)} />
+        <p className="desk-lead">{t.lead}</p>
       </Reveal>
 
       {onBeta || beta ? (
@@ -163,17 +168,25 @@ export default async function PricingPage({ params }: Props) {
       <Reveal index={1}>
         <PricingToggle labels={{ period: t.period, monthly: t.monthly, yearly: t.yearly, save: t.yearlySave }}>
           <ul className="plans is-three" aria-label={t.title}>
-            <li className="plan">
-              {card("free")}
+            <li>
+              <Window as="div" title={t.plans.free.name} bodyClassName="plan">
+                {card("free")}
+              </Window>
             </li>
-            <li className="plan is-pro period-month">
-              {card("pro_monthly")}
+            <li className="period-month">
+              <Window as="div" title={t.plans.pro_monthly.name} className="is-pro-win" bodyClassName="plan is-pro">
+                {card("pro_monthly")}
+              </Window>
             </li>
-            <li className="plan is-pro period-year">
-              {card("pro_yearly")}
+            <li className="period-year">
+              <Window as="div" title={t.plans.pro_yearly.name} className="is-pro-win" bodyClassName="plan is-pro">
+                {card("pro_yearly")}
+              </Window>
             </li>
-            <li id="founding" className="plan">
-              {card("founding")}
+            <li id="founding">
+              <Window as="div" title={t.plans.founding.name} bodyClassName="plan">
+                {card("founding")}
+              </Window>
             </li>
           </ul>
         </PricingToggle>
@@ -238,6 +251,38 @@ export default async function PricingPage({ params }: Props) {
           </tbody>
         </table>
       </div>
+
+      <ul className="compare-cards" aria-label={dict.landing.desk.compareCards}>
+        {PLAN_ORDER.map((plan) => {
+          const p = priceText(plan, t);
+          const lim = PLAN_LIMITS[plan];
+          return (
+            <li key={plan}>
+              <Window as="article" title={t.plans[plan].name} aria-labelledby={`compare-${plan}`}>
+                <h3 id={`compare-${plan}`} className="compare-card-title">
+                  {bidi(t.plans[plan].name)}
+                </h3>
+                <dl>
+                  <dt>{t.rows.price}</dt>
+                  <dd>
+                    <bdi dir="ltr">{p.amount}</bdi> {p.period}
+                  </dd>
+                  <dt>{t.rows.searches}</dt>
+                  <dd>{lim.searchesPerMonth}</dd>
+                  <dt>{t.rows.canvases}</dt>
+                  <dd>{Number.isFinite(lim.canvases) ? lim.canvases : t.unlimited}</dd>
+                  <dt>{t.rows.items}</dt>
+                  <dd>{lim.itemsPerCanvas}</dd>
+                  <dt>{t.rows.share}</dt>
+                  <dd>{yesNo(lim.shareLinks)}</dd>
+                  <dt>{t.rows.exports}</dt>
+                  <dd>{bidi(plan === "free" ? t.exportsFree : t.exportsAll)}</dd>
+                </dl>
+              </Window>
+            </li>
+          );
+        })}
+      </ul>
 
       <p className="note">{bidi(t.billingNote)}</p>
     </div>
