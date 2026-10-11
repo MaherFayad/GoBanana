@@ -252,8 +252,6 @@
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   align-items: end;
   gap: var(--st-space-6xl) var(--st-space-11xl);
-  max-inline-size: none;
-  padding-inline: var(--st-space-6xl);
 }
 
 .site .hero-copy-grid > * > * {
@@ -1469,7 +1467,6 @@
 
   .site .hero-copy-grid {
     grid-template-columns: minmax(0, 1fr);
-    padding-inline: var(--st-space-xl);
   }
 
   .site .hero-copy {

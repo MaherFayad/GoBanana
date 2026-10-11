@@ -22,7 +22,11 @@ body:has(> .site) {
 
 .site {
   --site-measure: 68ch;
-  --site-wrap: 72rem;
+  /* One layout grid for every page: a 75rem content column, centered, with one fluid gutter.
+     Header, hero copy, sections and footer all align to its edges; only backgrounds (the hero
+     field, footer art) run full bleed. */
+  --site-wrap: 75rem;
+  --site-gutter: clamp(16px, 5vw, 64px);
   --site-label: 0.8125rem;
 
   display: flex;
@@ -91,9 +95,9 @@ body:has(> .site) {
 
 .site .wrap {
   inline-size: 100%;
-  max-inline-size: var(--site-wrap);
+  max-inline-size: calc(var(--site-wrap) + 2 * var(--site-gutter));
   margin-inline: auto;
-  padding-inline: var(--st-space-3xl);
+  padding-inline: var(--site-gutter);
 }
 
 /* ------------------------------------------------------------------ header, nav, footer */
@@ -112,9 +116,7 @@ body:has(> .site) {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--st-space-3xs) var(--st-space-3xl);
-  max-inline-size: none;
   padding-block: var(--st-space-s);
-  padding-inline: var(--st-space-6xl);
 }
 
 .site .brand,
@@ -974,13 +976,8 @@ html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
 }
 
 @media (max-width: 40rem) {
-  .site .wrap {
-    padding-inline: var(--st-space-xl);
-  }
-
   .site .site-header .wrap {
     gap: var(--st-space-3xs) var(--st-space-m);
-    padding-inline: var(--st-space-xl);
   }
 
   .site .page {
