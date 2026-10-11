@@ -162,6 +162,14 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         data.directions = data.directions.filter((d) => !(d.canvasId === canvasId && drop.has(d.id)));
         return before - data.directions.length;
       },
+      async recentQueriesForUser(userId, opts) {
+        const recent = [...data.canvases.values()]
+          .filter((c) => c.userId === userId && c.id !== opts.excludeCanvasId)
+          .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+          .slice(0, Math.max(0, opts.canvasLimit))
+          .map((c) => c.id);
+        return data.directions.filter((d) => recent.includes(d.canvasId)).map((d) => d.searchQuery);
+      },
     },
     references: {
       async insertMany(canvasId, refs) {

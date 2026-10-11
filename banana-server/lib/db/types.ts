@@ -104,6 +104,12 @@ export interface DirectionRepo {
    * canvas is the user's first. No other table references a direction row.
    */
   deleteMany(canvasId: string, ids: readonly string[]): Promise<number>;
+  /**
+   * Search texts of the directions on the user's most recently updated canvases (at most
+   * `canvasLimit`), skipping `excludeCanvasId`. bend_brief uses it so new boards do not repeat
+   * the ideas of the last few.
+   */
+  recentQueriesForUser(userId: string, opts: { canvasLimit: number; excludeCanvasId?: string }): Promise<string[]>;
 }
 
 export type ReferenceRecord = {

@@ -193,10 +193,16 @@ function briefParts(brief: string): BriefParts {
   const component = named ?? DEFAULT_COMPONENT[surface];
 
   // Domain: content words of the first clause that has any; up to two, closest to the noun.
+  // Clauses end at punctuation (":", ".", ",", ";") as well as at boundary words, so a long brief
+  // ("Retail banking mobile app homepage: balance, ... into bold, unexpected territory.") takes its
+  // domain from the opening clause ("retail banking"), never from a later sentence.
   const chunks: Token[][] = [[]];
-  for (const t of tokens(main)) {
-    if (BOUNDARY.has(t.word)) chunks.push([]);
-    else chunks[chunks.length - 1]!.push(t);
+  for (const clause of main.split(/[:.;,!?\n]+/)) {
+    if (chunks[chunks.length - 1]!.length > 0) chunks.push([]);
+    for (const t of tokens(clause)) {
+      if (BOUNDARY.has(t.word)) chunks.push([]);
+      else chunks[chunks.length - 1]!.push(t);
+    }
   }
   let domain: string[] = [];
   for (const chunk of chunks) {
@@ -237,7 +243,7 @@ export function fidelityQuery(brief: string): string {
 }
 
 /** Last words that are not the core of a domain ("fleet management" is about fleets). */
-const NOT_CORE = new Set(["management", "system", "systems", "solutions", "services", "software", "tool", "tools"]);
+const NOT_CORE = new Set(["management", "system", "systems", "solutions", "services", "software", "tool", "tools", "times", "time", "tracking", "tracker"]);
 
 /** Core noun of the domain: its last word ("saudi fintech" to "fintech"), skipping NOT_CORE words. */
 function coreNoun(domain: readonly string[]): string | undefined {
@@ -341,8 +347,33 @@ export function directionTasteVariants(
  * one, hero the next, so a direction shows two looks from the list. Without a brief there is
  * only the inspiration lane.
  */
+/** Last words that already name a visual surface, so "pattern" would only narrow the search. */
+const INSPIRATION_SURFACE_WORDS = new Set([
+  "pattern", "patterns", "weave", "weaving", "motif", "motifs", "textile", "textiles", "embroidery",
+  "tile", "tiles", "mosaic", "architecture", "geometry", "tessellation", "lattice", "calligraphy",
+  "print", "prints", "poster", "posters", "rug", "rugs", "carpet", "facade", "door", "doors",
+  "window", "windows", "ceramics", "pottery", "grid", "screen", "screens", "wall", "walls",
+]);
+
+/**
+ * Pinterest wording for the inspiration lane. For a craft tradition ("Uzbek suzani") the raw words
+ * pull clothes and home decor on Pinterest (3 of 8 were jackets and pillows); "{tradition} pattern"
+ * pulls the pattern itself (0 of 8). Behance keeps the raw words: modifiers zero it out there.
+ * Returns undefined when the raw words should stay (not a tradition, or already a surface word).
+ */
+export function inspirationPinterestQuery(inspiration: string): string | undefined {
+  const w = words(inspiration);
+  const last = w[w.length - 1]?.toLowerCase();
+  if (!last || INSPIRATION_SURFACE_WORDS.has(last) || w.length >= MAX_LANE_WORDS) return undefined;
+  const needle = ` ${w.join(" ").toLowerCase()} `;
+  const isTradition = allEntries().some((e) => e.move === "lens" && e.needle === needle);
+  return isTradition ? `${w.join(" ")} pattern` : undefined;
+}
+
 export function laneTexts(brief: string | null | undefined, inspiration: string, taste: readonly string[], key: string): LaneTexts {
   const lanes: LaneTexts = { inspiration };
+  const pin = inspirationPinterestQuery(inspiration);
+  if (pin) lanes.inspirationPinterest = pin;
   const b = brief?.trim();
   if (!b) return lanes;
   lanes.taste = tasteQuery(b, pickStyle(taste, key));

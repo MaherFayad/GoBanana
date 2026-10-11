@@ -1,0 +1,51 @@
+/** Regressions from live boards (2026-10-11): wrong domain on long briefs, apparel on craft ideas, repeated ideas. */
+import { describe, expect, it } from "vitest";
+import { fidelityQuery, inspirationPinterestQuery, laneTexts } from "@/lib/bend/queries";
+import { planRequests } from "@/lib/sources/plan";
+import { createBendBriefTool } from "@/lib/mcp/tools/bend_brief";
+
+const BANKING =
+  "Retail banking mobile app homepage: balance, accounts, quick actions (transfer, pay bills, cards), recent transactions, spending insight. GCC market, Arabic RTL and English. Push past the standard card-stack-plus-list layout into bold, unexpected territory.";
+
+describe("domain comes from the opening clause", () => {
+  it("long banking brief searches banking, not the last sentence", () => {
+    expect(fidelityQuery(BANKING)).toBe("retail banking app ui");
+    const lanes = laneTexts(BANKING, "city pop 1985", ["minimal"], "k");
+    expect(lanes.taste).toContain("banking");
+    expect(lanes.hero).toContain("banking");
+    expect(JSON.stringify(lanes)).not.toContain("territory");
+  });
+
+  it("core noun skips generic last words", () => {
+    expect(laneTexts("Ramadan prayer times widget for a Saudi banking app", "x", ["minimal"], "k").fidelityCore).toBe("prayer app ui");
+  });
+});
+
+describe("craft traditions search the pattern on Pinterest", () => {
+  it("adds pattern to a tradition, keeps raw words on Behance", () => {
+    expect(inspirationPinterestQuery("Uzbek suzani")).toBe("Uzbek suzani pattern");
+    expect(inspirationPinterestQuery("Sadu weaving")).toBeUndefined();
+    expect(inspirationPinterestQuery("gas station sign")).toBeUndefined();
+    const plan = planRequests(laneTexts("flight app", "Uzbek suzani", [], "k"));
+    const insp = plan.filter((r) => r.lane === "inspiration");
+    expect(insp.find((r) => r.site === "pinterest")?.query).toBe("Uzbek suzani pattern");
+    expect(insp.find((r) => r.site === "behance")?.query).toBe("Uzbek suzani");
+  });
+});
+
+describe("new boards do not repeat the ideas of the user's last boards", () => {
+  it("a lead used on a recent canvas sinks on the next bend", async () => {
+    const { makeDeps, seedCanvas, ALICE } = await import("./tools-fixtures");
+    const { bendBrief } = await import("@/lib/bend");
+    const { repos } = makeDeps();
+    const brief = { brief: "Retail banking mobile app homepage", wildness: 4 as const, count: 6 };
+    const first = bendBrief(brief).directions.map((d) => d.searchQuery);
+    const old = await seedCanvas(repos, ALICE);
+    await repos.directions.upsertMany(old.id, first.map((q, i) => ({ bendId: `bd-old${i}`, move: "material", title: q, searchQuery: q })));
+    const bend = createBendBriefTool(() => ({ repos }));
+    const res = await bend(brief, ALICE);
+    const next = (res.structuredContent as { directions: { searchQuery: string }[] }).directions.map((d) => d.searchQuery);
+    const repeats = next.filter((q) => first.includes(q)).length;
+    expect(repeats).toBeLessThanOrEqual(1);
+  });
+});

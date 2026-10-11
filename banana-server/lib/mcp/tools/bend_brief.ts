@@ -6,6 +6,8 @@ import { mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { CanvasRecord } from "@/lib/db/types";
 import { globalLearningOn, K_ANON } from "@/lib/learning/arms";
 import { ingredientWeights } from "@/lib/learning/directions";
+import { directionTermKey } from "@/lib/learning/terms";
+import { inspirationFromQuery } from "@/lib/bend/queries";
 import { cleanTaste } from "@/lib/taste";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
@@ -44,16 +46,44 @@ export type BendBriefDeps = Pick<CanvasToolDeps, "repos"> & {
  * Ingredient weights from rate_directions feedback: one grouped read per call. Fails open: any
  * error, or no user, gives no weights, so the bend is exactly what it was without feedback.
  */
-async function readWeights(getDeps: () => BendBriefDeps, userId: string | undefined): Promise<Map<string, number>> {
+/** How many of the user's latest canvases count as "recent" for idea variety. */
+export const RECENT_CANVASES = 3;
+/** Weight of an ingredient the user already saw on a recent canvas: rare, not impossible. */
+export const RECENT_WEIGHT = 0.05;
+
+/**
+ * Ingredient weights: rate_directions feedback (one grouped read) plus variety across the user's
+ * own boards, so the ideas of their last few canvases (say "Uzbek suzani") do not come back on
+ * every new brief. Fails open: any error, or no user, gives no weights, so the bend is exactly
+ * what it was without them.
+ */
+async function readWeights(
+  getDeps: () => BendBriefDeps,
+  userId: string | undefined,
+  canvasId?: string,
+): Promise<Map<string, number>> {
   if (!userId) return new Map();
+  let weights = new Map<string, number>();
   try {
     const deps = getDeps();
     const stats = await deps.repos.feedback.directionStats(userId, K_ANON);
-    return ingredientWeights(stats, { global: deps.globalLearning?.() ?? true });
+    weights = ingredientWeights(stats, { global: deps.globalLearning?.() ?? true });
   } catch {
     console.error("[bend_brief] could not read direction stats");
-    return new Map();
   }
+  try {
+    const recent = await getDeps().repos.directions.recentQueriesForUser(userId, {
+      canvasLimit: RECENT_CANVASES,
+      ...(canvasId ? { excludeCanvasId: canvasId } : {}),
+    });
+    for (const q of recent) {
+      const key = directionTermKey(inspirationFromQuery(q));
+      weights.set(key, Math.min(weights.get(key) ?? 1, RECENT_WEIGHT));
+    }
+  } catch {
+    console.error("[bend_brief] could not read recent directions");
+  }
+  return weights;
 }
 
 /** Save directions (and new taste words) on the user's canvas. */
@@ -117,7 +147,7 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
     }
     const taste = newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined);
 
-    const ingredientWeights = await readWeights(getDeps, userId);
+    const ingredientWeights = await readWeights(getDeps, userId, canvasId);
     let result: BendResult;
     try {
       result = bendBrief({ ...parsed.input, ...(taste.length > 0 ? { taste } : {}) }, { ingredientWeights });

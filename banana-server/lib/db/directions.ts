@@ -1,5 +1,5 @@
 /** `directions` table: bend_brief output saved for a canvas (spec section 11). */
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { canvases, directions } from "@/db/schema";
 import { isUuid } from "./ids";
@@ -65,11 +65,34 @@ export async function deleteDirections(db: Db, canvasId: string, ids: readonly s
   return gone.length;
 }
 
+/** Search texts of directions on the user's most recently updated canvases (see DirectionRepo). */
+export async function recentDirectionQueries(
+  db: Db,
+  userId: string,
+  opts: { canvasLimit: number; excludeCanvasId?: string },
+): Promise<string[]> {
+  if (!isUuid(userId) || opts.canvasLimit <= 0) return [];
+  const exclude = opts.excludeCanvasId && isUuid(opts.excludeCanvasId) ? opts.excludeCanvasId : null;
+  const recent = await db
+    .select({ id: canvases.id })
+    .from(canvases)
+    .where(and(eq(canvases.userId, userId), exclude ? ne(canvases.id, exclude) : undefined))
+    .orderBy(desc(canvases.updatedAt))
+    .limit(opts.canvasLimit);
+  if (recent.length === 0) return [];
+  const rows = await db
+    .select({ q: directions.searchQuery })
+    .from(directions)
+    .where(inArray(directions.canvasId, recent.map((r) => r.id)));
+  return rows.map((r) => r.q);
+}
+
 export function directionRepo(db: Db): DirectionRepo {
   return {
     upsertMany: (canvasId, rows) => upsertDirections(db, canvasId, rows),
     findForUser: (userId, directionId, canvasId) => findDirectionForUser(db, userId, directionId, canvasId),
     listForCanvas: (canvasId) => listDirections(db, canvasId),
     deleteMany: (canvasId, ids) => deleteDirections(db, canvasId, ids),
+    recentQueriesForUser: (userId, opts) => recentDirectionQueries(db, userId, opts),
   };
 }

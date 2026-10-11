@@ -24,6 +24,8 @@ export type { LaneName, Mix };
 /** Plain lane words (no negatives, no site operator), as bend_brief and the tool output show them. */
 export type LaneTexts = {
   inspiration: string;
+  /** Pinterest wording of the inspiration lane when it differs ("Uzbek suzani pattern"). */
+  inspirationPinterest?: string;
   taste?: string;
   fidelity?: string;
   /** Fidelity with the domain cut to its core noun ("saudi fintech" to "fintech"), when different. */
@@ -121,7 +123,7 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], 
     });
   };
   const head = opts.bridgeWord === undefined ? bridgeHead(lanes.inspiration) : opts.bridgeWord;
-  add("inspiration", lanes.inspiration, "pinterest", false);
+  add("inspiration", lanes.inspirationPinterest ?? lanes.inspiration, "pinterest", false);
   add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
   add("taste", lanes.taste, "dribbble", true);
   if (head) add("bridge", lanes.bridge, "dribbble", true, undefined, head);
