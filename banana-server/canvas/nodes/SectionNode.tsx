@@ -30,41 +30,41 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
     <>
       {!collapsed && <Resizer type="section" selected={selected} />}
       <div className="bn-node bn-section" data-collapsed={collapsed ? "true" : "false"}>
-      <div className="bn-section-header">
-        {!actions.readOnly && (
-          <button
-            type="button"
-            className="bn-btn bn-btn-icon nodrag"
-            aria-expanded={!collapsed}
-            aria-label={`${collapsed ? "Expand" : "Collapse"} section ${data.title}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              actions.toggleCollapse(id);
-            }}
-          >
-            <IconChevron open={!collapsed} />
-          </button>
-        )}
-        {editing ? (
-          <NoteEditor
-            multiline={false}
-            initial={data.title}
-            label="Section title"
-            onDone={(value) => {
-              if (value !== null && value.trim()) actions.updateData<"section">(id, { title: value.trim() });
-              actions.setEditing(null);
-              actions.focusNode(id);
-            }}
-          />
-        ) : (
-          <p className="bn-section-title">{data.title}</p>
-        )}
-        <span className="bn-section-count">
-          {count} {count === 1 ? "item" : "items"}
-        </span>
-        <NodeMenu nodeId={id} label={`section ${data.title}`} items={items} movable={false} />
+        <div className="bn-section-header">
+          {!actions.readOnly && (
+            <button
+              type="button"
+              className="bn-btn bn-btn-icon nodrag"
+              aria-expanded={!collapsed}
+              aria-label={`${collapsed ? "Expand" : "Collapse"} section ${data.title}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                actions.toggleCollapse(id);
+              }}
+            >
+              <IconChevron open={!collapsed} />
+            </button>
+          )}
+          {editing ? (
+            <NoteEditor
+              multiline={false}
+              initial={data.title}
+              label="Section title"
+              onDone={(value) => {
+                if (value !== null && value.trim()) actions.updateData<"section">(id, { title: value.trim() });
+                actions.setEditing(null);
+                actions.focusNode(id);
+              }}
+            />
+          ) : (
+            <p className="bn-section-title">{data.title}</p>
+          )}
+          <span className="bn-section-count">
+            {count} {count === 1 ? "item" : "items"}
+          </span>
+          <NodeMenu nodeId={id} label={`section ${data.title}`} items={items} movable={false} />
+        </div>
       </div>
-    </div>
     </>
   );
 }

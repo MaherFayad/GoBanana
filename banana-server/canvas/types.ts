@@ -123,7 +123,7 @@ export const DEFAULT_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   image: { w: 280, h: 210 },
   upload: { w: 280, h: 210 },
   note: { w: 220, h: 140 },
-  swatch: { w: 180, h: 200 },
+  swatch: { w: 220, h: 250 },
   typeSample: { w: 320, h: 170 },
   section: { w: 616, h: 420 },
 };
@@ -133,7 +133,7 @@ export const MIN_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   image: { w: 120, h: 96 },
   upload: { w: 120, h: 96 },
   note: { w: 140, h: 96 },
-  swatch: { w: 160, h: 180 },
+  swatch: { w: 200, h: 230 },
   typeSample: { w: 220, h: 140 },
   section: { w: 296, h: 48 },
 };

@@ -32,7 +32,16 @@ import {
 } from "react";
 import { createAutoSaver, type SaveStatus } from "./autosave";
 import { CanvasActionsContext, type CanvasActions } from "./context";
-import { cascade, absoluteRect, bringForward, nodeSize, removeNode, reparent, sectionAt, toggleCollapsed } from "./geometry";
+import {
+  cascade,
+  absoluteRect,
+  bringForward,
+  nodeSize,
+  removeNode,
+  reparent,
+  sectionAt,
+  toggleCollapsed,
+} from "./geometry";
 import { noteNode, referenceNode, sectionNode } from "./factory";
 import { directionWord, nudgeDelta, resizeBy, resizeDirection } from "./keyboard";
 import { arrangeNodes, LAYOUT_LABELS, type LayoutKind } from "./layout-adapter";
@@ -266,7 +275,9 @@ function CanvasEditor({
       const n = nodesRef.current.find((x) => x.id === id);
       if (!n) return;
       const size = resizeBy(nodeSize(n), direction, MIN_SIZE[n.type], n.type === "image" || n.type === "upload");
-      setNodes((nds) => nds.map((x) => (x.id === id ? ({ ...x, width: size.w, height: size.h } as CanvasFlowNode) : x)));
+      setNodes((nds) =>
+        nds.map((x) => (x.id === id ? ({ ...x, width: size.w, height: size.h } as CanvasFlowNode) : x)),
+      );
       announce(`Size ${size.w} by ${size.h}`);
     },
     [announce, setNodes],
@@ -293,7 +304,9 @@ function CanvasEditor({
       loadFonts,
       sections,
       updateData: (id, patch) =>
-        setNodes((nds) => nds.map((n) => (n.id === id ? ({ ...n, data: { ...n.data, ...patch } } as CanvasFlowNode) : n))),
+        setNodes((nds) =>
+          nds.map((n) => (n.id === id ? ({ ...n, data: { ...n.data, ...patch } } as CanvasFlowNode) : n)),
+        ),
       remove,
       bringForward: (id) => {
         setNodes((nds) => bringForward(nds, id));
@@ -334,7 +347,9 @@ function CanvasEditor({
       const wasLast = trayRef.current.length === 1;
       setTray((t) => t.filter((r) => r.id !== ref.id));
       const name = ref.title || "Reference";
-      announce(sec && sec.type === "section" ? `${name} added to section ${sec.data.title}` : `${name} added to the canvas`);
+      announce(
+        sec && sec.type === "section" ? `${name} added to section ${sec.data.title}` : `${name} added to the canvas`,
+      );
       if (wasLast && !dropPoint) focusNode(node.id);
     },
     [announce, focusNode, readOnly, setNodes, viewportCenter],
@@ -379,7 +394,9 @@ function CanvasEditor({
       e.stopPropagation();
       setNodes((nds) => {
         const moved = nds.map((n) =>
-          n.id === id ? ({ ...n, position: { x: n.position.x + delta.x, y: n.position.y + delta.y } } as CanvasFlowNode) : n,
+          n.id === id
+            ? ({ ...n, position: { x: n.position.x + delta.x, y: n.position.y + delta.y } } as CanvasFlowNode)
+            : n,
         );
         return settleIntoSection(moved, [id]);
       });
@@ -403,6 +420,12 @@ function CanvasEditor({
     if (e.key === "m" || e.key === "M" || e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) {
       e.preventDefault();
       e.stopPropagation();
+      // Select it too, so React Flow raises it and the menu is drawn above its neighbors.
+      setNodes((nds) =>
+        nds.map((n) =>
+          Boolean(n.selected) === (n.id === id) ? n : ({ ...n, selected: n.id === id } as CanvasFlowNode),
+        ),
+      );
       setMenuFor(id);
       return;
     }
@@ -415,7 +438,12 @@ function CanvasEditor({
 
   const onNodeDragStop: OnNodeDrag<CanvasFlowNode> = useCallback(
     (_e, _node, dragged) => {
-      setNodes((nds) => settleIntoSection(nds, dragged.map((d) => d.id)));
+      setNodes((nds) =>
+        settleIntoSection(
+          nds,
+          dragged.map((d) => d.id),
+        ),
+      );
     },
     [setNodes, settleIntoSection],
   );
@@ -462,7 +490,8 @@ function CanvasEditor({
       />
       {initial.removed > 0 && (
         <p className="bn-notice" role="status">
-          {initial.removed === 1 ? "1 item is hidden" : `${initial.removed} items are hidden`} because of a takedown request.
+          {initial.removed === 1 ? "1 item is hidden" : `${initial.removed} items are hidden`} because of a takedown
+          request.
         </p>
       )}
       <div className="bn-body">

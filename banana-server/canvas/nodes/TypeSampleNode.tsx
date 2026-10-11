@@ -27,26 +27,26 @@ export function TypeSampleNode({ id, data, selected, parentId }: NodeProps<TypeS
     <>
       <Resizer type="typeSample" selected={selected} />
       <div className="bn-node bn-type">
-      {/* React 19 hoists this stylesheet into <head>. Off when the host blocks font CSS. */}
-      {actions.loadFonts && pairing?.url && <link rel="stylesheet" href={pairing.url} precedence="default" />}
-      <p className="bn-type-name">{pairing?.name ?? data.pairingId}</p>
-      <p
-        className="bn-type-display"
-        style={pairing ? { fontFamily: fontStack(pairing.display), fontWeight: pairing.display.weight } : undefined}
-      >
-        {sample}
-      </p>
-      <p
-        className="bn-type-body"
-        style={pairing ? { fontFamily: fontStack(pairing.body), fontWeight: pairing.body.weight } : undefined}
-      >
-        Body text sits here so you can judge the pair together.
-      </p>
-      <div className="bn-node-bar">
-        <span className="bn-grow" />
-        <NodeMenu nodeId={id} label="type sample" parentId={parentId} items={items} />
+        {/* React 19 hoists this stylesheet into <head>. Off when the host blocks font CSS. */}
+        {actions.loadFonts && pairing?.url && <link rel="stylesheet" href={pairing.url} precedence="default" />}
+        <p className="bn-type-name">{pairing?.name ?? data.pairingId}</p>
+        <p
+          className="bn-type-display"
+          style={pairing ? { fontFamily: fontStack(pairing.display), fontWeight: pairing.display.weight } : undefined}
+        >
+          {sample}
+        </p>
+        <p
+          className="bn-type-body"
+          style={pairing ? { fontFamily: fontStack(pairing.body), fontWeight: pairing.body.weight } : undefined}
+        >
+          Body text sits here so you can judge the pair together.
+        </p>
+        <div className="bn-node-bar">
+          <span className="bn-grow" />
+          <NodeMenu nodeId={id} label="type sample" parentId={parentId} items={items} />
+        </div>
       </div>
-    </div>
     </>
   );
 }

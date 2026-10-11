@@ -38,32 +38,32 @@ export function NoteNode({ id, data, selected, parentId }: NodeProps<NoteFlowNod
 
   return (
     <>
-    <Resizer type="note" selected={selected} />
-    <div
-      className="bn-node bn-note"
-      data-color={color}
-      onDoubleClick={() => !actions.readOnly && actions.setEditing(id)}
-    >
-      {editing ? (
-        <NoteEditor
-          initial={data.text}
-          label="Note text"
-          onDone={(value) => {
-            if (value !== null) actions.updateData<"note">(id, { text: value });
-            actions.setEditing(null);
-            actions.focusNode(id);
-          }}
-        />
-      ) : (
-        <p className={`bn-note-text${data.text.trim() ? "" : " bn-note-empty"}`}>
-          {data.text.trim() || "Empty note. Press F2 or double click to write."}
-        </p>
-      )}
-      <div className="bn-node-bar">
-        <span className="bn-grow" />
-        <NodeMenu nodeId={id} label="note" parentId={parentId} items={items} />
+      <Resizer type="note" selected={selected} />
+      <div
+        className="bn-node bn-note"
+        data-color={color}
+        onDoubleClick={() => !actions.readOnly && actions.setEditing(id)}
+      >
+        {editing ? (
+          <NoteEditor
+            initial={data.text}
+            label="Note text"
+            onDone={(value) => {
+              if (value !== null) actions.updateData<"note">(id, { text: value });
+              actions.setEditing(null);
+              actions.focusNode(id);
+            }}
+          />
+        ) : (
+          <p className={`bn-note-text${data.text.trim() ? "" : " bn-note-empty"}`}>
+            {data.text.trim() || "Empty note. Press F2 or double click to write."}
+          </p>
+        )}
+        <div className="bn-node-bar">
+          <span className="bn-grow" />
+          <NodeMenu nodeId={id} label="note" parentId={parentId} items={items} />
+        </div>
       </div>
-    </div>
     </>
   );
 }

@@ -11,8 +11,8 @@ import { NoteEditor } from "./ImageNode";
 import { NodeMenu, type MenuItem } from "./NodeMenu";
 
 function verdict(ratio: number): { text: string; pass: boolean } {
-  if (ratio >= TEXT_MIN) return { text: "Text AA", pass: true };
-  if (ratio >= UI_MIN) return { text: "UI and large text", pass: true };
+  if (ratio >= TEXT_MIN) return { text: "AA", pass: true };
+  if (ratio >= UI_MIN) return { text: "UI only", pass: true };
   return { text: "Fails", pass: false };
 }
 
@@ -31,9 +31,10 @@ function ContrastRow({ hex, against, name }: { hex: string; against: string; nam
   const v = verdict(ratio);
   return (
     <li>
-      <span className="bn-contrast-dot" style={{ background: against }} aria-hidden="true" />
-      <span>
-        On {name}: {ratio.toFixed(2)}:1
+      {/* Live "Aa" sample (CSS content) of the color as text on the background. Decorative. */}
+      <span className="bn-contrast-sample" style={{ background: against, color: hex }} aria-hidden="true" />
+      <span className="bn-contrast-ratio">
+        {name} {ratio.toFixed(2)}:1
       </span>
       <span className={`bn-chip ${v.pass ? "bn-chip-pass" : "bn-chip-fail"}`}>
         {v.pass ? <IconCheck /> : <IconWarning />}
@@ -61,7 +62,12 @@ export function SwatchNode({ id, data, parentId }: NodeProps<SwatchFlowNode>) {
 
   return (
     <div className="bn-node bn-swatch">
-      <div className="bn-swatch-color" style={{ background: data.hex }} role="img" aria-label={`Color sample ${data.hex}`} />
+      <div
+        className="bn-swatch-color"
+        style={{ background: data.hex }}
+        role="img"
+        aria-label={`Color sample ${data.hex}`}
+      />
       <div className="bn-swatch-info">
         {editing ? (
           <NoteEditor
@@ -80,11 +86,11 @@ export function SwatchNode({ id, data, parentId }: NodeProps<SwatchFlowNode>) {
         <span className="bn-swatch-code">{data.hex}</span>
         {data.oklch && <span className="bn-swatch-code">{data.oklch}</span>}
         <ul className="bn-contrast" aria-label="Contrast">
-          <ContrastRow hex={data.hex} against="#ffffff" name="white" />
-          <ContrastRow hex={data.hex} against="#000000" name="black" />
+          <ContrastRow hex={data.hex} against="#ffffff" name="On white" />
+          <ContrastRow hex={data.hex} against="#000000" name="On black" />
         </ul>
       </div>
-      <div className="bn-node-bar">
+      <div className="bn-node-bar bn-node-bar-static">
         <TagChip tag={data.tag} />
         <span className="bn-grow" />
         <NodeMenu nodeId={id} label={`color ${data.hex}`} parentId={parentId} items={items} resizable={false} />

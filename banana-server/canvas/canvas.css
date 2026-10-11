@@ -620,7 +620,6 @@ kbd {
 
 .bn-note {
   padding: 10px 12px 40px;
-  overflow: hidden;
 }
 
 .bn-note[data-color="yellow"] { background: var(--bn-note-yellow); }
@@ -661,7 +660,6 @@ kbd {
 .bn-swatch {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .bn-swatch-color {
@@ -676,8 +674,13 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 10px 40px;
+  padding: 8px 10px 4px;
   font-size: 12px;
+}
+
+.bn-node-bar.bn-node-bar-static {
+  position: static;
+  margin: auto 6px 6px;
 }
 
 .bn-swatch-role {
@@ -708,17 +711,29 @@ kbd {
   gap: 6px;
 }
 
-.bn-contrast-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  border: 1px solid var(--bn-border);
+.bn-contrast-sample {
   flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--bn-border);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.bn-contrast-sample::before {
+  content: "Aa";
+}
+
+.bn-contrast-ratio {
+  flex: 1 1 auto;
+  white-space: nowrap;
 }
 
 .bn-type {
   padding: 12px 12px 40px;
-  overflow: hidden;
 }
 
 .bn-type-name {

@@ -1,0 +1,206 @@
+/**
+ * `add_to_canvas` (spec section 6): place references, notes, swatches and sections.
+ * Item caps per plan, all or nothing per call. References are resolved from the
+ * `references` table (search results saved for this canvas), then from the canvas tray.
+ */
+import { z } from "zod";
+import { authExtra } from "@/lib/auth";
+import {
+  appendNodes,
+  canvasWebUrl,
+  itemCount,
+  mutateCanvas,
+  referenceSize,
+  siteFromUrl,
+  type NewNode,
+  type PlacedNode,
+} from "@/lib/canvas/store";
+import type { ReferenceRecord } from "@/lib/db/types";
+import { hexToOklch, normalizeHex } from "@/lib/palette";
+import { canAddItems } from "@/lib/quota";
+import {
+  CANVAS_NOT_FOUND,
+  lazyTool,
+  mutateError,
+  plausibleId,
+  takedownLoader,
+  TRY_AGAIN,
+  upgradeUrl,
+  type CanvasToolDeps,
+} from "./canvas-shared";
+import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
+
+export const TOOL_NAME = "add_to_canvas";
+export const MAX_ITEMS_PER_CALL = 50;
+
+export const TOOL_DESCRIPTION =
+  "Place items on a canvas: references from search_references (by referenceId), notes, color swatches and sections. " +
+  "Pass sectionId to put items in that section; references found for a direction go to its section on their own. " +
+  "New items go below what is already there.";
+
+const item = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("reference"), referenceId: z.string().min(1).max(100) }),
+  z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
+  z.object({
+    type: z.literal("swatch"),
+    hex: z.string().regex(/^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i),
+    role: z.string().trim().min(1).max(60).optional(),
+  }),
+  z.object({ type: z.literal("section"), title: z.string().trim().min(1).max(120) }),
+]);
+
+export const inputSchema = z.object({
+  canvasId: z.string().min(1).max(100),
+  items: z.array(item).min(1).max(MAX_ITEMS_PER_CALL),
+  sectionId: z.string().min(1).max(120).optional().describe("Section to place the items in."),
+});
+
+const MESSAGES: Record<string, string> = {
+  canvasId: "Pass the canvasId from open_canvas.",
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId }, { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  sectionId: "sectionId must be the id of a section on this canvas.",
+};
+
+export type AddToCanvasOutput = {
+  canvasId: string;
+  items: { id: string; type: string; x: number; y: number; sectionId: string | null }[];
+  skipped: { index: number; reason: string }[];
+  webUrl: string;
+};
+
+type Prepared = { node: NewNode; directionId?: string } | { skip: string };
+
+function referenceNode(ref: {
+  imageUrl: string;
+  thumbUrl?: string | null;
+  sourceUrl: string;
+  sourceSite?: string | null;
+  title?: string | null;
+  width?: number | null;
+  height?: number | null;
+}): NewNode {
+  const size = referenceSize(ref.width, ref.height);
+  return {
+    type: "image",
+    w: size.w,
+    h: size.h,
+    data: {
+      imageUrl: ref.imageUrl,
+      thumbUrl: ref.thumbUrl ?? null,
+      sourceUrl: ref.sourceUrl,
+      sourceSite: ref.sourceSite || siteFromUrl(ref.sourceUrl),
+      title: ref.title ?? null,
+      note: null,
+      tag: null,
+      width: ref.width ?? null,
+      height: ref.height ?? null,
+    },
+  };
+}
+
+function text(out: AddToCanvasOutput, title: string): string {
+  const lines = [`Added ${out.items.length} item${out.items.length === 1 ? "" : "s"} to "${title}".`];
+  for (const it of out.items) lines.push(`- ${it.type} ${it.id} at (${it.x}, ${it.y})${it.sectionId ? ` in section ${it.sectionId}` : ""}`);
+  for (const s of out.skipped) lines.push(`Skipped item ${s.index + 1}: ${s.reason}`);
+  lines.push(`Web link: ${out.webUrl}`);
+  return lines.join("\n");
+}
+
+export function createAddToCanvasTool(deps: CanvasToolDeps) {
+  return async function addToCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
+    if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
+    const parsed = parseArgs(inputSchema, raw, MESSAGES, MESSAGES.items!);
+    if (!parsed.ok) return toolMessage(parsed.message);
+    const input = parsed.data;
+    if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
+    const { repos } = deps;
+
+    try {
+      const plan = await repos.users.getPlan(userId);
+      const refIds = input.items.flatMap((i) => (i.type === "reference" ? [i.referenceId] : []));
+      const owned = await repos.canvases.getOwned(userId, input.canvasId);
+      if (!owned) return toolMessage(CANVAS_NOT_FOUND);
+      const saved: Map<string, ReferenceRecord> =
+        refIds.length > 0 ? await repos.references.getByIds(input.canvasId, refIds) : new Map();
+      const loadMatcher = takedownLoader(deps);
+      const matcher = await loadMatcher();
+
+      const outcome = await mutateCanvas(repos, userId, input.canvasId, loadMatcher, (state) => {
+        if (input.sectionId && !state.nodes.some((n) => n.id === input.sectionId && n.type === "section")) {
+          return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
+        }
+        const tray = new Map(state.tray.map((r) => [r.id, r]));
+        const prepared: Prepared[] = input.items.map((it) => {
+          switch (it.type) {
+            case "reference": {
+              const row = saved.get(it.referenceId);
+              const fromTray = tray.get(it.referenceId);
+              const ref = row ?? fromTray;
+              if (!ref) return { skip: `reference ${it.referenceId} was not found for this canvas. Search with this canvasId first.` };
+              if (matcher.isReferenceBlocked(ref)) return { skip: `reference ${it.referenceId} was removed after a takedown request.` };
+              return { node: referenceNode(ref), ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}) };
+            }
+            case "note":
+              return { node: { type: "note", data: { text: it.text, color: "yellow" } } };
+            case "swatch": {
+              const hex = normalizeHex(it.hex.startsWith("#") ? it.hex : `#${it.hex}`);
+              return { node: { type: "swatch", data: { hex, oklch: hexToOklch(hex), role: it.role ?? null, tag: "explore" } } };
+            }
+            case "section":
+              return { node: { type: "section", data: { title: it.title } } };
+          }
+        });
+
+        const nodes = prepared.flatMap((p) => ("node" in p ? [p] : []));
+        if (nodes.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? `Item ${i + 1}: ${p.skip}` : "")).filter(Boolean).join("\n") };
+        const cap = canAddItems(plan, itemCount(state), nodes.length, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
+        if (!cap.ok) return { error: cap.message };
+
+        const sectionByDirection = new Map<string, string>();
+        for (const n of state.nodes) {
+          if (n.type === "section" && n.data.directionId) sectionByDirection.set(n.data.directionId, n.id);
+        }
+        const targetFor = (_node: NewNode, i: number): string | null => {
+          if (input.sectionId) return input.sectionId;
+          const dir = nodes[i]?.directionId;
+          return dir ? sectionByDirection.get(dir) ?? null : null;
+        };
+        const { state: next, placed } = appendNodes(state, nodes.map((p) => p.node), targetFor, deps.makeId);
+
+        // Placed references leave the tray, as when the user drags them in.
+        const placedRefs = new Set(input.items.flatMap((it, i) => (it.type === "reference" && "node" in prepared[i]! ? [it.referenceId] : [])));
+        const finalState = { ...next, tray: next.tray.filter((r) => !placedRefs.has(r.id)) };
+
+        const skipped = prepared.flatMap((p, index) => ("skip" in p ? [{ index, reason: p.skip }] : []));
+        return { state: finalState, value: { placed, skipped } };
+      });
+      if (!outcome.ok) return mutateError(outcome);
+
+      const out: AddToCanvasOutput = {
+        canvasId: input.canvasId,
+        items: outcome.value.placed.map((p: PlacedNode) => ({ id: p.id, type: p.type, x: p.x, y: p.y, sectionId: p.sectionId })),
+        skipped: outcome.value.skipped,
+        webUrl: canvasWebUrl(deps.appUrl(), input.canvasId),
+      };
+      return toolResult(text(out, outcome.canvas.title), out);
+    } catch {
+      console.error("[add_to_canvas] failed");
+      return toolMessage(TRY_AGAIN);
+    }
+  };
+}
+
+const live = lazyTool(createAddToCanvasTool);
+
+export const register: RegisterTool = (server) => {
+  server.registerTool(
+    TOOL_NAME,
+    {
+      title: "Add to canvas",
+      description: TOOL_DESCRIPTION,
+      inputSchema: lenient(inputSchema),
+      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+    },
+    async (args, ctx) => live(args, authExtra(ctx)?.userId),
+  );
+};

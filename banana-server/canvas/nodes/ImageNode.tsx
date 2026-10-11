@@ -55,51 +55,53 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
       },
     },
   ];
-  if (data.tag) items.push({ label: "Clear Ship or Explore mark", onSelect: () => actions.updateData<"image">(id, { tag: null }) });
+  if (data.tag)
+    items.push({ label: "Clear Ship or Explore mark", onSelect: () => actions.updateData<"image">(id, { tag: null }) });
 
   return (
     <>
       <Resizer type={type} selected={selected} keepAspectRatio />
       <div className="bn-node bn-image" data-testid={`tile-${id}`}>
-      <div className="bn-image-frame">
-        {src ? (
-          // eslint-disable-next-line @next/next/no-img-element -- third-party image loaded from its source host on purpose
-          <img
-            key={src}
-            src={src}
-            alt={title}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            onError={() => setAttempt((a) => a + 1)}
+        <div className="bn-image-frame">
+          {src ? (
+            // eslint-disable-next-line @next/next/no-img-element -- third-party image loaded from its source host on purpose
+            <img
+              key={src}
+              src={src}
+              alt={title}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              onError={() => setAttempt((a) => a + 1)}
+            />
+          ) : (
+            <LinkCard title={data.title} site={site} url={data.sourceUrl} />
+          )}
+          {/* Source chip sits on the image itself so it is always visible (hard rule 3). */}
+          <div className="bn-node-bar">
+            <SourceChip site={site} url={data.sourceUrl} />
+          </div>
+        </div>
+        {editing ? (
+          <NoteEditor
+            initial={data.note ?? ""}
+            label={`Note for ${title}`}
+            onDone={(value) => {
+              if (value !== null) actions.updateData<"image">(id, { note: value.trim() || null });
+              actions.setEditing(null);
+              actions.focusNode(id);
+            }}
           />
         ) : (
-          <LinkCard title={data.title} site={site} url={data.sourceUrl} />
+          data.note && <p className="bn-image-note">{data.note}</p>
         )}
+        <div className="bn-node-bar bn-node-bar-top">
+          {data.tag && <TagChip tag={data.tag} />}
+          <span className="bn-grow" />
+          <NodeMenu nodeId={id} label={title} parentId={parentId} items={items} sourceUrl={data.sourceUrl} />
+        </div>
       </div>
-      {editing ? (
-        <NoteEditor
-          initial={data.note ?? ""}
-          label={`Note for ${title}`}
-          onDone={(value) => {
-            if (value !== null) actions.updateData<"image">(id, { note: value.trim() || null });
-            actions.setEditing(null);
-            actions.focusNode(id);
-          }}
-        />
-      ) : (
-        data.note && <p className="bn-image-note">{data.note}</p>
-      )}
-      <div className="bn-node-bar bn-node-bar-top">
-        {data.tag && <TagChip tag={data.tag} />}
-        <span className="bn-grow" />
-        <NodeMenu nodeId={id} label={title} parentId={parentId} items={items} sourceUrl={data.sourceUrl} />
-      </div>
-      <div className="bn-node-bar">
-        <SourceChip site={site} url={data.sourceUrl} />
-      </div>
-    </div>
     </>
   );
 }
