@@ -41,16 +41,18 @@ export function Toolbar(p: ToolbarProps) {
         {p.title} <span className="bn-toolbar-app">on {p.appName}</span>
       </h1>
 
-      <button
-        type="button"
-        className="bn-btn"
-        aria-expanded={p.trayOpen}
-        aria-controls={p.trayId}
-        onClick={p.onToggleTray}
-      >
-        <IconPanel />
-        <span>{p.trayOpen ? "Hide results" : `Show results (${p.trayCount})`}</span>
-      </button>
+      {!p.readOnly && (
+        <button
+          type="button"
+          className="bn-btn"
+          aria-expanded={p.trayOpen}
+          aria-controls={p.trayOpen ? p.trayId : undefined}
+          onClick={p.onToggleTray}
+        >
+          <IconPanel />
+          <span>{p.trayOpen ? "Hide results" : `Show results (${p.trayCount})`}</span>
+        </button>
+      )}
 
       {!p.readOnly && (
         <>

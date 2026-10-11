@@ -126,6 +126,7 @@ function CanvasEditor({
   readOnly = false,
   loadFonts = true,
   onSaved,
+  theme,
   initial,
 }: CanvasAppProps & { initial: Deserialized }) {
   const rf = useReactFlow<CanvasFlowNode>();
@@ -447,8 +448,7 @@ function CanvasEditor({
       />
       {initial.removed > 0 && (
         <p className="bn-notice" role="status">
-          {initial.removed === 1 ? "1 item is hidden" : `${initial.removed} items are hidden`} because the owner asked us to
-          remove it.
+          {initial.removed === 1 ? "1 item is hidden" : `${initial.removed} items are hidden`} because of a takedown request.
         </p>
       )}
       <div className="bn-body">
@@ -484,7 +484,7 @@ function CanvasEditor({
             elementsSelectable
             deleteKeyCode={null}
             autoPanOnNodeFocus
-            colorMode="system"
+            colorMode={theme ?? "system"}
             ariaLabelConfig={ARIA_LABELS}
             aria-label={`Moodboard: ${title}`}
           >
