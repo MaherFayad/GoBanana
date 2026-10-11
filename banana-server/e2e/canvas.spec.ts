@@ -320,18 +320,18 @@ test.describe("moodboard canvas", () => {
     const share = page.getByRole("button", { name: "Share", exact: true });
     await share.click();
     await expect(share).toHaveAttribute("aria-expanded", "true");
-    await page.getByRole("button", { name: "Create view-only link" }).click();
+    await page.getByRole("button", { name: "Create view link" }).click();
     const link = page.getByRole("textbox", { name: "View-only link" });
     await expect(link).toHaveValue(`http://localhost/s/${TOKEN}`);
     await page.getByRole("button", { name: "Copy link" }).click();
-    await expect(page.getByText("Link copied.", { exact: true })).toBeVisible();
+    await expect(page.locator(".st-toast").filter({ hasText: "Link copied" })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`http://localhost/s/${TOKEN}`);
 
     const results = await new AxeBuilder({ page }).include(".bn-share").withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
 
     await page.getByRole("button", { name: "Turn off link" }).click();
-    await expect(page.getByRole("button", { name: "Create view-only link" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create view link" })).toBeVisible();
     expect(calls).toEqual(["POST", "DELETE"]);
     await page.keyboard.press("Escape");
     await expect(share).toBeFocused();

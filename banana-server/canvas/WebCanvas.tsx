@@ -3,13 +3,19 @@
 /**
  * Full-screen web canvas (`/c/:id`). Saves through fetch to `/api/canvas/:id`, sending the
  * version it started from, so a save never overwrites newer changes made in another window
- * or by the agent. On a conflict, saving stops and a plain message asks for a reload.
+ * or by the agent. On a conflict, saving stops and a warning alert asks for a reload.
+ *
+ * Mounts the Studio toast stack once for the whole page (share, upload and canvas toasts).
+ * No forced theme: the tokens follow the system, dark when there is no preference.
  */
 import { useMemo, useState } from "react";
+import { WarningIcon } from "@/components/studio/icons";
+import { ToastProvider } from "@/components/studio/Toast";
 import { CanvasApp } from "./CanvasApp";
 import { CONFLICT_MESSAGE, createFetchPersistence, isConflict, type CanvasPersistence } from "./persistence";
 import type { CanvasState } from "./types";
 import type { Plan } from "@/lib/quota";
+import "./overlays.css";
 
 export interface WebCanvasProps {
   canvasId: string;
@@ -56,24 +62,39 @@ export function WebCanvas({
   }, [canvasId, initialUpdatedAt]);
 
   return (
-    <div className="bn-page">
-      {conflict && (
-        <div className="bn-conflict" role="alert">
-          <p>{CONFLICT_MESSAGE}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Reload
-          </button>
-        </div>
-      )}
-      <CanvasApp
-        canvasId={canvasId}
-        appName={appName}
-        title={title}
-        initialState={initialState ?? undefined}
-        persistence={persistence}
-        readOnly={readOnly}
-        web={{ plan, shareToken, pricingHref }}
-      />
-    </div>
+    <ToastProvider>
+      <div className="bn-page">
+        {conflict && (
+          <div className="bn-banner">
+            <div className="st-alert" data-tone="warning" role="alert">
+              <span className="st-alert-icon">
+                <WarningIcon size={16} />
+              </span>
+              <div className="st-alert-content bn-banner-body">
+                <p>{CONFLICT_MESSAGE}</p>
+                <button
+                  type="button"
+                  className="st-btn"
+                  data-variant="secondary"
+                  data-size="sm"
+                  onClick={() => window.location.reload()}
+                >
+                  Reload
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        <CanvasApp
+          canvasId={canvasId}
+          appName={appName}
+          title={title}
+          initialState={initialState ?? undefined}
+          persistence={persistence}
+          readOnly={readOnly}
+          web={{ plan, shareToken, pricingHref }}
+        />
+      </div>
+    </ToastProvider>
   );
 }

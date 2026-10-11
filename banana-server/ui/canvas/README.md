@@ -8,9 +8,10 @@ same `canvas/CanvasApp` as the web canvas at `/c/:id`, built into one HTML file.
 | Piece | File |
 | --- | --- |
 | Entry: connects to the host, reads the `open_canvas` result, renders the canvas | `ui/canvas/main.tsx` |
-| Vite build: one HTML file, all JS and CSS inlined | `ui/canvas/vite.config.ts` |
-| Generated HTML as a TS string (Workers have no filesystem) | `lib/mcp/resources/canvas-html.generated.ts` |
-| `ui://banana/canvas` resource, mime type and CSP | `lib/mcp/resources/canvas.ts` |
+| Vite build: one HTML file, all JS and CSS inlined, fonts as separate files | `ui/canvas/vite.config.ts` |
+| Wrapper look: Studio top bar, conflict alert, compact mode | `ui/canvas/inline.css` |
+| Built HTML and UI fonts (static assets, read through the ASSETS binding) | `public/mcp-app/canvas.html`, `public/mcp-app/assets/` |
+| `ui://banana/canvas` resource, mime type, CSP, APP_URL filled into font URLs | `lib/mcp/resources/canvas.ts` |
 | Load and save over the host bridge | `canvas/persistence-bridge.ts` |
 | App-only save tool (hidden from the model) | `lib/mcp/tools/save_canvas_state.ts` |
 | App-only load tool (fallback when a host drops result `_meta`) | `lib/mcp/tools/load_canvas_state.ts` |
@@ -30,22 +31,42 @@ same `canvas/CanvasApp` as the web canvas at `/c/:id`, built into one HTML file.
 Images load in the browser from their source hosts. The view never fetches image bytes.
 Source links open through the host (`ui/open-link`).
 
+## Look
+
+Same Studio design language as the web canvas (docs/design-language.md): `main.tsx` imports
+`styles/fonts.css`, `styles/studio-tokens.css` and `styles/studio-components.css`.
+
+- Theme: the host theme (`hostContext.theme`) goes on `<html>` and the wrapper as `data-theme`;
+  without one the tokens follow the system.
+- A 36px top bar on `--st-bg-body` with "Open on the web" (secondary sm link-button) and
+  "Full screen" where the host offers it.
+- The conflict choice is a warning alert; toasts show inside the frame, bottom inline end.
+- Under 720px wide the wrapper gets `data-compact` (rail collapsed, panel closed).
+- Fonts (Inter, IBM Plex Sans Arabic) are never inlined. The build writes them to
+  `public/mcp-app/assets/` with URLs that start with a placeholder; `canvas.ts` fills in
+  APP_URL's origin when serving and adds it to the CSP `resourceDomains`; `public/_headers`
+  allows cross-origin font loads. Without APP_URL, or when a host blocks it, the view uses
+  `system-ui`. The view never requests fonts from a third-party host (checked in
+  `e2e/mcp-apps.spec.ts`).
+
 ## Build
 
 ```bash
-npm run build:ui   # writes lib/mcp/resources/canvas-html.generated.ts
+npm run build:ui   # writes public/mcp-app/canvas.html and public/mcp-app/assets/*.woff2
 ```
 
 `npm run build` runs it first, and `npm run deploy:preview` runs `npm run build` through
-OpenNext. The generated file is checked in so typecheck, tests and lint work on a fresh
-clone. Rebuild and commit it after changing anything under `canvas/` or `ui/canvas/`.
+OpenNext. The output is checked in so typecheck, tests and e2e work on a fresh clone.
+Rebuild and commit it after changing anything under `canvas/`, `components/studio/`,
+`styles/` or `ui/canvas/`.
 
 ## Tests
 
 - `tests/mcp-apps.test.ts` (Vitest): resource listing, mime type, CSP, self-contained HTML,
   tool metadata, save tool rules, bridge persistence against the real tool.
 - `e2e/mcp-apps.spec.ts` (Playwright): the built HTML in a sandboxed iframe under a strict
-  CSP, with a fake host that speaks the ext-apps postMessage protocol. Runs without the
+  CSP, with a fake host that speaks the ext-apps postMessage protocol. Axe runs with the
+  light and the dark host theme, and a test checks that fonts load only from APP_URL. Runs without the
   Next server: `E2E_BASE_URL=http://localhost:1 npx playwright test e2e/mcp-apps.spec.ts`.
 
 ## Manual checklist per release (spec section 13, "Inline canvas")
@@ -86,6 +107,8 @@ ChatGPT (developer mode connector). Note the date, client version and result for
 12. Type samples use their Google Font. If the host blocks the font hosts, they fall back to
     system fonts and stay readable.
 13. Dark mode in the host: the canvas follows the host theme, and text stays readable.
+    The UI text is set in Inter (check the iframe's network panel: fonts come from the app
+    origin's `/mcp-app/assets/`, nothing from a font CDN).
 14. Free plan with 3 canvases: asking for a 4th shows the plain upgrade message inline.
 15. Check the browser console of the iframe: no CSP errors for scripts or styles. Blocked
     image hosts may log CSP errors for images; those tiles must show link cards.

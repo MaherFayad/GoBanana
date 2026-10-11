@@ -101,7 +101,9 @@ describe("ui://banana/canvas resource", () => {
     expect(item!.uri).toBe(CANVAS_UI_URI);
     expect(item!.mimeType).toBe(RESOURCE_MIME_TYPE);
     const html = item!.text;
-    expect(html).toBe(CANVAS_HTML);
+    // As built, with APP_URL's origin filled into the font URLs.
+    expect(html).toBe(fillCanvasHtml(CANVAS_HTML));
+    expect(html).not.toContain(APP_ORIGIN_PLACEHOLDER);
     expect(html.length).toBeGreaterThan(10_000);
     expect(html).toMatch(/^<!doctype html>/i);
     expect(html).toContain('<div id="root">');
@@ -132,7 +134,13 @@ describe("ui://banana/canvas resource", () => {
   it("fills the app origin into font URLs and leaves other HTML alone", () => {
     const css = `@font-face{src:url(${APP_ORIGIN_PLACEHOLDER}/mcp-app/assets/inter.woff2)}`;
     expect(fillCanvasHtml(css, "https://banana.example.com/")).toBe("@font-face{src:url(https://banana.example.com/mcp-app/assets/inter.woff2)}");
-    expect(fillCanvasHtml(CANVAS_HTML, "https://banana.example.com")).toBe(CANVAS_HTML);
+    // The built view loads its UI fonts from our origin, as separate files (never inlined).
+    const filled = fillCanvasHtml(CANVAS_HTML, "https://banana.example.com");
+    expect(filled).toBe(CANVAS_HTML.replaceAll(APP_ORIGIN_PLACEHOLDER, "https://banana.example.com"));
+    const fontUrls = [...new Set(filled.match(/https:\/\/banana\.example\.com\/[^)"'\s]+/g) ?? [])];
+    expect(fontUrls.length).toBeGreaterThan(0);
+    for (const url of fontUrls) expect(url).toMatch(/^https:\/\/banana\.example\.com\/mcp-app\/assets\/[\w.-]+\.woff2$/);
+    expect(CANVAS_HTML).not.toMatch(/data:font|font\/woff2;base64/);
   });
 
   it("serves the HTML from an injected loader, caches it and retries after a failure", async () => {

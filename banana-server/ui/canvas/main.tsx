@@ -12,8 +12,23 @@
  *
  * Never fetches image bytes: tiles are plain <img> tags that load from the source host,
  * which the resource CSP allows (lib/mcp/resources/canvas.ts).
+ *
+ * Look (plan WP-C step 7): Studio tokens and primitives, the host theme on `data-theme`, a
+ * 36px top bar with "Open on the web", the conflict choice as a warning alert, toasts inside
+ * the frame, and a compact layout under 720px. UI fonts load from APP_URL's static assets
+ * (never inlined; see vite.config.ts); without them `system-ui` is the fallback.
  */
-import { StrictMode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  StrictMode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createRoot } from "react-dom/client";
 import {
   App,
@@ -22,6 +37,8 @@ import {
   type McpUiToolResultNotification,
 } from "@modelcontextprotocol/ext-apps";
 import { CanvasApp } from "@/canvas/CanvasApp";
+import { ExternalIcon, WarningIcon } from "@/components/studio/icons";
+import { ToastProvider } from "@/components/studio/Toast";
 import type { CanvasPersistence } from "@/canvas/persistence";
 import {
   ConflictError,
@@ -33,6 +50,9 @@ import {
 } from "@/canvas/persistence-bridge";
 import type { CanvasState } from "@/canvas/types";
 import { APP_NAME } from "@/lib/config";
+import "@/styles/fonts.css";
+import "@/styles/studio-tokens.css";
+import "@/styles/studio-components.css";
 import "./inline.css";
 
 // ---------------------------------------------------------------------------- host store
@@ -99,6 +119,8 @@ app
 // ---------------------------------------------------------------------------- views
 
 const INLINE_HEIGHT = 640;
+/** Under this frame width the canvas goes compact: rail collapsed, panel closed. */
+const COMPACT_WIDTH = 720;
 
 function useFrameHeight(ctx: McpUiHostContext): string {
   if (ctx.displayMode === "fullscreen" || ctx.displayMode === "pip") return "100vh";
@@ -108,11 +130,31 @@ function useFrameHeight(ctx: McpUiHostContext): string {
   return `${max ? Math.min(INLINE_HEIGHT, max) : INLINE_HEIGHT}px`;
 }
 
+function useCompact(): boolean {
+  const [compact, setCompact] = useState(() => window.innerWidth < COMPACT_WIDTH);
+  useEffect(() => {
+    const sync = () => setCompact(window.innerWidth < COMPACT_WIDTH);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, []);
+  return compact;
+}
+
 function Root() {
   const host = useHost();
   const theme = host.context.theme === "dark" || host.context.theme === "light" ? host.context.theme : undefined;
   const height = useFrameHeight(host.context);
+  const compact = useCompact();
   const opened = useMemo(() => (host.result ? readOpenCanvasResult(host.result) : null), [host.result]);
+
+  // The host theme on the root too, so the page canvas, scrollbars and anything portaled to
+  // <body> (tooltips, toasts) match. No host theme: the tokens follow the system.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme) root.dataset.theme = theme;
+    else delete root.dataset.theme;
+  }, [theme]);
 
   let body: ReactNode;
   if (opened?.ok) {
@@ -128,16 +170,35 @@ function Root() {
   }
 
   return (
-    <div className="bn-canvas bn-inline" data-theme={theme} style={{ height }}>
-      {body}
+    <div
+      className="bn-inline"
+      data-theme={theme}
+      data-compact={compact ? "" : undefined}
+      style={{ "--inline-h": height } as CSSProperties}
+    >
+      <ToastProvider>{body}</ToastProvider>
     </div>
   );
 }
 
 function Message({ role, text }: { role: "status" | "alert"; text: string }) {
   return (
-    <div className={role === "alert" ? "bn-error" : "bn-loading"} role={role}>
-      <p>{text}</p>
+    <div className="bn-inline-message">
+      {role === "alert" ? (
+        <div className="st-alert" data-tone="danger" role="alert">
+          <span className="st-alert-icon">
+            <WarningIcon size={16} />
+          </span>
+          <div className="st-alert-content">
+            <p>{text}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="st-empty" data-variant="centered" role="status">
+          <span className="st-spinner" aria-hidden="true" />
+          <p className="st-empty-body">{text}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -238,31 +299,60 @@ function InlineCanvas({ canvas, theme, host }: { canvas: OpenedCanvas; theme?: "
     <>
       <div className="bn-inline-bar">
         {canvas.webUrl && (
-          <a className="bn-inline-link" href={canvas.webUrl} target="_blank" rel="noopener noreferrer">
-            Open on the web
+          <a
+            className="st-btn"
+            data-variant="secondary"
+            data-size="sm"
+            href={canvas.webUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ExternalIcon size={16} />
+            <span>Open on the web</span>
           </a>
         )}
         {canFullscreen && (
-          <button type="button" className="bn-btn" aria-pressed={isFullscreen} onClick={toggleFullscreen}>
+          <button type="button" className="st-btn" data-variant="ghost" data-size="sm" onClick={toggleFullscreen}>
             {isFullscreen ? "Exit full screen" : "Full screen"}
           </button>
         )}
       </div>
       {conflict && (
-        <div ref={bannerRef} className="bn-inline-conflict" role="alert">
-          <p>
-            This canvas changed in chat or on the web after it opened here. Your latest changes are not saved yet.
-            Choose which version to keep.
-          </p>
-          <div className="bn-inline-actions">
-            <button type="button" className="bn-btn bn-btn-primary" onClick={loadLatest} disabled={busy}>
-              Load the latest version
-            </button>
-            <button type="button" className="bn-btn" onClick={() => void keepMine()} disabled={busy}>
-              Keep my version
-            </button>
+        <div ref={bannerRef} className="bn-inline-conflict">
+          <div className="st-alert" data-tone="warning" role="alert">
+            <span className="st-alert-icon">
+              <WarningIcon size={16} />
+            </span>
+            <div className="st-alert-content">
+              <p className="st-alert-title">This canvas changed in chat or on the web after it opened here.</p>
+              <p>Your latest changes are not saved yet. Choose which version to keep.</p>
+              <div className="bn-inline-actions">
+                <button
+                  type="button"
+                  className="st-btn"
+                  data-variant="primary"
+                  data-size="sm"
+                  onClick={loadLatest}
+                  disabled={busy}
+                >
+                  Load the latest version
+                </button>
+                <button
+                  type="button"
+                  className="st-btn"
+                  data-variant="secondary"
+                  data-size="sm"
+                  data-loading={busy ? "inline" : undefined}
+                  aria-busy={busy || undefined}
+                  onClick={() => void keepMine()}
+                  disabled={busy}
+                >
+                  {busy ? "Saving your version…" : "Keep my version"}
+                </button>
+              </div>
+              {problem && <p className="bn-inline-problem">{problem}</p>}
+            </div>
           </div>
-          {problem && <p className="bn-inline-problem">{problem}</p>}
         </div>
       )}
       <CanvasApp

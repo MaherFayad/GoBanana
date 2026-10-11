@@ -1,6 +1,8 @@
 /**
- * English site copy. Plain words, no em dashes. `{app}` becomes APP_NAME and
- * `{n}`-style keys are filled by fmt() in lib/site/i18n.ts.
+ * English site copy. Plain words, no em dashes, Studio's copy rules (docs/design-language.md
+ * section 8): sentence case, buttons are a verb plus a noun, no "OK" or "Continue", no marketing
+ * adjectives, no exclamation marks, no "we" or "our" (the product name, from APP_NAME, is the
+ * subject). `{app}` becomes APP_NAME and `{n}`-style keys are filled by fmt() in lib/site/i18n.ts.
  * Arabic lives in ar.ts with the same shape (the Dict type enforces it).
  */
 export const en = {
@@ -21,15 +23,18 @@ export const en = {
     language: { label: "Language", switchTo: "العربية", switchToLang: "ar" },
     signIn: "Sign in",
     signOut: "Sign out",
+    close: "Close",
+    toast: { region: "Notifications", close: "Close notification" },
   },
   landing: {
     title: "{app}: wild design references for your AI agent",
     heroTitle: "Mobbin shows what works. {app} shows what's next.",
     heroLead:
       "Ask your AI agent for wild design ideas. {app} bends your brief into new directions, finds real references on the web, and lays them out on a moodboard you can export.",
-    ctaInstall: "Install",
-    ctaPricing: "Pricing",
+    ctaInstall: "Install {app}",
+    ctaPricing: "View pricing",
     howTitle: "How it works",
+    stepLabel: "Step {n}",
     steps: [
       {
         title: "Ask your agent",
@@ -45,10 +50,10 @@ export const en = {
       },
     ],
     videoTitle: "See it in 20 seconds",
-    videoPending: "The demo video is on its way.",
+    videoPending: "The demo video is not ready yet.",
     videoCaption: "A brief turns into three directions, references fill the tray, and a moodboard exports a DESIGN.md.",
     installTitle: "Install",
-    installLead: "Connect your agent to this server address:",
+    installLead: "Connect your agent to this server address.",
     serverUrlLabel: "Server address",
     clients: {
       claude: {
@@ -57,6 +62,7 @@ export const en = {
           "Claude Code: run the command below in your terminal.",
           "Claude apps: open Settings, then Connectors, choose Add custom connector, and paste the server address.",
         ],
+        codeLabel: "Terminal",
       },
       chatgpt: {
         title: "ChatGPT",
@@ -69,9 +75,18 @@ export const en = {
       cursor: {
         title: "Cursor",
         steps: ["Add this to ~/.cursor/mcp.json, then sign in when Cursor asks."],
+        codeLabel: "~/.cursor/mcp.json",
       },
     },
-    copyHint: "Select the text to copy it.",
+    copy: {
+      address: "Copy address",
+      command: "Copy command",
+      config: "Copy config",
+      done: "Copied",
+      doneBody: "The text is on your clipboard.",
+      failed: "Copy failed",
+      failedBody: "Select the text and copy it with Ctrl+C, or Cmd+C on a Mac.",
+    },
     promiseTitle: "What {app} never does",
     promises: [
       "No AI image generation. Ideas come from rules and word lists; your own agent does the thinking.",
@@ -79,8 +94,10 @@ export const en = {
       "No scraping. References come from web search results only.",
     ],
     foundingTitle: "Founding offer",
-    foundingBody: "Pay $29 once and keep Pro features for life. Only for the first 100 buyers.",
-    foundingCta: "Founding offer details",
+    foundingChip: "Coming later",
+    foundingBody:
+      "One payment of $29 for Pro features for life, for the first 100 buyers. Checkout opens after the beta; until then every signed-in account has Pro features.",
+    foundingCta: "View plans",
   },
   pricing: {
     title: "Pricing",
@@ -89,12 +106,15 @@ export const en = {
     perYear: "per year",
     once: "once",
     free: "free",
+    betaTitle: "Beta: Pro features on",
+    betaBody: "Your account has Pro limits while checkout is closed. Nothing is charged.",
     plans: {
       free: { name: "Free", blurb: "Try it with your agent." },
       pro_monthly: { name: "Pro monthly", blurb: "For regular design work." },
       pro_yearly: { name: "Pro yearly", blurb: "Pro for a year, at a lower price." },
-      founding: { name: "Founding", blurb: "One payment, Pro features for life. First 100 buyers." },
+      founding: { name: "Founding", blurb: "One payment, Pro features for life." },
     },
+    foundingChip: "First 100 buyers",
     features: {
       searches: "{n} searches per month",
       canvases: "{n} canvases",
@@ -121,19 +141,19 @@ export const en = {
     exportsAll: "All",
     exportsFree: "DESIGN.md, brief",
     cta: {
-      free: "Start free",
+      free: "Install {app}",
       buy: "Buy {plan}",
       subscribe: "Subscribe to {plan}",
       signInToBuy: "Sign in to buy",
       current: "Your current plan",
       notReady: "Checkout is not open yet.",
       soldOut: "Sold out",
-      loading: "Opening checkout",
-      loadFailed: "Checkout could not load. Please try again.",
+      loading: "Opening checkout…",
+      loadFailed: "Checkout did not load. Try again in a minute.",
     },
     seatsLeft: "{n} of 100 founding spots left.",
     billingNote:
-      "Payments are handled by Paddle, our reseller and Merchant of Record. Paddle adds sales tax or VAT where needed and sends your invoices. Cancel a subscription at any time; it stays active until the end of the paid period.",
+      "Paddle handles payments as the reseller and Merchant of Record. Paddle adds sales tax or VAT where needed and sends your invoices. A subscription can be cancelled at any time and stays active until the end of the paid period.",
   },
   account: {
     title: "Account",
@@ -141,26 +161,30 @@ export const en = {
     planTitle: "Plan",
     planLabel: "Current plan",
     betaPlan: "Beta: Pro features on",
-    upgrade: "Pricing",
+    betaBody: "Your account has Pro limits while checkout is closed. Nothing is charged.",
+    upgrade: "View plans",
     manageBilling: "Billing and invoices",
-    manageBillingNote: "Invoices and payment details are in the Paddle emails you receive after each payment.",
+    manageBillingNote: "Invoices and payment details are in the Paddle emails you get after each payment.",
     usageTitle: "Usage this month",
-    usageUnavailable: "Usage is not available yet.",
+    usageUnavailable: "Usage is not available yet. It shows here after your first search.",
     searches: "Searches",
     canvases: "Canvases",
     ofLimit: "{used} of {limit}",
     unlimited: "{used} (no limit)",
     deleteTitle: "Delete account",
     deleteBody:
-      "This removes your account, canvases, references, palettes, uploads and usage records. It cannot be undone. Cancel any subscription in Paddle first so you are not charged again.",
+      "Deleting your account removes your canvases, references, palettes, uploads and usage records. It cannot be undone. Cancel any subscription in Paddle first so you are not charged again.",
     deleteButton: "Delete account",
+    confirmEyebrow: "Delete account",
     confirmTitle: "Delete your account?",
-    confirmBody: "All your data will be removed for good.",
+    confirmDeleted: "Deleted for good: your canvases, references, palettes, uploads, share links and usage records.",
+    confirmKept:
+      "Kept: your sign-in at WorkOS and your billing records at Paddle. Signing in again starts a new, empty account.",
     confirmCheck: "I understand this cannot be undone.",
-    confirmButton: "Delete for good",
+    confirmButton: "Delete account",
     cancel: "Cancel",
-    deleting: "Deleting",
-    deleteFailed: "Your account could not be deleted. Please try again or contact us.",
+    deleting: "Deleting account…",
+    deleteFailed: "Your account was not deleted. Nothing was removed; try again in a minute.",
     deleteDone: "Your account was deleted.",
   },
   takedown: {
@@ -168,45 +192,49 @@ export const en = {
     lead: "{app} does not host third-party images. It shows links to images on their source sites. If a link points to your work and you want it removed from {app}, send this form.",
     processTitle: "What happens next",
     process: [
-      "We confirm we received your request by email.",
-      "We review it, usually within 5 working days.",
-      "If approved, the link or the whole domain is blocked. It stops showing in search results and on every canvas, including shared ones.",
+      "An email confirms that the request arrived.",
+      "The request is reviewed, usually within 5 working days.",
+      "If it is approved, the link or the whole domain is blocked. It stops showing in search results and on every canvas, shared ones included.",
       "To remove the image itself, contact the site that hosts it.",
     ],
     formTitle: "Request form",
     fields: {
       name: { label: "Full name" },
-      email: { label: "Email", hint: "We use it only to reply about this request." },
+      email: { label: "Email", hint: "Used only to reply about this request." },
       target: {
         label: "Link or domain to remove",
         hint: "A page or image address, like https://example.com/pin/123, or a whole domain, like example.com.",
       },
       reason: { label: "Reason" },
       role: { label: "You are" },
-      details: { label: "Details", hint: "Tell us what the work is and why it should be removed. At least 10 characters." },
+      details: { label: "Details", hint: "Say what the work is and why it should be removed. At least 10 characters." },
       confirm: { label: "I confirm the information is correct and I own the rights or act for the owner." },
     },
     reasons: { copyright: "Copyright", trademark: "Trademark", privacy: "Privacy", other: "Other" },
     roles: { owner: "The rights owner", agent: "Acting for the rights owner" },
     choose: "Choose one",
     submit: "Send request",
-    sending: "Sending",
-    sent: "Thank you. We received your request and will reply by email.",
-    failed: "Your request could not be sent. Please try again later.",
-    invalid: "Some fields need a fix. Please check the form.",
-    errorSummary: "Please fix {n} problems:",
+    sending: "Sending request…",
+    sentTitle: "Request sent",
+    sent: "A reply goes to the email you gave, usually within 5 working days.",
+    failedTitle: "Request not sent",
+    failed: "The request did not reach the server. Try again in a minute.",
+    invalid: "Some fields need a fix. Check the form.",
+    errorSummary: "Fix {n} problems to send the request:",
     errors: {
       required: "This field is required.",
       too_long: "This is too long.",
-      too_short: "Please write at least 10 characters.",
+      too_short: "Write at least 10 characters.",
       invalid_email: "Enter an email like name@example.com.",
       invalid_target: "Enter a web address or a domain, like example.com.",
-      must_confirm: "Please confirm to send the request.",
+      must_confirm: "Confirm to send the request.",
     },
+    errorPrefix: "Error:",
     required: "required",
   },
   legal: {
-    draft: "Draft. This document needs legal review before launch.",
+    draftTitle: "Draft",
+    draftBody: "This document needs legal review before launch.",
     updated: "Last updated",
     contents: "Contents",
   },

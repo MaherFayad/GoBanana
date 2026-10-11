@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { APP_NAME, getConfig } from "@/lib/config";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
+import { CodeBlock } from "../_components/CodeBlock";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -32,17 +33,20 @@ export default async function LandingPage({ params }: Props) {
   const name = serverName();
   const claudeCmd = `claude mcp add --transport http ${name} ${url}`;
   const cursorJson = JSON.stringify({ mcpServers: { [name]: { url } } }, null, 2);
+  // Code labels and copy buttons follow the page language; the code itself is always ltr.
+  const labelLang = locale === "ar" ? "ar" : undefined;
+  const copyLabels = { done: t.copy.done, doneBody: t.copy.doneBody, failed: t.copy.failed, failedBody: t.copy.failedBody };
 
   return (
     <>
-      <section aria-labelledby="hero-title">
+      <section className="hero" aria-labelledby="hero-title">
         <h1 id="hero-title">{fmt(t.heroTitle)}</h1>
         <p className="lead">{fmt(t.heroLead)}</p>
         <div className="actions">
-          <a className="button" href="#install">
-            {t.ctaInstall}
+          <a className="st-btn" data-variant="primary" data-size="lg" href="#install">
+            {fmt(t.ctaInstall)}
           </a>
-          <Link className="button secondary" href={href(locale, "pricing")}>
+          <Link className="st-btn" data-variant="secondary" data-size="lg" href={href(locale, "pricing")}>
             {t.ctaPricing}
           </Link>
         </div>
@@ -50,9 +54,12 @@ export default async function LandingPage({ params }: Props) {
 
       <section aria-labelledby="how-title">
         <h2 id="how-title">{t.howTitle}</h2>
-        <ol className="grid steps">
-          {t.steps.map((step) => (
-            <li key={step.title} className="card">
+        <ol className="st-tile-grid">
+          {t.steps.map((step, i) => (
+            <li key={step.title} className="st-tile">
+              <p className="st-tile-title" data-accent="3">
+                {fmt(t.stepLabel, { n: i + 1 })}
+              </p>
               <h3>{step.title}</h3>
               <p>{fmt(step.body)}</p>
             </li>
@@ -83,22 +90,34 @@ export default async function LandingPage({ params }: Props) {
           {t.installTitle}
         </h2>
         <p>{t.installLead}</p>
-        <pre tabIndex={0} aria-label={t.serverUrlLabel}>
-          <code>{url}</code>
-        </pre>
-        <div className="grid">
-          <article className="card" aria-labelledby="install-claude">
+        <div className="alert-gap">
+          <CodeBlock
+            code={url}
+            label={t.serverUrlLabel}
+            labelLang={labelLang}
+            copyLabel={t.copy.address}
+            labels={copyLabels}
+            testId="code-server-url"
+          />
+        </div>
+        <div className="st-tile-grid wide">
+          <article className="st-tile" aria-labelledby="install-claude">
             <h3 id="install-claude">{t.clients.claude.title}</h3>
             <ol>
               {t.clients.claude.steps.map((s) => (
                 <li key={s}>{s}</li>
               ))}
             </ol>
-            <pre tabIndex={0} aria-label="Claude Code">
-              <code>{claudeCmd}</code>
-            </pre>
+            <CodeBlock
+              code={claudeCmd}
+              label={t.clients.claude.codeLabel}
+              labelLang={labelLang}
+              copyLabel={t.copy.command}
+              labels={copyLabels}
+              testId="code-claude"
+            />
           </article>
-          <article className="card" aria-labelledby="install-chatgpt">
+          <article className="st-tile" aria-labelledby="install-chatgpt">
             <h3 id="install-chatgpt">{t.clients.chatgpt.title}</h3>
             <ol>
               {t.clients.chatgpt.steps.map((s) => (
@@ -106,19 +125,22 @@ export default async function LandingPage({ params }: Props) {
               ))}
             </ol>
           </article>
-          <article className="card" aria-labelledby="install-cursor">
+          <article className="st-tile" aria-labelledby="install-cursor">
             <h3 id="install-cursor">{t.clients.cursor.title}</h3>
             <ol>
               {t.clients.cursor.steps.map((s) => (
                 <li key={s}>{s}</li>
               ))}
             </ol>
-            <pre tabIndex={0} aria-label="~/.cursor/mcp.json">
-              <code>{cursorJson}</code>
-            </pre>
+            <CodeBlock
+              code={cursorJson}
+              label={t.clients.cursor.codeLabel}
+              copyLabel={t.copy.config}
+              labels={copyLabels}
+              testId="code-cursor"
+            />
           </article>
         </div>
-        <p className="note">{t.copyHint}</p>
       </section>
 
       <section aria-labelledby="promise-title">
@@ -130,14 +152,23 @@ export default async function LandingPage({ params }: Props) {
         </ul>
       </section>
 
-      <section aria-labelledby="founding-title" className="card highlight">
-        <h2 id="founding-title" style={{ marginBlockStart: 0 }}>
-          {t.foundingTitle}
-        </h2>
-        <p>{t.foundingBody}</p>
-        <Link className="button" href={`${href(locale, "pricing")}#founding`}>
-          {t.foundingCta}
-        </Link>
+      {/* Payments are off for the beta (DECISIONS.md), so the founding offer is shown as coming later
+          with no buy button. */}
+      <section aria-labelledby="founding-title" className="st-tile-grid feature-tile">
+        <div className="st-tile">
+          <div className="tile-head">
+            <h2 id="founding-title">{t.foundingTitle}</h2>
+            <span className="st-chip" data-tone="explore">
+              {t.foundingChip}
+            </span>
+          </div>
+          <p>{t.foundingBody}</p>
+          <div>
+            <Link className="st-btn" data-variant="secondary" data-size="lg" href={`${href(locale, "pricing")}#founding`}>
+              {t.foundingCta}
+            </Link>
+          </div>
+        </div>
       </section>
     </>
   );

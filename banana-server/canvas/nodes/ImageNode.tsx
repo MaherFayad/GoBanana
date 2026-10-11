@@ -45,7 +45,7 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
   }, [key]);
 
   const items: MenuItem[] = [
-    { label: data.note ? "Edit note" : "Add note", onSelect: () => actions.setEditing(id) },
+    { label: data.note ? "Edit note" : "Add note", keys: "F2", onSelect: () => actions.setEditing(id) },
     {
       label: data.tag === "ship" ? "Mark as Explore" : "Mark as Ship",
       onSelect: () => {
@@ -82,7 +82,7 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
           )}
           {/* Source chip sits on the image itself so it is always visible (hard rule 3). */}
           <div className="bn-node-bar">
-            <SourceChip site={site} url={data.sourceUrl} />
+            <SourceChip site={site} url={data.sourceUrl} upload={isUpload} />
           </div>
         </div>
         {editing ? (
@@ -131,7 +131,8 @@ export function NoteEditor({
     autoFocus: true,
     "aria-label": label,
     value,
-    className: `${multiline ? "bn-textarea" : "bn-input"} nodrag nopan nowheel`,
+    className: "st-input nodrag nopan nowheel",
+    "data-size": multiline ? undefined : "xs",
     onBlur: () => finish(value),
     onKeyDown: (e: KeyboardEvent) => {
       e.stopPropagation();

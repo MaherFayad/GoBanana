@@ -1,4 +1,9 @@
-/** Pricing (spec section 12): Free $0, Pro $5/mo, Pro yearly $39/yr, Founding $29 once (first 100). */
+/**
+ * Pricing (spec section 12): Free $0, Pro $5/mo, Pro yearly $39/yr, Founding $29 once (first 100).
+ * Studio look: plan tiles on a tile grid, price at text-6xl, the current plan marked by a chip with
+ * words (not a thick border), and the comparison table in the DataTable style. Payments are off for
+ * the beta: plans show "Checkout is not open yet." and signed-in users on BETA_PLAN see an info alert.
+ */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,8 +11,9 @@ import { readCheckoutConfig } from "@/lib/billing/checkout";
 import { foundingSeatsLeft, readPaddlePrices } from "@/lib/billing/paddle";
 import { paddlePriceIdFor, PLAN_ORDER, PLAN_PRICES } from "@/lib/billing/plans";
 import { getBillingRepo } from "@/lib/billing/repo";
+import { CheckIcon, InfoIcon } from "@/components/studio/icons";
 import { getConfig } from "@/lib/config";
-import { PLAN_LIMITS, type Plan } from "@/lib/quota";
+import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict, type Dict } from "@/lib/site/dict";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
 import { getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
@@ -62,11 +68,11 @@ export default async function PricingPage({ params }: Props) {
 
   function cta(plan: Plan) {
     const name = t.plans[plan].name;
-    if (user?.plan === plan) return <p className="note">{t.cta.current}</p>;
+    if (user?.plan === plan) return null;
     if (plan === "free") {
       return (
-        <Link className="button secondary" href={`${href(locale)}#install`}>
-          {t.cta.free}
+        <Link className="st-btn" data-variant="secondary" data-size="lg" href={`${href(locale)}#install`}>
+          {fmt(t.cta.free)}
         </Link>
       );
     }
@@ -77,7 +83,12 @@ export default async function PricingPage({ params }: Props) {
     if (!priceId || !checkout.clientToken) return <p className="note">{t.cta.notReady}</p>;
     if (!user) {
       return (
-        <a className="button" href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "pricing"))}`}>
+        <a
+          className="st-btn"
+          data-variant="primary"
+          data-size="lg"
+          href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "pricing"))}`}
+        >
           {t.cta.signInToBuy}
         </a>
       );
@@ -101,31 +112,66 @@ export default async function PricingPage({ params }: Props) {
   }
 
   const yesNo = (v: boolean) => (v ? t.yes : t.no);
+  // Payments are off during the beta: BETA_PLAN gives free users Pro limits (lib/quota.ts).
+  const onBeta = user?.plan === "free" && betaPlan() !== null;
 
   return (
     <>
       <h1>{t.title}</h1>
       <p className="lead">{t.lead}</p>
 
-      <ul className="grid" aria-label={t.title}>
+      {onBeta ? (
+        <div className="st-alert alert-gap" data-tone="info" role="note">
+          <span className="st-alert-icon">
+            <InfoIcon size={16} />
+          </span>
+          <div className="st-alert-content">
+            <p className="st-alert-title">{t.betaTitle}</p>
+            <p>{t.betaBody}</p>
+          </div>
+        </div>
+      ) : null}
+
+      <ul className="st-tile-grid" aria-label={t.title}>
         {PLAN_ORDER.map((plan) => {
           const price = priceText(plan, t);
+          const current = user?.plan === plan;
+          const titleId = `plan-${plan}`;
           return (
-            <li key={plan} id={plan === "founding" ? "founding" : undefined} className={`card${plan === "founding" ? " highlight" : ""}`}>
-              <h2 style={{ marginBlockStart: 0 }}>{t.plans[plan].name}</h2>
+            <li
+              key={plan}
+              id={plan === "founding" ? "founding" : undefined}
+              className="st-tile plan-tile"
+            >
+              <div className="tile-head">
+                <h2 id={titleId}>{t.plans[plan].name}</h2>
+                {current ? (
+                  <span className="st-chip" data-tone="success">
+                    <CheckIcon size={12} />
+                    <span>{t.cta.current}</span>
+                  </span>
+                ) : plan === "founding" ? (
+                  <span className="st-chip" data-tone="explore">
+                    {t.foundingChip}
+                  </span>
+                ) : null}
+              </div>
               <p className="price">
-                {price.amount} <small>{price.period}</small>
+                <span dir="ltr">{price.amount}</span> <small>{price.period}</small>
               </p>
               <p>{t.plans[plan].blurb}</p>
               <ul className="feature-list">
                 {features(plan, t).map((f) => (
-                  <li key={f}>{f}</li>
+                  <li key={f}>
+                    <CheckIcon size={16} />
+                    <span>{f}</span>
+                  </li>
                 ))}
               </ul>
               {plan === "founding" && seatsLeft !== null && seatsLeft > 0 ? (
                 <p className="note">{fmt(t.seatsLeft, { n: seatsLeft })}</p>
               ) : null}
-              {cta(plan)}
+              <div className="tile-foot">{cta(plan)}</div>
             </li>
           );
         })}

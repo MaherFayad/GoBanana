@@ -1,8 +1,13 @@
+import { WarningIcon } from "@/components/studio/icons";
 import type { Dict } from "@/lib/site/dict";
 import { fmt, type Locale } from "@/lib/site/i18n";
 import { legalContact, type LegalDoc } from "@/lib/site/legal/types";
 
-/** Renders a terms or privacy document with a draft banner and a table of contents. */
+/**
+ * Renders a terms or privacy document: a 68ch reading column, the draft banner as a warning alert
+ * (the documents stay drafts until legal review), the table of contents as a section list, and
+ * tables in the DataTable style.
+ */
 export function LegalDocument({ doc, t, locale }: { doc: LegalDoc; t: Dict["legal"]; locale: Locale }) {
   const fill = (s: string) => fmt(s, { contact: legalContact() });
   const updated = new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-nu-latn-ca-gregory" : "en-GB", {
@@ -11,10 +16,16 @@ export function LegalDocument({ doc, t, locale }: { doc: LegalDoc; t: Dict["lega
   }).format(new Date(`${doc.updated}T00:00:00Z`));
 
   return (
-    <article aria-labelledby="doc-title">
-      <p className="draft" role="note">
-        {t.draft}
-      </p>
+    <article className="legal" aria-labelledby="doc-title">
+      <div className="st-alert alert-gap" data-tone="warning" role="note">
+        <span className="st-alert-icon">
+          <WarningIcon size={16} />
+        </span>
+        <div className="st-alert-content">
+          <p className="st-alert-title">{t.draftTitle}</p>
+          <p>{t.draftBody}</p>
+        </div>
+      </div>
       <h1 id="doc-title">{doc.title}</h1>
       <p className="note">
         {t.updated}: <time dateTime={doc.updated}>{updated}</time>

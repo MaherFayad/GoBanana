@@ -123,3 +123,61 @@ export function toggleCollapsed(nodes: readonly CanvasFlowNode[], sectionId: str
     return n;
   });
 }
+
+/**
+ * Copies of `ids` (Mod+D and Alt+drag). A copied section brings its contents along; an
+ * item copied on its own stays in its section. Copies sit `offset` away, are selected when
+ * `select` is set (the originals are then unselected), and keep sections before their
+ * children (React Flow needs parents first). `makeId` is injected so tests stay pure.
+ */
+export function duplicateNodes(
+  nodes: readonly CanvasFlowNode[],
+  ids: readonly string[],
+  makeId: (n: CanvasFlowNode) => string,
+  options: { offset?: number; select?: boolean } = {},
+): { nodes: CanvasFlowNode[]; copies: string[] } {
+  const offset = options.offset ?? 0;
+  const wanted = new Set(ids);
+  // Contents of copied sections come along.
+  for (const n of nodes) if (n.parentId && wanted.has(n.parentId)) wanted.add(n.id);
+  const idMap = new Map<string, string>();
+  for (const n of nodes) if (wanted.has(n.id)) idMap.set(n.id, makeId(n));
+  const top = nodes.reduce((m, n) => Math.max(m, n.zIndex ?? 0), 0);
+  const copies: CanvasFlowNode[] = [];
+  const topLevel: string[] = [];
+  for (const n of nodes) {
+    const newId = idMap.get(n.id);
+    if (!newId) continue;
+    const parentCopied = n.parentId ? idMap.get(n.parentId) : undefined;
+    const size = nodeSize(n);
+    const copy = {
+      ...n,
+      id: newId,
+      data: { ...n.data },
+      width: size.w,
+      height: size.h,
+      // Inside a copied section the child keeps its place; everything else shifts.
+      position: parentCopied ? { ...n.position } : { x: n.position.x + offset, y: n.position.y + offset },
+      selected: Boolean(options.select) && !parentCopied,
+      dragging: false,
+      ...(n.zIndex !== undefined ? { zIndex: top + 1 } : {}),
+    } as CanvasFlowNode;
+    if (parentCopied) copy.parentId = parentCopied;
+    delete (copy as { measured?: unknown }).measured;
+    copies.push(copy);
+    if (!parentCopied) topLevel.push(newId);
+  }
+  const base = options.select
+    ? nodes.map((n) => (n.selected ? ({ ...n, selected: false } as CanvasFlowNode) : n))
+    : [...nodes];
+  const all = [...base, ...copies];
+  return {
+    nodes: [...all.filter((n) => n.type === "section"), ...all.filter((n) => n.type !== "section")],
+    copies: topLevel,
+  };
+}
+
+/** Ids of the selected, visible items. */
+export function selectedIds(nodes: readonly CanvasFlowNode[]): string[] {
+  return nodes.filter((n) => n.selected && !n.hidden).map((n) => n.id);
+}

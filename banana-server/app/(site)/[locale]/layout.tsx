@@ -1,16 +1,18 @@
 /**
- * Public site layout (landing, pricing, account, takedown, terms, privacy).
+ * Public site layout (landing, pricing, account, takedown, terms, privacy) in the Studio design
+ * language: header and footer on --st-bg-body, a 7px brand dot before APP_NAME, nav links as 44px
+ * ghost items, the language switch as a secondary sm button-link, and one toast stack.
  * Routes: /en/... and /ar/... (see lib/site/i18n.ts).
  *
- * `lang` and `dir` are set on the wrapper below. The root <html> element is
- * owned by app/layout.tsx; for WCAG SC 3.1.1 it must also carry the page
- * language: read the `x-site-locale` request header (set by proxy.ts) there and
- * render <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>.
+ * `lang` and `dir` are set on the wrapper below and on <html> by app/layout.tsx (from the
+ * `x-site-locale` header that proxy.ts sets), so SC 3.1.1 holds and the tokens switch the Arabic
+ * font through :lang(ar).
  */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { ToastViewport } from "@/components/studio/Toast";
 import { APP_NAME } from "@/lib/config";
 import { getDict } from "@/lib/site/dict";
 import { dirOf, fmt, href, isLocale, LOCALES } from "@/lib/site/i18n";
@@ -49,7 +51,7 @@ export default async function SiteLayout({ children, params }: Props) {
       </a>
       <header className="site-header">
         <div className="wrap">
-          <Link className="brand" href={href(locale)}>
+          <Link className="brand" href={href(locale)} dir="ltr">
             {APP_NAME}
           </Link>
           <SiteNav
@@ -84,6 +86,7 @@ export default async function SiteLayout({ children, params }: Props) {
           </nav>
         </div>
       </footer>
+      <ToastViewport labels={t.common.toast} />
     </div>
   );
 }

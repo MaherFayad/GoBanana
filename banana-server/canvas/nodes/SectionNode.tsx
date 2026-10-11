@@ -2,7 +2,7 @@
 
 import { useStore, type NodeProps } from "@xyflow/react";
 import { useCanvasActions } from "../context";
-import { IconChevron } from "../icons";
+import { ChevronDownIcon, ChevronEndIcon } from "../icons";
 import { LAYOUT_LABELS, LAYOUTS } from "../layout-adapter";
 import type { SectionFlowNode } from "../types";
 import { NoteEditor } from "./ImageNode";
@@ -17,7 +17,7 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
   const collapsed = Boolean(data.collapsed);
 
   const items: MenuItem[] = [
-    { label: "Rename section", onSelect: () => actions.setEditing(id) },
+    { label: "Rename section", keys: "F2", onSelect: () => actions.setEditing(id) },
     { label: collapsed ? "Expand section" : "Collapse section", onSelect: () => actions.toggleCollapse(id) },
     ...LAYOUTS.map((layout, i) => ({
       label: `Arrange contents: ${LAYOUT_LABELS[layout]}`,
@@ -34,7 +34,10 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
           {!actions.readOnly && (
             <button
               type="button"
-              className="bn-btn bn-btn-icon nodrag"
+              className="st-btn nodrag"
+              data-variant="ghost"
+              data-size="xs"
+              data-icon-only=""
               aria-expanded={!collapsed}
               aria-label={`${collapsed ? "Expand" : "Collapse"} section ${data.title}`}
               onClick={(e) => {
@@ -42,9 +45,10 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
                 actions.toggleCollapse(id);
               }}
             >
-              <IconChevron open={!collapsed} />
+              {collapsed ? <ChevronEndIcon size={16} /> : <ChevronDownIcon size={16} />}
             </button>
           )}
+          <span className="bn-section-dot" aria-hidden="true" />
           {editing ? (
             <NoteEditor
               multiline={false}

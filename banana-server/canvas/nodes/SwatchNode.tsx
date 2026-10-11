@@ -1,9 +1,10 @@
 "use client";
 
 import type { NodeProps } from "@xyflow/react";
+import type { CSSProperties } from "react";
 import { contrastRatio, TEXT_MIN, UI_MIN } from "@/lib/palette/contrast";
 import { useCanvasActions } from "../context";
-import { IconCheck, IconWarning } from "../icons";
+import { CheckIcon, WarningIcon } from "../icons";
 import { tagLabel } from "../labels";
 import type { SwatchFlowNode } from "../types";
 import { TagChip } from "./chips";
@@ -32,12 +33,12 @@ function ContrastRow({ hex, against, name }: { hex: string; against: string; nam
   return (
     <li>
       {/* Live "Aa" sample (CSS content) of the color as text on the background. Decorative. */}
-      <span className="bn-contrast-sample" style={{ background: against, color: hex }} aria-hidden="true" />
+      <span className="bn-contrast-sample" style={{ "--sample-bg": against, "--sample-fg": hex } as CSSProperties} aria-hidden="true" />
       <span className="bn-contrast-ratio">
         {name} {ratio.toFixed(2)}:1
       </span>
-      <span className={`bn-chip ${v.pass ? "bn-chip-pass" : "bn-chip-fail"}`}>
-        {v.pass ? <IconCheck /> : <IconWarning />}
+      <span className="st-chip" data-tone={v.pass ? "success" : "danger"}>
+        {v.pass ? <CheckIcon size={12} /> : <WarningIcon size={12} />}
         <span>{v.text}</span>
       </span>
     </li>
@@ -50,7 +51,7 @@ export function SwatchNode({ id, data, parentId }: NodeProps<SwatchFlowNode>) {
   const other = data.tag === "ship" ? "explore" : "ship";
 
   const items: MenuItem[] = [
-    { label: "Rename role", onSelect: () => actions.setEditing(id) },
+    { label: "Rename role", keys: "F2", onSelect: () => actions.setEditing(id) },
     {
       label: `Mark as ${tagLabel(other)}`,
       onSelect: () => {
@@ -64,7 +65,7 @@ export function SwatchNode({ id, data, parentId }: NodeProps<SwatchFlowNode>) {
     <div className="bn-node bn-swatch">
       <div
         className="bn-swatch-color"
-        style={{ background: data.hex }}
+        style={{ "--bn-swatch": data.hex } as CSSProperties}
         role="img"
         aria-label={`Color sample ${data.hex}`}
       />

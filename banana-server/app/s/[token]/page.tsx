@@ -9,6 +9,8 @@
  *   owner's plan allows share links (spec section 12).
  * - Every reference shows its source link (hard rule 3) and the takedown list is
  *   checked on load (hard rule 5), failing closed.
+ * - The page says "View only" twice: an info alert above the board and the top bar label
+ *   (canvas/SharedCanvas.tsx).
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -19,6 +21,7 @@ import { getRepos } from "@/lib/db";
 import { getShareRepo } from "@/lib/db/shares";
 import { memoTakedowns } from "@/lib/db/takedowns";
 import { isValidShareToken, noindexMetadata } from "@/lib/share";
+import "@/canvas/overlays.css";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +47,11 @@ export default async function SharedCanvasPage({ params }: Props) {
     // Database or takedown list unavailable: show nothing (fail closed), never the token.
     console.error("[share] shared canvas could not load");
     return (
-      <main id="main" style={{ maxWidth: 640, margin: "0 auto", padding: "2rem 1rem", fontFamily: "system-ui, sans-serif" }}>
-        <h1>Shared canvas</h1>
-        <p>This canvas cannot load right now. Try again in a minute.</p>
+      <main id="main" className="bn-shared-down">
+        <div className="st-empty" data-variant="centered">
+          <h1>Shared canvas</h1>
+          <p className="st-empty-body">This canvas cannot load right now. Try again in a minute.</p>
+        </div>
       </main>
     );
   }

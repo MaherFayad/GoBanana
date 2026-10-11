@@ -29,7 +29,7 @@ export default async function TakedownPage({ params, searchParams }: Props) {
       <h1>{t.title}</h1>
       <p className="lead">{fmt(t.lead)}</p>
 
-      <section aria-labelledby="process-title">
+      <section className="section" aria-labelledby="process-title">
         <h2 id="process-title">{t.processTitle}</h2>
         <ol>
           {t.process.map((step) => (
@@ -38,7 +38,7 @@ export default async function TakedownPage({ params, searchParams }: Props) {
         </ol>
       </section>
 
-      <section aria-labelledby="form-title">
+      <section className="section" aria-labelledby="form-title">
         <h2 id="form-title">{t.formTitle}</h2>
         <TakedownForm t={t} locale={locale} initialStatus={status} />
       </section>

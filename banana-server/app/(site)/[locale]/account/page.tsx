@@ -1,7 +1,12 @@
-/** Account: plan, usage this month, billing note, sign out, delete account. Data loaders: lib/site/session.ts. */
+/**
+ * Account: plan, usage this month, billing note, sign out, delete account. Data loaders:
+ * lib/site/session.ts. Studio look: sections with a hairline and a title; the beta state is an
+ * info alert; deleting goes through the danger-tone dialog (DeleteAccount.tsx).
+ */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { InfoIcon } from "@/components/studio/icons";
 import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
@@ -30,9 +35,16 @@ export default async function AccountPage({ params }: Props) {
       <>
         <h1>{t.title}</h1>
         <p>{t.signedOut}</p>
-        <a className="button" href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "account"))}`}>
-          {dict.common.signIn}
-        </a>
+        <div className="actions">
+          <a
+            className="st-btn"
+            data-variant="primary"
+            data-size="lg"
+            href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "account"))}`}
+          >
+            {dict.common.signIn}
+          </a>
+        </div>
       </>
     );
   }
@@ -46,23 +58,41 @@ export default async function AccountPage({ params }: Props) {
 
   return (
     <>
-      <h1>{t.title}</h1>
-      {user.email ? <p className="note">{user.email}</p> : null}
-      <form method="post" action={SIGN_OUT_PATH}>
-        <button type="submit" className="button secondary">
-          {dict.common.signOut}
-        </button>
-      </form>
+      <div className="account-head">
+        <div>
+          <h1>{t.title}</h1>
+          {user.email ? (
+            <p className="note">
+              <bdi>{user.email}</bdi>
+            </p>
+          ) : null}
+        </div>
+        <form method="post" action={SIGN_OUT_PATH}>
+          <button type="submit" className="st-btn" data-variant="secondary" data-size="lg">
+            {dict.common.signOut}
+          </button>
+        </form>
+      </div>
 
-      <section aria-labelledby="plan-title">
+      <section className="section" aria-labelledby="plan-title">
         <h2 id="plan-title">{t.planTitle}</h2>
-        <dl>
+        <dl className="facts">
           <dt>{t.planLabel}</dt>
-          <dd>{onBeta ? t.betaPlan : dict.pricing.plans[user.plan].name}</dd>
+          <dd>{dict.pricing.plans[user.plan].name}</dd>
         </dl>
-        {onBeta ? null : (
-          <div className="actions">
-            <Link className="button secondary" href={href(locale, "pricing")}>
+        {onBeta ? (
+          <div className="st-alert alert-gap" data-tone="info" role="note">
+            <span className="st-alert-icon">
+              <InfoIcon size={16} />
+            </span>
+            <div className="st-alert-content">
+              <p className="st-alert-title">{t.betaPlan}</p>
+              <p>{t.betaBody}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="actions flush-start alert-gap">
+            <Link className="st-btn" data-variant="secondary" data-size="lg" href={href(locale, "pricing")}>
               {t.upgrade}
             </Link>
           </div>
@@ -72,10 +102,10 @@ export default async function AccountPage({ params }: Props) {
         <p>{t.manageBillingNote}</p>
       </section>
 
-      <section aria-labelledby="usage-title">
+      <section className="section" aria-labelledby="usage-title">
         <h2 id="usage-title">{t.usageTitle}</h2>
         {usage ? (
-          <dl>
+          <dl className="facts">
             <dt>{t.searches}</dt>
             <dd>{ofLimit(usage.searches, limits.searchesPerMonth)}</dd>
             <dt>{t.canvases}</dt>
@@ -86,20 +116,21 @@ export default async function AccountPage({ params }: Props) {
         )}
       </section>
 
-      <section aria-labelledby="delete-title" className="danger-zone">
-        <h2 id="delete-title" style={{ marginBlockStart: 0 }}>
-          {t.deleteTitle}
-        </h2>
+      <section className="section danger" aria-labelledby="delete-title">
+        <h2 id="delete-title">{t.deleteTitle}</h2>
         <p>{t.deleteBody}</p>
         <DeleteAccount
           afterDeleteHref={href(locale)}
           labels={{
             deleteButton: t.deleteButton,
+            confirmEyebrow: t.confirmEyebrow,
             confirmTitle: t.confirmTitle,
-            confirmBody: t.confirmBody,
+            confirmDeleted: t.confirmDeleted,
+            confirmKept: t.confirmKept,
             confirmCheck: t.confirmCheck,
             confirmButton: t.confirmButton,
             cancel: t.cancel,
+            close: dict.common.close,
             deleting: t.deleting,
             deleteFailed: t.deleteFailed,
             deleteDone: t.deleteDone,

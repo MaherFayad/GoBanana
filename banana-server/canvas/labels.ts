@@ -15,7 +15,13 @@ export function siteName(sourceSite: string | null | undefined, sourceUrl: strin
   return s.replace(/^www\./i, "");
 }
 
+/** Accessible name of a node. Ends with ", selected" while it is selected (SC 1.4.1: not color alone). */
 export function nodeLabel(n: CanvasFlowNode): string {
+  const base = baseLabel(n);
+  return n.selected ? `${base}, selected` : base;
+}
+
+function baseLabel(n: CanvasFlowNode): string {
   switch (n.type) {
     case "image":
     case "upload": {

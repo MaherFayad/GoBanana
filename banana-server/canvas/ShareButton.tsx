@@ -1,45 +1,56 @@
 "use client";
 
 /**
- * Share button for the web canvas toolbar (spec section 12: share links are Pro only;
+ * Share button for the web canvas top bar (spec section 12: share links are Pro only;
  * hard rule 6: unlisted, view only, never indexed).
  *
- * Opens a small panel with the view-only link and a copy button. The link can be replaced
- * (the old one stops working) or turned off. Talks to `/api/canvas/:id/share`.
- * Keyboard: the panel is a disclosure; Escape closes it and returns focus to the button.
+ * Studio's share flow (docs/design-language.md section 10, "Share dialog"): a secondary sm
+ * "Share" button opens a Dialog (md, 440px) with the view-only link, "Copy link" and
+ * "Turn off link", or "Create view link" when there is none. Talks to `/api/canvas/:id/share`.
+ * Results go to toasts ("Link copied"); a plan limit shows the plan note in the dialog.
+ * The Dialog traps focus, closes on Escape and returns focus to this button.
  */
-import { useId, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState } from "react";
+import { Dialog } from "@/components/studio/Dialog";
+import { InfoIcon, ShareIcon } from "@/components/studio/icons";
+import { pushToast } from "@/components/studio/Toast";
+import { limitsFor, type Plan } from "@/lib/quota";
 import { shareUrl } from "@/lib/share";
+import "./overlays.css";
 
 export interface ShareButtonProps {
   canvasId: string;
   /** Current `canvases.share_token`, if the canvas is already shared. */
   initialToken?: string | null;
+  /**
+   * The owner's effective plan (server side `effectivePlan()`, so BETA_PLAN counts). When it
+   * has no share links, the dialog shows the plan note instead of "Create view link".
+   * Unknown lets the server decide.
+   */
+  plan?: Plan | null;
+  /** Where the plan note links. */
+  pricingHref?: string;
 }
 
 type ShareResponse = { token?: string | null; url?: string | null; error?: string; upgradeUrl?: string };
 
-export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps) {
+const PLAN_NOTE = "View links are part of Pro. Anyone with the link can look at the canvas, but cannot change it.";
+
+export function ShareButton({ canvasId, initialToken = null, plan, pricingHref = "/en/pricing" }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | null>(initialToken);
   const [serverUrl, setUrl] = useState<string | null>(null);
   // Until the server answers with a full link, build it from this page's origin.
-  // (The panel only renders after a click, so `window` is always there when it is used.)
+  // (The dialog body only renders after a click, so `window` is there when it is used.)
   const url = serverUrl ?? (token && typeof window !== "undefined" ? shareUrl(window.location.origin, token) : null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<{ message: string; upgradeUrl?: string } | null>(null);
-  const [status, setStatus] = useState("");
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [busy, setBusy] = useState<"create" | "replace" | "off" | null>(null);
+  const [upgradeUrl, setUpgradeUrl] = useState<string | null>(plan != null && !limitsFor(plan).shareLinks ? pricingHref : null);
   const inputRef = useRef<HTMLInputElement>(null);
   const createRef = useRef<HTMLButtonElement>(null);
-  const panelId = `bn-share-${useId().replace(/:/g, "")}`;
-  const inputId = `${panelId}-link`;
+  const inputId = `bn-share-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-link`;
 
-
-  async function call(method: "POST" | "DELETE") {
-    setBusy(true);
-    setError(null);
-    setStatus("");
+  async function call(method: "POST" | "DELETE", kind: "create" | "replace" | "off") {
+    setBusy(kind);
     try {
       const res = await fetch(`/api/canvas/${encodeURIComponent(canvasId)}/share`, {
         method,
@@ -48,21 +59,24 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
       });
       const body = (await res.json().catch(() => ({}))) as ShareResponse;
       if (!res.ok) {
-        setError({
-          message: body.error ?? "Could not change the share link. Try again.",
-          ...(body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
-        });
+        if (body.upgradeUrl) {
+          setUpgradeUrl(body.upgradeUrl);
+          return;
+        }
+        pushToast({ kind: "error", title: "Could not change the share link", body: body.error ?? "Try again." });
         return;
       }
       setToken(body.token ?? null);
       setUrl(body.url ?? null);
-      // The button that was pressed may be gone now; keep focus inside the panel.
+      // The button that was pressed may be gone now; keep focus inside the dialog.
       requestAnimationFrame(() => (body.token ? inputRef.current : createRef.current)?.focus());
-      setStatus(method === "DELETE" ? "Link turned off. The old link no longer works." : "Link ready.");
+      if (kind === "off") pushToast({ kind: "success", title: "Link turned off", body: "The old link no longer works." });
+      else if (kind === "replace") pushToast({ kind: "success", title: "New link ready", body: "The old link no longer works." });
+      else pushToast({ kind: "success", title: "Link ready" });
     } catch {
-      setError({ message: "Could not reach the server. Try again." });
+      pushToast({ kind: "error", title: "Could not reach the server", body: "Check your connection and try again." });
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
@@ -70,95 +84,124 @@ export function ShareButton({ canvasId, initialToken = null }: ShareButtonProps)
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      setStatus("Link copied.");
+      pushToast({ kind: "success", title: "Link copied" });
     } catch {
       // Clipboard blocked: select the text so the user can copy it themselves.
+      inputRef.current?.focus();
       inputRef.current?.select();
-      setStatus("Press Control C or Command C to copy the selected link.");
+      pushToast({ kind: "info", title: "Copy the selected link", body: "Press Control C, or Command C on a Mac." });
     }
   }
 
-  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      setOpen(false);
-      buttonRef.current?.focus();
-    }
-  }
+  const shared = Boolean(token && url);
 
   return (
-    <div className="bn-share" onKeyDown={onKeyDown}>
+    <div className="bn-share">
       <button
-        ref={buttonRef}
         type="button"
-        className="bn-btn"
+        className="st-btn"
+        data-variant="secondary"
+        data-size="sm"
+        aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={open ? panelId : undefined}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(true)}
       >
-        {token ? "Shared" : "Share"}
+        <ShareIcon size={16} />
+        <span>Share</span>
       </button>
-      {open && (
-        <div id={panelId} className="bn-share-panel" role="group" aria-label="Share link">
-          <p className="bn-share-note">
-            Anyone with the link can view this canvas. They cannot change it. The link is not listed or shown in search
-            engines.
-          </p>
-          {token && url ? (
-            <>
-              <label htmlFor={inputId} className="bn-share-label">
-                View-only link
-              </label>
-              <div className="bn-share-row">
-                <input
-                  ref={inputRef}
-                  id={inputId}
-                  className="bn-share-input"
-                  type="text"
-                  readOnly
-                  value={url}
-                  onFocus={(e) => e.currentTarget.select()}
-                />
-                <button type="button" className="bn-btn bn-btn-primary" onClick={() => void copy()}>
-                  Copy link
-                </button>
-              </div>
-              <div className="bn-share-row">
-                <button type="button" className="bn-btn" disabled={busy} onClick={() => void call("POST")}>
-                  Make a new link
-                </button>
-                <button type="button" className="bn-btn" disabled={busy} onClick={() => void call("DELETE")}>
-                  Turn off link
-                </button>
-              </div>
-            </>
-          ) : (
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Share canvas"
+        size="md"
+        className="bn-share-dialog"
+        footer={
+          shared ? (
+            <button
+              type="button"
+              className="st-btn"
+              data-variant="secondary"
+              data-size="sm"
+              data-loading={busy === "replace" ? "inline" : undefined}
+              aria-busy={busy === "replace" || undefined}
+              disabled={busy !== null}
+              onClick={() => void call("POST", "replace")}
+            >
+              {busy === "replace" ? "Making a new link…" : "Make a new link"}
+            </button>
+          ) : upgradeUrl ? null : (
             <button
               ref={createRef}
               type="button"
-              className="bn-btn bn-btn-primary"
-              disabled={busy}
-              onClick={() => void call("POST")}
+              className="st-btn"
+              data-variant="primary"
+              data-size="sm"
+              data-loading={busy === "create" ? "inline" : undefined}
+              aria-busy={busy === "create" || undefined}
+              disabled={busy !== null}
+              onClick={() => void call("POST", "create")}
             >
-              Create view-only link
+              {busy === "create" ? "Creating link…" : "Create view link"}
             </button>
-          )}
-          {error && (
-            <p className="bn-share-error" role="alert">
-              {error.message}{" "}
-              {error.upgradeUrl && (
-                <a href={error.upgradeUrl} target="_blank" rel="noopener">
-                  See plans
-                </a>
-              )}
-            </p>
-          )}
-          {/* Always rendered, so screen readers hear each change. */}
-          <p className="bn-share-status" role="status">
-            {busy ? "Working" : status}
-          </p>
-        </div>
-      )}
+          )
+        }
+      >
+        <p className="bn-share-intro">
+          Anyone with this link can view this canvas. They cannot change it. The link is not listed or shown in search
+          engines.
+        </p>
+        {shared ? (
+          <div className="bn-share-row">
+            <div className="bn-share-row-main">
+              <label htmlFor={inputId} className="bn-share-label">
+                View-only link
+              </label>
+              <input
+                ref={inputRef}
+                id={inputId}
+                className="bn-share-url"
+                type="text"
+                readOnly
+                value={url ?? ""}
+                onFocus={(e) => e.currentTarget.select()}
+              />
+            </div>
+            <div className="bn-share-row-actions">
+              <button type="button" className="st-btn" data-variant="secondary" data-size="sm" onClick={() => void copy()}>
+                Copy link
+              </button>
+              <button
+                type="button"
+                className="st-btn"
+                data-variant="ghost"
+                data-tone="danger"
+                data-size="sm"
+                data-loading={busy === "off" ? "inline" : undefined}
+                aria-busy={busy === "off" || undefined}
+                disabled={busy !== null}
+                onClick={() => void call("DELETE", "off")}
+              >
+                {busy === "off" ? "Turning off…" : "Turn off link"}
+              </button>
+            </div>
+          </div>
+        ) : upgradeUrl ? (
+          <div className="st-alert" data-tone="info">
+            <span className="st-alert-icon">
+              <InfoIcon size={16} />
+            </span>
+            <div className="st-alert-content">
+              <p>{PLAN_NOTE}</p>
+              <p>
+                <a href={upgradeUrl}>See plans</a>
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="bn-share-empty">This canvas has no view link yet.</p>
+        )}
+        {shared && <p className="bn-share-hint">Making a new link turns off the old one.</p>}
+      </Dialog>
     </div>
   );
 }

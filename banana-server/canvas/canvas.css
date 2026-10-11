@@ -1,101 +1,39 @@
 /*
- * Moodboard canvas styles. Plain CSS with a `bn-` prefix so the same file works in
- * the Next.js page and the MCP Apps bundle.
+ * Moodboard canvas in the Studio design language (docs/design-language.md sections 3, 5, 10,
+ * plan WP-A). Plain CSS with a `bn-` prefix so the same file works in the Next.js page and the
+ * MCP Apps bundle. Shared primitives (.st-btn, .st-menu, .st-chip, .st-tile, .st-empty, ...)
+ * come from styles/studio-components.css; this file only adds the canvas shell and nodes.
  *
- * Contrast (checked with culori wcagContrast):
- * - text on every surface >= 13:1, muted text >= 4.9:1 (SC 1.4.3)
- * - borders, focus ring and chips >= 3:1 against their backgrounds (SC 1.4.11)
+ * Rules: tokens only (no color literals), logical properties only (Arabic is rtl), durations
+ * from the --st-duration-* tokens (0ms under reduced motion), focus is --st-focus-ring as a
+ * box-shadow plus a transparent outline for forced-colors mode. Theme comes from the tokens:
+ * dark by default, light from the system, or forced by data-theme on any ancestor.
+ *
+ * Share and upload styles live in canvas/overlays.css (WP-C).
  */
 
 .bn-canvas {
-  --bn-bg: #f4f3ef;
-  --bn-surface: #ffffff;
-  --bn-surface-2: #ebe9e3;
-  --bn-text: #1b1a17;
-  --bn-text-muted: #55524b;
-  --bn-border: #7a766c;
-  --bn-border-subtle: #d6d3cb;
-  --bn-focus: #1a56db;
-  --bn-accent: #1a56db;
-  --bn-accent-text: #ffffff;
-  --bn-ship-bg: #e3f3e8;
-  --bn-ship-text: #155c2e;
-  --bn-explore-bg: #fcefdc;
-  --bn-explore-text: #8a3b0a;
-  --bn-danger: #b42318;
-  --bn-section-bg: rgb(255 255 255 / 0.55);
-  --bn-note-yellow: #fff1a8;
-  --bn-note-blue: #dbeafe;
-  --bn-note-pink: #fbe0ec;
-  --bn-note-green: #dcf5e3;
-  --bn-note-gray: #ecebe7;
-  --bn-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 2px 8px rgb(0 0 0 / 0.08);
-  --bn-toolbar-h: 56px;
-  --bn-tray-w: 300px;
+  --bn-tray-w: var(--st-sidebar-left-w);
+  /* React Flow's own variables, mapped to tokens. */
+  --xy-background-color: var(--st-canvas-bg);
+  --xy-selection-background-color: var(--st-canvas-marquee-fill);
+  --xy-selection-border: 1px solid var(--st-canvas-marquee-border);
+  --xy-node-border-radius: var(--st-radius);
+  --xy-resize-background-color: var(--st-canvas-selection-ring-color);
 
-  color-scheme: light;
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  background: var(--bn-bg);
-  color: var(--bn-text);
-  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  background: var(--st-bg-body);
+  color: var(--st-text);
+  font: var(--st-weight-regular) var(--st-text-s) / var(--st-leading-snug) var(--st-font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  .bn-canvas:not([data-theme="light"]) {
-    --bn-bg: #121211;
-    --bn-surface: #1d1c1a;
-    --bn-surface-2: #262522;
-    --bn-text: #f3f1ec;
-    --bn-text-muted: #b8b4aa;
-    --bn-border: #858177;
-    --bn-border-subtle: #3a3935;
-    --bn-focus: #8fb4ff;
-    --bn-accent: #8fb4ff;
-    --bn-accent-text: #0b1530;
-    --bn-ship-bg: #12341f;
-    --bn-ship-text: #a7e8bc;
-    --bn-explore-bg: #3d2510;
-    --bn-explore-text: #fbc98e;
-    --bn-danger: #ff9b8f;
-    --bn-section-bg: rgb(29 28 26 / 0.6);
-    --bn-note-yellow: #4a4116;
-    --bn-note-blue: #1e3354;
-    --bn-note-pink: #4a2236;
-    --bn-note-green: #1b3d28;
-    --bn-note-gray: #34322e;
-    --bn-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.4);
-    color-scheme: dark;
-  }
-}
-
-.bn-canvas[data-theme="dark"] {
-  --bn-bg: #121211;
-  --bn-surface: #1d1c1a;
-  --bn-surface-2: #262522;
-  --bn-text: #f3f1ec;
-  --bn-text-muted: #b8b4aa;
-  --bn-border: #858177;
-  --bn-border-subtle: #3a3935;
-  --bn-focus: #8fb4ff;
-  --bn-accent: #8fb4ff;
-  --bn-accent-text: #0b1530;
-  --bn-ship-bg: #12341f;
-  --bn-ship-text: #a7e8bc;
-  --bn-explore-bg: #3d2510;
-  --bn-explore-text: #fbc98e;
-  --bn-danger: #ff9b8f;
-  --bn-section-bg: rgb(29 28 26 / 0.6);
-  --bn-note-yellow: #4a4116;
-  --bn-note-blue: #1e3354;
-  --bn-note-pink: #4a2236;
-  --bn-note-green: #1b3d28;
-  --bn-note-gray: #34322e;
-  color-scheme: dark;
+.bn-canvas:lang(ar) {
+  font-size: var(--st-text-m);
 }
 
 .bn-canvas *,
@@ -106,8 +44,8 @@
 
 .bn-visually-hidden {
   position: absolute !important;
-  width: 1px;
-  height: 1px;
+  inline-size: 1px;
+  block-size: 1px;
   margin: -1px;
   padding: 0;
   overflow: hidden;
@@ -116,181 +54,183 @@
   border: 0;
 }
 
-/* Visible focus everywhere (SC 2.4.7). Two rings so it shows on any image. */
-.bn-canvas :focus-visible {
-  outline: 3px solid var(--bn-focus);
+/* Visible focus everywhere (SC 2.4.7): a box-shadow ring, plus a transparent outline that
+   forced-colors mode turns into a system outline. Over images and items: the halo ring. */
+.bn-canvas :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px var(--bn-surface);
+  box-shadow: var(--st-focus-ring);
 }
 
-.bn-canvas .react-flow__node:focus-visible {
-  outline: 3px solid var(--bn-focus);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 6px var(--bn-surface);
-  border-radius: 10px;
+.bn-canvas .react-flow__node :where(a, button, input, textarea):focus-visible {
+  box-shadow: var(--st-focus-ring-halo);
 }
 
-.bn-canvas .react-flow__node.selected > .bn-node {
-  box-shadow: 0 0 0 2px var(--bn-accent), var(--bn-shadow);
-}
+/* ------------------------------------------------------------------ legacy button */
 
-/* ------------------------------------------------------------------ buttons */
-
+/* Kept for markup outside this package that still says bn-btn (it looks like .st-btn sm). */
 .bn-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-width: 32px;
-  min-height: 32px;
-  padding: 4px 10px;
-  border: 1px solid var(--bn-border);
-  border-radius: 8px;
-  background: var(--bn-surface);
-  color: var(--bn-text);
-  font: inherit;
+  gap: var(--st-space-2xs);
+  min-block-size: var(--st-control-h-sm);
+  min-inline-size: var(--st-control-h-sm);
+  padding-block: 0;
+  padding-inline: var(--st-space-s);
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-overlay-10);
+  color: var(--st-btn-secondary-fg);
+  font: var(--st-weight-bold) var(--st-text-s) / 1 var(--st-font-sans);
   cursor: pointer;
+  transition: background-color var(--st-duration-moderate) var(--st-ease), color var(--st-duration-moderate) var(--st-ease);
 }
 
 .bn-btn:hover {
-  background: var(--bn-surface-2);
-}
-
-.bn-btn[aria-pressed="true"] {
-  background: var(--bn-accent);
-  border-color: var(--bn-accent);
-  color: var(--bn-accent-text);
+  background: var(--st-overlay-20);
+  color: var(--st-text);
 }
 
 .bn-btn:disabled {
+  opacity: 0.38;
   cursor: not-allowed;
-  opacity: 1;
-  color: var(--bn-text-muted);
-  border-style: dashed;
 }
 
-.bn-btn-primary {
-  background: var(--bn-accent);
-  border-color: var(--bn-accent);
-  color: var(--bn-accent-text);
+.bn-btn.bn-btn-primary {
+  border-color: var(--st-primary-border);
+  background: var(--st-primary-fill);
+  color: var(--st-primary-text);
 }
 
-.bn-btn-icon {
-  padding: 4px;
-  width: 32px;
+.bn-btn.bn-btn-primary:hover {
+  background: var(--st-primary-fill-hover);
+  color: var(--st-primary-text);
 }
 
-.bn-icon {
-  width: 16px;
-  height: 16px;
-  flex: none;
+.bn-btn.bn-btn-primary:focus-visible {
+  box-shadow: var(--st-primary-focus-ring);
 }
 
-/* ------------------------------------------------------------------ toolbar */
+/* Wrapper that carries the canvas key handler; it takes no box of its own. */
+.bn-shell {
+  display: contents;
+}
+
+/* ------------------------------------------------------------------ top bar (spec 3) */
 
 .bn-toolbar {
+  position: relative;
+  z-index: var(--st-z-topbar);
   flex: none;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  min-height: var(--bn-toolbar-h);
-  padding: 8px 12px;
-  background: var(--bn-surface-2);
-  border-bottom: 1px solid var(--bn-border);
-  z-index: 10;
+  gap: var(--st-space-4xs);
+  min-block-size: var(--st-topbar-h);
+  padding-block: var(--st-space-4xs);
+  padding-inline: var(--st-space-s);
+  background: var(--st-bg-body);
 }
 
 .bn-toolbar-title {
-  margin: 0 8px 0 0;
-  font-size: 16px;
-  font-weight: 650;
-  max-width: 28ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: baseline;
+  gap: var(--st-space-2xs);
+  min-inline-size: 0;
+  max-inline-size: 40ch;
+  margin-block: 0;
+  margin-inline: 0 var(--st-space-s);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-bold);
+  color: var(--st-text);
   white-space: nowrap;
 }
 
+.bn-toolbar-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .bn-toolbar-app {
-  color: var(--bn-text-muted);
-  font-weight: 400;
+  flex: none;
+  color: var(--st-text-subtle);
+  font-weight: var(--st-weight-semibold);
 }
 
 .bn-toolbar-group {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--st-space-4xs);
 }
 
-.bn-toolbar-label {
-  color: var(--bn-text-muted);
-  margin-right: 2px;
+.bn-toolbar-sep {
+  flex: none;
+  inline-size: 1px;
+  block-size: 18px;
+  margin-inline: var(--st-space-2xs);
+  background: var(--st-border-muted);
 }
 
 .bn-toolbar-spacer {
   flex: 1 1 auto;
 }
 
+/* The zoom percentage button is at least 44px wide (Studio) and uses tabular digits. */
+.bn-zoom-value {
+  min-inline-size: 52px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Save status: a 6px dot plus words (the words carry the state, SC 1.4.1). */
 .bn-status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  color: var(--bn-text-muted);
+  gap: var(--st-space-2xs);
+  min-block-size: var(--st-control-h-sm);
+  padding-inline: var(--st-space-s);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-bold);
+  white-space: nowrap;
+}
+
+.bn-status-dot {
+  flex: none;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-success);
+}
+
+.bn-status[data-status="pending"] .bn-status-dot,
+.bn-status[data-status="saving"] .bn-status-dot {
+  background: var(--st-warning);
 }
 
 .bn-status[data-status="error"] {
-  color: var(--bn-danger);
-  font-weight: 600;
+  color: var(--st-danger-fg);
 }
 
-.bn-help {
-  position: relative;
-}
-
-.bn-help > summary {
-  list-style: none;
-}
-
-.bn-help > summary::-webkit-details-marker {
+.bn-status[data-status="error"] .bn-status-dot {
   display: none;
 }
 
-.bn-help-panel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 30;
-  width: min(360px, 90vw);
-  padding: 12px 16px;
-  background: var(--bn-surface);
-  color: var(--bn-text);
-  border: 1px solid var(--bn-border);
-  border-radius: 10px;
-  box-shadow: var(--bn-shadow);
+.bn-status[data-status="view"] .bn-status-dot {
+  background: var(--st-text-subtle);
 }
 
-.bn-help-panel dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
+/* ------------------------------------------------------------------ notices */
+
+.bn-notice {
+  flex: none;
   margin: 0;
+  padding-block: var(--st-space-xs);
+  padding-inline: var(--st-space-s);
+  background: var(--st-bg-body);
 }
 
-.bn-help-panel dt {
-  font-weight: 600;
-}
-
-.bn-help-panel dd {
-  margin: 0;
-}
-
-kbd {
-  font: 12px ui-monospace, monospace;
-  padding: 1px 5px;
-  border: 1px solid var(--bn-border);
-  border-radius: 4px;
-  background: var(--bn-surface-2);
+.bn-notice .st-alert {
+  align-items: center;
 }
 
 /* ------------------------------------------------------------------ body */
@@ -299,24 +239,68 @@ kbd {
   position: relative;
   flex: 1 1 auto;
   display: flex;
-  min-height: 0;
+  min-block-size: 0;
 }
 
+/* The board: inset into the black shell with a rounded start-start corner (Studio's silhouette).
+   overflow: clip, never hidden, so focus never scrolls the board. */
 .bn-flow {
   position: relative;
   flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
+  min-inline-size: 0;
+  block-size: 100%;
+  overflow: clip;
+  background: var(--st-canvas-bg);
+  border-start-start-radius: var(--st-canvas-corner);
+  outline: 2px solid transparent;
+}
+
+.bn-flow:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--st-focus-ring-color);
 }
 
 .bn-flow .react-flow {
-  background: var(--bn-bg);
-  --xy-background-color: var(--bn-bg);
+  background: var(--st-canvas-bg);
 }
 
-.bn-flow[data-drop-active="true"] {
-  outline: 3px dashed var(--bn-accent);
-  outline-offset: -6px;
+.bn-flow[data-tool="hand"] .react-flow__pane {
+  cursor: grab;
+}
+
+.bn-flow[data-tool="hand"] .react-flow__pane.dragging {
+  cursor: grabbing;
+}
+
+/* Drop target for tray tiles: a 2px dashed selection outline, inset 8px, with a caption. */
+.bn-flow[data-drop-active="true"]::after {
+  content: "";
+  position: absolute;
+  inset: var(--st-space-s);
+  z-index: var(--st-z-canvas-overlay);
+  border: 2px dashed var(--st-canvas-selection-ring-color);
+  border-radius: var(--st-radius-panel);
+  box-shadow: 0 0 0 1px var(--st-canvas-selection-halo), inset 0 0 0 1px var(--st-canvas-selection-halo);
+  pointer-events: none;
+}
+
+.bn-drop-caption {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: var(--st-z-canvas-overlay);
+  translate: -50% -50%;
+  padding-block: var(--st-space-xs);
+  padding-inline: var(--st-space-l);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-3);
+  color: var(--st-text);
+  font-weight: var(--st-weight-semibold);
+  box-shadow: var(--st-shadow-menu);
+  pointer-events: none;
+}
+
+:where([dir="rtl"]) .bn-drop-caption {
+  translate: 50% -50%;
 }
 
 .bn-empty-hint {
@@ -324,121 +308,297 @@ kbd {
   inset: 0;
   display: grid;
   place-items: center;
+  padding: var(--st-space-5xl);
   pointer-events: none;
-  color: var(--bn-text-muted);
+  color: var(--st-text-muted);
   text-align: center;
-  padding: 24px;
+}
+
+.bn-empty-hint p {
+  max-inline-size: 40ch;
+  margin: 0;
 }
 
 .bn-loading,
 .bn-error {
   display: grid;
-  place-items: center;
-  gap: 12px;
-  height: 100%;
-  padding: 24px;
+  place-content: center;
+  justify-items: center;
+  gap: var(--st-space-l);
+  block-size: 100%;
+  padding: var(--st-space-5xl);
+  color: var(--st-text-muted);
   text-align: center;
 }
 
 .bn-error p {
   margin: 0;
-  color: var(--bn-danger);
-  font-weight: 600;
+  color: var(--st-danger-fg);
+  font-weight: var(--st-weight-semibold);
 }
 
-.bn-notice {
-  margin: 0;
-  padding: 6px 12px;
-  background: var(--bn-surface);
-  border-bottom: 1px solid var(--bn-border);
-  color: var(--bn-text);
+/* ------------------------------------------------------------------ notch (spec 3) */
+
+/* Floating insert toolbar hanging from the top edge of the board. */
+.bn-notch {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  z-index: var(--st-z-canvas-notch);
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-3xs);
+  padding: var(--st-space-3xs);
+  padding-block-start: var(--st-space-4xs);
+  border-end-start-radius: var(--st-radius-card);
+  border-end-end-radius: var(--st-radius-card);
+  background: var(--st-bg-body);
+  box-shadow: var(--st-shadow-canvas-chrome);
 }
 
-/* ------------------------------------------------------------------ tray */
+:where([dir="rtl"]) .bn-notch {
+  translate: 50% 0;
+}
+
+/* Inverted outer corners, so the notch reads as part of the shell. */
+.bn-notch::before,
+.bn-notch::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: var(--st-radius-card);
+  block-size: var(--st-radius-card);
+  pointer-events: none;
+}
+
+.bn-notch::before {
+  inset-inline-end: 100%;
+  background: radial-gradient(circle at 0 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
+}
+
+.bn-notch::after {
+  inset-inline-start: 100%;
+  background: radial-gradient(circle at 100% 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
+}
+
+:where([dir="rtl"]) .bn-notch::before {
+  background: radial-gradient(circle at 100% 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
+}
+
+:where([dir="rtl"]) .bn-notch::after {
+  background: radial-gradient(circle at 0 100%, transparent calc(var(--st-radius-card) - 0.5px), var(--st-bg-body) var(--st-radius-card));
+}
+
+.bn-notch-sep {
+  flex: none;
+  inline-size: 1px;
+  block-size: 18px;
+  margin-inline: var(--st-space-3xs);
+  background: var(--st-border-muted);
+}
+
+/* ------------------------------------------------------------------ tray: rail + panel (spec 3) */
 
 .bn-tray {
+  position: relative;
+  z-index: var(--st-z-sidebar);
+  flex: none;
+  display: flex;
+  min-block-size: 0;
+  background: var(--st-bg-body);
+}
+
+.bn-rail {
   flex: none;
   display: flex;
   flex-direction: column;
-  width: var(--bn-tray-w);
-  max-width: 45vw;
-  background: var(--bn-surface);
-  border-right: 1px solid var(--bn-border);
-  min-height: 0;
+  align-items: center;
+  gap: var(--st-space-s);
+  inline-size: var(--st-rail-w);
+  padding-block: var(--st-space-s);
+  padding-inline: var(--st-space-2xs);
 }
 
-.bn-tray-header {
-  padding: 12px 16px 8px;
-  border-bottom: 1px solid var(--bn-border-subtle);
+/* Rail item: accent-3 tint with a soft glow; active gets a 16% tint and a 2px by 14px bar
+   on its outer edge (plus aria-pressed, so state is not color alone). */
+.bn-rail-item {
+  position: relative;
+  color: var(--st-accent-3);
 }
 
-.bn-tray-header h2 {
+.bn-rail-item .st-icon {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--st-accent-3) 28%, transparent));
+}
+
+.bn-rail-item.st-btn[aria-pressed="true"] {
+  --st-btn-bg: var(--st-accent-3-10);
+  --st-btn-fg: var(--st-accent-3);
+  --st-btn-bg-hover: var(--st-accent-3-10);
+  --st-btn-fg-hover: var(--st-accent-3);
+}
+
+.bn-rail-item.st-btn[aria-pressed="true"]::after {
+  inset-inline: auto calc(-1 * var(--st-space-2xs) - 1px);
+  inset-block: 7px;
+  inline-size: 2px;
+  block-size: 14px;
+  margin-block: auto;
+}
+
+.bn-rail-count {
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -6px;
+  min-inline-size: 16px;
+  padding-inline: 3px;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-3);
+  color: var(--st-text);
+  font-size: var(--st-text-xs);
+  font-weight: var(--st-weight-bold);
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.bn-panel {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  inline-size: var(--bn-tray-w);
+  max-inline-size: 45vw;
+  min-block-size: 0;
+  background: var(--st-bg-body);
+}
+
+.bn-panel-header {
+  flex: none;
+  padding-block: var(--st-space-s) var(--st-space-m);
+  padding-inline: var(--st-space-l);
+  border-block-end: 1px solid var(--st-border-muted);
+}
+
+.bn-panel-header h2 {
   margin: 0;
-  font-size: 15px;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
 }
 
-.bn-tray-header p {
-  margin: 4px 0 0;
-  color: var(--bn-text-muted);
-  font-size: 13px;
+.bn-panel-header p {
+  margin-block: var(--st-space-3xs) 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+}
+
+.bn-panel-header:lang(ar) h2,
+.bn-panel-header:lang(ar) p {
+  font-size: var(--st-text-m);
+}
+
+/* Splitter on the panel's inline-end edge: 12px hit area, a 1px line on hover and focus. */
+.bn-splitter {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -6px;
+  z-index: 1;
+  inline-size: 12px;
+  cursor: col-resize;
+  touch-action: none;
+  outline: 2px solid transparent;
+}
+
+.bn-splitter::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  inline-size: 1px;
+  background: transparent;
+  transition: background-color var(--st-duration-base) var(--st-ease);
+}
+
+.bn-splitter:hover::after,
+.bn-splitter[data-dragging]::after {
+  background: var(--st-border-control);
+}
+
+.bn-splitter:focus-visible {
+  box-shadow: none;
+}
+
+.bn-splitter:focus-visible::after {
+  inline-size: 2px;
+  background: var(--st-focus-ring-color);
 }
 
 .bn-tray-list {
-  list-style: none;
-  margin: 0;
-  padding: 12px;
+  --st-tile-min: 120px;
+
+  margin: var(--st-space-s);
+  padding: 1px;
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
   align-content: start;
-  scroll-padding: 12px;
+  list-style: none;
+  scroll-padding: var(--st-space-s);
+  scrollbar-width: thin;
+  scrollbar-color: var(--st-scrollbar-thumb) transparent;
 }
 
-.bn-tray-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+.bn-tray-item.st-tile {
+  gap: var(--st-space-xs);
+  padding: var(--st-space-xs);
+}
+
+/* The whole tile lifts while its add button is hovered, and returns on press. */
+.bn-tray-item:has(.bn-tray-add:hover) {
+  transform: translateY(-2px);
+  box-shadow: var(--st-shadow-card-hover);
+}
+
+.bn-tray-item:has(.bn-tray-add:active) {
+  transform: none;
+  box-shadow: none;
 }
 
 .bn-tray-add {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 100%;
+  gap: var(--st-space-xs);
+  inline-size: 100%;
   padding: 0;
-  border: 1px solid var(--bn-border);
-  border-radius: 8px;
-  background: var(--bn-surface);
-  color: var(--bn-text);
+  border: 0;
+  border-radius: var(--st-radius-panel);
+  background: transparent;
+  color: var(--st-text);
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: grab;
-  overflow: hidden;
 }
 
 .bn-tray-add:active {
   cursor: grabbing;
 }
 
-.bn-tray-thumb {
+.bn-tray-thumb,
+.bn-tray-thumb-missing {
   display: block;
-  width: 100%;
+  inline-size: 100%;
   aspect-ratio: 4 / 3;
+  border-radius: var(--st-radius-panel);
   object-fit: cover;
-  background: var(--bn-surface-2);
+  background: var(--st-canvas-placeholder-bg);
 }
 
 .bn-tray-thumb-missing {
   display: grid;
   place-items: center;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  padding: 8px;
-  background: var(--bn-surface-2);
-  color: var(--bn-text-muted);
-  font-size: 12px;
+  padding: var(--st-space-s);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
   text-align: center;
 }
 
@@ -447,38 +607,26 @@ kbd {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  padding: 0 8px 8px;
-  font-size: 12px;
+  padding-inline: var(--st-space-3xs);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-medium);
 }
 
-.bn-tray-empty {
-  padding: 16px;
-  color: var(--bn-text-muted);
+.bn-tray-item .bn-source {
+  align-self: flex-start;
 }
 
-/* ------------------------------------------------------------------ chips */
-
-.bn-chip,
-.bn-source {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 24px;
-  max-width: 100%;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
+.bn-tray .st-empty {
+  flex: 1 1 auto;
 }
 
-.bn-source {
-  background: var(--bn-surface);
-  color: var(--bn-text);
-  border-color: var(--bn-border);
-  text-decoration: none;
+/* ------------------------------------------------------------------ chips (spec 10) */
+
+/* Source chip (hard rule 3): 24px pill on an opaque base, 12px external glyph. */
+.bn-source.st-chip {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  color: var(--st-text);
   overflow: hidden;
 }
 
@@ -487,240 +635,379 @@ kbd {
   text-overflow: ellipsis;
 }
 
-.bn-source:hover {
-  text-decoration: underline;
-}
-
-.bn-chip-ship {
-  background: var(--bn-ship-bg);
-  color: var(--bn-ship-text);
-}
-
-.bn-chip-explore {
-  background: var(--bn-explore-bg);
-  color: var(--bn-explore-text);
-}
-
-.bn-chip-pass {
-  background: var(--bn-ship-bg);
-  color: var(--bn-ship-text);
-}
-
-.bn-chip-fail {
-  background: var(--bn-explore-bg);
-  color: var(--bn-explore-text);
-}
-
-/* ------------------------------------------------------------------ nodes */
+/* ------------------------------------------------------------------ nodes (spec 5) */
 
 .bn-node {
   position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  background: var(--bn-surface);
-  color: var(--bn-text);
-  border: 1px solid var(--bn-border);
-  box-shadow: var(--bn-shadow);
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: var(--st-radius);
+  background: var(--st-bg-surface);
+  color: var(--st-text);
+  box-shadow: var(--st-shadow-panel-drop);
 }
 
+.bn-canvas .react-flow__node {
+  border-radius: var(--st-radius);
+  outline: 2px solid transparent;
+  outline-offset: 6px;
+}
+
+/* Hover: an inset 1px ring drawn over the content. */
+.bn-canvas .react-flow__node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.bn-canvas .react-flow__node:hover::after {
+  box-shadow: inset 0 0 0 1px var(--st-canvas-hover-ring-color);
+}
+
+/* Selected: a 2px outline in selection green, 2px off the edge, with an ink halo in light. */
+.bn-canvas .react-flow__node.selected {
+  outline: var(--st-canvas-selection-width) solid var(--st-canvas-selection-ring-color);
+  outline-offset: var(--st-canvas-selection-offset);
+  box-shadow: 0 0 0 calc(var(--st-canvas-selection-offset) + var(--st-canvas-selection-width) + 1px) var(--st-canvas-selection-halo);
+}
+
+.bn-canvas .react-flow__node.selected:hover::after {
+  box-shadow: none;
+}
+
+/* Keyboard focus: the halo ring, kept outside the selection outline so both show. */
+.bn-canvas .react-flow__node:focus-visible {
+  box-shadow: 0 0 0 6px var(--st-focus-halo-color), 0 0 0 8px var(--st-focus-ring-color);
+}
+
+.bn-canvas .react-flow__node.selected:focus-visible {
+  box-shadow:
+    0 0 0 5px var(--st-canvas-selection-halo),
+    0 0 0 6px var(--st-focus-halo-color),
+    0 0 0 8px var(--st-focus-ring-color);
+}
+
+/* Bars of chips and controls laid over a node. */
 .bn-node-bar {
   position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: 6px;
+  inset-inline: var(--st-space-xs);
+  inset-block-end: var(--st-space-xs);
+  z-index: 3;
   display: flex;
   align-items: center;
-  gap: 4px;
-  min-width: 0;
+  gap: var(--st-space-3xs);
+  min-inline-size: 0;
 }
 
 .bn-node-bar-top {
-  top: 6px;
-  bottom: auto;
+  inset-block: var(--st-space-xs) auto;
   justify-content: flex-end;
 }
 
 .bn-node-bar .bn-source {
   flex: 0 1 auto;
-  min-width: 0;
 }
 
-.bn-node-bar .bn-grow {
+.bn-grow {
   flex: 1 1 auto;
 }
 
+/* Node menu trigger: a 24px ghost icon button on an opaque base, shown on hover, focus-within,
+   selection and while its menu is open (SC 1.4.13, 2.1.1). */
+.bn-menu-button.st-btn {
+  --st-btn-bg: var(--st-bg-surface);
+  --st-btn-bg-hover: var(--st-bg-surface-3);
+  --st-btn-bg-active: var(--st-bg-surface-4);
+
+  opacity: 0;
+  transition: opacity var(--st-duration-base) var(--st-ease), background-color var(--st-duration-moderate) var(--st-ease);
+}
+
+.react-flow__node:hover .bn-menu-button,
+.react-flow__node:focus-within .bn-menu-button,
+.react-flow__node.selected .bn-menu-button,
+.bn-menu-button[aria-expanded="true"] {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .bn-menu-button.st-btn {
+    opacity: 1;
+  }
+}
+
+/* Image and upload tiles: frame chrome. */
 .bn-image {
   display: flex;
   flex-direction: column;
-  overflow: visible;
 }
 
 .bn-image-frame {
   position: relative;
   flex: 1 1 auto;
-  min-height: 0;
+  min-block-size: 0;
   overflow: hidden;
-  border-radius: 9px;
+  border-radius: var(--st-radius);
+  background: var(--st-canvas-placeholder-bg);
+}
+
+.bn-image:has(.bn-image-note, textarea) .bn-image-frame {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
 }
 
 .bn-image-frame img {
   display: block;
-  width: 100%;
-  height: 100%;
+  inline-size: 100%;
+  block-size: 100%;
   object-fit: cover;
-  background: var(--bn-surface-2);
   -webkit-user-drag: none;
   user-select: none;
 }
 
 .bn-image-note {
   flex: none;
+  max-block-size: 40%;
   margin: 0;
-  padding: 6px 8px;
-  max-height: 40%;
+  padding-block: var(--st-space-xs);
+  padding-inline: var(--st-space-s);
   overflow: auto;
-  font-size: 13px;
-  border-top: 1px solid var(--bn-border-subtle);
+  border-end-start-radius: var(--st-radius);
+  border-end-end-radius: var(--st-radius);
+  background: var(--st-bg-surface-2);
+  color: var(--st-text);
+  font-size: var(--st-text-s);
 }
 
+.bn-image > .st-input {
+  flex: none;
+  min-block-size: 72px;
+  border-radius: 0 0 var(--st-radius) var(--st-radius);
+  background: var(--st-bg-surface);
+  resize: none;
+}
+
+/* Link card: stripe placeholder, image-off glyph, title, site, link, why. */
 .bn-linkcard {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 100%;
-  padding: 12px 12px 40px;
-  background: var(--bn-surface-2);
+  gap: var(--st-space-3xs);
+  block-size: 100%;
+  padding: var(--st-space-l) var(--st-space-l) var(--st-space-9xl);
+  background: var(--st-canvas-placeholder-bg);
+  color: var(--st-text-muted);
+  text-align: center;
 }
 
 .bn-linkcard-title {
-  margin: 0;
-  font-weight: 650;
-  overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: var(--st-space-2xs) 0 0;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
 }
 
 .bn-linkcard-site,
 .bn-linkcard-why {
   margin: 0;
-  color: var(--bn-text-muted);
-  font-size: 12px;
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
 }
 
 .bn-linkcard a {
-  color: var(--bn-accent);
-  font-weight: 600;
   display: inline-flex;
-  min-height: 24px;
   align-items: center;
+  min-block-size: var(--st-target-min);
+  color: var(--st-link);
+  font-weight: var(--st-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
+/* Sticky notes: fixed paper in both themes, ink text. */
 .bn-note {
-  padding: 10px 12px 40px;
+  padding-block: var(--st-space-l) var(--st-space-9xl);
+  padding-inline: var(--st-space-l);
+  border-radius: var(--st-radius-sm);
+  background: var(--st-note-yellow);
+  color: var(--st-note-ink);
+  box-shadow: var(--st-note-shadow);
 }
 
-.bn-note[data-color="yellow"] { background: var(--bn-note-yellow); }
-.bn-note[data-color="blue"] { background: var(--bn-note-blue); }
-.bn-note[data-color="pink"] { background: var(--bn-note-pink); }
-.bn-note[data-color="green"] { background: var(--bn-note-green); }
-.bn-note[data-color="gray"] { background: var(--bn-note-gray); }
+.bn-note[data-color="yellow"] { background: var(--st-note-yellow); }
+.bn-note[data-color="blue"] { background: var(--st-note-blue); }
+.bn-note[data-color="pink"] { background: var(--st-note-pink); }
+.bn-note[data-color="green"] { background: var(--st-note-green); }
+.bn-note[data-color="gray"] { background: var(--st-note-gray); }
+
+.bn-canvas .react-flow__node-note {
+  border-radius: var(--st-radius-sm);
+}
+
+.bn-canvas .react-flow__node-note.selected {
+  outline-color: var(--st-annotation-selection-ring);
+  box-shadow: none;
+}
 
 .bn-note-text {
+  block-size: 100%;
   margin: 0;
+  overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  height: 100%;
-  overflow: auto;
+  font-size: var(--st-text-m);
+  line-height: var(--st-leading-normal);
 }
 
 .bn-note-empty {
-  color: var(--bn-text-muted);
+  color: var(--st-note-ink-subtle);
 }
 
-.bn-textarea,
-.bn-input {
-  width: 100%;
-  min-height: 32px;
-  padding: 6px 8px;
-  border: 1px solid var(--bn-border);
-  border-radius: 6px;
-  background: var(--bn-surface);
-  color: var(--bn-text);
-  font: inherit;
+.bn-note .st-input {
+  block-size: 100%;
+  border-color: var(--st-note-ink-subtle);
+  background: transparent;
+  color: var(--st-note-ink);
 }
 
-.bn-textarea {
-  height: 100%;
+/* Fixed paper in both themes, so the focus ring uses the ink color here. */
+.bn-note .st-input:focus,
+.bn-note-chrome .bn-swatch-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--st-note-ink);
+}
+
+/* Note chrome: a pill above the note with five color swatches (second route next to the menu). */
+.bn-note-chrome {
+  position: absolute;
+  inset-block-end: calc(100% + var(--st-space-xs));
+  inset-inline-start: 0;
+  z-index: 4;
+  display: flex;
+  gap: var(--st-space-4xs);
+  padding: var(--st-space-4xs);
+  border: 1px solid var(--st-border-muted);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-2);
+  box-shadow: var(--st-shadow-menu);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--st-duration-base) var(--st-ease), visibility 0s linear var(--st-duration-base);
+}
+
+.react-flow__node:hover .bn-note-chrome,
+.react-flow__node:focus-within .bn-note-chrome,
+.react-flow__node.selected .bn-note-chrome {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--st-duration-base) var(--st-ease);
+}
+
+.bn-swatch-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--st-target-min);
+  block-size: var(--st-target-min);
+  padding: 0;
+  border: 1px solid var(--st-border-control);
+  border-radius: var(--st-radius-pill);
+  color: var(--st-note-ink);
+  cursor: pointer;
+}
+
+.bn-swatch-button[data-color="yellow"] { background: var(--st-note-yellow); }
+.bn-swatch-button[data-color="blue"] { background: var(--st-note-blue); }
+.bn-swatch-button[data-color="pink"] { background: var(--st-note-pink); }
+.bn-swatch-button[data-color="green"] { background: var(--st-note-green); }
+.bn-swatch-button[data-color="gray"] { background: var(--st-note-gray); }
+
+.bn-swatch-button:not([aria-pressed="true"]) .st-icon {
+  visibility: hidden;
+}
+
+/* Inline editors use .st-input. The note editor fills its note. */
+.bn-canvas .bn-note textarea.st-input {
+  block-size: 100%;
   resize: none;
+  padding-block: var(--st-space-xs);
+  border-radius: var(--st-radius-field);
+  line-height: var(--st-leading-normal);
 }
 
+/* Swatch: frame chrome, color block on top, tile title row, mono codes, contrast rows. */
 .bn-swatch {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .bn-swatch-color {
   flex: 1 1 40%;
-  min-height: 48px;
-  border-bottom: 1px solid var(--bn-border);
-  border-radius: 9px 9px 0 0;
+  min-block-size: 48px;
+  background: var(--bn-swatch);
+  box-shadow: inset 0 -1px 0 var(--st-border-muted);
 }
 
 .bn-swatch-info {
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px 4px;
-  font-size: 12px;
-}
-
-.bn-node-bar.bn-node-bar-static {
-  position: static;
-  margin: auto 6px 6px;
+  gap: var(--st-space-4xs);
+  padding-block: var(--st-space-s) var(--st-space-3xs);
+  padding-inline: var(--st-space-m);
+  font-size: var(--st-text-s);
 }
 
 .bn-swatch-role {
-  font-size: 13px;
-  font-weight: 650;
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
 }
 
 .bn-swatch-code {
-  font-family: ui-monospace, monospace;
-  color: var(--bn-text-muted);
   overflow: hidden;
+  color: var(--st-text-subtle);
+  font-family: var(--st-font-mono);
+  font-size: var(--st-text-s);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bn-contrast {
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--st-space-4xs);
+  margin: var(--st-space-3xs) 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .bn-contrast li {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--st-space-xs);
 }
 
+/* Live "Aa" sample of the color as text on white or black (user content, not tokens). */
 .bn-contrast-sample {
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 26px;
-  height: 22px;
-  border-radius: 4px;
-  border: 1px solid var(--bn-border);
-  font-weight: 700;
-  font-size: 12px;
+  inline-size: 26px;
+  block-size: 19px;
+  border: 1px solid var(--st-border-control);
+  border-radius: var(--st-radius-sm);
+  background: var(--sample-bg);
+  color: var(--sample-fg);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-bold);
 }
 
 .bn-contrast-sample::before {
@@ -730,234 +1017,278 @@ kbd {
 .bn-contrast-ratio {
   flex: 1 1 auto;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
+.bn-node-bar.bn-node-bar-static {
+  position: static;
+  margin-block: auto var(--st-space-xs);
+  margin-inline: var(--st-space-xs);
+}
+
+/* Type sample: frame chrome, caps caption, the pairing's own fonts. */
 .bn-type {
-  padding: 12px 12px 40px;
+  padding-block: var(--st-space-l) var(--st-space-9xl);
+  padding-inline: var(--st-space-l);
 }
 
 .bn-type-name {
-  margin: 0 0 4px;
-  color: var(--bn-text-muted);
-  font-size: 12px;
+  margin: 0 0 var(--st-space-2xs);
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  text-transform: uppercase;
 }
 
 .bn-type-display {
   margin: 0;
+  font-family: var(--type-display-font, inherit);
+  font-weight: var(--type-display-weight, inherit);
   font-size: 26px;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
 .bn-type-body {
-  margin: 6px 0 0;
+  margin: var(--st-space-xs) 0 0;
+  font-family: var(--type-body-font, inherit);
+  font-weight: var(--type-body-weight, inherit);
   font-size: 14px;
 }
 
+/* Section: frame-header bar on surface-2, dashed body on overlay-5, accent-2 identity dot. */
 .bn-section {
-  background: var(--bn-section-bg);
-  border: 2px dashed var(--bn-border);
+  background: var(--st-overlay-5);
+  border: 1px dashed var(--st-border-control);
   box-shadow: none;
 }
 
 .bn-section-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 48px;
-  padding: 0 8px;
-  border-bottom: 1px solid var(--bn-border-subtle);
+  gap: var(--st-space-2xs);
+  block-size: var(--st-dense-row-h);
+  padding-inline: var(--st-space-2xs) var(--st-space-3xs);
+  border-start-start-radius: var(--st-radius);
+  border-start-end-radius: var(--st-radius);
+  background: var(--st-bg-surface-2);
 }
 
 .bn-section[data-collapsed="true"] .bn-section-header {
-  border-bottom: 0;
+  block-size: 100%;
+  border-radius: var(--st-radius);
+}
+
+.bn-section-dot {
+  flex: none;
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 3px;
+  background: var(--st-accent-2);
 }
 
 .bn-section-title {
   flex: 1 1 auto;
-  min-width: 0;
+  min-inline-size: 0;
   margin: 0;
-  font-size: 14px;
-  font-weight: 650;
   overflow: hidden;
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.bn-section-header .st-input {
+  flex: 1 1 auto;
+}
+
 .bn-section-count {
-  color: var(--bn-text-muted);
-  font-size: 12px;
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
   white-space: nowrap;
 }
 
-/* React Flow resize handles: at least 24x24 px hit area (SC 2.5.8). */
+.bn-section-header .bn-menu-button.st-btn {
+  --st-btn-bg: transparent;
+}
+
+/* Resize handles: 9px squares with a 24px hit area (SC 2.5.8); edges are invisible strips. */
 .bn-canvas .react-flow__resize-control.handle.bn-resize-handle {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--bn-surface);
-  background: var(--bn-accent);
-  border-radius: 3px;
+  z-index: 5;
+  inline-size: var(--st-canvas-handle-size);
+  block-size: var(--st-canvas-handle-size);
+  border: 1px solid var(--st-canvas-resize-handle-border);
+  border-radius: 2px;
+  background: var(--st-canvas-resize-handle-fill);
 }
 
 .bn-canvas .react-flow__resize-control.handle.bn-resize-handle::after {
   content: "";
   position: absolute;
-  inset: -8px;
+  inset: calc((var(--st-target-min) - var(--st-canvas-handle-size)) / -2);
 }
 
 .bn-canvas .react-flow__resize-control.line.bn-resize-line {
-  border-color: var(--bn-accent);
+  z-index: 1;
+  border-color: transparent;
 }
 
-/* ------------------------------------------------------------------ menu */
-
-.bn-menu-wrap {
-  position: relative;
-  flex: none;
+.bn-canvas .react-flow__resize-control.line.bn-resize-line.left,
+.bn-canvas .react-flow__resize-control.line.bn-resize-line.right {
+  inline-size: 12px;
 }
 
-.bn-menu-button {
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-  min-height: 28px;
-  padding: 0;
-  border-radius: 6px;
-  background: var(--bn-surface);
+.bn-canvas .react-flow__resize-control.line.bn-resize-line.top,
+.bn-canvas .react-flow__resize-control.line.bn-resize-line.bottom {
+  block-size: 12px;
 }
 
-.bn-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 50;
-  min-width: 200px;
-  max-height: 320px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  background: var(--bn-surface);
-  border: 1px solid var(--bn-border);
-  border-radius: 8px;
-  box-shadow: var(--bn-shadow);
+/* Marquee (React Flow's user selection) and the multi-selection box. */
+.bn-canvas .react-flow__selection {
+  z-index: var(--st-z-canvas-selection);
 }
 
-.bn-menu[data-placement="up"] {
-  top: auto;
-  bottom: calc(100% + 4px);
-}
-
-.bn-menu-sep {
-  height: 1px;
-  margin: 4px 0;
-  background: var(--bn-border-subtle);
-}
-
-.bn-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 32px;
-  padding: 4px 10px;
-  border: 0;
-  border-radius: 6px;
+.bn-canvas .react-flow__nodesselection-rect {
+  border: 1px dashed var(--st-canvas-selection-ring-color);
+  border-radius: var(--st-radius);
   background: transparent;
-  color: var(--bn-text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--st-canvas-selection-halo);
+}
+
+/* Snap guides, drawn in board space inside the viewport; 1px on screen at any zoom. */
+.bn-snap-guide {
+  /* Board space is physical and never mirrors in rtl, so physical offsets are right here. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  inline-size: var(--w);
+  block-size: var(--h);
+  transform: translate(var(--x), var(--y));
+  background: var(--st-canvas-snap-guide-color);
+  pointer-events: none;
+  z-index: var(--st-z-canvas-selection);
+}
+
+/* React Flow attribution stays hidden by the existing proOptions setting; keep its pane plain. */
+.bn-canvas .react-flow__attribution {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------ menus */
+
+.bn-menu.st-menu {
+  min-inline-size: 220px;
+}
+
+.bn-menu .st-menu-item {
   white-space: nowrap;
 }
 
-.bn-menu-item:hover,
-.bn-menu-item:focus-visible {
-  background: var(--bn-surface-2);
+.bn-menu .st-menu-item-end .st-shortcut {
+  margin-inline-start: var(--st-space-l);
 }
 
-.bn-menu-item[data-danger="true"] {
-  color: var(--bn-danger);
+/* ------------------------------------------------------------------ shortcut sheet */
+
+.bn-sheet-intro {
+  margin: 0 0 var(--st-space-xl);
+  color: var(--st-text-muted);
+}
+
+.bn-sheet-group + .bn-sheet-group {
+  margin-block-start: var(--st-space-xl);
+}
+
+.bn-sheet-group h3 {
+  margin: 0 0 var(--st-space-xs);
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  text-transform: uppercase;
+}
+
+.bn-sheet-group dl {
+  margin: 0;
+}
+
+.bn-sheet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--st-space-l);
+  min-block-size: var(--st-row-h);
+  padding-block: var(--st-space-4xs);
+  border-block-end: 1px solid var(--st-border-muted);
+}
+
+.bn-sheet-row dt,
+.bn-sheet-row dd {
+  margin: 0;
+}
+
+.bn-sheet-row dt {
+  color: var(--st-text);
+}
+
+.bn-sheet-row dd {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--st-space-2xs);
+}
+
+.bn-sheet-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-2xs);
+}
+
+.bn-sheet-or {
+  color: var(--st-text-subtle);
 }
 
 /* ------------------------------------------------------------------ small screens */
+
+@media (max-width: 760px) {
+  .bn-toolbar {
+    flex-wrap: wrap;
+  }
+}
 
 @media (max-width: 720px) {
   .bn-canvas {
     --bn-tray-w: 220px;
   }
   .bn-tray-list {
-    grid-template-columns: minmax(0, 1fr);
+    --st-tile-min: 100%;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bn-canvas * {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-/* Full-screen web page wrapper (/c/:id). */
+/* Full-screen web page wrapper (/c/:id, /s/:token). */
 .bn-page {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
+  background: var(--st-bg-body);
 }
+
 .bn-page > .bn-canvas {
   flex: 1 1 auto;
-  height: auto;
-  min-height: 0;
+  block-size: auto;
+  min-block-size: 0;
 }
 
-/* Save conflict banner on the web canvas (outside .bn-canvas, so own colors). */
-.bn-conflict {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding: 8px 16px;
-  background: #fff4e5;
-  color: #4a2400;
-  border-bottom: 2px solid #b45309;
-  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-.bn-conflict p {
-  margin: 0;
-}
-.bn-conflict button {
-  min-height: 32px;
-  padding: 4px 12px;
-  border: 1px solid #4a2400;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #4a2400;
-  font: inherit;
-  cursor: pointer;
-}
-.bn-conflict button:focus-visible {
-  outline: 2px solid #1a56db;
-  outline-offset: 2px;
-}
-@media (prefers-color-scheme: dark) {
-  .bn-conflict {
-    background: #2b1a08;
-    color: #ffe3c2;
-    border-bottom-color: #f59e0b;
+@media (forced-colors: active) {
+  .bn-canvas .react-flow__node.selected {
+    outline-color: Highlight;
   }
-  .bn-conflict button {
-    background: #1d1c1a;
-    color: #ffe3c2;
-    border-color: #ffe3c2;
+  .bn-canvas .react-flow__node:focus-visible {
+    outline-color: CanvasText;
   }
-  .bn-conflict button:focus-visible {
-    outline-color: #8fb4ff;
+  .bn-snap-guide {
+    background: Highlight;
   }
-}
-
-/* Primary buttons keep their fill on hover (the plain .bn-btn hover would put white text on a light fill). */
-.bn-btn.bn-btn-primary:hover {
-  background: var(--bn-accent);
-  box-shadow: inset 0 0 0 2px var(--bn-accent-text);
 }

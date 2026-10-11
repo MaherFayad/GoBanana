@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FocusEvent, type KeyboardEvent, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { CheckIcon, CloseIcon, ErrorIcon, InfoIcon, WarningIcon } from "./icons";
+import { modalStack } from "./modalStack";
 import {
   createToastTimer,
   toastBus,
@@ -52,10 +54,14 @@ export function ToastProvider({ children, labels, bus }: { children?: ReactNode;
  * appear together with their text): errors and warnings go to role="alert", the rest to
  * role="status". Timers pause while the pointer is over the stack, while focus is inside it,
  * and while the tab is hidden.
+ *
+ * While a modal Dialog is open the stack and both regions render inside it: the rest of the
+ * page is inert and under the backdrop then, so toasts outside would be neither seen nor read.
  */
 export function ToastViewport({ labels, bus = toastBus }: { labels?: Partial<ToastLabels>; bus?: ToastBus }) {
   const text = { ...DEFAULT_LABELS, ...labels };
   const toasts = useSyncExternalStore(bus.subscribe, bus.getSnapshot, () => EMPTY);
+  const modal = useSyncExternalStore(modalStack.subscribe, modalStack.top, () => null);
   const [hovered, setHovered] = useState(false);
   const [focusInside, setFocusInside] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -122,7 +128,7 @@ export function ToastViewport({ labels, bus = toastBus }: { labels?: Partial<Toa
     }
   };
 
-  return (
+  const view = (
     <>
       <div className="st-visually-hidden" role="status" aria-live="polite" aria-atomic="true">
         {polite}
@@ -147,6 +153,7 @@ export function ToastViewport({ labels, bus = toastBus }: { labels?: Partial<Toa
       )}
     </>
   );
+  return modal ? createPortal(view, modal) : view;
 }
 
 function ToastCard({
@@ -188,6 +195,8 @@ function ToastCard({
   const Icon = KIND_ICON[toast.kind];
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
+      // Inside an open dialog, Escape closes the toast only, not the dialog.
+      e.preventDefault();
       e.stopPropagation();
       onDismiss(toast.id);
     }

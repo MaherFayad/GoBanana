@@ -1,69 +1,85 @@
 /*
- * Inline (MCP Apps) wrapper around the canvas. Colors come from the canvas tokens in
- * canvas/canvas.css (the wrapper is itself a `.bn-canvas`), so contrast matches the web canvas.
+ * Inline (MCP Apps) wrapper around the canvas: Studio tokens and primitives
+ * (styles/studio-tokens.css, styles/studio-components.css), the canvas itself styles
+ * from canvas/canvas.css. Tokens only, logical properties only.
+ *
+ * Theme: main.tsx puts the host theme on <html> and on .bn-inline as data-theme; with no
+ * host theme the tokens follow prefers-color-scheme.
  */
 
 html,
 body {
   margin: 0;
   padding: 0;
-  background: transparent;
+  background: var(--st-bg-body);
 }
 
 .bn-inline {
+  display: flex;
+  flex-direction: column;
+  block-size: var(--inline-h, 640px);
   overflow: hidden;
+  background: var(--st-bg-body);
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
 }
 
 /* The CanvasApp root inside the wrapper takes the remaining height. */
 .bn-inline > .bn-canvas {
   flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
+  min-block-size: 0;
+  block-size: auto;
 }
 
+/* 36px Studio top bar on the body color. */
 .bn-inline-bar {
   flex: none;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px 12px;
-  padding: 4px 12px;
-  background: var(--bn-surface);
-  border-bottom: 1px solid var(--bn-border-subtle);
+  gap: var(--st-space-4xs) var(--st-space-s);
+  box-sizing: border-box;
+  min-block-size: var(--st-topbar-h);
+  padding-block: var(--st-space-4xs);
+  padding-inline: var(--st-space-s);
+  background: var(--st-bg-body);
 }
 
-.bn-inline-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 4px 2px;
-  color: var(--bn-text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
+/* Conflict choice: a warning alert in a strip above the canvas. */
 .bn-inline-conflict {
   flex: none;
-  display: grid;
-  gap: 8px;
-  padding: 10px 12px;
-  background: var(--bn-explore-bg);
-  color: var(--bn-explore-text);
-  border-bottom: 2px solid var(--bn-explore-text);
-}
-
-.bn-inline-conflict p {
-  margin: 0;
-  font-weight: 600;
+  padding-block: 0 var(--st-space-xs);
+  padding-inline: var(--st-space-s);
+  background: var(--st-bg-body);
 }
 
 .bn-inline-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--st-space-s);
+  margin-block-start: var(--st-space-2xs);
 }
 
 .bn-inline-problem {
-  color: var(--bn-danger);
+  font-weight: var(--st-weight-semibold);
+}
+
+/* Loading and error states before the canvas mounts. */
+.bn-inline-message {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--st-space-2xl);
+}
+
+.bn-inline-message .st-empty {
+  gap: var(--st-space-m);
+}
+
+/* Compact (frame under 720px): the top bar keeps one tight row. CanvasApp gets the same
+   signal from data-compact for its rail and panel. */
+.bn-inline[data-compact] .bn-inline-bar {
+  padding-inline: var(--st-space-2xs);
 }

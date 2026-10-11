@@ -8,16 +8,25 @@
  *
  * No Next server is needed: everything is served with page.route. Image hosts are
  * mocked with a synthetic 1x1 PNG (allowed host) and an aborted request (link card).
+ * UI fonts are served from APP_URL's static assets (public/mcp-app/assets, with the CORS
+ * header public/_headers sends), the way the Worker serves them.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type FrameLocator, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CANVAS_ASSET_PATH } from "../lib/mcp/resources/canvas-asset";
 import { canvasCsp, fillCanvasHtml } from "../lib/mcp/resources/canvas";
 
+/** Our own origin (APP_URL): the view loads its UI fonts from here. */
+const APP_URL = "https://banana.example.com";
 /** The built view (`npm run build:ui`), as the `ui://banana/canvas` resource serves it. */
-const CANVAS_HTML = fillCanvasHtml(readFileSync(fileURLToPath(new URL(`../public${CANVAS_ASSET_PATH}`, import.meta.url)), "utf8"));
+const CANVAS_HTML = fillCanvasHtml(
+  readFileSync(fileURLToPath(new URL(`../public${CANVAS_ASSET_PATH}`, import.meta.url)), "utf8"),
+  APP_URL,
+);
+const ASSETS_DIR = new URL("../public/mcp-app/assets/", import.meta.url);
 
 const HOST = "https://host.test/chat";
 const SANDBOX = "https://sandbox.test/canvas.html";
@@ -87,7 +96,7 @@ const OPEN_RESULT = {
 
 /** CSP header a host would build from `_meta.ui.csp` (spec default plus our declared domains). */
 function cspHeader(): string {
-  const csp = canvasCsp();
+  const csp = canvasCsp({ appUrl: APP_URL });
   const res = csp.resourceDomains.join(" ");
   return [
     "default-src 'none'",
@@ -101,7 +110,9 @@ function cspHeader(): string {
   ].join("; ");
 }
 
-function hostPage(openResult: unknown): string {
+type HostOptions = { theme?: "light" | "dark"; width?: number };
+
+function hostPage(openResult: unknown, { theme = "light", width = 1200 }: HostOptions = {}): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Fake host</title></head><body>
 <script>
   const frame = () => document.getElementById("app");
@@ -133,7 +144,7 @@ function hostPage(openResult: unknown): string {
         protocolVersion: m.params.protocolVersion,
         hostInfo: { name: "fake-host", version: "1.0.0" },
         hostCapabilities: { serverTools: {}, openLinks: {}, updateModelContext: { text: {} } },
-        hostContext: { theme: "light", displayMode: "inline", availableDisplayModes: ["inline", "fullscreen"], platform: "web" },
+        hostContext: { theme: ${JSON.stringify(theme)}, displayMode: "inline", availableDisplayModes: ["inline", "fullscreen"], platform: "web" },
       } });
       return;
     }
@@ -149,18 +160,37 @@ function hostPage(openResult: unknown): string {
     if (m.id !== undefined && m.method) send({ jsonrpc: "2.0", id: m.id, result: {} });
   });
 </script>
-<iframe id="app" title="Moodboard canvas" sandbox="allow-scripts" src="${SANDBOX}" style="width:1200px;height:720px;border:0"></iframe>
+<iframe id="app" title="Moodboard canvas" sandbox="allow-scripts" src="${SANDBOX}" style="width:${width}px;height:720px;border:0"></iframe>
 </body></html>`;
 }
 
 type Call = { name: string; arguments: { canvasId: string; baseUpdatedAt?: string; state: typeof STATE } };
 
-async function openInHost(page: Page, openResult: unknown = OPEN_RESULT): Promise<{ frame: FrameLocator; cspErrors: string[] }> {
+async function openInHost(
+  page: Page,
+  openResult: unknown = OPEN_RESULT,
+  options: HostOptions = {},
+): Promise<{ frame: FrameLocator; cspErrors: string[]; fontRequests: string[] }> {
   const cspErrors: string[] = [];
+  const fontRequests: string[] = [];
   page.on("console", (msg) => {
     if (/Content Security Policy/i.test(msg.text())) cspErrors.push(msg.text());
   });
-  await page.route(HOST, (route) => route.fulfill({ status: 200, contentType: "text/html", body: hostPage(openResult) }));
+  page.on("request", (req) => {
+    if (req.resourceType() === "font" || /\.(woff2?|ttf|otf)(\?|$)/i.test(req.url()) || /fonts\.(googleapis|gstatic)\.com/.test(req.url())) {
+      fontRequests.push(req.url());
+    }
+  });
+  await page.route(HOST, (route) => route.fulfill({ status: 200, contentType: "text/html", body: hostPage(openResult, options) }));
+  await page.route(`${APP_URL}/mcp-app/assets/*`, (route) => {
+    const name = basename(new URL(route.request().url()).pathname);
+    route.fulfill({
+      status: 200,
+      contentType: "font/woff2",
+      headers: { "access-control-allow-origin": "*" },
+      body: readFileSync(fileURLToPath(new URL(name, ASSETS_DIR))),
+    });
+  });
   await page.route(SANDBOX, (route) =>
     route.fulfill({
       status: 200,
@@ -173,7 +203,7 @@ async function openInHost(page: Page, openResult: unknown = OPEN_RESULT): Promis
   await page.route(/^https:\/\/cdn\.dribbble\.com\//, (route) => route.abort("blockedbyclient"));
   await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, (route) => route.abort("blockedbyclient"));
   await page.goto(HOST);
-  return { frame: page.frameLocator("#app"), cspErrors };
+  return { frame: page.frameLocator("#app"), cspErrors, fontRequests };
 }
 
 const node = (frame: FrameLocator, id: string) => frame.locator(`.react-flow__node[data-id="${id}"]`);
@@ -310,14 +340,52 @@ test.describe("inline canvas in an MCP Apps host", () => {
       isError: true,
       content: [{ type: "text", text: "You have used your 3 free canvases. Upgrade: https://banana.example.com/en/pricing" }],
     });
-    await expect(frame.getByRole("alert")).toContainText("You have used your 3 free canvases.");
+    await expect(frame.getByRole("alert").filter({ hasText: "free canvases" })).toContainText("You have used your 3 free canvases.");
   });
 
-  test("axe finds no serious or critical issues in the inline canvas @a11y", async ({ page }) => {
-    const { frame } = await openInHost(page);
+  for (const theme of ["light", "dark"] as const) {
+    test(`axe finds no issues in the inline canvas with the ${theme} host theme @a11y`, async ({ page }) => {
+      const { frame } = await openInHost(page, OPEN_RESULT, { theme });
+      await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+      // The host theme reaches the document, so portaled tooltips and toasts match it.
+      await expect(frame.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(frame.locator(".bn-inline")).toHaveAttribute("data-theme", theme);
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+      expect(results.violations, JSON.stringify(results.violations.map((v) => ({ id: v.id, impact: v.impact, targets: v.nodes.map((n) => n.target) })), null, 2)).toEqual([]);
+    });
+
+    test(`axe is clean on the conflict choice with the ${theme} host theme @a11y`, async ({ page }) => {
+      const { frame } = await openInHost(page, OPEN_RESULT, { theme });
+      await page.evaluate((state) => {
+        (window as unknown as { __conflict: unknown }).__conflict = { state, updatedAt: "2026-10-15T12:07:00.000Z" };
+      }, STATE);
+      await node(frame, "note1").focus();
+      await node(frame, "note1").press("ArrowRight");
+      await expect(frame.getByRole("alert").filter({ hasText: "changed in chat or on the web" })).toBeVisible({ timeout: 5_000 });
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
+      expect(results.violations, JSON.stringify(results.violations.map((v) => ({ id: v.id, impact: v.impact, targets: v.nodes.map((n) => n.target) })), null, 2)).toEqual([]);
+    });
+  }
+
+  test("UI fonts load from the app origin only, never from a third-party host", async ({ page }) => {
+    const { frame, fontRequests, cspErrors } = await openInHost(page);
     await expect(frame.locator(".react-flow__node")).toHaveCount(3);
-    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
-    const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-    expect(serious, JSON.stringify(serious.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), null, 2)).toEqual([]);
+    const view = page.frames().find((f) => f.url() === SANDBOX)!;
+    // Inter is in use and loaded (not the system fallback).
+    await expect
+      .poll(() => view.evaluate(() => document.fonts.ready.then(() => document.fonts.check('600 16px "Inter Variable"'))))
+      .toBe(true);
+    expect(fontRequests.length).toBeGreaterThan(0);
+    for (const url of fontRequests) expect(url.startsWith(`${APP_URL}/mcp-app/assets/`), url).toBe(true);
+    // Fonts are separate files, never inlined into the HTML.
+    expect(CANVAS_HTML).not.toMatch(/data:font|font\/woff2;base64|application\/font-woff/);
+    expect(cspErrors).toEqual([]);
+  });
+
+  test("a narrow frame switches the view to compact", async ({ page }) => {
+    const { frame } = await openInHost(page, OPEN_RESULT, { width: 600 });
+    await expect(frame.locator(".react-flow__node")).toHaveCount(3);
+    await expect(frame.locator(".bn-inline")).toHaveAttribute("data-compact", "");
+    await expect(frame.getByRole("link", { name: "Open on the web" })).toBeVisible();
   });
 });

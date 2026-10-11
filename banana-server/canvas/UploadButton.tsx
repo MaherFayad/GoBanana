@@ -4,17 +4,24 @@
  * Upload one of your own images (Pro, spec section 12) and put it on the canvas.
  *
  * A real file input with a visible label, so it works with the keyboard (Tab, then
- * Enter or Space) and with screen readers. Free users still see the control; using it
- * shows a plain upgrade note instead of a file picker. Only file bytes are sent:
- * there is no "upload from URL" (hard rule 2).
+ * Enter or Space) and with screen readers; it is the keyboard alternative to dropping a file.
+ * Free users still see the control; using it shows the plan note (a toast with "See plans")
+ * instead of a file picker. Only file bytes are sent: there is no "upload from URL" (hard rule 2).
+ *
+ * Look (docs/design-language.md section 10, "Upload button"): secondary sm button with the
+ * pixel upload glyph; while busy an inline spinner and "Uploading…". Results and failures go
+ * to toasts; a visually hidden status line says which file is uploading.
  */
 import { useReactFlow } from "@xyflow/react";
 import { useId, useRef, useState } from "react";
+import { UploadIcon } from "@/components/studio/icons";
+import { pushToast } from "@/components/studio/Toast";
 import { limitsFor, type Plan } from "@/lib/quota";
 import { checkUploadFile, UPLOAD_ACCEPT, UPLOAD_FIELD, UPLOAD_MESSAGES, type UploadErrorCode } from "@/lib/uploads/rules";
 import { useCanvasActions } from "./context";
 import { newNodeId, referenceSize } from "./factory";
 import type { CanvasFlowNode, UploadFlowNode } from "./types";
+import "./overlays.css";
 
 export interface UploadButtonProps {
   /** The user's effective plan (server side `effectivePlan()`, so BETA_PLAN counts). Unknown lets the server decide. */
@@ -24,19 +31,6 @@ export interface UploadButtonProps {
   /** Upload endpoint (tests and previews can point it elsewhere). */
   endpoint?: string;
 }
-
-/** Decorative upload arrow; the text next to it carries the meaning. */
-function IconUpload() {
-  return (
-    <svg className="bn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-      <path d="M12 16V4" />
-      <path d="m7 9 5-5 5 5" />
-      <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
-    </svg>
-  );
-}
-
-type Message = { kind: "error" | "info"; text: string; upgrade?: boolean } | null;
 
 async function imageSize(file: File): Promise<{ width: number | null; height: number | null }> {
   try {
@@ -59,10 +53,9 @@ export function UploadButton({ plan, pricingHref = "/en/pricing", endpoint = "/a
   const rf = useReactFlow<CanvasFlowNode>();
   const actions = useCanvasActions();
   const inputId = useId();
-  const noteId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Message>(null);
+  const [progress, setProgress] = useState("");
   const allowed = plan == null || limitsFor(plan).uploads;
 
   function center(): { x: number; y: number } {
@@ -72,14 +65,30 @@ export function UploadButton({ plan, pricingHref = "/en/pricing", endpoint = "/a
     return rf.screenToFlowPosition({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
   }
 
+  function planNote() {
+    pushToast({
+      kind: "info",
+      title: "Uploads are part of Pro",
+      body: "Upgrade to add your own images to a canvas.",
+      // A choice to act on: it stays until closed.
+      duration: null,
+      dedupeKey: "upload-plan",
+      action: { label: "See plans", onAction: () => window.location.assign(pricingHref) },
+    });
+  }
+
+  function failed(text: string) {
+    pushToast({ kind: "error", title: "Could not upload the image", body: text });
+  }
+
   async function upload(file: File) {
     const problem = checkUploadFile(file);
     if (problem) {
-      setMessage({ kind: "error", text: UPLOAD_MESSAGES[problem] });
+      failed(UPLOAD_MESSAGES[problem]);
       return;
     }
     setBusy(true);
-    setMessage({ kind: "info", text: `Uploading ${file.name}` });
+    setProgress(`Uploading ${file.name}`);
     try {
       const size = await imageSize(file);
       const form = new FormData();
@@ -87,7 +96,8 @@ export function UploadButton({ plan, pricingHref = "/en/pricing", endpoint = "/a
       const res = await fetch(endpoint, { method: "POST", body: form, credentials: "same-origin" });
       const body = (await res.json().catch(() => ({}))) as { url?: unknown; error?: unknown };
       if (!res.ok || typeof body.url !== "string") {
-        setMessage({ kind: "error", text: errorText(body.error), upgrade: body.error === "plan_required" });
+        if (body.error === "plan_required") planNote();
+        else failed(errorText(body.error));
         return;
       }
       const title = file.name.replace(/\.[a-z0-9]+$/i, "").slice(0, 300) || "Your image";
@@ -112,23 +122,23 @@ export function UploadButton({ plan, pricingHref = "/en/pricing", endpoint = "/a
         },
       };
       rf.addNodes(node);
-      setMessage(null);
-      actions.announce(`Uploaded ${title}. It is on the canvas.`);
+      pushToast({ kind: "success", title: "Image uploaded", body: `${title} is on the canvas.` });
       actions.focusNode(node.id);
     } catch {
-      setMessage({ kind: "error", text: UPLOAD_MESSAGES.storage_unavailable });
+      failed(UPLOAD_MESSAGES.storage_unavailable);
     } finally {
       setBusy(false);
+      setProgress("");
     }
   }
 
   return (
-    <div className="bn-toolbar-group bn-upload" ref={wrapRef}>
+    <div className="bn-upload" ref={wrapRef}>
       {allowed ? (
         <>
           <input
             id={inputId}
-            className="bn-visually-hidden"
+            className="st-visually-hidden"
             type="file"
             accept={UPLOAD_ACCEPT}
             disabled={busy}
@@ -138,40 +148,27 @@ export function UploadButton({ plan, pricingHref = "/en/pricing", endpoint = "/a
               if (file) void upload(file);
             }}
           />
-          <label htmlFor={inputId} className="bn-btn" aria-busy={busy}>
-            <IconUpload />
-            <span>{busy ? "Uploading" : "Upload image"}</span>
+          <label
+            htmlFor={inputId}
+            className="st-btn"
+            data-variant="secondary"
+            data-size="sm"
+            data-loading={busy ? "inline" : undefined}
+            aria-busy={busy || undefined}
+          >
+            {!busy && <UploadIcon size={16} />}
+            <span>{busy ? "Uploading…" : "Upload image"}</span>
           </label>
         </>
       ) : (
-        <button
-          type="button"
-          className="bn-btn"
-          aria-describedby={message ? noteId : undefined}
-          onClick={() => setMessage({ kind: "info", text: UPLOAD_MESSAGES.plan_required, upgrade: true })}
-        >
-          <IconUpload />
+        <button type="button" className="st-btn" data-variant="secondary" data-size="sm" onClick={planNote}>
+          <UploadIcon size={16} />
           <span>Upload image</span>
         </button>
       )}
-      {/* Two live regions that always exist, so each message is announced (status for progress and notes, alert for errors). */}
-      <span id={noteId} className="bn-upload-msg" role="status">
-        {message?.kind === "info" && message.text}
-        {message?.kind === "info" && message.upgrade && (
-          <>
-            {" "}
-            <a href={pricingHref}>See plans</a>
-          </>
-        )}
-      </span>
-      <span className="bn-upload-msg bn-upload-error" role="alert">
-        {message?.kind === "error" && message.text}
-        {message?.kind === "error" && message.upgrade && (
-          <>
-            {" "}
-            <a href={pricingHref}>See plans</a>
-          </>
-        )}
+      {/* Always rendered, so the file name is read while the upload runs. */}
+      <span className="st-visually-hidden" role="status">
+        {progress}
       </span>
     </div>
   );

@@ -1,0 +1,248 @@
+/*
+ * Share dialog, upload button, web conflict banner and the view-only banner
+ * (plan WP-C; docs/design-language.md section 10). Only what styles/studio-components.css
+ * does not already give: the share link row (Studio ShareDialog rows) and a few layout rules.
+ * Tokens only, logical properties only.
+ */
+
+/* ------------------------------------------------------------------ share dialog */
+
+.bn-share {
+  display: inline-flex;
+}
+
+.bn-share-intro {
+  margin-block: 0 var(--st-space-l);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  line-height: var(--st-leading-relaxed);
+}
+
+.bn-share-intro:lang(ar) {
+  font-size: var(--st-text-m);
+}
+
+/* Link row on surface-2, radius 3px (Studio ShareDialog .row). */
+.bn-share-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-m);
+  padding: var(--st-space-m);
+  border-radius: var(--st-radius-sm);
+  background: var(--st-bg-surface-2);
+}
+
+.bn-share-row-main {
+  display: grid;
+  flex: 1 1 200px;
+  gap: var(--st-space-4xs);
+  min-inline-size: 0;
+}
+
+.bn-share-label {
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+}
+
+/* The URL reads as mono text but stays a real read-only field, so it can be selected and
+   copied by hand when the clipboard is blocked. */
+.bn-share-url {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--st-target-min);
+  margin: 0;
+  padding-block: 0;
+  padding-inline: var(--st-space-2xs);
+  overflow: hidden;
+  border: var(--st-border-width) solid transparent;
+  border-radius: var(--st-radius-sm);
+  background: transparent;
+  color: var(--st-text-muted);
+  font-family: var(--st-font-mono);
+  font-size: var(--st-text-s);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  /* URLs read left to right in every language. */
+  direction: ltr;
+  text-align: start;
+}
+
+.bn-share-url:hover {
+  border-color: var(--st-border-control);
+}
+
+.bn-share-url:focus-visible,
+.bn-share-url:focus {
+  border-color: var(--st-border-control);
+  box-shadow: var(--st-focus-ring);
+}
+
+.bn-share-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-4xs);
+}
+
+.bn-share-empty {
+  margin: 0;
+  padding: var(--st-space-xl);
+  border-radius: var(--st-radius-sm);
+  background: var(--st-bg-surface-2);
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
+  text-align: center;
+}
+
+.bn-share-hint {
+  margin-block: var(--st-space-s) 0;
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-s);
+}
+
+.bn-share-empty:lang(ar),
+.bn-share-hint:lang(ar),
+.bn-share-label:lang(ar) {
+  font-size: var(--st-text-m);
+}
+
+.bn-share-dialog .st-alert a {
+  font-weight: var(--st-weight-semibold);
+}
+
+/* ------------------------------------------------------------------ upload */
+
+.bn-upload {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* The file input is visually hidden; its label is the visible button and shows the ring. */
+.bn-upload input:focus-visible + label {
+  box-shadow: var(--st-focus-ring);
+}
+
+.bn-upload input:disabled + label {
+  cursor: progress;
+}
+
+/* ------------------------------------------------------------------ page banners */
+
+/* Web conflict (409) and the view-only notice: a Studio alert in a strip above the canvas. */
+.bn-banner {
+  flex: none;
+  padding-block: var(--st-space-xs);
+  padding-inline: var(--st-space-s);
+  background: var(--st-bg-body);
+}
+
+.bn-banner .st-alert {
+  align-items: center;
+}
+
+.bn-banner-body {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--st-space-xs) var(--st-space-l);
+}
+
+.bn-banner-body > p {
+  margin: 0;
+}
+
+/* /s/:token when the database or takedown list is down (fails closed). */
+.bn-shared-down {
+  box-sizing: border-box;
+  min-block-size: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--st-space-5xl) var(--st-space-2xl);
+  background: var(--st-bg-body);
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+}
+
+.bn-shared-down .st-empty {
+  max-inline-size: 40ch;
+}
+
+.bn-shared-down h1 {
+  margin: 0;
+  color: var(--st-text-bright);
+  font-size: var(--st-text-2xl);
+  font-weight: var(--st-weight-semibold);
+}
+
+/* ------------------------------------------------------------------ /c/:id loading skeleton */
+
+.bn-skel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--st-bg-body);
+}
+
+.bn-skel-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--st-space-s);
+  block-size: var(--st-topbar-h);
+  padding-inline: var(--st-space-s);
+}
+
+.bn-skel-spacer {
+  flex: 1;
+}
+
+.bn-skel-body {
+  display: flex;
+  flex: 1;
+  min-block-size: 0;
+}
+
+.bn-skel-rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  inline-size: var(--st-rail-w);
+  padding-block: var(--st-space-s);
+  padding-inline: var(--st-space-2xs);
+  box-sizing: border-box;
+}
+
+.bn-skel-rail .st-skeleton {
+  --st-skeleton-h: 28px;
+}
+
+.bn-skel-panel {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  inline-size: var(--st-sidebar-left-w);
+  padding: var(--st-space-s);
+  box-sizing: border-box;
+}
+
+.bn-skel-board {
+  flex: 1;
+  min-inline-size: 0;
+  border-start-start-radius: var(--st-canvas-corner);
+  background: var(--st-canvas-bg);
+}
+
+@media (max-width: 760px) {
+  .bn-skel-panel {
+    display: none;
+  }
+}
