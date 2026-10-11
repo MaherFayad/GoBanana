@@ -284,6 +284,12 @@
   box-shadow: 0 0 0 1px var(--st-text-bright);
 }
 
+/* The card's ring is the non-color selected cue (SC 1.4.1), so the button drops the
+   studio toggle's underline bar. */
+.site .lab-details-btn[aria-pressed="true"]::after {
+  content: none;
+}
+
 .site .collage {
   display: grid;
   grid-template-columns: 1fr 1fr;
