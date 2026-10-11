@@ -186,3 +186,28 @@ The owner's live board for "Flight checkout screen for a GCC travel OTA" was abo
 - Adding the domain ("travel", "flight") pulls results back to travel apps and drops the idea almost entirely (3 and 0 titles with the idea). That is the fidelity lane's job already.
 
 **Conclusion:** keep the bridge lane only with the title precision filter. The server sends `"{ingredient} ui design"` (arm `app`: `"{ingredient} app ui"`) and keeps a result only when its title has the ingredient's head word (whole word, any case, singular or plural). Expect the lane to be empty often; its places flow to the other UI lanes. It costs 1 request, inside the 8-request cap, and comes before the hero lane when the budget cuts. Together with the new default `mix: "ui"` (about 20% inspiration, UI lanes first) and agent-side idea triage (`rate_directions`), a board for a screen brief should lead with screens.
+
+## Rounds 11a and 11b: UI-only audit (owner: "100% of results are UI and component images")
+
+Title gate on every result: keep only titles with a UI word (app, ui, ux, dashboard, website, landing, screen, mobile, onboarding, checkout, widget, component, ...), and drop logo/branding/poster/illustration/packaging titles unless they also say app, ui, dashboard or website. Untitled pins are dropped.
+
+**11a: 8 briefs x 8 UI lanes** (fidelity on Dribbble and Pinterest, taste, two component lanes from the brief, hero, bridge, Arabic locale). About 400 results kept; every one reviewed by eye on contact sheets is a UI screen or component. Weak: 3 or 4 phone mockups with near-empty screens. The bridge lane (`{ingredient} ui design`) is almost always empty after the gate.
+
+**11b: wild or non-UI asks forced into UI forms** (kept after gate, Dribbble shots):
+
+| Ask | app ui | ui design | website ui | ui |
+| --- | --- | --- | --- | --- |
+| city pop 1985 | 0 | 3 | 0 | 3 |
+| Uzbek suzani | 0 | 0 | 0 | 0 |
+| brutalist | 7 | 6 | 6 | 9 |
+| coffee shop branding | 9 | 8 | 9 | 9 |
+| luxury perfume packaging | 5 | 5 | 5 | 4 |
+| glassmorphism | 10 | 9 | 8 | 10 |
+| japanese minimalism | 8 | 6 | 6 | 5 |
+| make it cool | 10 | 10 | 10 | 10 |
+| gas station sign | 6 | 7 | 2 | 6 |
+| teletext 1980s | 0 | 0 | 0 | 0 |
+| art nouveau | 2 | 4 | 4 | 4 |
+| vaporwave | 4 | 0 | 2 | 1 |
+
+All 60 sampled kept items were UI. Decision: remove the raw inspiration lane, gate every result, add component lanes from the brief, and force plain queries into UI forms. Wild ideas live in direction notes, not images.
