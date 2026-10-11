@@ -1,0 +1,124 @@
+/*
+ * Share page chrome (/s/:token): a slim site bar above the unchanged shared canvas, in the site
+ * header's structure (brand at the start, one compact primary button at the end). The canvas
+ * page keeps its own fixed full-screen layout; here it fills what is left under the bar.
+ * Tokens only, logical properties only.
+ */
+
+body:has(> .share-shell) {
+  margin: 0;
+  background: var(--st-bg-body);
+}
+
+.share-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--st-bg-body);
+  color: var(--st-text);
+  font-family: var(--st-font-sans);
+}
+
+.share-shell .bn-page {
+  position: relative;
+  inset: auto;
+  flex: 1;
+  min-block-size: 0;
+}
+
+.share-bar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-3xs) var(--st-space-3xl);
+  min-block-size: 48px;
+  padding-block: var(--st-space-3xs);
+  padding-inline: var(--st-space-3xl);
+  border-block-end: var(--st-border-width) solid var(--st-border-muted);
+}
+
+.share-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  min-block-size: 40px;
+  color: var(--st-text-bright);
+  font-size: 1.125rem;
+  font-weight: var(--st-weight-bold);
+  text-decoration: none;
+  unicode-bidi: isolate;
+}
+
+.share-brand::before {
+  content: "";
+  flex: none;
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 3px;
+  background: var(--st-brand);
+}
+
+.share-brand:focus-visible {
+  outline: 2px solid transparent;
+  border-radius: var(--st-radius);
+  box-shadow: var(--st-focus-ring);
+}
+
+.share-made {
+  flex: 1;
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: 0.9375rem;
+}
+
+.share-bar .st-btn[data-size="sm"] {
+  min-block-size: 32px;
+  font-size: 0.875rem;
+}
+
+/* The database or takedown list is down: an inset panel, like the 404. */
+.share-down {
+  display: flex;
+  flex: 1;
+  padding: var(--st-space-s);
+}
+
+.share-down-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--st-space-s);
+  padding: var(--st-space-6xl);
+  border: var(--st-border-width) solid var(--st-border-muted);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+  text-align: center;
+}
+
+.share-down-panel h1 {
+  margin: 0;
+  color: var(--st-text-bright);
+  font-size: var(--st-text-5xl);
+  font-weight: var(--st-weight-semibold);
+}
+
+.share-down-panel p {
+  margin: 0;
+  max-inline-size: 40ch;
+  color: var(--st-text-muted);
+}
+
+@media (max-width: 40rem) {
+  .share-made {
+    display: none;
+  }
+
+  .share-bar {
+    justify-content: space-between;
+    padding-inline: var(--st-space-xl);
+  }
+}

@@ -25,7 +25,7 @@ export default async function TakedownPage({ params, searchParams }: Props) {
   const status = STATUSES.find((s) => s === raw) ?? "idle";
 
   return (
-    <>
+    <div className="wrap page">
       <h1>{t.title}</h1>
       <p className="lead">{fmt(t.lead)}</p>
 
@@ -42,6 +42,6 @@ export default async function TakedownPage({ params, searchParams }: Props) {
         <h2 id="form-title">{t.formTitle}</h2>
         <TakedownForm t={t} locale={locale} initialStatus={status} />
       </section>
-    </>
+    </div>
   );
 }

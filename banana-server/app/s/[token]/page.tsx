@@ -11,17 +11,26 @@
  *   checked on load (hard rule 5), failing closed.
  * - The page says "View only" twice: an info alert above the board and the top bar label
  *   (canvas/SharedCanvas.tsx).
+ * - Site chrome (share.css): a slim bar above the canvas with the brand and "Add to Claude",
+ *   in the same structure as the site header. The canvas itself is unchanged.
+ * - Test-only: under the E2E sign-in bypass (never in a production build) the demo token
+ *   renders lib/site/share-demo.ts, so the page can be screenshot without a database.
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SharedCanvas } from "@/canvas/SharedCanvas";
-import { loadSharedCanvas } from "@/canvas/server-load";
+import { loadSharedCanvas, type SharedPageDeps } from "@/canvas/server-load";
 import { APP_NAME } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { getShareRepo } from "@/lib/db/shares";
 import { memoTakedowns } from "@/lib/db/takedowns";
 import { isValidShareToken, noindexMetadata } from "@/lib/share";
+import { getDict } from "@/lib/site/dict";
+import { fmt, href } from "@/lib/site/i18n";
+import { compileTakedowns } from "@/lib/takedown";
+import { e2eAuthBypass } from "@/lib/web-auth";
 import "@/canvas/overlays.css";
+import "./share.css";
 
 export const dynamic = "force-dynamic";
 
@@ -33,29 +42,63 @@ export const metadata: Metadata = {
 
 type Props = { params: Promise<{ token: string }> };
 
+/** The share page is English, like the shared canvas UI. */
+const t = getDict("en");
+
+function ShareBar() {
+  return (
+    // A nav landmark, not a banner: the canvas below already has its own top bar header.
+    <nav className="share-bar" aria-label={fmt(t.share.homeLabel)}>
+      <a className="share-brand" href={href("en")} dir="ltr">
+        {APP_NAME}
+      </a>
+      <p className="share-made">{fmt(t.share.madeWith)}</p>
+      <a className="st-btn" data-variant="primary" data-size="sm" href={`${href("en")}#install`}>
+        {t.share.cta}
+      </a>
+    </nav>
+  );
+}
+
+async function demoDeps(token: string): Promise<SharedPageDeps | null> {
+  if (!e2eAuthBypass()) return null;
+  const demo = await import("@/lib/site/share-demo");
+  if (token !== demo.DEMO_SHARE_TOKEN) return null;
+  return { shares: () => ({ getShared: async () => demo.DEMO_SHARE }), loadMatcher: async () => compileTakedowns([]) };
+}
+
 export default async function SharedCanvasPage({ params }: Props) {
   const { token } = await params;
   if (!isValidShareToken(token)) notFound();
 
   let shared: Awaited<ReturnType<typeof loadSharedCanvas>>;
   try {
-    shared = await loadSharedCanvas(token, {
+    const deps = (await demoDeps(token)) ?? {
       shares: getShareRepo,
       loadMatcher: () => memoTakedowns(getRepos().takedowns)(),
-    });
+    };
+    shared = await loadSharedCanvas(token, deps);
   } catch {
     // Database or takedown list unavailable: show nothing (fail closed), never the token.
     console.error("[share] shared canvas could not load");
     return (
-      <main id="main" className="bn-shared-down">
-        <div className="st-empty" data-variant="centered">
-          <h1>Shared canvas</h1>
-          <p className="st-empty-body">This canvas cannot load right now. Try again in a minute.</p>
-        </div>
-      </main>
+      <div className="share-shell">
+        <ShareBar />
+        <main id="main" className="share-down">
+          <div className="share-down-panel">
+            <h1>{t.share.downTitle}</h1>
+            <p>{t.share.downBody}</p>
+          </div>
+        </main>
+      </div>
     );
   }
   if (!shared) notFound();
 
-  return <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state} />;
+  return (
+    <div className="share-shell">
+      <ShareBar />
+      <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state} />
+    </div>
+  );
 }

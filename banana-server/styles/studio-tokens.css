@@ -200,6 +200,10 @@
   --st-duration-spin: 0.8s;
   /* Grace period before peek chrome rolls away. */
   --st-delay-peek-hide: 600ms;
+  /* Site scroll reveals (app/(site)/_components/Reveal.tsx): a section fades and rises in once,
+     and each item after the first waits one stagger step more. */
+  --st-duration-reveal: 640ms;
+  --st-delay-reveal-step: 80ms;
   --st-ease: ease;
   --st-ease-out: ease-out;
   --st-ease-in: ease-in;
@@ -209,6 +213,8 @@
   --st-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   /* Menu exit. */
   --st-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* Scroll reveals and the hero headline: a long ease out that settles softly. */
+  --st-ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Sticky notes: a picture of paper, the same in both themes (Studio --note-*) */
   --st-note-yellow: #fff8b8;
@@ -785,6 +791,8 @@
     --st-duration-shimmer: 0ms;
     --st-duration-spin: 0ms;
     --st-delay-peek-hide: 0ms;
+    --st-duration-reveal: 0ms;
+    --st-delay-reveal-step: 0ms;
   }
 }
 

@@ -1,6 +1,6 @@
 /** Web sign-in: session to users row, config, safe return paths, the E2E bypass, account data. */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAccountUsage, getSiteUser } from "@/lib/site/session";
+import { getAccountUsage, getSiteUser, isSignedIn } from "@/lib/site/session";
 import {
   e2eAuthBypass,
   messagePage,
@@ -207,5 +207,14 @@ describe("account data (lib/site/session.ts)", () => {
       },
     });
     expect(usage).toBeNull();
+  });
+});
+
+describe("isSignedIn (site header)", () => {
+  it("is true for a user, false when signed out, and false when the session check throws", async () => {
+    const user = { userId: "u1", workosId: "user_1", email: null, plan: "free" as const };
+    expect(await isSignedIn({ getWebUser: async () => user })).toBe(true);
+    expect(await isSignedIn({ getWebUser: async () => null })).toBe(false);
+    expect(await isSignedIn({ getWebUser: async () => Promise.reject(new Error("db down")) })).toBe(false);
   });
 });

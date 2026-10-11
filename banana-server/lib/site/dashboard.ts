@@ -113,3 +113,56 @@ export function demoCards(now = new Date("2026-10-11T09:00:00Z")): DashboardCard
     { id: "e2e-empty", title: "Untitled canvas", brief: null, updatedAt: at(240), referenceCount: 0, directionCount: 0, shared: false, collage: [] },
   ];
 }
+
+/** "pinterest.com" from "https://www.pinterest.com/pin/1/"; null for anything that is not http(s). */
+export function siteOf(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    return u.hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+/** The distinct source sites of a card's collage, in order. */
+export function collageSites(card: Pick<DashboardCard, "collage">): string[] {
+  const out: string[] = [];
+  for (const img of card.collage) {
+    const site = siteOf(img.sourceUrl);
+    if (site && !out.includes(site)) out.push(site);
+  }
+  return out;
+}
+
+const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 3600],
+  ["month", 30 * 24 * 3600],
+  ["week", 7 * 24 * 3600],
+  ["day", 24 * 3600],
+  ["hour", 3600],
+  ["minute", 60],
+];
+
+/**
+ * "2 hours ago", "yesterday", "قبل ساعتين": the largest whole unit, Western digits in both
+ * languages. Under a minute reads as "now". Computed on the server, so the client never renders
+ * a different string than the HTML it hydrates.
+ */
+export function relativeTime(iso: string, now: Date, locale: "en" | "ar"): string {
+  const then = new Date(iso).getTime();
+  const fmt = new Intl.RelativeTimeFormat(locale === "ar" ? "ar-u-nu-latn" : "en", { numeric: "auto" });
+  if (!Number.isFinite(then)) return "";
+  const seconds = Math.round((then - now.getTime()) / 1000);
+  for (const [unit, size] of UNITS) {
+    if (Math.abs(seconds) >= size) return fmt.format(Math.trunc(seconds / size), unit);
+  }
+  return fmt.format(0, "second");
+}
+
+/** Long date for the details panel ("11 October 2026"), UTC so server and client agree. */
+export function longDate(iso: string, locale: "en" | "ar"): string {
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "";
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-nu-latn-ca-gregory" : "en-GB", { dateStyle: "long", timeZone: "UTC" }).format(d);
+}

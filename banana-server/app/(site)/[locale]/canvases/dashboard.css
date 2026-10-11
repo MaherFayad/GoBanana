@@ -1,0 +1,583 @@
+/*
+ * Canvases dashboard (Dashboard.tsx): pryzm.design's "Lab" structure in the Studio skin. The
+ * sidebar sits on --st-bg-body like Studio's rail; the panels are rounded --st-bg-surface tiles
+ * inset in it. Tokens only, logical properties only.
+ */
+
+.site .lab {
+  --lab-side: 15rem;
+
+  display: grid;
+  grid-template-columns: var(--lab-side) minmax(0, 1fr) minmax(16rem, 21rem);
+  gap: var(--st-space-s);
+  min-block-size: 100svh;
+  padding: var(--st-space-s);
+  background: var(--st-bg-body);
+}
+
+.site .lab[data-collapsed] {
+  --lab-side: 3.5rem;
+}
+
+/* ------------------------------------------------------------------ sidebar */
+
+.site .lab-side {
+  position: sticky;
+  inset-block-start: var(--st-space-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-6xl);
+  block-size: calc(100svh - 2 * var(--st-space-s));
+  min-inline-size: 0;
+  padding-block: var(--st-space-xl);
+  padding-inline: var(--st-space-xs);
+}
+
+.site .lab-side ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .lab-side li + li {
+  margin-block-start: 0;
+}
+
+.site .lab-side form {
+  margin: 0;
+}
+
+.site .lab-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  min-block-size: var(--st-control-h-lg);
+  padding-inline: var(--st-space-l);
+  border-radius: var(--st-radius-panel);
+  color: var(--st-text-bright);
+  font-size: 1.25rem;
+  font-weight: var(--st-weight-bold);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.site .lab-brand-mark {
+  flex: none;
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 3px;
+  background: var(--st-brand);
+}
+
+.site .lab-group {
+  margin: 0 0 var(--st-space-xs);
+  padding-inline: var(--st-space-l);
+  color: var(--st-text-subtle);
+  font-size: 0.8125rem;
+  font-weight: var(--st-weight-semibold);
+}
+
+.site .lab-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-l);
+  inline-size: 100%;
+  min-block-size: 40px;
+  margin: 0;
+  padding-inline: var(--st-space-l);
+  border: 0;
+  border-radius: var(--st-radius-panel);
+  background: transparent;
+  color: var(--st-text-muted);
+  font: inherit;
+  font-weight: var(--st-weight-medium);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--st-duration-quick) var(--st-ease),
+    color var(--st-duration-quick) var(--st-ease);
+}
+
+.site .lab-nav-item:hover {
+  background: var(--st-overlay-10);
+  color: var(--st-text);
+}
+
+/* Current view: a filled row plus a 2px bar on the start edge (not color alone). */
+.site .lab-nav-item[aria-current="page"] {
+  background: var(--st-overlay-10);
+  color: var(--st-text-bright);
+  font-weight: var(--st-weight-semibold);
+}
+
+.site .lab-nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 10px;
+  inline-size: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.site .lab-nav-item .st-icon {
+  flex: none;
+}
+
+.site .lab-nav-label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .lab-nav-count {
+  color: var(--st-text-subtle);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.site .lab-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  margin-block-start: auto;
+}
+
+.site .lab-email {
+  margin: 0;
+  padding-inline: var(--st-space-l);
+  overflow: hidden;
+  color: var(--st-text-subtle);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Collapsed: icons only. Labels stay in the accessibility tree and show as tooltips. */
+.site .lab[data-collapsed] .lab-nav-label,
+.site .lab[data-collapsed] .lab-nav-count,
+.site .lab[data-collapsed] .lab-brand-name,
+.site .lab[data-collapsed] .lab-group {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.site .lab[data-collapsed] .lab-nav-item,
+.site .lab[data-collapsed] .lab-brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* ------------------------------------------------------------------ panels */
+
+.site .lab-panel {
+  min-inline-size: 0;
+  border: var(--st-border-width) solid var(--st-border-muted);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+}
+
+.site .lab-main {
+  display: flex;
+  flex-direction: column;
+  padding: var(--st-space-5xl);
+}
+
+.site .lab-main:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.site .lab-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--st-space-m);
+  margin-block-end: var(--st-space-5xl);
+}
+
+.site .lab-head h1 {
+  margin: 0;
+  font-size: var(--st-text-5xl);
+}
+
+.site .lab-count {
+  margin: var(--st-space-3xs) 0 0;
+  color: var(--st-text-muted);
+}
+
+.site .lab-new {
+  margin-block-end: var(--st-space-5xl);
+  max-inline-size: none;
+}
+
+.site .lab-new[hidden] {
+  display: none;
+}
+
+.site .lab-new p {
+  margin: 0;
+  max-inline-size: none;
+}
+
+.site .lab-empty {
+  gap: var(--st-space-s);
+  font-size: 1rem;
+}
+
+.site .lab-empty .st-empty-title {
+  margin: 0;
+  font-size: var(--st-text-3xl);
+}
+
+.site .lab-empty .st-empty-body {
+  max-inline-size: 36rem;
+}
+
+/* ------------------------------------------------------------------ cards */
+
+.site .lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--st-space-3xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .lab-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  min-inline-size: 0;
+  margin: 0;
+  padding: var(--st-space-s);
+  border: var(--st-border-width) solid var(--st-border-muted);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface-2);
+  transition:
+    background-color var(--st-duration-base) var(--st-ease),
+    border-color var(--st-duration-base) var(--st-ease);
+}
+
+.site .lab-card:hover {
+  background: var(--st-bg-surface-3);
+}
+
+/* The card in the details panel: a 2px ring, plus aria-pressed on its button. */
+.site .lab-card[data-selected] {
+  border-color: var(--st-text-bright);
+  box-shadow: 0 0 0 1px var(--st-text-bright);
+}
+
+.site .collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--st-radius-panel);
+  background: var(--st-bg-surface);
+}
+
+.site .collage img,
+.site .collage-empty {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  object-fit: cover;
+}
+
+.site .collage-empty {
+  background: var(--st-canvas-placeholder-bg);
+  opacity: 0.6;
+}
+
+.site .lab-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+  padding: var(--st-space-xs) var(--st-space-xs) 0;
+}
+
+.site .lab-card-body > * {
+  margin: 0;
+  max-inline-size: none;
+}
+
+.site .lab-card-title {
+  font-size: var(--st-text-2xl);
+  line-height: var(--st-leading-snug);
+}
+
+.site .lab-card-title a {
+  color: var(--st-text-bright);
+  text-decoration: none;
+}
+
+.site .lab-card-title a:hover {
+  text-decoration: underline;
+}
+
+.site .lab-card-brief {
+  overflow: hidden;
+  color: var(--st-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .lab-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  color: var(--st-text-muted);
+  font-size: 0.875rem;
+}
+
+.site .lab-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-3xl);
+  margin: 0;
+}
+
+.site .lab-stats div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--st-space-xs);
+}
+
+.site .lab-stats dt {
+  color: var(--st-text-muted);
+  font-size: 0.875rem;
+}
+
+.site .lab-stats dd {
+  margin: 0;
+  color: var(--st-text-bright);
+  font-weight: var(--st-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.site .lab-card-sites {
+  overflow: hidden;
+  color: var(--st-text-muted);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .lab-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--st-space-s);
+  margin-block-start: auto;
+  padding-block: var(--st-space-xs);
+}
+
+.site .lab-details-btn {
+  margin-inline-start: auto;
+}
+
+/* ------------------------------------------------------------------ details panel */
+
+.site .lab-details {
+  position: sticky;
+  inset-block-start: var(--st-space-s);
+  align-self: start;
+  max-block-size: calc(100svh - 2 * var(--st-space-s));
+  overflow: auto;
+}
+
+.site .lab-details-head {
+  margin: 0;
+  padding: var(--st-space-xl) var(--st-space-3xl);
+  border-block-end: var(--st-border-width) solid var(--st-border-muted);
+  font-size: var(--st-text-2xl);
+}
+
+.site .lab-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xl);
+  padding: var(--st-space-3xl);
+}
+
+.site .lab-details-body > * {
+  margin: 0;
+  max-inline-size: none;
+}
+
+.site .lab-details-title {
+  font-size: var(--st-text-3xl);
+}
+
+.site .lab-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--st-space-3xs);
+  margin: 0;
+}
+
+.site .lab-facts dt {
+  margin-block-start: var(--st-space-s);
+  color: var(--st-text-subtle);
+  font-size: 0.875rem;
+  font-weight: var(--st-weight-semibold);
+}
+
+.site .lab-facts dd {
+  margin: 0;
+  color: var(--st-text);
+}
+
+.site .lab-muted {
+  color: var(--st-text-muted);
+}
+
+.site .lab-sources-title {
+  color: var(--st-text-subtle);
+  font-size: 0.875rem;
+}
+
+.site .lab-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .lab-sources li + li {
+  margin-block-start: 0;
+}
+
+.site .lab-sources a {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  min-block-size: 32px;
+  overflow: hidden;
+  font-size: 0.9375rem;
+}
+
+.site .lab-sources a span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .lab-sources .st-icon {
+  flex: none;
+}
+
+.site .lab-open {
+  inline-size: 100%;
+}
+
+.site .lab-details-none {
+  margin: 0;
+  padding: var(--st-space-3xl);
+  color: var(--st-text-muted);
+}
+
+/* ------------------------------------------------------------------ narrow screens */
+
+@media (max-width: 72rem) {
+  .site .lab {
+    grid-template-columns: var(--lab-side) minmax(0, 1fr);
+  }
+
+  .site .lab-side {
+    grid-row: 1 / span 2;
+  }
+
+  .site .lab-details {
+    grid-column: 2;
+    position: static;
+    max-block-size: none;
+  }
+}
+
+/* Phones: the sidebar becomes a bar on top; collapse has no meaning there. */
+@media (max-width: 48rem) {
+  .site .lab,
+  .site .lab[data-collapsed] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site .lab-details {
+    grid-column: auto;
+  }
+
+  .site .lab-side {
+    grid-row: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--st-space-s);
+    block-size: auto;
+    padding: var(--st-space-xs);
+  }
+
+  .site .lab-side ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .site .lab-nav {
+    flex-basis: 100%;
+  }
+
+  .site .lab-group,
+  .site .lab-email,
+  .site .lab-collapse-row {
+    display: none;
+  }
+
+  .site .lab-bottom {
+    flex-basis: 100%;
+    margin-block-start: 0;
+  }
+
+  .site .lab-nav-item {
+    inline-size: auto;
+  }
+
+  /* On a phone the sidebar never collapses: undo the icon-only rules. */
+  .site .lab[data-collapsed] .lab-nav-label,
+  .site .lab[data-collapsed] .lab-nav-count,
+  .site .lab[data-collapsed] .lab-brand-name {
+    position: static;
+    inline-size: auto;
+    block-size: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .site .lab-main {
+    padding: var(--st-space-2xl);
+  }
+}

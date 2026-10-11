@@ -6,7 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { InfoIcon } from "@/components/studio/icons";
+import { ArrowEndIcon, InfoIcon } from "@/components/studio/icons";
 import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
@@ -32,7 +32,7 @@ export default async function AccountPage({ params }: Props) {
   const user = await getSiteUser();
   if (!user) {
     return (
-      <>
+      <div className="wrap page">
         <h1>{t.title}</h1>
         <p>{t.signedOut}</p>
         <div className="actions">
@@ -45,7 +45,7 @@ export default async function AccountPage({ params }: Props) {
             {dict.common.signIn}
           </a>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -57,7 +57,7 @@ export default async function AccountPage({ params }: Props) {
     Number.isFinite(limit) ? fmt(t.ofLimit, { used, limit }) : fmt(t.unlimited, { used });
 
   return (
-    <>
+    <div className="wrap page">
       <div className="account-head">
         <div>
           <h1>{t.title}</h1>
@@ -73,6 +73,17 @@ export default async function AccountPage({ params }: Props) {
           </button>
         </form>
       </div>
+
+      <section className="section" aria-labelledby="canvases-title">
+        <h2 id="canvases-title">{t.canvasesTitle}</h2>
+        <p>{fmt(t.canvasesBody)}</p>
+        <div className="actions flush-start">
+          <Link className="st-btn" data-variant="primary" data-size="lg" href={href(locale, "canvases")}>
+            {t.canvasesLink}
+            <ArrowEndIcon size={16} />
+          </Link>
+        </div>
+      </section>
 
       <section className="section" aria-labelledby="plan-title">
         <h2 id="plan-title">{t.planTitle}</h2>
@@ -137,6 +148,6 @@ export default async function AccountPage({ params }: Props) {
           }}
         />
       </section>
-    </>
+    </div>
   );
 }

@@ -13,8 +13,15 @@
  *   link -> link                  hand -> hand              help -> circle-question
  *   search -> search                cursor -> cursor-minimal  arrange -> grid-3x3
  *   Toast kinds: info -> circle-info, error -> square-alert, success -> check, warning -> warning-diamond.
+ *   Site and dashboard: arrow -> arrow-right   docs -> book-open    feedback -> mail
+ *   sign-out -> logout   account -> user   collapse -> arrow-bar-left   expand -> arrow-bar-right
+ *   sparkle -> sparkle   canvases -> images   clock -> clock
  */
+import { ArrowBarLeft } from "pixelarticons/react/ArrowBarLeft.js";
+import { ArrowBarRight } from "pixelarticons/react/ArrowBarRight.js";
+import { ArrowRight } from "pixelarticons/react/ArrowRight.js";
 import { AspectRatio } from "pixelarticons/react/AspectRatio.js";
+import { BookOpen } from "pixelarticons/react/BookOpen.js";
 import { Check } from "pixelarticons/react/Check.js";
 import { ChevronDown } from "pixelarticons/react/ChevronDown.js";
 import { ChevronLeft } from "pixelarticons/react/ChevronLeft.js";
@@ -22,6 +29,7 @@ import { ChevronRight } from "pixelarticons/react/ChevronRight.js";
 import { ChevronUp } from "pixelarticons/react/ChevronUp.js";
 import { CircleInfo } from "pixelarticons/react/CircleInfo.js";
 import { CircleQuestion } from "pixelarticons/react/CircleQuestion.js";
+import { Clock } from "pixelarticons/react/Clock.js";
 import { Close } from "pixelarticons/react/Close.js";
 import { Compass } from "pixelarticons/react/Compass.js";
 import { CursorMinimal } from "pixelarticons/react/CursorMinimal.js";
@@ -29,16 +37,21 @@ import { ExternalLink } from "pixelarticons/react/ExternalLink.js";
 import { Frame } from "pixelarticons/react/Frame.js";
 import { Grid3x3 } from "pixelarticons/react/Grid3x3.js";
 import { Hand } from "pixelarticons/react/Hand.js";
+import { Images } from "pixelarticons/react/Images.js";
 import { Layout } from "pixelarticons/react/Layout.js";
 import { Link } from "pixelarticons/react/Link.js";
+import { Logout } from "pixelarticons/react/Logout.js";
+import { Mail } from "pixelarticons/react/Mail.js";
 import { Minus } from "pixelarticons/react/Minus.js";
 import { MoreHorizontal } from "pixelarticons/react/MoreHorizontal.js";
 import { Note } from "pixelarticons/react/Note.js";
 import { Plus } from "pixelarticons/react/Plus.js";
 import { Search } from "pixelarticons/react/Search.js";
 import { Share } from "pixelarticons/react/Share.js";
+import { Sparkle } from "pixelarticons/react/Sparkle.js";
 import { SquareAlert } from "pixelarticons/react/SquareAlert.js";
 import { Upload } from "pixelarticons/react/Upload.js";
+import { User } from "pixelarticons/react/User.js";
 import { WarningDiamond } from "pixelarticons/react/WarningDiamond.js";
 import { createIcon } from "./Icon";
 import { ImageOffGlyph } from "./glyphs";
@@ -77,3 +90,16 @@ export const ErrorIcon = createIcon("error", SquareAlert);
 export const CursorIcon = createIcon("cursor", CursorMinimal);
 /** Arrange menu. */
 export const ArrangeIcon = createIcon("arrange", Grid3x3);
+
+/** Points toward inline end: "Add to Claude" and other forward links. */
+export const ArrowEndIcon = createIcon("arrow-end", ArrowRight, { mirror: true });
+export const DocsIcon = createIcon("docs", BookOpen);
+export const FeedbackIcon = createIcon("feedback", Mail);
+export const SignOutIcon = createIcon("sign-out", Logout, { mirror: true });
+export const AccountIcon = createIcon("account", User);
+/** Sidebar collapse and expand: the bar sits on the inline-start side. */
+export const CollapseIcon = createIcon("collapse", ArrowBarLeft, { mirror: true });
+export const ExpandIcon = createIcon("expand", ArrowBarRight, { mirror: true });
+export const SparkleIcon = createIcon("sparkle", Sparkle);
+export const CanvasesIcon = createIcon("canvases", Images);
+export const ClockIcon = createIcon("clock", Clock);

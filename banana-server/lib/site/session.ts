@@ -65,3 +65,12 @@ export async function getAccountUsage(
     return null;
   }
 }
+
+/** Signed in or not, for the site header. Never throws: any failure reads as signed out. */
+export async function isSignedIn(deps: { getWebUser?: () => Promise<WebUser | null> } = {}): Promise<boolean> {
+  try {
+    return (await (deps.getWebUser ?? getWebUser)()) !== null;
+  } catch {
+    return false;
+  }
+}

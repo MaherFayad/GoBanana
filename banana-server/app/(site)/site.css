@@ -98,21 +98,27 @@ body:has(> .site) {
 
 /* ------------------------------------------------------------------ header, nav, footer */
 
-/* Not sticky, so it never covers a focused element (SC 2.4.11). */
+/* Header after pryzm.design's structure: logo at the start, nav in the middle, two compact
+   buttons at the end. Not sticky, so it never covers a focused element (SC 2.4.11). */
 .site .site-header {
+  position: relative;
+  z-index: var(--st-z-topbar);
   background: var(--st-bg-body);
-  border-block-end: var(--st-border-width) solid var(--st-border);
+  border-block-end: var(--st-border-width) solid var(--st-border-muted);
 }
 
 .site .site-header .wrap {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--st-space-s) var(--st-space-3xl);
+  gap: var(--st-space-3xs) var(--st-space-3xl);
+  max-inline-size: none;
   padding-block: var(--st-space-s);
+  padding-inline: var(--st-space-6xl);
 }
 
-.site .brand {
+.site .brand,
+.site .footer-logo {
   display: inline-flex;
   align-items: center;
   gap: var(--st-space-s);
@@ -120,6 +126,7 @@ body:has(> .site) {
   color: var(--st-text-bright);
   font-size: 1.25rem;
   font-weight: var(--st-weight-bold);
+  letter-spacing: -0.01em;
   line-height: 1;
   text-decoration: none;
   /* The product name is Latin in both languages. */
@@ -127,7 +134,8 @@ body:has(> .site) {
 }
 
 /* Brand mark: the only place the brand yellow appears outside the primary button. */
-.site .brand::before {
+.site .brand::before,
+.site .footer-logo::before {
   content: "";
   flex: none;
   inline-size: 7px;
@@ -154,6 +162,7 @@ body:has(> .site) {
   position: relative;
   display: inline-flex;
   align-items: center;
+  gap: var(--st-space-s);
   min-block-size: var(--st-control-h-lg);
   padding-inline: var(--st-space-l);
   border-radius: var(--st-radius-panel);
@@ -185,13 +194,35 @@ body:has(> .site) {
   background: currentColor;
 }
 
-.site .lang-switch {
-  margin: 0;
+/* "Beta" after a nav link: a small outlined pill, part of the link's name. */
+.site .nav-badge {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 18px;
+  padding-inline: var(--st-space-xs);
+  border: var(--st-border-width) solid var(--st-border-control);
+  border-radius: var(--st-radius-pill);
+  color: var(--st-text-muted);
+  font-size: 0.6875rem;
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.site .header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-s);
+}
+
+.site .site-header .st-btn[data-size="sm"] {
+  min-block-size: 32px;
 }
 
 .site main {
   flex: 1;
-  padding-block: var(--st-space-9xl) var(--st-space-11xl);
 }
 
 .site main:focus {
@@ -199,38 +230,154 @@ body:has(> .site) {
   box-shadow: none;
 }
 
+/* Every page but the landing page sits in a reading wrap with room above and below. */
+.site .page {
+  padding-block: var(--st-space-9xl) var(--st-space-11xl);
+}
+
+/* Footer: brand blurb, link columns, then a fine print row. */
 .site .site-footer {
   background: var(--st-bg-body);
-  border-block-start: var(--st-border-width) solid var(--st-border);
+  border-block-start: var(--st-border-width) solid var(--st-border-muted);
   color: var(--st-text-muted);
 }
 
 .site .site-footer .wrap {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--st-space-s) var(--st-space-3xl);
-  padding-block: var(--st-space-3xl);
+  flex-direction: column;
+  gap: var(--st-space-9xl);
+  padding-block: var(--st-space-10xl) var(--st-space-6xl);
 }
 
-.site .site-footer p {
+.site .footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: var(--st-space-9xl);
+  align-items: start;
+}
+
+.site .footer-brand p {
+  margin-block: var(--st-space-s) 0;
+}
+
+.site .footer-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--st-space-6xl);
+}
+
+.site .footer-title {
+  margin: 0 0 var(--st-space-s);
+  color: var(--st-text-subtle);
+  font-size: var(--site-label);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  text-transform: uppercase;
+}
+
+.site .footer-col ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .footer-col li + li {
+  margin-block-start: 0;
+}
+
+.site .footer-col a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 36px;
+  color: var(--st-text-muted);
+  text-decoration: none;
+}
+
+.site .footer-col a:hover {
+  color: var(--st-text-bright);
+  text-decoration: underline;
+}
+
+.site .footer-fine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--st-space-s) var(--st-space-3xl);
+  padding-block-start: var(--st-space-3xl);
+  border-block-start: var(--st-border-width) solid var(--st-border-muted);
+  color: var(--st-text-subtle);
+}
+
+.site .footer-fine p {
   margin: 0;
 }
 
-.site .site-footer .nav-list {
-  gap: var(--st-space-3xs) var(--st-space-3xl);
+/* ------------------------------------------------------------------ shared blocks */
+
+/* Uppercase label above a section heading. */
+.site .eyebrow {
+  margin-block: 0 var(--st-space-m);
+  color: var(--st-text-subtle);
+  font-size: var(--site-label);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-eyebrow);
+  text-transform: uppercase;
 }
 
-.site .site-footer .nav-list a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: var(--st-control-h-lg);
-  color: var(--st-text-muted);
+/* A rounded panel on the page, like a Studio tile on its parent. */
+.site .panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xl);
+  min-inline-size: 0;
+  padding: var(--st-space-6xl);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
 }
 
-.site .site-footer .nav-list a:hover {
-  color: var(--st-text);
+.site .panel > * {
+  margin: 0;
+}
+
+.site .panel p,
+.site .panel li {
+  max-inline-size: none;
+}
+
+/* ------------------------------------------------------------------ scroll reveals */
+
+/* Hidden start state only once Reveal.tsx has put .reveal-on on <html> (after hydration), and
+   never under reduced motion: without JS everything is simply visible. */
+html.reveal-on .site [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  translate: 0 24px;
+}
+
+html.reveal-on .site [data-reveal]:not([data-revealed]) :is(h1, h2),
+html.reveal-on .site [data-reveal="blur"]:not([data-revealed]) {
+  filter: blur(10px);
+}
+
+.site [data-reveal][data-revealed] {
+  transition:
+    opacity var(--st-duration-reveal) var(--st-ease-reveal),
+    translate var(--st-duration-reveal) var(--st-ease-reveal),
+    filter var(--st-duration-reveal) var(--st-ease-reveal);
+  transition-delay: calc(var(--reveal-i, 0) * var(--st-delay-reveal-step));
+}
+
+.site [data-reveal][data-revealed] :is(h1, h2) {
+  transition: filter var(--st-duration-reveal) var(--st-ease-reveal);
+  transition-delay: calc(var(--reveal-i, 0) * var(--st-delay-reveal-step));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on .site [data-reveal]:not([data-revealed]),
+  html.reveal-on .site [data-reveal]:not([data-revealed]) :is(h1, h2) {
+    opacity: 1;
+    translate: none;
+    filter: none;
+  }
 }
 
 /* ------------------------------------------------------------------ type */
@@ -346,20 +493,6 @@ body:has(> .site) {
   margin-block-end: var(--st-space-3xl);
 }
 
-/* ------------------------------------------------------------------ hero */
-
-.site .hero {
-  padding-block-end: var(--st-space-6xl);
-}
-
-.site .hero .lead {
-  margin-block-end: 0;
-}
-
-.site .hero h1 {
-  max-inline-size: 24ch;
-}
-
 /* ------------------------------------------------------------------ tiles and steps */
 
 .site .st-tile-grid {
@@ -417,53 +550,6 @@ body:has(> .site) {
 .site .tile-foot {
   margin-block-start: auto;
   padding-block-start: var(--st-space-s);
-}
-
-/* Founding block on the landing page: one tile on its parent. */
-.site .feature-tile {
-  grid-template-columns: minmax(0, 1fr);
-  max-inline-size: 48rem;
-  margin-block-start: var(--st-space-10xl);
-}
-
-.site .feature-tile .st-tile {
-  gap: var(--st-space-xl);
-}
-
-.site .feature-tile h2 {
-  margin: 0;
-}
-
-/* ------------------------------------------------------------------ video slot */
-
-.site .video-slot {
-  margin: 0;
-  max-inline-size: 48rem;
-}
-
-.site .video-frame {
-  display: grid;
-  place-items: center;
-  inline-size: 100%;
-  aspect-ratio: 16 / 9;
-  padding: var(--st-space-xl);
-  border-radius: var(--st-radius-card);
-  background: var(--st-canvas-placeholder-bg);
-}
-
-.site .video-frame p {
-  margin: 0;
-  padding-block: var(--st-space-xs);
-  padding-inline: var(--st-space-xl);
-  border-radius: var(--st-radius-panel);
-  background: var(--st-bg-surface);
-  color: var(--st-text);
-  text-align: center;
-}
-
-.site figcaption {
-  margin-block-start: var(--st-space-m);
-  color: var(--st-text-muted);
 }
 
 /* ------------------------------------------------------------------ code */
@@ -870,6 +956,23 @@ body:has(> .site) {
 
 /* ------------------------------------------------------------------ small screens */
 
+@media (max-width: 52rem) {
+  /* Brand and the two buttons on the first row, the nav links on their own row below. */
+  .site .site-nav {
+    order: 3;
+    flex-basis: 100%;
+    margin-inline: calc(-1 * var(--st-space-l)) 0;
+  }
+
+  .site .header-actions {
+    margin-inline-start: auto;
+  }
+
+  .site .site-header .nav-link {
+    padding-inline: var(--st-space-m);
+  }
+}
+
 @media (max-width: 40rem) {
   .site .wrap {
     padding-inline: var(--st-space-xl);
@@ -877,10 +980,16 @@ body:has(> .site) {
 
   .site .site-header .wrap {
     gap: var(--st-space-3xs) var(--st-space-m);
+    padding-inline: var(--st-space-xl);
   }
 
-  .site main {
+  .site .page {
     padding-block: var(--st-space-7xl) var(--st-space-9xl);
+  }
+
+  .site .footer-top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-7xl);
   }
 
   :where(.site) h2 {
@@ -894,4 +1003,59 @@ body:has(> .site) {
   .site .facts {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ------------------------------------------------------------------ 404 (NotFoundView) */
+
+.site .nf {
+  display: flex;
+  padding: var(--st-space-s);
+}
+
+.site .nf-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-block-size: max(28rem, calc(100svh - 12rem));
+  padding: var(--st-space-10xl) var(--st-space-3xl);
+  border: var(--st-border-width) solid var(--st-border-muted);
+  border-radius: var(--st-radius-card);
+  background: var(--st-bg-surface);
+  text-align: center;
+}
+
+.site .nf-panel > * {
+  margin: 0;
+}
+
+.site .nf-code {
+  color: var(--st-text-subtle);
+  font-size: clamp(4rem, 2.6rem + 5vw, 7rem);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.site .nf-title {
+  margin-block-start: var(--st-space-xl);
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
+  letter-spacing: -0.02em;
+}
+
+.site .nf-title:lang(ar) {
+  letter-spacing: 0;
+}
+
+.site .nf-body {
+  margin-block-start: var(--st-space-xl);
+  color: var(--st-text-muted);
+  font-size: 1.125rem;
+}
+
+.site .nf-panel > .nf-actions {
+  justify-content: center;
+  margin-block-start: var(--st-space-7xl);
 }
