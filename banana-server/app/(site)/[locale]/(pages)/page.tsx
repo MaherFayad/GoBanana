@@ -32,7 +32,7 @@ import { memoTakedowns } from "@/lib/db/takedowns";
 import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict, type Dict } from "@/lib/site/dict";
 import { en } from "@/lib/site/dict/en";
-import { exportPreview, type PreviewFormat } from "@/lib/site/export-demo";
+import kitPreview from "@/lib/site/kit-preview.json";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
 import { GALLERY_BOARDS, HERO_TILES } from "@/lib/site/moves";
 import { priceText } from "@/lib/site/plans";
@@ -84,7 +84,6 @@ async function visibleShowcase(): Promise<ShowcaseItem[] | null> {
 }
 
 const BOARD_KEYS = ["souq", "transit", "loud", "private"] as const;
-const KIT_FORMATS: PreviewFormat[] = ["design_md", "agents_md", "tokens", "tailwind", "figjam_spec"];
 /** Where each export window lands, in rem from the middle of the stage (mirrored in Arabic). */
 const FAN = [
   { x: -22, y: -9 },
@@ -212,7 +211,8 @@ export default async function LandingPage({ params }: Props) {
     a: bt(i === 3 && beta ? `${item.a} ${s.faq.costBeta}` : item.a, { monthly }),
   }));
 
-  const files = exportPreview().filter((f) => KIT_FORMATS.includes(f.format));
+  // Precomputed by the real exporters (lib/site/export-demo.ts `kitPreview`); keeps yaml out of this chunk.
+  const files = kitPreview;
   const pile = pileNames();
   const yesNo = (v: boolean) => (v ? p.yes : p.no);
   const planCta = (plan: Plan) =>
@@ -329,7 +329,7 @@ export default async function LandingPage({ params }: Props) {
           </ul>
         </div>
         <div className="board-window" data-parallax="">
-          <Window as="div" title={s.board.window} titleNode={<bdi dir="ltr">{s.board.window}</bdi>} className="is-frame is-frost">
+          <Window as="div" title={s.board.window} titleNode={<bdi dir="ltr">{s.board.window}</bdi>} className="is-frame is-frost" id="board-win" controls labels={d.window}>
             <ProductFrame t={t.frame} />
           </Window>
         </div>
@@ -402,7 +402,7 @@ export default async function LandingPage({ params }: Props) {
           </RollButton>
         </div>
         <div data-parallax="">
-          <Window as="div" title={s.faq.window} titleNode={<bdi dir="ltr">{s.faq.window}</bdi>} className="is-mail is-frost">
+          <Window as="div" title={s.faq.window} titleNode={<bdi dir="ltr">{s.faq.window}</bdi>} className="is-mail is-frost" id="faq-win" controls labels={d.window}>
             <MailApp
               items={faqItems}
               avatar={<BrandMark />}
@@ -435,7 +435,7 @@ export default async function LandingPage({ params }: Props) {
           <p data-reveal="">{bidi(fmt(s.pricing.founding, { founding, cap: FOUNDING_CAP }))}</p>
         </div>
         <div data-parallax="">
-          <Window as="div" title={s.pricing.window} titleNode={<bdi dir="ltr">{s.pricing.window}</bdi>} className="is-pricing is-frost">
+          <Window as="div" title={s.pricing.window} titleNode={<bdi dir="ltr">{s.pricing.window}</bdi>} className="is-pricing is-frost" id="pricing-win" controls labels={d.window}>
             <div className="price-table-wrap" tabIndex={0} role="region" aria-label={p.compareTitle}>
               <table className="price-table">
                 <caption className="st-visually-hidden">{p.compareCaption}</caption>
@@ -499,7 +499,7 @@ export default async function LandingPage({ params }: Props) {
                 <li key={file.name} className="fan-win" style={{ ["--x" as string]: FAN[i]!.x, ["--y" as string]: FAN[i]!.y, ["--i" as string]: i }}>
                   <Window as="div" title={file.name} titleNode={<bdi dir="ltr">{file.name}</bdi>} className="is-kit">
                     <pre dir="ltr" translate="no">
-                      <code>{file.content.split("\n").slice(0, 12).join("\n")}</code>
+                      <code>{file.content}</code>
                     </pre>
                   </Window>
                 </li>
@@ -543,7 +543,7 @@ export default async function LandingPage({ params }: Props) {
         <h2 id="end-title" className="st-visually-hidden">
           {fmt(s.add.dim)}
         </h2>
-        <Window as="div" title={fmt(s.add.dim)} titleNode={bidi(fmt(s.add.dim))} className="add-window is-frost">
+        <Window as="div" title={fmt(s.add.dim)} titleNode={bidi(fmt(s.add.dim))} className="add-window is-frost" id="install-end" controls labels={d.window}>
           <AddBody t={t} locale={locale} url={url} level="h3" />
         </Window>
       </section>

@@ -516,13 +516,35 @@ button.dwin-light {
   display: none;
 }
 
+/* The address reads as a field, not a pill: small mono type, a field radius, one or two lines. */
+.site .add-window .server-address {
+  gap: var(--st-space-m);
+  padding: var(--st-space-l);
+  border-radius: 0.75rem;
+}
+
+.site .add-window .server-address-url {
+  margin: 0;
+}
+
 .site .add-window .server-address-url code {
-  font-size: 0.95rem;
+  display: block;
+  padding: var(--st-space-s) var(--st-space-m);
+  border-radius: var(--st-radius-field);
+  font-family: var(--st-font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.site .add-window .server-address-label {
+  font-size: 0.6875rem;
 }
 
 .site .add-window .server-address-copy {
   inline-size: 100%;
   justify-content: center;
+  border-radius: var(--st-radius-field);
 }
 
 .site .add-steps-title {

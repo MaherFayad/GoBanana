@@ -308,12 +308,6 @@ html.lenis body {
   padding: 0;
 }
 
-/* The mock's lower part is empty tray and board; fade it out instead of showing a flat block. */
-.story .board-window .frame {
-  max-block-size: 34rem;
-  mask-image: linear-gradient(var(--st-desk-bg) 62%, transparent);
-}
-
 .story .board-window .frame-bar {
   display: none;
 }
@@ -661,19 +655,33 @@ html.lenis body {
 .story .price-table {
   inline-size: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
+/* Quiet rows like a settings table: no bands, no caps, one hairline between rows. */
 .story .price-table :is(th, td) {
-  padding: var(--st-space-l) var(--st-space-s);
+  padding: var(--st-space-m) var(--st-space-s);
   border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  background: none;
   text-align: start;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: inherit;
   font-weight: 400;
+}
+
+.story .price-table tbody tr:hover :is(th, td) {
+  background: none;
+}
+
+.story .price-table thead :is(th, td) {
+  padding-block: 0 var(--st-space-m);
 }
 
 .story .price-table thead th {
   color: var(--st-desk-heading);
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -1069,9 +1077,9 @@ html.lenis body {
   }
 
   .story .price-cards h3 {
-    margin: 0 0 var(--st-space-l);
+    margin: 0 0 var(--st-space-m);
     color: var(--st-desk-heading);
-    font-size: 1.25rem;
+    font-size: 0.9375rem;
   }
 
   .story .price-cards dl {
@@ -1084,7 +1092,7 @@ html.lenis body {
     display: flex;
     justify-content: space-between;
     gap: var(--st-space-l);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 
   .story .price-cards dt {

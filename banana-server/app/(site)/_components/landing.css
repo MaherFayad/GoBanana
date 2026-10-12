@@ -494,7 +494,7 @@
 .site .mock {
   display: flex;
   flex-direction: column;
-  block-size: 43em;
+  block-size: 40em;
   background: var(--st-bg-body);
   color: var(--st-text);
   font-family: var(--st-font-sans);
@@ -672,9 +672,10 @@
   background: var(--st-canvas-bg);
 }
 
+/* The tool dock, a glass pill at the bottom centre of the board, like the real canvas. */
 .site .mock-notch {
   position: absolute;
-  inset-block-start: 0;
+  inset-block-end: 1.2em;
   inset-inline: 0;
   z-index: 2;
   display: flex;
@@ -682,12 +683,12 @@
   gap: 0.3em;
   inline-size: fit-content;
   margin-inline: auto;
-  padding: 0.25em 0.4em;
-  border-end-start-radius: 1em;
-  border-end-end-radius: 1em;
-  background: var(--st-bg-body);
-  box-shadow: var(--st-shadow-canvas-chrome);
-  font-size: 0.85em;
+  padding: 0.3em;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: 1em;
+  background: var(--st-desk-glass-strong);
+  box-shadow: var(--st-desk-shadow-soft);
+  font-size: 0.8em;
   white-space: nowrap;
 }
 
@@ -757,35 +758,11 @@
   font-weight: var(--st-weight-semibold);
 }
 
-.site .mock-link {
+.site .mock-ref-4 {
   inset-inline-start: calc(var(--u) * 2);
-  inset-block-start: calc(var(--u) * 14);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25em;
+  inset-block-start: calc(var(--u) * 13.5);
   inline-size: calc(var(--u) * 11);
-  block-size: calc(var(--u) * 10);
-  border-radius: var(--st-radius);
-  background: var(--st-canvas-placeholder-bg);
-  color: var(--st-text-muted);
-  font-size: 0.75em;
-  text-align: center;
-}
-
-.site .mock-link-title {
-  color: var(--st-text);
-  font-weight: var(--st-weight-semibold);
-}
-
-.site .mock-link-view {
-  color: var(--st-text-bright);
-  text-decoration: underline;
-}
-
-.site .mock-link .mock-source {
-  font-size: 0.85em;
+  block-size: calc(var(--u) * 13);
 }
 
 .site .mock-swatch {

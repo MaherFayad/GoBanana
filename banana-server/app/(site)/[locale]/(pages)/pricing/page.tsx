@@ -5,18 +5,22 @@
  * thick border), and the comparison table in the DataTable style. Payments are off for the beta
  * (BETA_PLAN): everyone sees that in an info alert, and plans show "Checkout is not open yet."
  *
- * GoBanana desktop (docs/site-redesign-spec.md): a two-tone heading, every plan in a glass window,
- * and under 768px the comparison table becomes one card per plan (desktop.css swaps them; the
- * table stays the source for wide screens and both carry the same facts).
+ * GoBanana desktop, in the landing page's language (docs/landing-motion-spec.md): a big two-tone
+ * heading, the beta as a notification card, then two windows you can drag:
+ * `plans.app` holds the plans side by side split by hairlines, and `compare.app` holds the
+ * comparison table (13px, sentence case). Under 768px the plans stack and the table becomes one
+ * block per plan (pricing.css swaps them; both carry the same facts).
  */
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readCheckoutConfig } from "@/lib/billing/checkout";
 import { foundingSeatsLeft, readPaddlePrices } from "@/lib/billing/paddle";
 import { paddlePriceIdFor, PLAN_ORDER } from "@/lib/billing/plans";
 import { getBillingRepo } from "@/lib/billing/repo";
-import { CheckIcon, InfoIcon } from "@/components/studio/icons";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { CheckIcon } from "@/components/studio/icons";
 import { getConfig } from "@/lib/config";
 import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
@@ -26,11 +30,11 @@ import { getSiteUser, SIGN_IN_PATH } from "@/lib/site/session";
 import { bidi } from "../../../_components/Bidi";
 import { BetaBadge, PlanFeatureList } from "../../../_components/PlanBits";
 import { PricingToggle } from "../../../_components/PricingToggle";
-import { Reveal } from "../../../_components/Reveal";
 import { TwoToneHeading } from "../../../_components/desktop/TwoToneHeading";
 import { Window } from "../../../_components/desktop/Window";
 import { CheckoutButton } from "./CheckoutButton";
 import "../../../_components/landing.css";
+import "./pricing.css";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +72,7 @@ export default async function PricingPage({ params }: Props) {
     if (user?.plan === plan) return null;
     if (plan === "free") {
       return (
-        <Link className="st-btn" data-variant="secondary" data-size="lg" href={`${href(locale)}#install`}>
+        <Link className="st-btn" data-variant="secondary" data-size="md" href={`${href(locale)}#install`}>
           {fmt(t.cta.free)}
         </Link>
       );
@@ -83,7 +87,7 @@ export default async function PricingPage({ params }: Props) {
         <a
           className="st-btn"
           data-variant="primary"
-          data-size="lg"
+          data-size="md"
           href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(href(locale, "pricing"))}`}
         >
           {t.cta.signInToBuy}
@@ -112,6 +116,25 @@ export default async function PricingPage({ params }: Props) {
   const beta = betaPlan() !== null;
   // Signed in on the free plan during the beta: the account already has Pro limits.
   const onBeta = user?.plan === "free" && beta;
+
+  const rows: { label: string; value: (plan: Plan) => ReactNode }[] = [
+    {
+      label: t.rows.price,
+      value: (plan) => {
+        const p = priceText(plan, t);
+        return (
+          <>
+            <bdi dir="ltr">{p.amount}</bdi> {p.period}
+          </>
+        );
+      },
+    },
+    { label: t.rows.searches, value: (plan) => PLAN_LIMITS[plan].searchesPerMonth },
+    { label: t.rows.canvases, value: (plan) => (Number.isFinite(PLAN_LIMITS[plan].canvases) ? PLAN_LIMITS[plan].canvases : t.unlimited) },
+    { label: t.rows.items, value: (plan) => PLAN_LIMITS[plan].itemsPerCanvas },
+    { label: t.rows.share, value: (plan) => yesNo(PLAN_LIMITS[plan].shareLinks) },
+    { label: t.rows.exports, value: (plan) => bidi(plan === "free" ? t.exportsFree : t.exportsAll) },
+  ];
 
   function card(plan: Plan, extraClass = "") {
     const price = priceText(plan, t);
@@ -146,145 +169,87 @@ export default async function PricingPage({ params }: Props) {
     );
   }
 
+  const pp = dict.landing.desk.pricingPage;
+  const win = dict.landing.desk.window;
+  const plansCls: Record<Plan, string> = { free: "", pro_monthly: " is-pro period-month", pro_yearly: " is-pro period-year", founding: "" };
+
   return (
-    <div className="wrap page desk-page">
-      <Reveal className="desk-head is-center desk-page-head">
-        <TwoToneHeading as="h1" className="is-hero" dim={bidi(dict.landing.desk.pricingPage.dim)} bright={bidi(dict.landing.desk.pricingPage.bright)} />
-        <p className="desk-lead">{t.lead}</p>
-      </Reveal>
+    <div className="pp">
+      <header className="pp-head">
+        <TwoToneHeading as="h1" className="pp-title" dim={bidi(pp.dim)} bright={bidi(pp.bright)} />
+        <p className="pp-lead">{t.lead}</p>
+      </header>
 
       {onBeta || beta ? (
-        <div className="st-alert alert-gap pricing-alert" data-tone="info" role="note">
-          <span className="st-alert-icon">
-            <InfoIcon size={16} />
+        <div className="pp-note" role="note">
+          <span className="pp-note-icon" aria-hidden="true">
+            <BrandMark />
           </span>
-          <div className="st-alert-content">
-            <p className="st-alert-title">{bidi(onBeta ? t.betaTitle : t.betaAllTitle)}</p>
+          <div>
+            <p className="pp-note-title">{bidi(onBeta ? t.betaTitle : t.betaAllTitle)}</p>
             <p>{bidi(onBeta ? t.betaBody : t.betaAllBody)}</p>
           </div>
         </div>
       ) : null}
 
-      <Reveal index={1}>
-        <PricingToggle labels={{ period: t.period, monthly: t.monthly, yearly: t.yearly, save: t.yearlySave }}>
-          <ul className="plans is-three" aria-label={t.title}>
-            <li>
-              <Window as="div" title={t.plans.free.name} bodyClassName="plan">
-                {card("free")}
-              </Window>
-            </li>
-            <li className="period-month">
-              <Window as="div" title={t.plans.pro_monthly.name} className="is-pro-win" bodyClassName="plan is-pro">
-                {card("pro_monthly")}
-              </Window>
-            </li>
-            <li className="period-year">
-              <Window as="div" title={t.plans.pro_yearly.name} className="is-pro-win" bodyClassName="plan is-pro">
-                {card("pro_yearly")}
-              </Window>
-            </li>
-            <li id="founding">
-              <Window as="div" title={t.plans.founding.name} bodyClassName="plan">
-                {card("founding")}
-              </Window>
-            </li>
+      <PricingToggle className="pp-scope" labels={{ period: t.period, monthly: t.monthly, yearly: t.yearly, save: t.yearlySave }}>
+        <Window id="plans-app" title={pp.plans} titleNode={<bdi dir="ltr">{pp.plans}</bdi>} className="pp-win" bodyClassName="pp-plans-body" controls labels={win}>
+          <ul className="pp-plans" aria-label={t.title}>
+            {PLAN_ORDER.map((plan) => (
+              <li key={plan} id={plan === "founding" ? "founding" : undefined} className={`plan pp-plan${plansCls[plan]}`}>
+                {card(plan)}
+              </li>
+            ))}
           </ul>
-        </PricingToggle>
-      </Reveal>
+        </Window>
+      </PricingToggle>
 
-      <h2 className="compare-title">{t.compareTitle}</h2>
-      <div className="table-scroll" tabIndex={0} role="region" aria-label={t.compareTitle}>
-        <table>
-          <caption>{t.compareCaption}</caption>
-          <thead>
-            <tr>
-              <td />
-              {PLAN_ORDER.map((plan) => (
-                <th key={plan} scope="col">
-                  {bidi(t.plans[plan].name)}
-                </th>
+      <Window id="compare-app" title={pp.compare} titleNode={<bdi dir="ltr">{pp.compare}</bdi>} className="pp-win pp-compare" controls labels={win}>
+        <h2 className="pp-compare-title">{t.compareTitle}</h2>
+        <div className="table-scroll pp-table" tabIndex={0} role="region" aria-label={t.compareTitle}>
+          <table>
+            <caption className="st-visually-hidden">{t.compareCaption}</caption>
+            <thead>
+              <tr>
+                <td />
+                {PLAN_ORDER.map((plan) => (
+                  <th key={plan} scope="col">
+                    {bidi(t.plans[plan].name)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.label}>
+                  <th scope="row">{r.label}</th>
+                  {PLAN_ORDER.map((plan) => (
+                    <td key={plan}>{r.value(plan)}</td>
+                  ))}
+                </tr>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">{t.rows.price}</th>
-              {PLAN_ORDER.map((plan) => {
-                const p = priceText(plan, t);
-                return (
-                  <td key={plan}>
-                    <bdi dir="ltr">{p.amount}</bdi> {p.period}
-                  </td>
-                );
-              })}
-            </tr>
-            <tr>
-              <th scope="row">{t.rows.searches}</th>
-              {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{PLAN_LIMITS[plan].searchesPerMonth}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">{t.rows.canvases}</th>
-              {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{Number.isFinite(PLAN_LIMITS[plan].canvases) ? PLAN_LIMITS[plan].canvases : t.unlimited}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">{t.rows.items}</th>
-              {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{PLAN_LIMITS[plan].itemsPerCanvas}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">{t.rows.share}</th>
-              {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{yesNo(PLAN_LIMITS[plan].shareLinks)}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">{t.rows.exports}</th>
-              {PLAN_ORDER.map((plan) => (
-                <td key={plan}>{bidi(plan === "free" ? t.exportsFree : t.exportsAll)}</td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
 
-      <ul className="compare-cards" aria-label={dict.landing.desk.compareCards}>
-        {PLAN_ORDER.map((plan) => {
-          const p = priceText(plan, t);
-          const lim = PLAN_LIMITS[plan];
-          return (
-            <li key={plan}>
-              <Window as="article" title={t.plans[plan].name} aria-labelledby={`compare-${plan}`}>
-                <h3 id={`compare-${plan}`} className="compare-card-title">
-                  {bidi(t.plans[plan].name)}
-                </h3>
-                <dl>
-                  <dt>{t.rows.price}</dt>
-                  <dd>
-                    <bdi dir="ltr">{p.amount}</bdi> {p.period}
-                  </dd>
-                  <dt>{t.rows.searches}</dt>
-                  <dd>{lim.searchesPerMonth}</dd>
-                  <dt>{t.rows.canvases}</dt>
-                  <dd>{Number.isFinite(lim.canvases) ? lim.canvases : t.unlimited}</dd>
-                  <dt>{t.rows.items}</dt>
-                  <dd>{lim.itemsPerCanvas}</dd>
-                  <dt>{t.rows.share}</dt>
-                  <dd>{yesNo(lim.shareLinks)}</dd>
-                  <dt>{t.rows.exports}</dt>
-                  <dd>{bidi(plan === "free" ? t.exportsFree : t.exportsAll)}</dd>
-                </dl>
-              </Window>
+        <ul className="pp-cards" aria-label={dict.landing.desk.compareCards}>
+          {PLAN_ORDER.map((plan) => (
+            <li key={plan} aria-labelledby={`compare-${plan}`}>
+              <h3 id={`compare-${plan}`}>{bidi(t.plans[plan].name)}</h3>
+              <dl>
+                {rows.map((r) => (
+                  <div key={r.label}>
+                    <dt>{r.label}</dt>
+                    <dd>{r.value(plan)}</dd>
+                  </div>
+                ))}
+              </dl>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      </Window>
 
-      <p className="note">{bidi(t.billingNote)}</p>
+      <p className="pp-fine">{bidi(t.billingNote)}</p>
     </div>
   );
 }

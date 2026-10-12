@@ -337,7 +337,7 @@ export const ar: Dict = {
         to: "إلى: أنت",
         count: "{n} رسائل",
       },
-      pricingPage: { dim: "الأسعار", bright: "لكل لوحة" },
+      pricingPage: { dim: "الأسعار", bright: "لكل لوحة", plans: "plans.app", compare: "compare.app" },
       compareCards: "حدود الخطط، بطاقة لكل خطة",
     },
   },

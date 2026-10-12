@@ -337,7 +337,7 @@ export const en = {
         to: "To: you",
         count: "{n} messages",
       },
-      pricingPage: { dim: "Pricing", bright: "for every board" },
+      pricingPage: { dim: "Pricing", bright: "for every board", plans: "plans.app", compare: "compare.app" },
       compareCards: "Plan limits, one card per plan",
     },
   },

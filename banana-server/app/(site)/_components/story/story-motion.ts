@@ -56,6 +56,11 @@ export function mountMotion(root: HTMLElement): () => void {
   gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
   root.setAttribute("data-motion", "");
+  // In-page links glide like the wheel; the menu bar's height comes off so headings stay visible.
+  storyBus.scrollTo = (target) => {
+    const bar = document.querySelector<HTMLElement>(".menubar")?.offsetHeight ?? 0;
+    lenis.scrollTo(target, { offset: -(bar + 16), duration: 1.2 });
+  };
 
   const ctx = gsap.context(() => {
     for (const el of root.querySelectorAll<HTMLElement>("[data-reveal]")) {
@@ -179,5 +184,6 @@ export function mountMotion(root: HTMLElement): () => void {
     lenis.destroy();
     root.removeAttribute("data-motion");
     storyBus.rowStep = null;
+    storyBus.scrollTo = null;
   };
 }

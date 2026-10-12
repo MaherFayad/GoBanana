@@ -10,8 +10,9 @@
  * - Buttons, inputs, chips, tiles, alerts and the dialog are the shared primitives
  *   (styles/studio-components.css, .st-*). This file only lays out pages and styles plain HTML.
  * - Element rules sit under :where(.site) so their specificity stays below the primitives.
- * - Readable text on the site is at least 16px (spec 12 row 13). The only smaller text is the
- *   uppercase tile and table header labels, at 13px, which repeat structure the markup already has.
+ * - Readable text on the site is at least 16px (spec 12 row 13). The exceptions are the uppercase
+ *   tile labels and table text, at 13px; tables went to 13px on the owner's call (2026-10-12),
+ *   in sentence case, like a settings table.
  * - Focus is --st-focus-ring (box-shadow) plus a transparent outline for forced-colors mode.
  */
 
@@ -268,13 +269,12 @@ body:has(> .site) {
   gap: var(--st-space-6xl);
 }
 
+/* Column titles like the landing footer: small, grey, sentence case. */
 .site .footer-title {
   margin: 0 0 var(--st-space-s);
   color: var(--st-text-subtle);
-  font-size: var(--site-label);
-  font-weight: var(--st-weight-semibold);
-  letter-spacing: var(--st-tracking-caps);
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: var(--st-weight-medium);
 }
 
 .site .footer-col ul {
@@ -746,32 +746,26 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
 :where(.site) th,
 :where(.site) td {
-  padding-block: var(--st-space-l);
-  padding-inline: var(--st-space-xl);
+  padding-block: var(--st-space-m);
+  padding-inline: var(--st-space-l);
   border-block-end: var(--st-border-width) solid var(--st-border-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
   text-align: start;
   vertical-align: top;
 }
 
+/* Header cells like a settings table: plain sentence case, no band. */
 :where(.site) thead th,
 :where(.site) thead td {
-  background: var(--st-bg-surface-2);
   border-block-end-color: var(--st-border);
-  color: var(--st-text-subtle);
-  font-size: var(--site-label);
-  font-weight: var(--st-weight-bold);
-  letter-spacing: var(--st-tracking-caps);
-  line-height: var(--st-leading-tight);
-  text-transform: uppercase;
-}
-
-:where(.site) tbody th {
-  color: var(--st-text);
+  color: var(--st-text-bright);
   font-weight: var(--st-weight-semibold);
 }
 
-:where(.site) tbody tr:hover > * {
-  background: var(--st-overlay-5);
+:where(.site) tbody th {
+  color: var(--st-text-muted);
+  font-weight: 400;
 }
 
 /* ------------------------------------------------------------------ sections (takedown) */

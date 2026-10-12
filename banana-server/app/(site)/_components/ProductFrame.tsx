@@ -1,7 +1,7 @@
 /**
  * A static picture of the GoBanana canvas inside a window frame, for the landing page. Built from
  * the same tokens and shapes as the real canvas (canvas/**: the black shell, the results tray, the
- * rounded board with its notch, sticky notes, a section, a swatch, a link card and source chips),
+ * rounded board with its glass tool dock at the bottom, sticky notes, a section, a swatch, a link card and source chips),
  * but it is markup only: no React Flow, nothing to focus, one accessible name (role="img").
  *
  * Reference tiles are GoBanana's own generative art (TileArt), never someone else's image.
@@ -15,7 +15,6 @@ import {
   ExternalIcon,
   FrameIcon,
   HandIcon,
-  ImageOffIcon,
   MinusIcon,
   NoteIcon,
   PlusIcon,
@@ -142,17 +141,7 @@ export function ProductFrame({ t }: { t: Dict["landing"]["frame"] }) {
               </div>
               <Ref art="sadu" site="pinterest.com" className="mock-ref-1" />
 
-              <div className="mock-item mock-link">
-                <ImageOffIcon size={16} />
-                <span className="mock-link-title">{t.directions[1]}</span>
-                <span className="mock-link-site" dir="ltr">
-                  behance.net
-                </span>
-                <span className="mock-link-view" dir="ltr">
-                  behance.net
-                </span>
-                <Source site="behance.net" />
-              </div>
+              <Ref art="riso" site="behance.net" className="mock-ref-4" />
 
               <div className="mock-item mock-swatch">
                 <span className="mock-swatch-color" />

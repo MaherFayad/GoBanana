@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { getDict } from "@/lib/site/dict";
 import { isLocale } from "@/lib/site/i18n";
 import { isSignedIn } from "@/lib/site/session";
+import { AnchorScroll } from "../../_components/AnchorScroll";
 import { Dock } from "../../_components/desktop/Dock";
 import { SiteFooter, SiteHeader } from "../../_components/SiteChrome";
 
@@ -27,6 +28,7 @@ export default async function PagesLayout({ children, params }: Props) {
       </main>
       <SiteFooter locale={locale} t={t} />
       <Dock locale={locale} t={t} />
+      <AnchorScroll />
     </>
   );
 }
