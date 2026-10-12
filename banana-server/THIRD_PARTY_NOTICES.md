@@ -9,7 +9,9 @@ requires.
 | Inter (variable, latin and latin-ext subsets) | `@fontsource-variable/inter` 5.3.0 | SIL Open Font License 1.1 | `styles/fonts.css` |
 | IBM Plex Sans Arabic (arabic subset, 400 to 700) | `@fontsource/ibm-plex-sans-arabic` 5.3.0 | SIL Open Font License 1.1 | `styles/fonts.css` |
 | Instrument Sans (latin subset, 400 to 700) | `@fontsource/instrument-sans` 5.3.0 | SIL Open Font License 1.1 | `styles/fonts.css` (marketing pages) |
-| OGL (WebGL library, loaded on demand on the landing page only) | `ogl` 1.0.11 | Unlicense (public domain) | `app/(site)/_components/desktop/glass-scene.ts` |
+| OGL (WebGL library, loaded on demand on the landing page only) | `ogl` 1.0.11 | Unlicense (public domain) | `app/(site)/_components/story/stage-scene.ts` |
+| GSAP with ScrollTrigger (scroll motion, loaded on demand on the landing page only) | `gsap` 3.15.0 | GSAP Standard "No Charge" License (https://gsap.com/standard-license) | `app/(site)/_components/story/story-motion.ts` |
+| Lenis (smooth scroll, loaded on demand on the landing page only) | `lenis` 1.3.26 | MIT | `app/(site)/_components/story/story-motion.ts` |
 | Simple Icons path data for the Claude and Cursor marks (copied, not a dependency) | `simple-icons` 16.35.0 | CC0 1.0 (data); the marks are their owners' trademarks, used only to say which agents GoBanana works with | `app/(site)/_components/BrandMarks.tsx` |
 
 The font files are served unmodified, as separate files (never inlined into code).

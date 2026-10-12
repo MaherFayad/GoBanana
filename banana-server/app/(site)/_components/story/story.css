@@ -1,0 +1,1146 @@
+/*
+ * The landing scroll story (docs/landing-motion-spec.md), after ssscript.app. Landing page only.
+ *
+ * Layers: the fixed stage (WebGL tile and background, or the CSS tile fallback) at the back, the
+ * film grain of desktop.css over it, then the page. Sections are sparse: one two-tone heading
+ * and one or two short lines each, on alternating sides, with the tile between them.
+ *
+ * Wide layouts with motion (pinned row, the export fan's scroll length) only apply with
+ * prefers-reduced-motion: no-preference; otherwise everything is laid out still and visible.
+ * Colors only through --st-* tokens; logical properties only (Arabic mirrors everything, and
+ * --dir flips the few physical translations).
+ */
+
+/* ------------------------------------------------------------------ root */
+
+html.lenis,
+html.lenis body {
+  block-size: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* The landing draws its own footer (section 10). */
+.site:has(.story) > .site-footer,
+.site:has(.story) .site-footer {
+  display: none;
+}
+
+.site:has(.story) {
+  background: var(--st-desk-stage);
+}
+
+.story {
+  --dir: 1;
+  --story-gutter: clamp(1rem, 9vw, 9rem);
+
+  position: relative;
+  overflow-x: clip;
+}
+
+[dir="rtl"] .story {
+  --dir: -1;
+}
+
+.story .tt {
+  margin: 0;
+}
+
+.story .story-lead {
+  margin: 0;
+  max-inline-size: 22rem;
+  color: var(--st-desk-body);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.story [data-split] .w {
+  display: inline-block;
+}
+
+.story .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-s);
+  margin-block-start: var(--st-space-3xl);
+}
+
+/* ------------------------------------------------------------------ stage */
+
+.story .stage {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.story .stage-still,
+.story .stage-gl,
+.story .stage-trail {
+  position: absolute;
+  inset: 0;
+}
+
+.story .stage-still {
+  display: grid;
+  place-items: center;
+  transition: opacity 0.8s var(--st-desk-ease);
+}
+
+.story .stage-tile {
+  display: grid;
+  place-items: center;
+  inline-size: min(30vw, 48vh);
+  aspect-ratio: 1;
+  border-radius: 22%;
+  background: linear-gradient(var(--st-desk-tile), var(--st-desk-tile-side));
+  box-shadow:
+    0 0.6rem 0 var(--st-desk-tile-side),
+    var(--st-desk-shadow);
+  translate: 0 3vh;
+  opacity: 0.5;
+}
+
+.story .stage-tile .brand-mark {
+  inline-size: 64%;
+  block-size: auto;
+  color: var(--st-desk-mark-face);
+}
+
+.story .stage[data-live] .stage-still {
+  opacity: 0;
+}
+
+.story .stage-gl canvas,
+.story .stage-trail {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* ------------------------------------------------------------------ notification stack, fixed */
+
+.story .notes {
+  position: fixed;
+  z-index: 40;
+  inset-block-start: calc(var(--desk-bar) + 0.75rem);
+  inset-inline-end: 1rem;
+  inline-size: 20rem;
+}
+
+/* ------------------------------------------------------------------ windows on the story */
+
+.story .dwin.is-frost {
+  background: var(--st-desk-frost);
+  backdrop-filter: blur(28px) saturate(1.2);
+}
+
+.story .dwin.is-frost .dwin-title {
+  color: var(--st-desk-body);
+}
+
+/* ------------------------------------------------------------------ 1. hero desktop */
+
+.story .s-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(21rem, 23rem) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto auto;
+  column-gap: var(--st-space-5xl);
+  row-gap: var(--st-space-3xl);
+  min-block-size: calc(100svh - var(--desk-bar));
+  padding: clamp(3rem, 9vh, 6.5rem) var(--story-gutter) 7.5rem;
+}
+
+.story .hero-head {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+}
+
+.story .tt.is-hero {
+  font-size: clamp(2.4rem, 1.6rem + 1.8vw, 3.1rem);
+}
+
+.story .hero-head .story-lead {
+  margin-block-start: var(--st-space-l);
+  max-inline-size: 19rem;
+}
+
+.story .callout {
+  max-inline-size: 18rem;
+}
+
+.story .callout p {
+  margin: var(--st-space-s) 0 0;
+  color: var(--st-desk-body);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.story .callout[data-callout="0"] {
+  grid-column: 1;
+  grid-row: 3 / span 2;
+  align-self: end;
+}
+
+.story .callout[data-callout="1"] {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: end;
+  margin-block-start: 9rem;
+}
+
+.story .callout[data-callout="2"] {
+  grid-column: 3;
+  grid-row: 2 / span 2;
+  align-self: center;
+  justify-self: end;
+}
+
+.story .callout[data-callout="3"] {
+  grid-column: 3;
+  grid-row: 4;
+  align-self: end;
+}
+
+.story .hero-window {
+  position: relative;
+  z-index: 6;
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: center;
+}
+
+.story .hero-icons {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+}
+
+.story .hero-icons .desk-icons {
+  grid-template-columns: repeat(4, 5rem);
+  gap: var(--st-space-xs);
+}
+
+.story .hero-icons .desk-icon-art {
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: 0.75rem;
+}
+
+.story .hero-icons .quicklook {
+  inset-inline: 0 auto;
+}
+
+/* The "Add GoBanana" window (hero and end). */
+.story .add-window {
+  max-inline-size: 23rem;
+  margin-inline: auto;
+}
+
+.story .add-window .dwin-body {
+  gap: var(--st-space-l);
+  padding: var(--st-space-4xl) var(--st-space-2xl) var(--st-space-2xl);
+}
+
+.story .add-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------ 2. one board */
+
+.story .s-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--st-space-5xl);
+  padding-block: 10vh 12vh;
+  padding-inline: var(--story-gutter) 0;
+}
+
+.story .board-text {
+  position: sticky;
+  inset-block-start: 22vh;
+  display: grid;
+  gap: var(--st-space-4xl);
+}
+
+.story .tt:not(.is-hero, .is-callout, .is-window) {
+  font-size: clamp(2.4rem, 1.4rem + 2.4vw, 3.4rem);
+}
+
+.story .board-notes {
+  display: grid;
+  gap: var(--st-space-xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--st-desk-body);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.story .note-k {
+  display: block;
+  margin-block-end: var(--st-space-3xs);
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.story .board-window {
+  inline-size: 72vw;
+  margin-block-start: 6vh;
+}
+
+.story .board-window .dwin-body {
+  padding: 0;
+}
+
+.story .board-window .frame-bar {
+  display: none;
+}
+
+.story .board-window .frame {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ 3. made with */
+
+.story .s-made {
+  position: relative;
+  padding-block: 10vh 12vh;
+}
+
+.story .made-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 30vw;
+  min-block-size: 56vh;
+  padding-inline: var(--story-gutter);
+}
+
+.story .made-head .story-lead {
+  justify-self: end;
+  max-inline-size: 17rem;
+}
+
+.story .made-head .tt {
+  justify-self: start;
+}
+
+.story .row {
+  position: relative;
+}
+
+.story .row-sticky {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-l);
+}
+
+.story .row-scroller {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--site-gutter);
+  scrollbar-width: none;
+}
+
+.story .row-track {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+  inline-size: max-content;
+  margin: 0;
+  padding: 0 var(--site-gutter);
+  list-style: none;
+}
+
+.story .row-card.gallery-card {
+  flex: none;
+  inline-size: min(36rem, 82vw);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  scroll-snap-align: start;
+}
+
+.story .row-card .gallery-art {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--st-desk-radius);
+}
+
+.story .row-card > :not(.gallery-media, dialog) {
+  padding-inline: var(--st-space-l);
+}
+
+.story .row-card .gallery-head h3 {
+  color: var(--st-desk-heading);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.story .row-card > p {
+  color: var(--st-desk-body);
+  font-size: 0.9rem;
+}
+
+.story .row-card .gallery-tags {
+  display: none;
+}
+
+.story .row-controls {
+  display: flex;
+  justify-content: end;
+  gap: var(--st-space-s);
+  padding-inline: var(--site-gutter);
+}
+
+.story .row-btn {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: 50%;
+  background: var(--st-desk-glass-strong);
+  color: var(--st-desk-heading);
+  cursor: pointer;
+}
+
+.story .row-btn:hover {
+  background: var(--st-desk-glass-hover);
+}
+
+/* Pinned: story-motion.ts sets data-pinned and the row's height; the page scroll moves the track. */
+.story .row[data-pinned] .row-sticky {
+  position: sticky;
+  inset-block-start: var(--desk-bar);
+  justify-content: center;
+  min-block-size: calc(100svh - var(--desk-bar));
+}
+
+.story .row[data-pinned] .row-scroller {
+  overflow: clip;
+}
+
+.story .made-notice {
+  margin: var(--st-space-3xl) 0 0;
+  padding-inline: var(--story-gutter);
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+}
+
+.story .made-notice a {
+  color: var(--st-desk-heading);
+}
+
+/* ------------------------------------------------------------------ 4. three statements */
+
+.story .s-how {
+  padding-block: 10vh;
+}
+
+.story .statement {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr) minmax(0, 20rem);
+  align-items: center;
+  column-gap: var(--st-space-5xl);
+  min-block-size: 62vh;
+  padding-inline: calc(var(--story-gutter) + 6vw);
+}
+
+.story .statement .tt {
+  grid-row: 1;
+}
+
+.story .statement .story-lead {
+  grid-row: 1;
+  align-self: start;
+  margin-block-start: 6vh;
+  max-inline-size: 17rem;
+}
+
+.story .statement[data-side="start"] .tt,
+.story .statement[data-side="end"] .story-lead {
+  grid-column: 1;
+}
+
+.story .statement[data-side="end"] .tt,
+.story .statement[data-side="start"] .story-lead {
+  grid-column: 3;
+}
+
+.story .statement[data-side="end"] .story-lead {
+  align-self: end;
+  margin-block: 0 6vh;
+}
+
+/* ------------------------------------------------------------------ 5. FAQ */
+
+.story .s-faq {
+  padding: 16vh var(--story-gutter) 20vh;
+}
+
+.story .faq-head {
+  display: grid;
+  justify-items: start;
+  gap: var(--st-space-4xl);
+  margin-block-end: var(--st-space-3xl);
+}
+
+.story .is-mail {
+  max-inline-size: 50rem;
+  margin-inline: auto;
+}
+
+.story .is-mail .dwin-body {
+  padding: var(--st-space-3xl) var(--st-space-xl);
+}
+
+.story .mail-head {
+  display: none;
+}
+
+.story .mail-list {
+  grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr);
+  column-gap: var(--st-space-4xl);
+  row-gap: var(--st-space-s);
+  min-block-size: 0;
+}
+
+.story .mail-row {
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: 0.9rem;
+  background: var(--st-desk-glass-strong);
+}
+
+.story .mail-row[data-open] {
+  border-color: var(--st-desk-heading-dim);
+}
+
+.story .mail-from::before {
+  content: "";
+  display: inline-block;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  margin-inline-end: var(--st-space-s);
+  border-radius: 50%;
+  background: var(--st-primary-fill);
+  vertical-align: middle;
+}
+
+.story .mail-preview {
+  display: none;
+}
+
+.story .mail-read {
+  padding: var(--st-space-xl) 0;
+}
+
+.story .mail-read-subject {
+  order: 1;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.story .mail-avatar {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
+.story .mail-avatar .brand-mark {
+  inline-size: 62%;
+  block-size: auto;
+  color: var(--st-primary-text);
+}
+
+.story .mail-read-meta {
+  color: var(--st-desk-body);
+  font-size: 0.875rem;
+}
+
+.story .mail-read-body {
+  color: var(--st-desk-body);
+  font-size: 0.95rem;
+}
+
+/* ------------------------------------------------------------------ 6. brief, bend, ship */
+
+.story .s-ship {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 30vw;
+  min-block-size: 100vh;
+  padding-inline: var(--story-gutter);
+}
+
+.story .tt.is-big {
+  font-size: clamp(2.6rem, 1.4rem + 3vw, 4rem);
+}
+
+.story .ship-side {
+  display: grid;
+  justify-items: start;
+  gap: var(--st-space-3xl);
+}
+
+/* ------------------------------------------------------------------ 7. pricing */
+
+.story .s-pricing {
+  display: grid;
+  justify-items: center;
+  padding: 14vh var(--site-gutter) 12vh;
+  text-align: center;
+}
+
+.story .eyebrow {
+  margin: 0 0 var(--st-space-l);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+}
+
+.story .tt.is-huge {
+  font-size: clamp(2.8rem, 1rem + 5vw, 5.4rem);
+  text-wrap: balance;
+}
+
+.story .pricing-lines {
+  display: grid;
+  gap: var(--st-space-l);
+  margin-block: 8vh 10vh;
+  color: var(--st-desk-body);
+  font-size: 1rem;
+}
+
+.story .pricing-lines p {
+  margin: 0;
+}
+
+.story .is-pricing {
+  inline-size: min(64rem, 100%);
+  text-align: start;
+}
+
+.story .is-pricing .dwin-body {
+  padding: var(--st-space-3xl) var(--st-space-4xl) var(--st-space-2xl);
+}
+
+.story .price-table-wrap {
+  overflow-x: auto;
+}
+
+.story .price-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.story .price-table :is(th, td) {
+  padding: var(--st-space-l) var(--st-space-s);
+  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  text-align: start;
+  font-weight: 400;
+}
+
+.story .price-table thead th {
+  color: var(--st-desk-heading);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.story .price-table tbody th {
+  color: var(--st-desk-body);
+}
+
+.story .price-table td {
+  color: var(--st-desk-heading);
+}
+
+.story .price-table .price-cta td {
+  padding-block-start: var(--st-space-2xl);
+  border: 0;
+}
+
+.story .price-cards {
+  display: none;
+}
+
+.story .price-fine {
+  margin: var(--st-space-xl) 0 0;
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+}
+
+/* ------------------------------------------------------------------ 8. the grey export section */
+
+/* Without the WebGL stage (no WebGL, reduced motion), the section paints its own grey. */
+.story:not([data-stage="gl"]) .s-kit {
+  background: linear-gradient(var(--st-desk-grey-b), var(--st-desk-grey-a));
+}
+
+.story .kit-sticky {
+  position: relative;
+  min-block-size: calc(100svh - var(--desk-bar));
+  padding: var(--st-space-5xl) var(--story-gutter);
+}
+
+.story .tt.is-grey {
+  position: absolute;
+  z-index: 3;
+  inset-block-end: 8vh;
+  inset-inline-start: var(--story-gutter);
+}
+
+.story .tt.is-grey .tt-dim {
+  color: var(--st-desk-grey-ink-dim);
+}
+
+.story .tt.is-grey .tt-bright {
+  color: var(--st-desk-grey-ink);
+}
+
+.story .kit-fan {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story .fan-win {
+  position: absolute;
+  z-index: var(--i);
+  inset-inline: 0;
+  inset-block-start: 50%;
+  inline-size: 21rem;
+  margin-inline: auto;
+  translate: calc((var(--x) + 5) * 1rem * var(--dir)) calc(-50% + var(--y) * 1rem);
+}
+
+.story .is-kit {
+  background: var(--st-desk-glass-solid);
+  box-shadow: var(--st-desk-shadow);
+}
+
+.story .is-kit .dwin-body {
+  max-block-size: 13rem;
+  padding: var(--st-space-l) var(--st-space-xl);
+  overflow: hidden;
+}
+
+.story .is-kit pre {
+  margin: 0;
+  color: var(--st-desk-body);
+  font-family: var(--st-font-mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.story .kit-files {
+  position: absolute;
+  inset-block-start: 58%;
+  inset-inline-end: calc(var(--story-gutter) + 2rem);
+  display: grid;
+  gap: var(--st-space-l);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story :is(.kit-file, .pile li) {
+  display: grid;
+  justify-items: center;
+  gap: var(--st-space-3xs);
+  inline-size: 4.5rem;
+  color: var(--st-desk-heading);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.story .kit-file {
+  color: var(--st-desk-grey-ink);
+}
+
+.story .file-glyph {
+  inline-size: 1.6rem;
+  block-size: 2rem;
+  background: var(--st-desk-heading);
+  clip-path: polygon(0 0, 70% 0, 100% 24%, 100% 100%, 0 100%);
+  box-shadow: var(--st-desk-shadow-soft);
+}
+
+/* The empty gaps the wipe runs over: only when the stage moves. */
+@media (prefers-reduced-motion: no-preference) {
+  .story .kit-gap {
+    block-size: 100svh;
+  }
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+
+  .story .kit-pin {
+    block-size: 200svh;
+  }
+
+  .story .kit-sticky {
+    position: sticky;
+    inset-block-start: var(--desk-bar);
+  }
+}
+
+/* ------------------------------------------------------------------ 9. your next direction */
+
+.story .s-next {
+  position: relative;
+  min-block-size: 115vh;
+  padding: 30vh var(--site-gutter) 10vh;
+}
+
+.story .next-text {
+  display: grid;
+  justify-items: center;
+  gap: var(--st-space-3xl);
+  text-align: center;
+}
+
+.story .pile {
+  position: absolute;
+  inset-block-end: 4vh;
+  inset-inline-end: 1.5rem;
+  display: flex;
+  flex-direction: column-reverse;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  gap: var(--st-space-l) var(--st-space-xs);
+  block-size: 78vh;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ------------------------------------------------------------------ 10. add again, footer */
+
+.story .s-end {
+  padding: 12vh var(--site-gutter) 14vh;
+}
+
+.story .story-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--st-space-5xl);
+  padding: var(--st-space-5xl) var(--story-gutter) var(--st-space-3xl);
+}
+
+.story .sf-brand {
+  display: grid;
+  justify-items: start;
+  gap: var(--st-space-l);
+  color: var(--st-desk-body);
+  font-size: 0.875rem;
+}
+
+.story .sf-brand p {
+  margin: 0;
+}
+
+.story .sf-note {
+  max-inline-size: 26rem;
+}
+
+.story .sf-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-2xl);
+  color: var(--st-desk-heading);
+  text-decoration: none;
+}
+
+.story .sf-tile {
+  display: grid;
+  place-items: center;
+  inline-size: 5.5rem;
+  block-size: 5.5rem;
+  border-radius: 1.4rem;
+  background: var(--st-desk-tile);
+  box-shadow:
+    0 0.25rem 0 var(--st-desk-tile-side),
+    var(--st-desk-shadow-soft);
+}
+
+.story .sf-tile .brand-mark {
+  inline-size: 66%;
+  block-size: auto;
+  color: var(--st-desk-mark-face);
+}
+
+.story .sf-name {
+  font-size: clamp(2.4rem, 1.6rem + 2vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+}
+
+.story .sf-columns {
+  display: flex;
+  gap: var(--st-space-6xl);
+}
+
+.story .sf-title {
+  margin: 0 0 var(--st-space-xl);
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.story .sf-col ul {
+  display: grid;
+  gap: var(--st-space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story .sf-col a {
+  color: var(--st-desk-heading);
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.story .sf-col a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ phone */
+
+@media (max-width: 767.98px) {
+  .story {
+    --story-gutter: var(--site-gutter);
+  }
+
+  .story .notes {
+    display: none;
+  }
+
+  .story .stage-tile {
+    inline-size: 80vw;
+    opacity: 0.3;
+  }
+
+  .story .s-hero {
+    display: flex;
+    flex-direction: column;
+    gap: var(--st-space-5xl);
+    min-block-size: 0;
+    padding: var(--st-space-5xl) var(--story-gutter) var(--st-space-6xl);
+  }
+
+  .story .callout[data-callout] {
+    margin: 0;
+  }
+
+  .story .hero-icons {
+    order: 2;
+  }
+
+  .story .hero-icons .desk-icons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .story .hero-window {
+    order: 1;
+    inline-size: 100%;
+  }
+
+  .story .callout {
+    order: 3;
+  }
+
+  .story .s-board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-4xl);
+    padding: 10vh var(--story-gutter);
+  }
+
+  .story .board-text {
+    position: static;
+  }
+
+  .story .board-window {
+    inline-size: 100%;
+    margin: 0;
+  }
+
+  .story .made-head,
+  .story .s-ship {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-3xl);
+    min-block-size: 0;
+    padding-block: 10vh 6vh;
+  }
+
+  .story .made-head .story-lead {
+    justify-self: start;
+    order: 1;
+  }
+
+  .story .statement {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-xl);
+    min-block-size: 60vh;
+    padding-inline: var(--story-gutter);
+  }
+
+  .story .statement :is(.tt, .story-lead) {
+    grid-column: 1 !important;
+    grid-row: auto;
+    margin: 0;
+  }
+
+  .story .s-faq {
+    padding-inline: var(--story-gutter);
+  }
+
+  .story .is-mail .dwin-body {
+    padding: 0;
+  }
+
+  .story .mail-row {
+    border-radius: 0;
+    border-width: 0 0 var(--st-border-width);
+    background: none;
+  }
+
+  .story .s-ship {
+    min-block-size: 80vh;
+  }
+
+  .story .is-pricing .dwin-body {
+    padding: var(--st-space-xl);
+  }
+
+  .story .price-table-wrap {
+    display: none;
+  }
+
+  .story .price-cards {
+    display: grid;
+    gap: var(--st-space-3xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .story .price-cards h3 {
+    margin: 0 0 var(--st-space-l);
+    color: var(--st-desk-heading);
+    font-size: 1.25rem;
+  }
+
+  .story .price-cards dl {
+    display: grid;
+    gap: var(--st-space-s);
+    margin: 0 0 var(--st-space-xl);
+  }
+
+  .story .price-cards dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--st-space-l);
+    font-size: 0.875rem;
+  }
+
+  .story .price-cards dt {
+    color: var(--st-desk-body);
+  }
+
+  .story .price-cards dd {
+    margin: 0;
+    color: var(--st-desk-heading);
+    text-align: end;
+  }
+
+  .story .price-cards > li + li {
+    padding-block-start: var(--st-space-3xl);
+    border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+  }
+
+  .story .kit-sticky {
+    display: grid;
+    gap: var(--st-space-3xl);
+    padding-block: var(--st-space-5xl);
+  }
+
+  .story .tt.is-grey {
+    position: static;
+  }
+
+  .story .kit-fan {
+    position: static;
+    display: grid;
+    gap: var(--st-space-xl);
+  }
+
+  .story .fan-win {
+    position: static;
+    inline-size: 100%;
+    translate: none;
+  }
+
+  .story .kit-files {
+    position: static;
+    display: flex;
+  }
+
+  .story .s-next {
+    min-block-size: 0;
+    padding-block-end: var(--st-space-5xl);
+  }
+
+  .story .pile {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    block-size: auto;
+    margin-block-start: var(--st-space-5xl);
+  }
+
+  .story .story-footer {
+    flex-direction: column;
+  }
+
+  .story .sf-columns {
+    flex-wrap: wrap;
+    gap: var(--st-space-4xl);
+  }
+}

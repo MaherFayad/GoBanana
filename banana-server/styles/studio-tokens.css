@@ -320,6 +320,10 @@
   --st-desk-light-min: #febc2e;
   --st-desk-light-zoom: #28c840;
   --st-desk-light-ink: #4d0000b3;
+  /* At rest the lights are plain light dots (the reference); mac colours on hover of the group. */
+  --st-desk-light-idle: #e8e8e8;
+  --st-desk-hairline: #ffffff1a;
+  --st-desk-shadow-glass: 0 40px 100px -30px #000000e6, 0 12px 30px -12px #00000099;
   /* Glass mark fallback (the static picture behind the hero when WebGL is off). */
   --st-desk-mark-glass: #d9d9d9;
   --st-desk-mark-glow: #ffd84d33;
@@ -332,6 +336,21 @@
   --st-desk-leading: 0.9;
   --st-desk-roll: 0.3s;
   --st-desk-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Landing scroll story (docs/landing-motion-spec.md): the WebGL stage behind the page, the 3D
+     Bend tile, the grey export section and the mouse glyph trail. The stage reads these. */
+  --st-desk-stage: #0a0a0b;
+  --st-desk-tile: #161618;
+  --st-desk-tile-side: #050506;
+  --st-desk-mark-face: #b9b9b9;
+  --st-desk-mark-glint: #ffd84d;
+  --st-desk-grey-a: #9599a4;
+  --st-desk-grey-b: #c0c3cc;
+  --st-desk-grey-ink: #0b0b0d;
+  --st-desk-grey-ink-dim: #24262c;
+  --st-desk-frost: #121212cc;
+  --st-desk-trail: #d6d6d6;
+  --st-desk-trail-warm: #ff5a4d;
+  --st-desk-trail-cool: #5a8cff;
 }
 
 /* Arabic: Plex Sans Arabic first, Inter for Latin runs inside Arabic text, taller lines. */

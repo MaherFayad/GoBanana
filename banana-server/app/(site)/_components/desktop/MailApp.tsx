@@ -15,7 +15,7 @@ type Labels = { inbox: string; listLabel: string; from: string; to: string; coun
 
 const NARROW = "(max-width: 767.98px)";
 
-export function MailApp({ items, labels }: { items: Item[]; labels: Labels }) {
+export function MailApp({ items, labels, avatar }: { items: Item[]; labels: Labels; avatar?: ReactNode }) {
   const [open, setOpen] = useState(0);
   const uid = useId();
 
@@ -58,7 +58,9 @@ export function MailApp({ items, labels }: { items: Item[]; labels: Labels }) {
               <div id={aid} className="mail-read" role="region" aria-labelledby={qid} hidden={!isOpen}>
                 <h3 className="mail-read-subject">{item.q}</h3>
                 <p className="mail-read-meta">
-                  <span className="mail-avatar" aria-hidden="true" />
+                  <span className="mail-avatar" aria-hidden="true">
+                    {avatar}
+                  </span>
                   <span>{labels.from}</span>
                   <span className="mail-to">{labels.to}</span>
                 </p>

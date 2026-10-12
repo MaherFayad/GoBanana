@@ -46,7 +46,7 @@ export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; s
   return (
     <header className="site-header menubar">
       <div className="menubar-start">
-        <Brand locale={locale} />
+        <Brand locale={locale} withName />
         <SiteNav
           label={c.navLabel}
           items={[

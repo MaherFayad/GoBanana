@@ -150,6 +150,17 @@ function pairs(theme: Theme): Pair[] {
     text("desk meta", "desk-meta", bg);
     text("desk body on a hovered row", "desk-body", ["desk-glass-hover", typeof bg === "string" ? bg : bg[1]]);
   }
+  // Landing scroll story: the frosted hero window over the stage and over the tile's mark face,
+  // and the headings on the grey export section (both ends of its gradient).
+  for (const bg of [["desk-frost", "desk-stage"], ["desk-frost", "desk-mark-face"], "desk-stage"] as Layer[]) {
+    text("story heading, first line", "desk-heading-dim", bg);
+    text("story heading, second line", "desk-heading", bg);
+    text("story body", "desk-body", bg);
+  }
+  for (const bg of ["desk-grey-a", "desk-grey-b"]) {
+    text("grey section heading, first line", "desk-grey-ink-dim", bg);
+    text("grey section heading, second line", "desk-grey-ink", bg);
+  }
 
   // Non-text contrast (3:1).
   for (const s of SURFACES) {

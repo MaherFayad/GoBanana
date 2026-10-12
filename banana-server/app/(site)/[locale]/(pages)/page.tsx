@@ -1,61 +1,61 @@
 /**
  * Landing page: /en and /ar. "/" stays with app/page.tsx and redirects here.
  *
- * The GoBanana desktop (docs/site-redesign-spec.md, owner decision 2026-10-12): a black, grainy
- * desktop with a menu bar (SiteChrome), the hero as an "Add to Claude" window over the Bend mark
- * in glass, four corner callouts, desktop icons of real references (Quick Look windows), a
- * notification stack and a dock. Below it, every section is a glass window with a two-tone
- * heading: the canvas, the graph, the gallery as a Finder window, recordings, the export kit as
- * a text editor, set up, pricing as plan windows, the FAQ as a Mail app and the final call.
- * Under 768px it becomes a phone home screen (desktop.css): stacked full-width windows, no drag.
+ * A scroll story after ssscript.app (docs/landing-motion-spec.md). The persistent layer: the menu
+ * bar and dock (layout), a fixed notification stack, and a fixed stage behind everything with the
+ * 3D Bend tile, the desk background and the mouse glyph trail (StoryStage). Scroll motion (Lenis,
+ * GSAP ScrollTrigger: word blur-ins, the pinned board row, the export fan, the file pile) loads
+ * on demand in StoryMotion, and none of it runs under prefers-reduced-motion.
  *
- * The hero and gallery show real, published references, hotlinked with the creator and source
- * link on each (lib/site/showcase.ts, filtered by the takedown list, generative art when the list
- * cannot load or an image fails). Rendered per request, so the takedown filter always applies.
+ * Sections, in order: the hero desktop (the "Add GoBanana" window, four callouts, reference icons
+ * with Quick Look), one board, made with GoBanana (the board row), three statements, the FAQ as a
+ * Mail window, Brief. Bend. Ship., pricing as a table window, the grey export section with windows
+ * fanning out of the mark, the file pile and the last call, then the footer.
+ *
+ * Every section carries `data-mark="scale y dim"` for the stage: how big the tile is, where it sits
+ * (fraction of the viewport height) and how bright it is while that section is in the middle.
+ *
+ * References are real, published work, hotlinked with the creator and source link on each
+ * (lib/site/showcase.ts, filtered by the takedown list per request).
  */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { ArrowEndIcon, ChatIcon, TerminalIcon } from "@/components/studio/icons";
+import { ArrowEndIcon } from "@/components/studio/icons";
+import { FOUNDING_CAP } from "@/lib/billing/paddle";
+import { PLAN_ORDER } from "@/lib/billing/plans";
 import { APP_NAME, getConfig } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { memoTakedowns } from "@/lib/db/takedowns";
-import { betaPlan } from "@/lib/quota";
+import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict, type Dict } from "@/lib/site/dict";
-import { exportPreview } from "@/lib/site/export-demo";
+import { en } from "@/lib/site/dict/en";
+import { exportPreview, type PreviewFormat } from "@/lib/site/export-demo";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
-import { GALLERY_BOARDS, HERO_TILES, type ArtKind } from "@/lib/site/moves";
-import { planFeatureItems, priceText } from "@/lib/site/plans";
-import { FINAL_REFS, GALLERY_REFS, HERO_REFS, showcaseIndex, siteName, type ShowcaseItem } from "@/lib/site/showcase";
+import { GALLERY_BOARDS, HERO_TILES } from "@/lib/site/moves";
+import { priceText } from "@/lib/site/plans";
+import { GALLERY_REFS, HERO_REFS, showcaseIndex, siteName, type ShowcaseItem } from "@/lib/site/showcase";
 import { loadShowcase } from "@/lib/site/showcase-load";
 import { compileTakedowns } from "@/lib/takedown";
 import { e2eAuthBypass } from "@/lib/web-auth";
 import { bidi, bt } from "../../_components/Bidi";
-import { ClaudeMark, CursorMark } from "../../_components/BrandMarks";
-import { CodeBlock } from "../../_components/CodeBlock";
-import { ClipSlider } from "../../_components/desktop/ClipSlider";
 import { DesktopIcons, type DeskIcon } from "../../_components/desktop/DesktopIcons";
-import { GlassMark } from "../../_components/desktop/GlassMark";
+import { docsHref } from "../../_components/desktop/Dock";
 import { MailApp } from "../../_components/desktop/MailApp";
 import { NotificationStack, type Notice } from "../../_components/desktop/NotificationStack";
 import { RollButton } from "../../_components/desktop/RollButton";
-import { splitTitle, TwoToneHeading } from "../../_components/desktop/TwoToneHeading";
 import { Window } from "../../_components/desktop/Window";
-import { ExportTabs } from "../../_components/ExportTabs";
 import { GalleryBoard, type BoardRef } from "../../_components/GalleryBoard";
-import { GraphWires } from "../../_components/GraphWires";
-import type { TileRef } from "../../_components/HeroField";
-import { ChatGptMock, ClaudeConnectorMock } from "../../_components/InstallMocks";
-import { BetaBadge, PlanFeatureList } from "../../_components/PlanBits";
-import { PricingToggle } from "../../_components/PricingToggle";
 import { ProductFrame } from "../../_components/ProductFrame";
-import { RefImage } from "../../_components/RefImage";
-import { Reveal } from "../../_components/Reveal";
 import { ServerAddress } from "../../_components/ServerAddress";
-import { TileArt } from "../../_components/TileArt";
+import { LanguageSwitch } from "../../_components/SiteNav";
+import { BoardRow } from "../../_components/story/BoardRow";
+import { StoryMotion } from "../../_components/story/StoryMotion";
+import { StoryStage } from "../../_components/story/StoryStage";
 import "../../_components/landing.css";
+import "../../_components/story/story.css";
 
 // Per request: the showcase goes through the takedown list on every render (hard rule 5).
 export const dynamic = "force-dynamic";
@@ -69,13 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function mcpUrl(): string {
-  const cfg = getConfig();
-  return cfg.mcpResourceUrl ?? "https://YOUR-DOMAIN/api/mcp";
-}
-
-/** Server name for client configs, derived from APP_NAME ("GoBanana" -> "gobanana"). */
-function serverName(): string {
-  return APP_NAME.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "design";
+  return getConfig().mcpResourceUrl ?? "https://YOUR-DOMAIN/api/mcp";
 }
 
 /**
@@ -89,94 +83,82 @@ async function visibleShowcase(): Promise<ShowcaseItem[] | null> {
   return loadShowcase({ loadMatcher });
 }
 
-/** Words for showcase items in one language. */
-function showcaseWords(t: Dict["landing"], locale: Locale) {
-  const sc = t.showcase;
-  const credit = (item: ShowcaseItem): ReactNode =>
-    item.creator ? bt(sc.credit, { creator: item.creator, site: siteName(item.sourceSite) }) : <bdi dir="ltr">{siteName(item.sourceSite)}</bdi>;
-  const what = (item: ShowcaseItem): ReactNode => {
-    const lens = sc.lenses[item.lens];
-    return item.move ? bt(sc.what, { move: sc.moves[item.move], lens }) : lens;
-  };
-  // Source titles are English; Arabic pages mark the alt text as such.
-  const altLang = locale === "ar" ? "en" : undefined;
-  const tileRef = (item: ShowcaseItem): TileRef => ({ src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), what: what(item) });
-  const boardRef = (item: ShowcaseItem | undefined): BoardRef | null =>
-    item ? { src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), title: item.title } : null;
-  return { credit, what, altLang, tileRef, boardRef };
-}
-
 const BOARD_KEYS = ["souq", "transit", "loud", "private"] as const;
+const KIT_FORMATS: PreviewFormat[] = ["design_md", "agents_md", "tokens", "tailwind", "figjam_spec"];
+/** Where each export window lands, in rem from the middle of the stage (mirrored in Arabic). */
+const FAN = [
+  { x: -22, y: -9 },
+  { x: -10, y: -5 },
+  { x: 2, y: -1 },
+  { x: 14, y: 3 },
+  { x: 24, y: 8 },
+];
 
+const kebab = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 
-/** Small picture inside each graph node, so the flow reads at a glance. Decorative. */
-function GraphDeco({ index, moves }: { index: number; moves: string[] }) {
-  switch (index) {
-    case 0:
-      return (
-        <span className="graph-deco graph-deco-input">
-          <span className="graph-caret" />
-        </span>
-      );
-    case 1:
-      return (
-        <span className="graph-deco graph-deco-chips">
-          {moves.map((m) => (
-            <span key={m} className="graph-mini-chip">
-              {m}
-            </span>
-          ))}
-        </span>
-      );
-    case 2:
-      return (
-        <span className="graph-deco graph-deco-bars">
-          <span />
-          <span />
-          <span />
-        </span>
-      );
-    case 3:
-      return (
-        <span className="graph-deco graph-deco-refs">
-          {(["sadu", "halftone", "dusk", "swiss"] as const).map((k) => (
-            <TileArt key={k} kind={k} uid={`graph-${k}`} />
-          ))}
-        </span>
-      );
-    default:
-      return (
-        <span className="graph-deco graph-deco-files">
-          {["DESIGN.md", "tokens.json", "theme.css"].map((f) => (
-            <span key={f}>
-              <bdi dir="ltr">{f}</bdi>
-            </span>
-          ))}
-        </span>
-      );
+/** File names for the pile: the gallery boards and the showcase lenses (always Latin file names). */
+function pileNames(): string[] {
+  const boards = en.landing.gallery.cards.map((c) => `${kebab(c.title)}.board`);
+  const refs = Object.values(en.landing.showcase.lenses).map((l) => `${kebab(l)}.ref`);
+  const out: string[] = [];
+  for (let i = 0; out.length < boards.length + refs.length; i++) {
+    if (i < refs.length) out.push(refs[i]!);
+    if (i < boards.length) out.push(boards[i]!);
   }
+  return out;
 }
 
-/** Posters for the recordings until they exist (GoBanana's own art). */
-const CLIP_ARTS: ArtKind[] = ["sadu", "halftone", "swiss", "grain", "iridescent", "blueprint"];
-
-/** A corner callout on the hero desktop: a small two-tone heading and one line of copy. */
-function Callout({ c, i }: { c: Dict["landing"]["desk"]["callouts"][number]; i: number }) {
+/** A heading in lines: the first `dim` lines grey, the rest white. One heading for screen readers. */
+function Lines({
+  as: Tag = "h2",
+  id,
+  lines,
+  dim = 1,
+  className,
+  reveal = true,
+}: {
+  as?: "h1" | "h2" | "h3";
+  id?: string;
+  lines: ReactNode[];
+  dim?: number;
+  className?: string;
+  reveal?: boolean;
+}) {
   return (
-    <div className="callout" data-callout={i}>
-      <TwoToneHeading as="h2" className="is-callout" dim={bidi(c.dim)} bright={bidi(c.bright)} />
-      <p>{bt(c.body)}</p>
-    </div>
+    <Tag id={id} tabIndex={id ? -1 : undefined} className={className ? `tt ${className}` : "tt"} data-reveal={reveal ? "" : undefined}>
+      {lines.map((l, i) => (
+        <span key={i} className={i < dim ? "tt-dim" : "tt-bright"}>
+          {l}
+          {i < lines.length - 1 ? " " : null}
+        </span>
+      ))}
+    </Tag>
   );
 }
 
-/** Section heading on the desk: two tones, an optional lead. */
-function DeskHead({ id, h, lead, center }: { id: string; h: { dim: string; bright: string }; lead?: ReactNode; center?: boolean }) {
+type AddProps = { t: Dict["landing"]; locale: Locale; url: string; level: "h2" | "h3" };
+
+/** Inside the "Add GoBanana" window: the tile, the two-tone title, one line, the address and Copy. */
+function AddBody({ t, locale, url, level }: AddProps) {
+  const s = t.story.add;
+  const copyLabels = { done: t.copy.done, doneBody: t.copy.doneBody, failed: t.copy.failed, failedBody: t.copy.failedBody };
   return (
-    <Reveal className={center ? "desk-head is-center" : "desk-head"}>
-      <TwoToneHeading id={id} tabIndex={-1} dim={bt(h.dim)} bright={bt(h.bright)} />
-      {lead ? <p className="desk-lead">{lead}</p> : null}
-    </Reveal>
+    <>
+      <span className="add-mark" aria-hidden="true">
+        <BrandMark />
+      </span>
+      <Lines as={level} className="is-window" lines={[bt(s.dim), bidi(s.bright)]} reveal={false} />
+      <p className="add-lead">{bidi(s.lead)}</p>
+      <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
+      <a className="add-guide" href={docsHref(locale, "start/install/")}>
+        {s.guide}
+        <ArrowEndIcon size={16} />
+      </a>
+    </>
   );
 }
 
@@ -185,409 +167,420 @@ export default async function LandingPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const dict = getDict(locale);
   const t = dict.landing;
+  const s = t.story;
   const d = t.desk;
   const p = dict.pricing;
   const beta = betaPlan() !== null;
-
   const url = mcpUrl();
-  const name = serverName();
-  const claudeCmd = `claude mcp add --transport http ${name} ${url}`;
-  const cursorJson = JSON.stringify({ mcpServers: { [name]: { url } } }, null, 2);
-  // Code labels and copy buttons follow the page language; the code itself is always ltr.
-  const labelLang = locale === "ar" ? "ar" : undefined;
-  const copyLabels = { done: t.copy.done, doneBody: t.copy.doneBody, failed: t.copy.failed, failedBody: t.copy.failedBody };
-  const windowLabels = d.window;
 
   const items = await visibleShowcase();
   const refs = items ? showcaseIndex(items) : null;
-  const words = showcaseWords(t, locale);
+  const altLang = locale === "ar" ? "en" : undefined;
+  const credit = (item: ShowcaseItem): ReactNode =>
+    item.creator ? bt(t.showcase.credit, { creator: item.creator, site: siteName(item.sourceSite) }) : <bdi dir="ltr">{siteName(item.sourceSite)}</bdi>;
+  const boardRef = (item: ShowcaseItem | undefined): BoardRef | null =>
+    item ? { src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), title: item.title } : null;
 
   const icons: DeskIcon[] = [];
   if (refs) {
     for (const tile of HERO_TILES) {
       const item = refs.get(HERO_REFS[tile.art]);
       if (!item) continue;
-      const r: TileRef = words.tileRef(item);
-      icons.push({ id: tile.art, src: r.src, title: item.title, altLang: r.altLang, art: tile.art, href: r.href, credit: r.credit, what: r.what });
+      const lens = t.showcase.lenses[item.lens];
+      const what = item.move ? bt(t.showcase.what, { move: t.showcase.moves[item.move], lens }) : lens;
+      icons.push({ id: tile.art, src: item.thumbUrl, title: item.title, altLang, art: tile.art, href: item.sourceUrl, credit: credit(item), what });
       if (icons.length === 4) break;
     }
   }
+
+  const monthly = priceText("pro_monthly", p).amount;
+  const yearly = priceText("pro_yearly", p).amount;
+  const founding = priceText("founding", p).amount;
   const notices: Notice[] = [
-    { href: href(locale, "canvases"), title: t.heroChip, body: d.notifications.canvasesBody, when: d.notifications.now },
-    beta
-      ? { href: href(locale, "pricing"), title: p.betaAllTitle, body: p.betaAllBody, when: d.notifications.beta }
-      : { href: `${href(locale, "pricing")}#founding`, title: p.plans.founding.name, body: t.pricing.founding, when: d.notifications.now },
+    { href: href(locale, "canvases"), title: s.notes.canvases.title, body: s.notes.canvases.body, when: s.notes.canvases.when },
+    ...(beta ? [{ href: href(locale, "pricing"), title: s.notes.beta.title, body: s.notes.beta.body, when: s.notes.beta.when }] : []),
+    {
+      href: `${href(locale, "pricing")}#founding`,
+      title: s.notes.founding.title,
+      body: fmt(s.notes.founding.body, { price: founding, cap: FOUNDING_CAP }),
+      when: s.notes.founding.when,
+    },
   ];
 
-  const finalRefs = refs ? FINAL_REFS.map((id) => refs.get(id)).filter((i): i is ShowcaseItem => i !== undefined) : [];
-  const graphMoves = t.moves.slice(0, 6).map((m) => m.move).filter((m, i, all) => all.indexOf(m) === i);
-  const monthly = priceText("pro_monthly", p);
-  const yearly = priceText("pro_yearly", p);
-  const free = priceText("free", p);
-  const files = exportPreview();
-  const c = t.clients;
-  const [heroDim, heroBright] = splitTitle(t.heroTitle);
+  const faqItems = s.faq.items.map((item, i) => ({
+    q: bt(item.q),
+    a: bt(i === 3 && beta ? `${item.a} ${s.faq.costBeta}` : item.a, { monthly }),
+  }));
+
+  const files = exportPreview().filter((f) => KIT_FORMATS.includes(f.format));
+  const pile = pileNames();
+  const yesNo = (v: boolean) => (v ? p.yes : p.no);
+  const planCta = (plan: Plan) =>
+    plan === "free" ? (
+      <RollButton href="#install" size="md" variant="secondary">
+        {bidi(s.pricing.ctaFree)}
+      </RollButton>
+    ) : (
+      <RollButton href={plan === "founding" ? `${href(locale, "pricing")}#founding` : href(locale, "pricing")} size="md" variant={plan === "pro_monthly" ? "primary" : "ghost"}>
+        {s.pricing.ctaPaid}
+      </RollButton>
+    );
+  const rows: { label: string; value: (plan: Plan) => ReactNode }[] = [
+    {
+      label: p.rows.price,
+      value: (plan) => {
+        const pr = priceText(plan, p);
+        return (
+          <>
+            <bdi dir="ltr">{pr.amount}</bdi> {pr.period}
+          </>
+        );
+      },
+    },
+    { label: p.rows.searches, value: (plan) => PLAN_LIMITS[plan].searchesPerMonth },
+    { label: p.rows.canvases, value: (plan) => (Number.isFinite(PLAN_LIMITS[plan].canvases) ? PLAN_LIMITS[plan].canvases : p.unlimited) },
+    { label: p.rows.items, value: (plan) => PLAN_LIMITS[plan].itemsPerCanvas },
+    { label: p.rows.share, value: (plan) => yesNo(PLAN_LIMITS[plan].shareLinks) },
+    { label: p.rows.exports, value: (plan) => bidi(plan === "free" ? p.exportsFree : p.exportsAll) },
+  ];
+
+  const f = dict.common.footer;
+  const home = href(locale);
+  const footerColumns = [
+    {
+      title: f.product,
+      links: [
+        { href: `${home}#how`, label: f.howItWorks },
+        { href: `${home}#gallery`, label: f.gallery },
+        { href: href(locale, "pricing"), label: f.pricing },
+        { href: href(locale, "canvases"), label: f.canvases },
+      ],
+    },
+    {
+      title: f.help,
+      links: [
+        { href: docsHref(locale), label: f.docs },
+        { href: docsHref(locale, "start/install/"), label: f.setup },
+        { href: href(locale, "account"), label: f.account },
+        { href: href(locale, "takedown"), label: f.takedown },
+      ],
+    },
+    {
+      title: f.legal,
+      links: [
+        { href: href(locale, "terms"), label: f.terms },
+        { href: href(locale, "privacy"), label: f.privacy },
+      ],
+    },
+  ];
+  const other: Locale = locale === "ar" ? "en" : "ar";
 
   return (
-    <div className="desk">
-      {/* ------------------------------------------------------------ the desktop */}
-      <section className="desk-hero" aria-labelledby="hero-title">
-        <GlassMark />
-        <div className="desk-hero-grid">
-          <div className="desk-col is-start">
-            <div className="callout is-hero">
-              <TwoToneHeading as="h1" id="hero-title" className="is-hero" dim={heroDim} bright={heroBright} />
-              <p className="desk-lead">{bt(t.heroLead)}</p>
-              <div className="actions">
-                <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
-                  {bidi(t.ctaAdd)}
-                </RollButton>
-                <RollButton href="#gallery">{t.ctaExample}</RollButton>
-              </div>
-            </div>
-            <Callout c={d.callouts[0]!} i={0} />
-            <Callout c={d.callouts[1]!} i={1} />
-          </div>
+    <div className="story">
+      <StoryStage />
+      <StoryMotion />
+      <NotificationStack label={d.notifications.label} from={fmt(d.notifications.from)} items={notices} />
 
-          <div className="desk-center">
-            <Window id="add-window" title={d.add.windowTitle} titleNode={bidi(d.add.windowTitle)} className="add-window" controls labels={windowLabels}>
-              <span className="add-mark" aria-hidden="true">
-                <BrandMark />
-              </span>
-              <TwoToneHeading as="h2" className="is-window" dim={bt(d.add.title)} bright={d.add.titleBright} />
-              <p className="add-lead">{bidi(d.add.lead)}</p>
-              <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
-              <p className="add-steps-title">{bidi(d.add.stepsTitle)}</p>
-              <Steps steps={c.claudeApp.steps} />
-              <p className="add-more">
-                <a href="#install">{d.add.more}</a>
-              </p>
-              {refs ? (
-                <p className="add-fine">
-                  {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
-                </p>
-              ) : null}
-            </Window>
-          </div>
-
-          <div className="desk-col is-end">
-            <NotificationStack label={d.notifications.label} from={fmt(d.notifications.from)} items={notices} />
-            {icons.length > 0 ? (
-              <DesktopIcons
-                icons={icons}
-                labels={{ label: d.icons.label, quickLook: d.icons.quickLook, openSource: t.field.openSource, newTab: t.field.newTab, window: windowLabels }}
-              />
-            ) : null}
-            <Callout c={d.callouts[2]!} i={2} />
-            <Callout c={d.callouts[3]!} i={3} />
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ the canvas */}
-      <section className="desk-section" aria-labelledby="canvas">
-        <div className="wrap">
-          <DeskHead id="canvas" h={d.sections.canvas} lead={t.frame.lead} />
-          <Reveal index={1}>
-            <Window as="div" title={d.windows.canvas} className="is-frame">
-              <ProductFrame t={t.frame} />
-            </Window>
-          </Reveal>
-          <Reveal index={2} className="band-foot">
-            <RollButton href={href(locale, "canvases")} variant="ghost" icon={<ArrowEndIcon size={16} />}>
-              {t.frame.cta}
+      {/* ------------------------------------------------------------ 1. the desktop */}
+      <section className="s-hero" aria-labelledby="hero-title" data-mark="1 0.53 1">
+        <div className="hero-head">
+          <Lines as="h1" id="hero-title" className="is-hero" lines={[bidi(s.hero.dim), bidi(s.hero.bright)]} reveal={false} />
+          <p className="story-lead">{bidi(s.hero.lead)}</p>
+          <div className="actions">
+            <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
+              {bidi(s.hero.add)}
             </RollButton>
-          </Reveal>
+            <RollButton href="#gallery" variant="ghost">
+              {s.hero.boards}
+            </RollButton>
+          </div>
         </div>
+        {s.callouts.map((c, i) => (
+          <div key={c.dim} className="callout" data-callout={i}>
+            <Lines as="h2" className="is-callout" lines={[bidi(c.dim), bidi(c.bright)]} reveal={false} />
+            <p>{bidi(c.body)}</p>
+          </div>
+        ))}
+        <div className="hero-window">
+          <Window id="install" title={fmt(s.add.dim)} titleNode={bidi(fmt(s.add.dim))} className="add-window is-frost" controls labels={d.window}>
+            <AddBody t={t} locale={locale} url={url} level="h2" />
+          </Window>
+        </div>
+        {icons.length > 0 ? (
+          <div className="hero-icons">
+            <DesktopIcons
+              icons={icons}
+              labels={{ label: d.icons.label, quickLook: d.icons.quickLook, openSource: t.field.openSource, newTab: t.field.newTab, window: d.window }}
+            />
+          </div>
+        ) : null}
       </section>
 
-      {/* ------------------------------------------------------------ graph */}
-      <section className="desk-section" aria-labelledby="how">
-        <div className="wrap">
-          <DeskHead id="how" h={d.sections.graph} lead={bt(t.graph.lead)} />
-          <Reveal index={1}>
-            <Window as="div" title={d.windows.graph} className="is-graph">
-              <div className="graph">
-                <div className="graph-canvas">
-                  <ol id="graph-nodes" className="graph-nodes" aria-label={t.graph.label}>
-                    {t.graph.nodes.map((node, i) => (
-                      <li key={node.title} className="graph-node" data-node="" data-step={i + 1}>
-                        <span className="graph-kind">
-                          <span className="graph-step" dir="ltr">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          {node.kind}
-                        </span>
-                        <h3>{node.title}</h3>
-                        <p>{bidi(node.body)}</p>
-                        <GraphDeco index={i} moves={graphMoves} />
-                      </li>
-                    ))}
-                  </ol>
-                  <GraphWires targetId="graph-nodes" />
-                </div>
-              </div>
-            </Window>
-          </Reveal>
+      {/* ------------------------------------------------------------ 2. one board */}
+      <section className="s-board" aria-labelledby="canvas" data-mark="0.9 0.55 1">
+        <div className="board-text">
+          <Lines id="canvas" lines={[bidi(s.board.dim), bidi(s.board.bright)]} />
+          <ul className="board-notes">
+            {s.board.notes.map((n) => (
+              <li key={n.title} data-reveal="">
+                <span className="note-k">{n.title}</span> <span>{bidi(n.body)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </section>
-
-      {/* ------------------------------------------------------------ gallery (Finder) */}
-      <section className="desk-section" aria-labelledby="gallery">
-        <div className="wrap">
-          <DeskHead id="gallery" h={d.sections.gallery} lead={refs ? t.gallery.lead : t.gallery.leadArt} />
-          <Window
-            as="div"
-            title={d.windows.gallery}
-            className="is-finder"
-            toolbar={<span className="dwin-count">{fmt(d.windows.galleryCount, { n: t.gallery.cards.length })}</span>}
-          >
-            <ul className="gallery">
-              {t.gallery.cards.map((card, i) => (
-                <Reveal as="li" key={card.title} index={i} className="gallery-card">
-                  <GalleryBoard
-                    index={i}
-                    board={BOARD_KEYS[i]!}
-                    title={card.title}
-                    body={bidi(card.body)}
-                    twist={bidi(card.twist)}
-                    tags={card.tags}
-                    palette={card.palette}
-                    arts={GALLERY_BOARDS[i]!}
-                    refs={refs ? GALLERY_REFS[i]!.map((id) => words.boardRef(refs.get(id))) : null}
-                    labels={{
-                      openExample: t.gallery.openExample,
-                      exampleEyebrow: t.gallery.exampleEyebrow,
-                      twist: t.gallery.twist,
-                      paletteLabel: t.gallery.paletteLabel,
-                      paletteTitle: t.gallery.paletteTitle,
-                      sources: t.showcase.sources,
-                      sourcesTitle: t.gallery.sourcesTitle,
-                      newTab: t.field.newTab,
-                      close: dict.common.close,
-                    }}
-                  />
-                </Reveal>
-              ))}
-            </ul>
+        <div className="board-window" data-parallax="">
+          <Window as="div" title={s.board.window} titleNode={<bdi dir="ltr">{s.board.window}</bdi>} className="is-frame is-frost">
+            <ProductFrame t={t.frame} />
           </Window>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------ recordings */}
-      <section className="desk-section" aria-labelledby="clips">
-        <div className="wrap">
-          <DeskHead id="clips" h={d.sections.clips} lead={d.clips.lead} />
-          <Reveal index={1}>
-            <ClipSlider
-              clips={d.clips.items.map((caption, i) => ({ caption, art: CLIP_ARTS[i % CLIP_ARTS.length]! }))}
-              labels={{ label: d.clips.label, prev: d.clips.prev, next: d.clips.next, play: d.clips.play, pause: d.clips.pause, soon: d.clips.soon }}
-            />
-          </Reveal>
+      {/* ------------------------------------------------------------ 3. made with */}
+      <section className="s-made" aria-labelledby="gallery" data-mark="1 0.42 1">
+        <div className="made-head">
+          <p className="story-lead" data-reveal="">
+            {bidi(s.made.lead)}
+          </p>
+          <Lines id="gallery" lines={[bidi(s.made.dim), bt(s.made.bright)]} />
         </div>
-      </section>
-
-      {/* ------------------------------------------------------------ export (text editor) */}
-      <section className="desk-section" aria-labelledby="ship-title">
-        <div className="wrap">
-          <DeskHead id="ship-title" h={d.sections.export} lead={bidi(t.ship.lead)} />
-          <Reveal index={1}>
-            <Window as="div" title={d.windows.export} className="is-editor">
-              <ExportTabs
-                label={t.ship.tabsLabel}
-                tabs={files.map((f, i) => ({
-                  format: f.format,
-                  label: bidi(t.ship.formats[i]!.label),
-                  body: bidi(t.ship.formats[i]!.body),
-                  fileName: f.name,
-                  content: f.content,
-                  windowLabel: fmt(t.ship.windowLabel, { file: f.name }),
-                }))}
+        <BoardRow label={s.made.label} prev={s.made.prev} next={s.made.next}>
+          {t.gallery.cards.map((card, i) => (
+            <li key={card.title} className="row-card gallery-card">
+              <GalleryBoard
+                index={i}
+                board={BOARD_KEYS[i]!}
+                title={card.title}
+                body={bidi(card.body)}
+                twist={bidi(card.twist)}
+                tags={card.tags}
+                palette={card.palette}
+                arts={GALLERY_BOARDS[i]!}
+                refs={refs ? GALLERY_REFS[i]!.map((id) => boardRef(refs.get(id))) : null}
+                labels={{
+                  openExample: t.gallery.openExample,
+                  exampleEyebrow: t.gallery.exampleEyebrow,
+                  twist: t.gallery.twist,
+                  paletteLabel: t.gallery.paletteLabel,
+                  paletteTitle: t.gallery.paletteTitle,
+                  sources: t.showcase.sources,
+                  sourcesTitle: t.gallery.sourcesTitle,
+                  newTab: t.field.newTab,
+                  close: dict.common.close,
+                }}
               />
-            </Window>
-          </Reveal>
+            </li>
+          ))}
+        </BoardRow>
+        {refs ? (
+          <p className="made-notice">
+            {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
+          </p>
+        ) : null}
+      </section>
+
+      {/* ------------------------------------------------------------ 4. three statements */}
+      <section className="s-how" aria-labelledby="how" data-mark="0.85 0.55 1">
+        <h2 id="how" tabIndex={-1} className="st-visually-hidden">
+          {d.dock.how}
+        </h2>
+        {s.statements.map((st, i) => (
+          <div key={st.dim} className="statement" data-side={i % 2 ? "end" : "start"}>
+            <Lines as="h3" className="is-statement" lines={[bidi(st.dim), bidi(st.bright)]} />
+            <p className="story-lead" data-reveal="">
+              {bidi(st.body)}
+            </p>
+          </div>
+        ))}
+      </section>
+
+      {/* ------------------------------------------------------------ 5. FAQ (Mail) */}
+      <section className="s-faq" aria-labelledby="faq" data-mark="0.62 0.58 1">
+        <div className="faq-head">
+          <Lines id="faq" lines={[bidi(s.faq.dim), bidi(s.faq.bright)]} />
+          <RollButton href={docsHref(locale)} plain size="md" variant="secondary">
+            {s.faq.docs}
+          </RollButton>
+        </div>
+        <div data-parallax="">
+          <Window as="div" title={s.faq.window} titleNode={<bdi dir="ltr">{s.faq.window}</bdi>} className="is-mail is-frost">
+            <MailApp
+              items={faqItems}
+              avatar={<BrandMark />}
+              labels={{ inbox: d.mail.inbox, listLabel: d.mail.listLabel, from: APP_NAME, to: s.faq.replyTo, count: fmt(d.mail.count, { n: faqItems.length }) }}
+            />
+          </Window>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------ set up */}
-      <section className="desk-section" aria-labelledby="install">
-        <div className="wrap">
-          <DeskHead id="install" h={d.sections.setup} lead={bidi(t.installLead)} />
-          <Reveal index={1} className="install-url">
-            <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
-          </Reveal>
-          <div className="install-grid">
-            <Reveal index={1}>
-              <Window as="article" title={c.claudeApp.title} aria-labelledby="install-claude" className="is-install" bodyClassName="install-card">
-                <ClientHead id="install-claude" title={c.claudeApp.title} mark={<ClaudeMark size={20} />} />
-                <ClaudeConnectorMock t={c.claudeApp} url={url} name={name} />
-                <Steps steps={c.claudeApp.steps} />
-              </Window>
-            </Reveal>
-            <Reveal index={2}>
-              <Window as="article" title={c.claudeCode.title} aria-labelledby="install-claude-code" className="is-install" bodyClassName="install-card">
-                <ClientHead id="install-claude-code" title={c.claudeCode.title} mark={<ClaudeMark size={20} />} badge={<TerminalIcon size={16} />} />
-                <CodeBlock
-                  code={claudeCmd}
-                  label={c.claudeCode.codeLabel}
-                  labelLang={labelLang}
-                  copyLabel={t.copy.command}
-                  labels={copyLabels}
-                  testId="code-claude"
-                  variant="terminal"
-                />
-                <Steps steps={c.claudeCode.steps} />
-              </Window>
-            </Reveal>
-            <Reveal index={1}>
-              <Window as="article" title={c.chatgpt.title} aria-labelledby="install-chatgpt" className="is-install" bodyClassName="install-card">
-                <ClientHead id="install-chatgpt" title={c.chatgpt.title} mark={<ChatIcon size={24} />} />
-                <ChatGptMock t={c.chatgpt} url={url} name={name} />
-                <Steps steps={c.chatgpt.steps} />
-              </Window>
-            </Reveal>
-            <Reveal index={2}>
-              <Window as="article" title={c.cursor.title} aria-labelledby="install-cursor" className="is-install" bodyClassName="install-card">
-                <ClientHead id="install-cursor" title={c.cursor.title} mark={<CursorMark size={20} />} />
-                <CodeBlock code={cursorJson} label={c.cursor.codeLabel} copyLabel={t.copy.config} labels={copyLabels} testId="code-cursor" variant="file" />
-                <Steps steps={c.cursor.steps} />
-              </Window>
-            </Reveal>
+      {/* ------------------------------------------------------------ 6. brief, bend, ship */}
+      <section className="s-ship" aria-labelledby="ship" data-mark="0.6 0.56 1">
+        <Lines id="ship" className="is-big" lines={s.ship.lines.map((l) => bidi(l))} dim={2} />
+        <div className="ship-side">
+          <p className="story-lead" data-reveal="">
+            {bt(s.ship.lead)}
+          </p>
+          <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
+            {bidi(s.hero.add)}
+          </RollButton>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------ 7. pricing */}
+      <section className="s-pricing" aria-labelledby="pricing" data-mark="0.55 0.62 0.3">
+        <p className="eyebrow">{s.pricing.eyebrow}</p>
+        <Lines id="pricing" className="is-huge" lines={s.pricing.lines.map((l) => bidi(l))} />
+        <div className="pricing-lines">
+          {beta ? <p data-reveal="">{bidi(s.pricing.beta)}</p> : null}
+          <p data-reveal="">{bidi(fmt(s.pricing.pro, { monthly, yearly }))}</p>
+          <p data-reveal="">{bidi(fmt(s.pricing.founding, { founding, cap: FOUNDING_CAP }))}</p>
+        </div>
+        <div data-parallax="">
+          <Window as="div" title={s.pricing.window} titleNode={<bdi dir="ltr">{s.pricing.window}</bdi>} className="is-pricing is-frost">
+            <div className="price-table-wrap" tabIndex={0} role="region" aria-label={p.compareTitle}>
+              <table className="price-table">
+                <caption className="st-visually-hidden">{p.compareCaption}</caption>
+                <thead>
+                  <tr>
+                    <td />
+                    {PLAN_ORDER.map((plan) => (
+                      <th key={plan} scope="col">
+                        {bidi(p.plans[plan].name)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.label}>
+                      <th scope="row">{r.label}</th>
+                      {PLAN_ORDER.map((plan) => (
+                        <td key={plan}>{r.value(plan)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr className="price-cta">
+                    <td />
+                    {PLAN_ORDER.map((plan) => (
+                      <td key={plan}>{planCta(plan)}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ul className="price-cards">
+              {PLAN_ORDER.map((plan) => (
+                <li key={plan}>
+                  <h3>{bidi(p.plans[plan].name)}</h3>
+                  <dl>
+                    {rows.map((r) => (
+                      <div key={r.label}>
+                        <dt>{r.label}</dt>
+                        <dd>{r.value(plan)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {planCta(plan)}
+                </li>
+              ))}
+            </ul>
+            <p className="price-fine">{bidi(s.pricing.fine)}</p>
+          </Window>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------ 8. the grey export section */}
+      <section className="s-kit" aria-labelledby="kit" data-grey="" data-mark="0.62 0.56 1">
+        <div className="kit-gap" />
+        <div className="kit-pin">
+          <div className="kit-sticky">
+            <Lines id="kit" className="is-grey" lines={[bidi(s.kit.dim), bidi(s.kit.bright)]} />
+            <ul className="kit-fan" data-fan="" aria-label={s.kit.label}>
+              {files.map((file, i) => (
+                <li key={file.name} className="fan-win" style={{ ["--x" as string]: FAN[i]!.x, ["--y" as string]: FAN[i]!.y, ["--i" as string]: i }}>
+                  <Window as="div" title={file.name} titleNode={<bdi dir="ltr">{file.name}</bdi>} className="is-kit">
+                    <pre dir="ltr" translate="no">
+                      <code>{file.content.split("\n").slice(0, 12).join("\n")}</code>
+                    </pre>
+                  </Window>
+                </li>
+              ))}
+            </ul>
+            <ul className="kit-files" aria-hidden="true">
+              {["brief.md", "palette.json"].map((n) => (
+                <li key={n} className="kit-file">
+                  <span className="file-glyph" />
+                  <bdi dir="ltr">{n}</bdi>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
+        <div className="kit-gap" />
       </section>
 
-      {/* ------------------------------------------------------------ pricing (plan windows) */}
-      <section className="desk-section" aria-labelledby="pricing-title">
-        <div className="wrap">
-          <DeskHead id="pricing-title" center h={d.sections.pricing} lead={bidi(beta ? t.pricing.lead : t.pricing.leadPaid)} />
-          <Reveal index={1}>
-            <PricingToggle
-              className="plans-scope"
-              labels={{ period: t.pricing.period, monthly: t.pricing.monthly, yearly: t.pricing.yearly, save: t.pricing.yearlySave }}
-            >
-              <ul className="plans desk-plans">
-                <li>
-                  <Window as="div" title={p.plans.free.name} className="is-plan" bodyClassName="plan">
-                    <h3>{p.plans.free.name}</h3>
-                    <p className="plan-price">
-                      <bdi className="plan-amount" dir="ltr">{free.amount}</bdi> <small>{free.period}</small>
-                    </p>
-                    <p className="plan-blurb">{p.plans.free.blurb}</p>
-                    <PlanFeatureList items={planFeatureItems("free", p)} />
-                    <RollButton href="#install" className="plan-cta">
-                      {bidi(t.pricing.ctaFree)}
-                    </RollButton>
-                  </Window>
-                </li>
-                <li>
-                  <Window as="div" title={p.proName} className="is-plan is-pro-win" bodyClassName="plan is-pro">
-                    <div className="plan-head">
-                      <h3>{bidi(p.proName)}</h3>
-                      {beta ? (
-                        <BetaBadge>{bidi(t.pricing.betaBadge)}</BetaBadge>
-                      ) : (
-                        <span className="st-chip" data-tone="ship">
-                          {t.pricing.popular}
-                        </span>
-                      )}
-                    </div>
-                    <p className="plan-price period-month">
-                      <bdi className="plan-amount" dir="ltr">{monthly.amount}</bdi> <small>{monthly.period}</small>
-                    </p>
-                    <p className="plan-price period-year">
-                      <bdi className="plan-amount" dir="ltr">{yearly.amount}</bdi> <small>{yearly.period}</small>
-                    </p>
-                    <p className="plan-blurb">{p.plans.pro_monthly.blurb}</p>
-                    <PlanFeatureList items={planFeatureItems("pro_monthly", p)} />
-                    <RollButton href={href(locale, "pricing")} variant="primary" className="plan-cta">
-                      {t.pricing.cta}
-                    </RollButton>
-                  </Window>
-                </li>
-              </ul>
-            </PricingToggle>
-          </Reveal>
-          <Reveal index={2}>
-            <p className="plans-note">{bidi(t.pricing.founding)}</p>
-          </Reveal>
+      {/* ------------------------------------------------------------ 9. your next direction */}
+      <section className="s-next" aria-labelledby="next" data-mark="0.6 0.56 0.5">
+        <div className="next-text">
+          <Lines id="next" className="is-huge" lines={[bidi(s.next.dim), bidi(s.next.bright)]} />
+          {beta ? (
+            <p className="story-lead" data-reveal="">
+              {bidi(s.next.note)}
+            </p>
+          ) : null}
         </div>
+        <ul className="pile" data-pile="" aria-hidden="true">
+          {pile.map((n, i) => (
+            <li key={`${n}-${i}`}>
+              <span className="file-glyph" />
+              <bdi dir="ltr">{n}</bdi>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* ------------------------------------------------------------ FAQ (Mail) */}
-      <section className="desk-section" aria-labelledby="faq-title">
-        <div className="wrap">
-          <DeskHead id="faq-title" h={d.sections.faq} />
-          <Reveal index={1}>
-            <Window as="div" title={d.windows.faq} className="is-mail">
-              <MailApp
-                items={t.faq.items.map((item) => ({ q: bt(item.q), a: bt(item.a) }))}
-                labels={{ inbox: d.mail.inbox, listLabel: d.mail.listLabel, from: fmt(d.mail.from), to: d.mail.to, count: fmt(d.mail.count, { n: t.faq.items.length }) }}
-              />
-            </Window>
-          </Reveal>
+      {/* ------------------------------------------------------------ 10. add again, footer */}
+      <section className="s-end" aria-labelledby="end-title" data-mark="0.6 0.64 1">
+        <h2 id="end-title" className="st-visually-hidden">
+          {fmt(s.add.dim)}
+        </h2>
+        <Window as="div" title={fmt(s.add.dim)} titleNode={bidi(fmt(s.add.dim))} className="add-window is-frost">
+          <AddBody t={t} locale={locale} url={url} level="h3" />
+        </Window>
+      </section>
+
+      <footer className="story-footer">
+        <div className="sf-brand">
+          <Link className="sf-logo" href={home} dir="ltr">
+            <span className="sf-tile" aria-hidden="true">
+              <BrandMark />
+            </span>
+            <span className="sf-name">{APP_NAME}</span>
+          </Link>
+          <p>
+            <bdi dir="ltr">{fmt(f.rights, { year: new Date().getUTCFullYear() })}</bdi>
+          </p>
+          <p className="sf-note">{bt(f.note)}</p>
+          <LanguageSwitch to={other} label={dict.common.language.label} name={dict.common.language.switchTo} />
         </div>
-      </section>
-
-      {/* ------------------------------------------------------------ final call */}
-      <section className="final desk-final" aria-labelledby="final-title">
-        <div className="wrap">
-          {finalRefs.length > 0 ? (
-            <Reveal className="final-collage-wrap">
-              <ul className="final-collage" aria-label={t.showcase.collageLabel}>
-                {finalRefs.map((item, i) => (
-                  <li key={item.id} className="final-tile" style={{ "--i": i } as CSSProperties}>
-                    <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">
-                      <span className="final-art">
-                        <RefImage src={item.thumbUrl} alt={item.title} lang={words.altLang} art={HERO_TILES[i % HERO_TILES.length]!.art} uid={`final-${i}`} />
-                      </span>
-                      <span className="final-credit">{words.credit(item)}</span>
-                      <span className="st-visually-hidden"> ({t.field.newTab})</span>
-                    </a>
+        <nav className="sf-columns" aria-label={dict.common.footerLabel}>
+          {footerColumns.map((col) => (
+            <div key={col.title} className="sf-col">
+              <h2 className="sf-title">{col.title}</h2>
+              <ul>
+                {col.links.map((l) => (
+                  <li key={l.label}>
+                    {l.href.startsWith("/docs/") ? (
+                      <a href={l.href}>{l.label}</a>
+                    ) : (
+                      <Link href={l.href}>{l.label}</Link>
+                    )}
                   </li>
                 ))}
               </ul>
-            </Reveal>
-          ) : null}
-          <Reveal>
-            <TwoToneHeading id="final-title" className="is-final" dim={d.final.kicker} bright={t.final.title} />
-          </Reveal>
-          <Reveal index={1}>
-            <p className="desk-lead">{bt(t.final.lead)}</p>
-            <div className="actions">
-              <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
-                {bidi(t.ctaAdd)}
-              </RollButton>
-              <RollButton href={href(locale, "pricing")}>{t.final.ctaPricing}</RollButton>
             </div>
-            <p className="final-note">{beta ? t.final.note : t.final.notePaid}</p>
-          </Reveal>
-        </div>
-      </section>
+          ))}
+        </nav>
+      </footer>
     </div>
-  );
-}
-
-/** Logo and name of an agent on its set-up card. */
-function ClientHead({ id, title, mark, badge }: { id: string; title: string; mark: ReactNode; badge?: ReactNode }) {
-  return (
-    <div className="install-card-head">
-      <span className="install-logo" aria-hidden="true">
-        {mark}
-        {badge ? <span className="install-logo-badge">{badge}</span> : null}
-      </span>
-      <h3 id={id}>{bidi(title)}</h3>
-    </div>
-  );
-}
-
-/** Numbered steps as circles on a line. */
-function Steps({ steps }: { steps: string[] }) {
-  return (
-    <ol className="steps">
-      {steps.map((s) => (
-        <li key={s}>{bidi(s)}</li>
-      ))}
-    </ol>
   );
 }

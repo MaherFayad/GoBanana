@@ -13,7 +13,7 @@
 
 .site {
   --st-font-sans: var(--st-font-desk);
-  --desk-bar: 2.25rem;
+  --desk-bar: 1.75rem;
 
   position: relative;
   z-index: 0;
@@ -54,7 +54,8 @@ html:has(.site .menubar) {
   font-size: clamp(1.75rem, 1.2rem + 1.4vw, 2.4rem);
   font-weight: 500;
   letter-spacing: var(--st-desk-tracking);
-  line-height: var(--st-desk-leading);
+  /* 0.9 only at display sizes: about 1.05 at 2rem and below, so small two-line headings never collide. */
+  line-height: max(var(--st-desk-leading) * 1em, 0.85em + 0.4rem);
   text-wrap: balance;
 }
 
@@ -140,11 +141,11 @@ html:has(.site .menubar) {
   justify-content: space-between;
   gap: var(--st-space-xl);
   min-block-size: var(--desk-bar);
-  padding-inline: var(--st-space-xl);
-  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
+  padding-inline: var(--st-space-l);
+  border-block-end: 0;
   background: var(--st-desk-menubar);
   backdrop-filter: blur(var(--st-desk-blur)) saturate(1.4);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .site .menubar-start,
@@ -156,12 +157,23 @@ html:has(.site .menubar) {
 }
 
 .site .menubar .brand {
-  min-inline-size: 2rem;
-  min-block-size: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-s);
+  min-block-size: 1.5rem;
+  padding-inline: var(--st-space-xs);
+  color: var(--st-desk-heading);
+  text-decoration: none;
 }
 
 .site .menubar .brand-mark {
-  block-size: 1.05rem;
+  inline-size: auto;
+  block-size: 0.95rem;
+}
+
+.site .menubar .brand-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .site .menubar .site-nav {
@@ -176,11 +188,11 @@ html:has(.site .menubar) {
 .site .menubar .nav-link,
 .site .menubar-link,
 .site .menubar .lang-switch {
-  min-block-size: 1.75rem;
-  padding-inline: var(--st-space-s);
+  min-block-size: 1.5rem;
+  padding-inline: var(--st-space-xs);
   border-radius: var(--st-radius-field);
   color: var(--st-desk-heading);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
@@ -191,7 +203,9 @@ html:has(.site .menubar) {
   align-items: center;
 }
 
-.site .menubar .lang-switch {
+.site .menubar .lang-switch,
+.site .site-header.menubar .st-btn[data-size="sm"] {
+  min-block-size: 1.5rem;
   background: none;
 }
 
@@ -210,31 +224,40 @@ html:has(.site .menubar) {
   display: inline-flex;
   gap: var(--st-space-s);
   min-inline-size: 7.5rem;
-  padding-inline: var(--st-space-s);
+  padding-inline: var(--st-space-xs);
   color: var(--st-desk-heading);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   justify-content: end;
 }
 
+/* "Add to Claude": a plain text item like the rest, marked by a small yellow dot. */
 .site .menubar-pill {
   display: inline-flex;
   align-items: center;
-  min-block-size: 1.75rem;
-  margin-inline-start: var(--st-space-2xs);
-  padding-inline: var(--st-space-l);
-  border-radius: var(--st-radius-pill);
-  background: var(--st-primary-fill);
-  color: var(--st-primary-text);
+  gap: var(--st-space-xs);
+  min-block-size: 1.5rem;
+  padding-inline: var(--st-space-xs);
+  border-radius: var(--st-radius-field);
+  color: var(--st-desk-heading);
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
 
+.site .menubar-pill::before {
+  content: "";
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: 50%;
+  background: var(--st-primary-fill);
+}
+
 .site .menubar-pill:hover {
-  background: var(--st-primary-fill-hover);
+  background: var(--st-desk-glass-hover);
 }
 
 /* ------------------------------------------------------------------ windows */
@@ -244,11 +267,11 @@ html:has(.site .menubar) {
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border: var(--st-border-width) solid var(--st-desk-hairline);
   border-radius: var(--st-desk-radius);
   background: var(--st-desk-glass);
   backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
-  box-shadow: var(--st-desk-shadow);
+  box-shadow: var(--st-desk-shadow-glass);
   color: var(--st-text);
   overflow: clip;
 }
@@ -262,15 +285,14 @@ html:has(.site .menubar) {
   z-index: 4;
 }
 
+/* Title bar like the reference: the lights, then the title as a file name, no divider. */
 .site .dwin-bar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: var(--st-space-s);
+  gap: var(--st-space-l);
   min-block-size: 2.25rem;
   padding-inline: var(--st-space-l);
-  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
-  background: var(--st-desk-titlebar);
+  background: transparent;
   user-select: none;
 }
 
@@ -289,9 +311,9 @@ html:has(.site .menubar) {
 
 .site .dwin-lights {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 0.75rem;
-  justify-self: start;
 }
 
 .site .dwin-light {
@@ -302,20 +324,21 @@ html:has(.site .menubar) {
   padding: 0;
   border: 0;
   border-radius: 50%;
+  background: var(--st-desk-light-idle);
+  transition: background-color var(--st-desk-roll) var(--st-desk-ease);
+}
+
+/* Plain light dots at rest (the reference); the mac colours on hover or focus of the group. */
+.site .dwin-lights:is(:hover, :focus-within) .dwin-light[data-light="close"] {
   background: var(--st-desk-light-close);
 }
 
-.site .dwin-light[data-light="min"] {
+.site .dwin-lights:is(:hover, :focus-within) .dwin-light[data-light="min"] {
   background: var(--st-desk-light-min);
 }
 
-.site .dwin-light[data-light="zoom"] {
+.site .dwin-lights:is(:hover, :focus-within) .dwin-light[data-light="zoom"] {
   background: var(--st-desk-light-zoom);
-}
-
-/* Plain windows: the lights are a picture, so they sit back. */
-.site .dwin:not([data-controls]) .dwin-light {
-  opacity: 0.5;
 }
 
 /* 24px target around each 12px light (SC 2.5.8); centres are 24px apart. */
@@ -335,12 +358,12 @@ button.dwin-light {
 }
 
 .site .dwin-title {
-  justify-self: center;
   overflow: hidden;
+  min-inline-size: 0;
   max-inline-size: 100%;
-  color: var(--st-desk-meta);
+  color: var(--st-desk-heading);
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -356,7 +379,7 @@ button.dwin-light {
 }
 
 .site .dwin-tools {
-  justify-self: end;
+  margin-inline-start: auto;
   color: var(--st-desk-meta);
   font-size: 0.8125rem;
 }
@@ -439,55 +462,6 @@ button.dwin-light {
 
 .site .callout.is-hero .actions {
   margin-block-start: var(--st-space-3xl);
-}
-
-/* The glass mark behind the hero window. */
-.site .glass-mark {
-  position: absolute;
-  z-index: 0;
-  inset-block-start: 50%;
-  inset-inline: 0;
-  --glass-intensity: 0.8;
-
-  inline-size: min(56rem, 76vw);
-  aspect-ratio: 4 / 3;
-  margin-inline: auto;
-  translate: 0 -50%;
-  pointer-events: none;
-}
-
-.site .glass-mark-still,
-.site .glass-mark-gl {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  transition: opacity 1.2s var(--st-desk-ease);
-}
-
-.site .glass-mark-still .brand-mark {
-  inline-size: 72%;
-  block-size: auto;
-  color: var(--st-desk-mark-glass);
-  opacity: 0.13;
-  filter: drop-shadow(0 0 60px var(--st-desk-mark-glow));
-}
-
-.site .glass-mark-gl {
-  opacity: 0;
-}
-
-.site .glass-mark-gl canvas {
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-.site .glass-mark[data-live] .glass-mark-gl {
-  opacity: 1;
-}
-
-.site .glass-mark[data-live] .glass-mark-still {
-  opacity: 0;
 }
 
 /* The "Add to Claude" window. */
@@ -1123,7 +1097,7 @@ button.dwin-light {
 }
 
 .site .site-footer {
-  padding-block-end: 7rem;
+  padding-block-end: var(--st-space-3xl);
   border-block-start-color: var(--st-desk-glass-edge);
   background: transparent;
 }
@@ -1136,9 +1110,9 @@ button.dwin-light {
   inline-size: max-content;
   max-inline-size: calc(100% - 1.5rem);
   margin-inline: auto;
-  padding: 0.4rem;
-  border: var(--st-border-width) solid var(--st-desk-glass-border);
-  border-radius: 1.35rem;
+  padding: 0.3rem;
+  border: var(--st-border-width) solid var(--st-desk-hairline);
+  border-radius: 1.1rem;
   background: var(--st-desk-dock);
   backdrop-filter: blur(var(--st-desk-blur-strong)) saturate(1.4);
   box-shadow: var(--st-desk-shadow-soft);
@@ -1146,7 +1120,7 @@ button.dwin-light {
 
 .site .dock-list {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.3rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1160,9 +1134,9 @@ button.dwin-light {
   position: relative;
   display: grid;
   place-items: center;
-  inline-size: 3rem;
-  block-size: 3rem;
-  border-radius: 0.9rem;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: 0.85rem;
   background: var(--st-desk-glass-solid);
   color: var(--st-desk-heading);
   text-decoration: none;
@@ -1177,8 +1151,7 @@ button.dwin-light {
 }
 
 .site .dock-item.is-home .dock-link {
-  background: var(--st-primary-fill);
-  color: var(--st-primary-text);
+  color: var(--st-primary-fill);
 }
 
 .site .dock-icon {
@@ -1189,7 +1162,12 @@ button.dwin-light {
 .site .dock-icon .brand-mark {
   inline-size: 1.7rem;
   block-size: auto;
-  color: var(--st-primary-text);
+  color: currentColor;
+}
+
+/* Every page keeps room at the bottom, so the fixed dock never covers content or the footer. */
+.site:has(.dock) {
+  padding-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* The name is always in the link; it shows as a label over the icon on hover and focus. */
@@ -1254,7 +1232,7 @@ button.dwin-light {
 
 /* ------------------------------------------------------------------ phone home screen */
 
-@media (max-width: 379.98px) {
+@media (max-width: 429.98px) {
   .site .menubar-clock {
     display: none;
   }
@@ -1273,6 +1251,16 @@ button.dwin-light {
   .site .menubar .site-nav,
   .site .menubar-day {
     display: none;
+  }
+
+  /* The mark alone on a phone; the name stays as the link's accessible name. */
+  .site .menubar .brand-name {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .site .menubar-clock {
@@ -1324,16 +1312,6 @@ button.dwin-light {
   .site .desk-col > .callout:not(.is-hero) {
     order: 4;
     inline-size: auto;
-  }
-
-  /* On a phone the mark sits behind the window, never behind the headline and lead. */
-  .site .glass-mark {
-    --glass-intensity: 0.45;
-
-    inset-block-start: 31rem;
-    inline-size: 130vw;
-    margin-inline: -15vw;
-    translate: none;
   }
 
   /* Notifications stack as plain rows on a phone. */
@@ -1415,7 +1393,7 @@ button.dwin-light {
   }
 
   .site .dock {
-    inline-size: calc(100% - 1.5rem);
+    inline-size: max-content;
     inset-block-end: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   }
 
@@ -1429,7 +1407,7 @@ button.dwin-light {
   }
 
   .site .site-footer {
-    padding-block-end: 6.5rem;
+    padding-block-end: var(--st-space-3xl);
   }
 
   /* Compare table turns into one card per plan. */
