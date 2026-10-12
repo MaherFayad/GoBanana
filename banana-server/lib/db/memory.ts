@@ -186,6 +186,17 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         }
         return n;
       },
+      async setReconciled(canvasId, id, patch) {
+        const d = data.directions.find((x) => x.canvasId === canvasId && x.id === id);
+        if (!d) return false;
+        const clean = parseDirectionDetail(clone(patch)) ?? {};
+        d.detail = {
+          ...(d.detail ?? {}),
+          ...(clean.spec ? { spec: clean.spec } : {}),
+          ...(clean.reconciled ? { reconciled: clean.reconciled } : {}),
+        };
+        return true;
+      },
       async recentQueriesForUser(userId, opts) {
         const recent = [...data.canvases.values()]
           .filter((c) => c.userId === userId && c.id !== opts.excludeCanvasId)
@@ -343,6 +354,15 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
           out.set(u.termKey, s);
         }
         return [...out.values()].filter((s) => s.users >= k || s.mine).map(({ mine: _mine, ...s }) => s);
+      },
+      async verdictsFor(userId, itemKeys) {
+        const keys = new Set(itemKeys);
+        const out = new Map<string, "great" | "bad">();
+        // Newest first, so the latest verdict per key wins.
+        for (const f of [...data.feedback].reverse()) {
+          if (f.userId === userId && keys.has(f.itemKey) && !out.has(f.itemKey)) out.set(f.itemKey, f.verdict);
+        }
+        return out;
       },
     },
     blocklist: {

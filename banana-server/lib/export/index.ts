@@ -123,6 +123,40 @@ export function exportKit(snapshot: CanvasSnapshot, formats: readonly ExportForm
   });
 }
 
+/** Directions that are kept on the board (the ones export_kit splits into their own file sets). */
+export function keptDirectionIds(snapshot: CanvasSnapshot): string[] {
+  return buildKitModel(snapshot).directions.filter((d) => d.kept).map((d) => d.direction.id);
+}
+
+export interface DirectionFileSet {
+  directionId: string;
+  title: string;
+  /** Folder of this direction's files, for example design/explorations/<slug>. */
+  dir: string;
+  files: ExportFile[];
+}
+
+/**
+ * One file set per direction, never merged: each has its own DESIGN.md, palette, fonts and tokens
+ * in its own folder. A file that would sit at the repo root (DESIGN.md in system scope) moves into
+ * the direction's folder; marked AGENTS.md and CLAUDE.md sections keep the root path, since each
+ * direction has its own markers.
+ */
+export function exportKitByDirection(
+  snapshot: CanvasSnapshot,
+  formats: readonly ExportFormat[],
+  directionIds: readonly string[],
+  opts: Omit<KitOptions, "directionId"> = {},
+): DirectionFileSet[] {
+  return directionIds.map((directionId) => {
+    const model = buildKitModel(snapshot, { ...opts, directionId });
+    const files = exportKit(snapshot, formats, { ...opts, directionId }).map((f) =>
+      !f.append && f.path === f.name ? { ...f, path: `${model.dir}/${f.name}` } : f,
+    );
+    return { directionId, title: model.focus[0]?.direction.title ?? model.title, dir: model.dir, files };
+  });
+}
+
 export { buildKitModel } from "./model";
 export type { KitModel, KitOptions } from "./model";
 export { SCOPES, MAX_PAGES, appSlug, type Scope } from "./scope";

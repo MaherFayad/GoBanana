@@ -4,6 +4,7 @@ import type { Db } from "@/db/client";
 import { canvases, directions } from "@/db/schema";
 import { parseDirectionDetail } from "./detail";
 import { isUuid } from "./ids";
+import type { DirectionDetail } from "@/lib/direction-detail";
 import type { DirectionRecord, DirectionRepo, NewDirection } from "./types";
 
 const columns = {
@@ -93,6 +94,26 @@ export async function setDirectionVerdict(
   return changed.length;
 }
 
+/** Merge reconcile_direction output into one direction's detail (validated first). Ownership is checked by the caller. */
+export async function setDirectionReconciled(
+  db: Db,
+  canvasId: string,
+  id: string,
+  patch: Pick<DirectionDetail, "spec" | "reconciled">,
+): Promise<boolean> {
+  if (!isUuid(canvasId) || !isUuid(id)) return false;
+  const clean = parseDirectionDetail(patch) ?? {};
+  const merge: Record<string, unknown> = {};
+  if (clean.spec) merge.spec = clean.spec;
+  if (clean.reconciled) merge.reconciled = clean.reconciled;
+  const changed = await db
+    .update(directions)
+    .set({ detail: sql`coalesce(${directions.detail}, '{}'::jsonb) || ${JSON.stringify(merge)}::jsonb` })
+    .where(and(eq(directions.canvasId, canvasId), eq(directions.id, id)))
+    .returning({ id: directions.id });
+  return changed.length > 0;
+}
+
 /** Delete directions of one canvas by row uuid (rate_directions drop). Ownership is checked by the caller. */
 export async function deleteDirections(db: Db, canvasId: string, ids: readonly string[]): Promise<number> {
   const rowIds = [...new Set(ids)].filter(isUuid);
@@ -133,6 +154,7 @@ export function directionRepo(db: Db): DirectionRepo {
     listForCanvas: (canvasId) => listDirections(db, canvasId),
     deleteMany: (canvasId, ids) => deleteDirections(db, canvasId, ids),
     setVerdict: (canvasId, ids, verdict) => setDirectionVerdict(db, canvasId, ids, verdict),
+    setReconciled: (canvasId, id, patch) => setDirectionReconciled(db, canvasId, id, patch),
     recentQueriesForUser: (userId, opts) => recentDirectionQueries(db, userId, opts),
   };
 }

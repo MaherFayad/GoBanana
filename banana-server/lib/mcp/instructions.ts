@@ -14,5 +14,6 @@ export const SERVER_INSTRUCTIONS = [
   "Mobbin screens are hotlinked from the connector's image_url and always link to their Mobbin page: never download them, never pass them to search_references. A wild or fitting one can be a Frankenstein part (cut_parts with its itemId, for example a real pay bar under a wild hero), never the whole page. With no Mobbin connector, skip all of this and do not mention Mobbin.",
   "",
   "Flow: get_canvas (reuse a matching board) or new_canvas, bend_brief with the platform and the page, keep the best 3 directions, search_references once per kept direction, rate_references (bad for junk, great for 1 to 3 standouts), add_to_canvas with 6 to 8 UI and 2 to 4 art per direction (art in the art row, each with a 'steal:' note), arrange_canvas, then open_canvas and give the web link.",
+  "Read boards with get_canvas summary: true first. Before export_kit, run reconcile_direction on each kept direction so its spec matches the board, and tell the user about any conflicts it lists. Several kept directions export one folder each: build one at a time.",
   "Always show each reference's source link. Never download or copy reference images.",
 ].join("\n");

@@ -82,6 +82,38 @@ export interface DirectionDetail {
   wildness?: number;
   /** "keep" or "drop" from rate_directions; missing means not rated yet. */
   verdict?: "keep" | "drop";
+  /** What reconcile_direction measured on the board for this direction. Missing until it runs. */
+  reconciled?: Reconciled;
+}
+
+/** One contrast pair as reconcile_direction saves it. ship: passes 4.5:1 (text) or 3:1 (UI parts only). */
+export interface ReconciledPair {
+  fg: string;
+  bg: string;
+  ratio: number;
+  passesText: boolean;
+  passesUi: boolean;
+  tag: "ship" | "explore";
+}
+
+/**
+ * The board's own colors and mood for one direction (reconcile_direction), saved on the direction
+ * so exports read the board, not the first guess in the spec. Hex values and ratios only.
+ */
+export interface Reconciled {
+  /** ISO time of the run. */
+  at: string;
+  /** Fingerprint of the direction's placed images and great ratings at that time (lib/reconcile). */
+  itemsKey: string;
+  palette: { hex: string; oklch: string; role: string }[];
+  contrast: ReconciledPair[];
+  /** One plain line on the board's mood ("light, warm, one loud accent"). */
+  mood: string;
+  /** Images read, and how many of them were rated great. */
+  images: number;
+  great: number;
+  /** Main colors (hex, most common first) inside each Frankenstein part's crop, by part id. */
+  parts?: Record<string, string[]>;
 }
 
 /** Reference zone on a board: UI references or art direction (the wild idea as images). */

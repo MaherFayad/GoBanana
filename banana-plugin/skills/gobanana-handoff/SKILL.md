@@ -1,6 +1,6 @@
 ---
 name: gobanana-handoff
-description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
+description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
 ---
 
 # GoBanana handoff
@@ -20,7 +20,7 @@ Turn one kept direction into the files a coding tool needs to build its page or 
 
 ### 1. Pick the direction and pages
 
-Use the `canvasId` from this conversation, or ask. Call `get_canvas`. Pick the kept direction (`directionId`); if several are kept and the user did not say, ask which one. Pages: the direction's `pages`, or the routes the user names. Map them to the project's real routes or globs when you can see the code (`app/pricing/page.tsx`, `src/pages/onboarding/**`). Ask one question only if you cannot tell.
+Use the `canvasId` from this conversation, or ask. Call `get_canvas` with `summary: true` first (ids, titles, roles, notes and directionIds only); read the full view only for the items you need. Pick the kept direction (`directionId`); if several are kept and the user did not say, ask which one. Without a `directionId`, several kept directions export one folder each, never merged: hand off and build one direction at a time. Pages: the direction's `pages`, or the routes the user names. Map them to the project's real routes or globs when you can see the code (`app/pricing/page.tsx`, `src/pages/onboarding/**`). Ask one question only if you cannot tell.
 
 ### 2. Detect the coding tools
 
@@ -37,9 +37,11 @@ Look in the repo, then confirm in one line ("I see Cursor and Claude Code; I'll 
 
 Always include `direction_md`, `build_prompt` and `review`. Add `design_md` when the user wants a DESIGN.md too. When the canvas has Frankenstein pages (stitches in `get_canvas`) and the user wants to build one, add `stitch_md` (FRANKENSTEIN.md, Free) and, on Pro, `wireframe_html` (frankenstein-wireframe.html); with no kept direction, export only those two plus `build_prompt` and leave out `directionId`.
 
-### 3. Export
+### 3. Reconcile, then export
 
-Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and the `formats` from step 2. Every file comes back with `name`, `path` and `content`.
+Call `reconcile_direction` with `canvasId` and `directionId` first. It reads the colors of the direction's placed images (great ratings count more), saves the palette with WCAG checks (ship at 4.5:1 for text, 3:1 for UI parts) and rewrites the spec's color line, so the pack matches the board. Tell the user about every conflict it lists. (`export_kit` also reconciles a direction that changed since its last run.)
+
+Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and the `formats` from step 2. Every file comes back with `name`, `path` and `content`. Output is capped at about 20k characters: files past the cap are listed with their path, so fetch each with `export_kit`, the same arguments and `file: "<path>"`. DESIGN.md names four Google Fonts per direction (Latin and Arabic, display and body); keep them, never swap in Inter, Roboto or Arial.
 
 | Format | File and path | Plan |
 | --- | --- | --- |
@@ -69,7 +71,7 @@ A short list of written files with paths, then one line on scope: "These apply o
 - **Copilot:** the instructions apply to files matching `applyTo`.
 - **v0, Lovable:** paste BUILD-PROMPT.md into a new chat.
 
-Offer next: build the page now, then grade it (gobanana-critique).
+BUILD-PROMPT.md starts with the steps before any code: look at each Frankenstein page (get_snapshot) and the part notes first. Offer next: build the page now, then grade it (gobanana-critique).
 
 ## On the Free plan
 

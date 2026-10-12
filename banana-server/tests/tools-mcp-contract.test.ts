@@ -50,6 +50,7 @@ const EXPECTED = [
   "remix_frankenstein",
   "update_frankenstein",
   "extract_palette",
+  "reconcile_direction",
   "export_kit",
   "delete_canvas",
   // App-only (hidden from the model by MCP Apps hosts); the inline canvas saves and reloads through them.

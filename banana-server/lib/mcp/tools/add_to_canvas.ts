@@ -33,6 +33,7 @@ import {
   upgradeUrl,
   type CanvasToolDeps,
 } from "./canvas-shared";
+import { reconcileHintFor } from "./reconcile_direction";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "add_to_canvas";
@@ -250,7 +251,8 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
         skipped: outcome.value.skipped,
         webUrl: canvasWebUrl(deps.appUrl(), input.canvasId),
       };
-      return toolResult(text(out, outcome.canvas.title), out);
+      const hint = await reconcileHintFor(deps.repos, userId, outcome.canvas, outcome.state);
+      return toolResult(`${text(out, outcome.canvas.title)}${hint ? `\n${hint}` : ""}`, out);
     } catch {
       console.error("[add_to_canvas] failed");
       return toolMessage(TRY_AGAIN);

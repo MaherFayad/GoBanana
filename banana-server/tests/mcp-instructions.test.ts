@@ -17,6 +17,13 @@ describe("server instructions", () => {
     expect(SERVER_INSTRUCTIONS).toMatch(/6 to 8 UI and 2 to 4 art/);
   });
 
+  it("push summary reads, reconcile before export and one direction at a time", () => {
+    expect(SERVER_INSTRUCTIONS).toMatch(/get_canvas summary: true first/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/Before export_kit, run reconcile_direction/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/tell the user about any conflicts/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/build one at a time/);
+  });
+
   it("is plain and short enough for clients that cap instructions", () => {
     expect(SERVER_INSTRUCTIONS).not.toMatch(/[—–]/);
     expect(SERVER_INSTRUCTIONS.length).toBeLessThan(2500);
