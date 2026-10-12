@@ -43,7 +43,7 @@ export const PLATFORM_PROFILES: Record<Platform, PlatformProfile> = {
     label: "phone app",
     grid: "4 column grid, 16px margins, key actions in the thumb zone, a tab bar or bottom sheet.",
     gridShort: "a 4 column grid with 16px margins and actions in the thumb zone",
-    density: "One idea per screen, 44pt tap targets, generous spacing on a 8pt rhythm.",
+    density: "One idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
     display: "34px",
     body: "17px",
     uiTail: "app ui",

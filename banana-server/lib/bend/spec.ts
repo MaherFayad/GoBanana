@@ -9,6 +9,8 @@ import { article, capitalize } from "./templates";
 import type { Domain } from "./tone";
 import type { ListEntry, MoveId, Tone } from "./types";
 
+
+
 /** Style words verified live as search terms (lib/taste.ts). Only these reach styleWords. */
 export const VERIFIED_STYLE_WORDS: readonly string[] = [
   "minimal",
@@ -216,7 +218,7 @@ function pattern(input: SpecInput): string {
     case "scale":
       return `One giant ${label.replace(/s$/, "")} anchors ${the(c)}`;
     case "lens":
-      return `A ${label} band as the divider in ${the(c)}`;
+      return `${capitalize(article(label))} ${label} band as the divider in ${the(c)}`;
   }
 }
 
@@ -300,8 +302,8 @@ function whyItFits(input: SpecInput): string {
   if (input.clash && input.domain) {
     return `A deliberate clash: a ${input.mood.label} mood is the last thing ${input.domain.audience} expect, so it sticks`;
   }
-  if (input.domain) return `A ${input.mood.label} mood suits ${input.domain.audience}, and ${lead} gives it a story`;
-  return `A ${input.mood.label} mood and ${lead} give the ${input.subject} a look no competitor has`;
+  if (input.domain) return `${capitalize(article(input.mood.label))} ${input.mood.label} mood suits ${input.domain.audience}, and ${lead} ${/s$/i.test(lead) && !/ss$/i.test(lead) ? "give" : "gives"} it a story`;
+  return `${capitalize(article(input.mood.label))} ${input.mood.label} mood and ${lead} give the ${input.subject} a look no competitor has`;
 }
 
 /** The full visual spec for one direction. */
@@ -310,7 +312,7 @@ export function buildSpec(input: SpecInput): VisualSpec {
   const voice = typeVoice(input);
   const caseNote = entries.constraint ? (CASE_NOTE[entries.constraint.key] ?? "") : "";
   const accent = first(entries.lens, entries.era);
-  const baseColor = entries.constraint?.hints.color ?? mood.hints.color ?? `A ${mood.label} palette with one accent`;
+  const baseColor = entries.constraint?.hints.color ?? mood.hints.color ?? `${capitalize(article(mood.label))} ${mood.label} palette with one accent`;
   const color =
     entries.constraint?.hints.color || !accent
       ? `${baseColor}; text at 4.5 to 1 contrast or more`

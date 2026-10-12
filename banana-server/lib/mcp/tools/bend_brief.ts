@@ -88,8 +88,9 @@ async function readWeights(
 }
 
 /** The detail saved with a direction (directions.detail). The verdict stays with rate_directions. */
-export function directionDetail(d: BendResult["directions"][number], wildness: number): DirectionDetail {
+export function directionDetail(d: BendResult["directions"][number], wildness: number, brief?: string): DirectionDetail {
   return {
+    ...(brief ? { brief } : {}),
     platform: d.platform,
     pages: d.pages,
     spec: d.spec,
@@ -116,7 +117,7 @@ async function saveDirections(
       move: d.move,
       title: d.title,
       searchQuery: d.searchQuery,
-      detail: directionDetail(d, result.wildness),
+      detail: directionDetail(d, result.wildness, result.brief),
     })),
   );
   await deps.repos.canvases.update(userId, canvasId, {

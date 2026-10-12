@@ -58,6 +58,8 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (s) out.spec = s;
   const art = strs(raw.artQueries, 6, 200);
   if (art) out.artQueries = art;
+  const brief = str(raw.brief, 500);
+  if (brief) out.brief = brief;
   const twist = str(raw.twist, 600);
   if (twist) out.twist = twist;
   const prompt = str(raw.prompt, 4000);

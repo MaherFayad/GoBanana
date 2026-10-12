@@ -69,6 +69,8 @@ export interface VisualSpec {
 
 /** Extra direction data saved on the canvas (directions.detail jsonb). All optional for old rows. */
 export interface DirectionDetail {
+  /** The brief bend_brief was given. Searches use it before the canvas brief, so one board can hold directions for several screens. */
+  brief?: string;
   platform?: Platform;
   /** Pages or screens the direction applies to ("pricing page", "/launch"). Empty means the brief's screen. */
   pages?: string[];

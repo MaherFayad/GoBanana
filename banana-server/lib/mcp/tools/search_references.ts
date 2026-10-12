@@ -555,7 +555,7 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
         searchQuery: d.searchQuery,
         canvasId: d.canvasId,
         bendId: d.bendId,
-        brief: canvas?.brief ?? null,
+        brief: d.detail?.brief ?? canvas?.brief ?? null,
         taste: canvas ? (parseState(canvas.state).taste ?? null) : null,
         detail: d.detail ?? null,
       };
