@@ -11,7 +11,8 @@
  * keep images small; an image without a small variant that is over the cap is skipped and named.
  */
 import { fetchThumbIntoMemory, type FetchLike } from "@/lib/palette/fetch";
-import { allowlistFromEnv, isAllowedImageUrl, type ImageHostAllowlist } from "@/lib/sources/allowlist";
+import { allowlistFromEnv, isAllowedImageUrl, parseAllowlist, type ImageHostAllowlist } from "@/lib/sources/allowlist";
+import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
 
 /** Most thumbnails in one tool result. */
@@ -97,6 +98,15 @@ export function pickThumbUrl(t: Pick<ThumbTarget, "imageUrl" | "thumbUrl">, allo
   return null;
 }
 
+/**
+ * The hosts thumbnails may come from: the image allowlist plus Mobbin's image hosts (the
+ * connector's short link and the CDN it redirects to), so agents see the Mobbin screens they
+ * placed. Thumbnails only; search and extract_palette keep the plain allowlist.
+ */
+export function thumbAllowlist(base: ImageHostAllowlist = allowlistFromEnv()): ImageHostAllowlist {
+  return parseAllowlist([...base.entries, ...MOBBIN_IMAGE_HOSTS]);
+}
+
 /** Image type from the first bytes. Only formats agents' clients accept: JPEG, PNG, GIF, WebP. */
 export function sniffImageType(b: Uint8Array): string | null {
   if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
@@ -138,7 +148,7 @@ type Fetched = { ok: true; data: string; mimeType: string; bytes: number } | { o
  * the reason. Bytes are base64 encoded into the result and dropped; nothing else keeps them.
  */
 export async function thumbBlocks(targets: readonly ThumbTarget[], opts: ThumbOptions = {}): Promise<{ blocks: McpContent[]; shown: number }> {
-  const allowlist = opts.allowlist ?? allowlistFromEnv();
+  const allowlist = opts.allowlist ?? thumbAllowlist();
   const max = opts.max ?? MAX_THUMBS;
   const urls = targets.map((t) => pickThumbUrl(t, allowlist));
 

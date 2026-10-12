@@ -6,10 +6,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import type { CanvasState, StoredNode } from "@/canvas/types";
 import type { FetchLike } from "@/lib/palette/fetch";
-import { DEFAULT_IMAGE_HOSTS, parseAllowlist } from "@/lib/sources/allowlist";
+import { allowlistFromEnv, DEFAULT_IMAGE_HOSTS, isAllowedImageUrl, parseAllowlist } from "@/lib/sources/allowlist";
 import { MOBBIN_REFRESH_DAYS, mobbinExpiryLines } from "@/lib/vision/board";
 import { SNAPSHOT_END } from "@/lib/vision/snapshot";
-import { LOOK_LINE, pickThumbUrl, smallVariant, sniffImageType, thumbBlocks, withThumbs, type McpContent } from "@/lib/vision/thumbs";
+import { LOOK_LINE, pickThumbUrl, smallVariant, sniffImageType, thumbAllowlist, thumbBlocks, withThumbs, type McpContent } from "@/lib/vision/thumbs";
 import { canvasWithThumbs, searchWithThumbs } from "@/lib/vision/wrap";
 import { createAddToCanvasTool } from "@/lib/mcp/tools/add_to_canvas";
 import { createGetCanvasTool } from "@/lib/mcp/tools/get_canvas";
@@ -50,6 +50,14 @@ describe("small source sizes", () => {
     expect(pickThumbUrl({ imageUrl: "https://bytescale.mobbin.com/a.webp" }, allowlist)).toBeNull();
     expect(pickThumbUrl({ imageUrl: "https://my-app.vercel.app/shot.png" }, allowlist)).toBeNull();
     expect(pickThumbUrl({ imageUrl: "http://i.pinimg.com/236x/1.png" }, allowlist)).toBeNull();
+  });
+
+  it("fetches Mobbin screens for thumbnails only (thumbAllowlist), not for search", () => {
+    const thumbs = thumbAllowlist(allowlist);
+    expect(pickThumbUrl({ imageUrl: "https://mobbin.com/api/mcp/short/abc" }, thumbs)).toBe("https://mobbin.com/api/mcp/short/abc");
+    expect(pickThumbUrl({ imageUrl: "https://bytescale.mobbin.com/a.webp" }, thumbs)).toBe("https://bytescale.mobbin.com/a.webp");
+    expect(pickThumbUrl({ imageUrl: "https://my-app.vercel.app/shot.png" }, thumbs)).toBeNull();
+    expect(isAllowedImageUrl("https://bytescale.mobbin.com/a.webp", allowlistFromEnv())).toBe(false);
   });
 
   it("sniffs the formats agents read", () => {

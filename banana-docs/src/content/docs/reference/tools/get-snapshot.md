@@ -41,7 +41,7 @@ Builds placed next to the page with `add_to_canvas` (type `build`) are listed at
 ## How the thumbnails work
 
 - The server fetches each image at its source's own small size (Pinterest `236x`, Dribbble `resize=400x300`, Behance `disp`) and hands the bytes to the agent in the result. They are never stored, cached, logged or served at any address.
-- Only image hosts on the search allowlist are fetched. Mobbin screens, your uploads and build screenshots are named with their link but not fetched.
+- Only image hosts on the search allowlist and Mobbin's image hosts are fetched. Your uploads and build screenshots are named with their link but not fetched.
 - Up to 12 images per call, about 3 seconds each, about 1.5 MB in total. An image over 300 KB with no small size is skipped, and the line says so.
 
 ## Messages
