@@ -91,7 +91,7 @@ Fix what fails with `update_frankenstein` (`canvasId`, `stitchId`, `ops`), for e
 
 When one variant has rows you love, call `remix_frankenstein` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result. A slot that gets a new part drops the note written for the old one, so read the new labels from the reply.
 
-To judge structure, offer mode `even` (dark parts inverted so the page reads as one theme) or `wireframe` (grey with role labels): `{ "op": "mode", "mode": "wireframe" }`. Keep `collage` as the default view.
+Pages open in the `collage` view (the parts as they are); do not set a mode. The user can switch to `even` (dark parts inverted, one theme) or `wireframe` (grey with role labels) on the board; set one with `{ "op": "mode", "mode": "wireframe" }` only when the user asks.
 
 Stop after two rounds of fixes. Ideas, not polish.
 

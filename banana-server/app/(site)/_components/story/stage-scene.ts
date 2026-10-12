@@ -13,8 +13,9 @@
  *   middle of the viewport; `data-grey` marks the section whose scroll drives the wipe.
  *
  * Colors come from the --st-desk-* tokens (read once from CSS), never from literals. The loop
- * stops while the tab is hidden or an app window covers the page (components/window/cover.ts)
- * and draws nothing while the page is scrolled past the story.
+ * draws about 30 frames a second while nothing but the float moves, stops while the tab is
+ * hidden or an app window covers the page (components/window/cover.ts) and draws nothing while
+ * the page is scrolled past the story.
  */
 import { Mesh, Program, Renderer, Texture, Triangle } from "ogl";
 import { BRAND_MARK_PATH } from "@/components/brand/BrandMark";
@@ -220,6 +221,9 @@ void main() {
 
 type MarkTarget = { scale: number; y: number; dim: number };
 
+/** Frame interval while nothing but the float and the wave moves. */
+const IDLE_FRAME_MS = 30;
+
 function readTarget(el: Element): MarkTarget {
   const [scale = 1, y = 0.55, dim = 1] = (el.getAttribute("data-mark") ?? "").split(/\s+/).map(Number);
   return { scale, y, dim };
@@ -300,6 +304,8 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   let tip = 0;
   let flipStart = -1;
   let raf = 0;
+  let settled = false;
+  let lastDraw = 0;
   const t0 = performance.now();
 
   /** Phone and tablet target: the most visible tile slot (tile centred in it, `scale` is its half size in px), else hidden. */
@@ -345,6 +351,14 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   function frame(now: number) {
     raf = 0;
     if (document.hidden || covered) return;
+    // At rest only the slow float and the background wave move: draw every other frame (about
+    // 30 a second) and leave the GPU to the page. Scrolling, the pointer, a flip or the wipe
+    // bring back every frame.
+    if (settled && window.scrollY === lastY && now - lastDraw < IDLE_FRAME_MS) {
+      loop();
+      return;
+    }
+    lastDraw = now;
     const time = (now - t0) / 1000;
     const y = window.scrollY;
     const dy = y - lastY;
@@ -384,6 +398,18 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
     u.uDim!.value = cur.dim * (narrow && !pinned ? 0.3 : 1);
     u.uLight!.value = lightAmount();
     u.uTime!.value = time;
+    const light = u.uLight!.value as number;
+    settled =
+      Math.abs(vel) < 0.05 &&
+      Math.abs(dip) < 0.5 &&
+      Math.abs(tip) < 0.002 &&
+      flipStart < 0 &&
+      Math.abs(tx - mx) < 0.002 &&
+      Math.abs(ty - my) < 0.002 &&
+      Math.abs(want.y - cur.y) < 0.001 &&
+      Math.abs(want.scale - cur.scale) < 0.001 &&
+      Math.abs(want.dim - cur.dim) < 0.002 &&
+      (light <= 0 || light >= 1);
     renderer.render({ scene: mesh });
     if (onReady) {
       onReady();

@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * Loads the landing scroll motion (story-motion.ts: Lenis, GSAP ScrollTrigger) after hydration,
+ * Loads the landing scroll motion (story-motion.ts: GSAP ScrollTrigger) after hydration,
  * on the landing page only, and never under prefers-reduced-motion. Renders nothing.
  */
 import { useEffect } from "react";
 
 // Next replaces `typeof window` with "undefined" in the server build, so the server build drops
-// this import and GSAP and Lenis never reach the Worker (docs/worker-size.md).
+// this import and GSAP never reaches the Worker (docs/worker-size.md).
 const loadMotion = typeof window === "undefined" ? null : () => import("./story-motion");
 
 export function StoryMotion() {

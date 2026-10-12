@@ -63,7 +63,7 @@ export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),
   title: z.string().trim().min(1).max(MAX_STITCH_TITLE).optional(),
   platform: platformSchema.optional().describe("Frame: mobile 390, tablet 834, website or webapp 1440 px. Default: the direction's platform, else website."),
-  mode: modeSchema.optional().describe("collage (default, parts as they are), wireframe (grayscale with role labels) or even (one theme)."),
+  mode: modeSchema.optional().describe("Leave unset: pages open in the collage view (parts as they are) and the user switches to wireframe or even on the board."),
   directionId: z.string().min(1).max(100).optional(),
   note: z.string().trim().min(1).max(MAX_STITCH_NOTE).optional().describe("The idea in one line."),
   rows: z

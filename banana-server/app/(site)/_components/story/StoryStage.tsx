@@ -6,26 +6,20 @@
  * demand after the page is idle, so the hero text stays the first paint.
  *
  * The static fallback is always in the markup: the tile drawn in CSS with the mark (story.css).
- * It stays when WebGL is missing and under prefers-reduced-motion (a still mark, no trail); the
- * grey export section then gets its color from CSS instead of the wipe (`data-stage` on the root).
+ * It stays when WebGL is missing or software only, and under prefers-reduced-motion (a still
+ * mark, no trail); the grey export section then gets its color from CSS instead of the wipe
+ * (`data-stage` on the root).
  * Decorative: aria-hidden.
  */
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
+import { hasHardwareGpu } from "../gpu";
 
 // Next replaces `typeof window` with "undefined" in the server build, so the server build drops
 // these imports and ogl and the trail never reach the Worker (docs/worker-size.md).
 const loadTrail = typeof window === "undefined" ? null : () => import("./trail");
 const loadScene = typeof window === "undefined" ? null : () => import("./stage-scene");
 
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    return Boolean(c.getContext("webgl2") ?? c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
 
 export function StoryStage() {
   const glHost = useRef<HTMLDivElement>(null);
@@ -41,7 +35,7 @@ export function StoryStage() {
       if (trail.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
         loadTrail().then((m) => !cancelled && trail.current && disposers.push(m.mountTrail(trail.current))).catch(() => {});
       }
-      if (!glHost.current || !hasWebGL()) return;
+      if (!glHost.current || !hasHardwareGpu()) return;
       loadScene()
         .then((m) => {
           if (cancelled || !glHost.current) return;

@@ -13,19 +13,6 @@
 
 /* ------------------------------------------------------------------ root */
 
-html.lenis,
-html.lenis body {
-  block-size: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-stopped {
-  overflow: clip;
-}
-
 /* The landing draws its own footer (section 10). */
 .site:has(.story) > .site-footer,
 .site:has(.story) .site-footer {

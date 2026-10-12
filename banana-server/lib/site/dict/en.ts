@@ -631,6 +631,37 @@ export const en = {
     secondary: "Read the docs",
     canvases: "Your canvases",
   },
+  install: {
+    title: "Add to Claude",
+    windowTitle: "Add {app} to Claude",
+    lead: "One plugin adds the {app} connector and its skills (go wild, moodboard, Frankenstein it, hand off, critique, palette).",
+    tabsLabel: "Where you use Claude",
+    tabs: { app: "Claude app", file: "Upload file", code: "Claude Code", other: "Other agents" },
+    app: {
+      intro: "In the Claude desktop app or on claude.ai (Pro, Max, Team or Enterprise):",
+      steps: [
+        "Open Customize in the sidebar, then the Plugins tab.",
+        "Choose Add, then Add marketplace, then Add from a repository.",
+        "Paste the repository below and add it.",
+        "Find {app} in the list and choose Add. Sign in when Claude asks.",
+      ],
+      repoLabel: "Repository",
+      note: "The plugin brings the connector with it. If {app} does not show under Connectors, add the server address from Other agents.",
+    },
+    file: {
+      intro: "No GitHub access? Install the plugin from a file:",
+      steps: ["Download the plugin file.", "In Customize, Plugins, choose Add, then Upload plugin.", "Pick the file. Sign in when Claude asks."],
+      download: "Download the plugin (.zip)",
+    },
+    code: {
+      intro: "In Claude Code, run these two commands:",
+      label: "Claude Code",
+    },
+    other: {
+      intro: "Cursor, VS Code, Windsurf, Codex, ChatGPT and other MCP clients: add this server address as a custom connector or MCP server.",
+      docs: "Step by step for each client",
+    },
+  },
   share: {
     madeWith: "A canvas made with {app}",
     cta: "Add to Claude",

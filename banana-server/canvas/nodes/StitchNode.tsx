@@ -135,8 +135,9 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
   const actions = useCanvasActions();
   const { partsById, parts, openCrop } = useStitch();
   const readOnly = actions.readOnly;
-  const [viewMode, setViewMode] = useState<StitchMode | null>(null);
-  const mode = readOnly ? (viewMode ?? data.mode) : data.mode;
+  // Every page opens in the collage view (the parts as they are), whatever view was saved; the
+  // switch changes this view, and an editor's choice is also saved for the agent and exports.
+  const [mode, setViewMode] = useState<StitchMode>("collage");
   const [active, setActive] = useState<string | null>(null);
   const [menu, setMenu] = useState<SlotMenu | null>(null);
   const [noteFor, setNoteFor] = useState<string | null>(null);
@@ -217,8 +218,8 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
   };
 
   const setMode = (m: StitchMode) => {
-    if (readOnly) setViewMode(m);
-    else actions.updateData<"stitch">(id, { mode: m });
+    setViewMode(m);
+    if (!readOnly) actions.updateData<"stitch">(id, { mode: m });
     actions.announce(`${MODE_LABELS[m]} view`);
   };
 

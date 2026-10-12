@@ -1,0 +1,97 @@
+/* Add to Claude window (InstallWindow.tsx): the settings window size, tabs as a segmented row. */
+
+.site .install .install-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-l);
+  overflow: auto;
+  padding: var(--st-space-3xl) clamp(1rem, 4vw, 2.5rem) var(--st-space-4xl);
+  color: var(--st-desk-body);
+}
+
+.site .inst-title {
+  margin: 0;
+  color: var(--st-desk-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.site .inst-lead {
+  margin: 0;
+}
+
+.site .inst-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xl);
+}
+
+.site .inst-tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-3xs);
+  align-self: flex-start;
+  padding: var(--st-space-4xs);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-radius-pill);
+}
+
+.site .inst-tab {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2rem;
+  padding-inline: var(--st-space-l);
+  border: 0;
+  border-radius: var(--st-radius-pill);
+  background: transparent;
+  color: var(--st-desk-meta);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.site .inst-tab[aria-selected="true"] {
+  background: var(--st-desk-glass-strong);
+  color: var(--st-desk-heading);
+}
+
+.site .inst-tab:focus-visible {
+  outline: 2px solid var(--st-desk-heading);
+  outline-offset: -2px;
+}
+
+.site .inst-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-l);
+}
+
+.site .inst-panel[hidden] {
+  display: none;
+}
+
+.site .inst-panel p {
+  margin: 0;
+}
+
+.site .inst-steps {
+  display: grid;
+  gap: var(--st-space-s);
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  color: var(--st-desk-heading);
+}
+
+.site .inst-note {
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .inst-panel .st-btn,
+.site .inst-docs {
+  align-self: flex-start;
+}
+
+.site .inst-docs {
+  color: var(--st-desk-heading);
+}

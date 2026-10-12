@@ -151,7 +151,7 @@ test.describe("canvas window chrome", () => {
     await expect(page.getByTestId("view-only-banner")).toHaveCount(0);
     await expect(page.getByRole("banner").getByTestId("save-status")).toHaveText("View only");
     await expect(page.getByRole("banner").getByRole("link")).toHaveCount(1);
-    await expect(page.getByRole("banner").getByRole("link", { name: "Add to Claude" })).toHaveAttribute("href", "/en#install");
+    await expect(page.getByRole("banner").getByRole("link", { name: "Add to Claude" })).toHaveAttribute("href", "/en/install");
     const card = page.getByRole("complementary", { name: /^About / });
     await expect(card).toContainText("Made with");
     await expect(card.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "/en");

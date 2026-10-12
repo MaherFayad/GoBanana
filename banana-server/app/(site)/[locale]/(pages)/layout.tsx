@@ -10,6 +10,7 @@ import { isLocale } from "@/lib/site/i18n";
 import { isSignedIn } from "@/lib/site/session";
 import { AnchorScroll } from "../../_components/AnchorScroll";
 import { Dock } from "../../_components/desktop/Dock";
+import { GpuProbe } from "../../_components/GpuProbe";
 import { SiteFooter, SiteHeader } from "../../_components/SiteChrome";
 
 type Props = { children: ReactNode; params: Promise<{ locale: string }> };
@@ -29,6 +30,7 @@ export default async function PagesLayout({ children, params }: Props) {
       <SiteFooter locale={locale} t={t} />
       <Dock locale={locale} t={t} />
       <AnchorScroll />
+      <GpuProbe />
     </>
   );
 }

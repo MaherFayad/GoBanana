@@ -143,7 +143,7 @@ function pairs(theme: Theme): Pair[] {
   text("badge on selection", "canvas-node-badge-text", "canvas-selection-ring-color");
 
   // The GoBanana desktop (marketing pages): text on the black desk and on glass windows over it.
-  for (const bg of ["desk-bg", ["desk-glass", "desk-bg"], ["desk-glass-strong", "desk-bg"], "desk-glass-solid", ["desk-dock", "desk-bg"], ["desk-menubar", "desk-bg"]] as Layer[]) {
+  for (const bg of ["desk-bg", ["desk-glass", "desk-bg"], ["desk-glass-strong", "desk-bg"], ["desk-glass-flat", "desk-bg"], "desk-glass-solid", ["desk-dock", "desk-bg"], ["desk-menubar", "desk-bg"]] as Layer[]) {
     text("desk heading, first line", "desk-heading-dim", bg);
     text("desk heading, second line", "desk-heading", bg);
     text("desk body", "desk-body", bg);

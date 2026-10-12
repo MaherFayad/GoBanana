@@ -44,7 +44,6 @@
   border: var(--st-border-width) solid var(--st-desk-hairline);
   border-radius: var(--st-desk-radius);
   background: var(--st-desk-glass-strong);
-  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
   box-shadow: var(--st-desk-shadow-soft);
   color: var(--st-desk-body);
   font-size: 0.8125rem;

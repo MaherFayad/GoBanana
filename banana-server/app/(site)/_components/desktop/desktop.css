@@ -42,6 +42,16 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* No real GPU (GpuProbe.tsx): no live blurs. Each one is redrawn on the CPU on every frame the
+   page scrolls; the glass fills alone read the same at rest. Important, so it wins over every
+   component rule that sets a blur. */
+html[data-gpu="software"] *,
+html[data-gpu="software"] *::before,
+html[data-gpu="software"] *::after,
+html[data-gpu="software"] ::backdrop {
+  backdrop-filter: none !important;
+}
+
 html:has(.site .menubar) {
   scroll-padding-block: calc(var(--desk-bar) + 1rem) 6rem;
 }
@@ -386,8 +396,8 @@ html:has(.site .menubar) {
   min-inline-size: 0;
   border: var(--st-border-width) solid var(--st-desk-hairline);
   border-radius: var(--st-desk-radius);
-  background: var(--st-desk-glass);
-  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
+  /* Flat glass, no live blur (studio-tokens.css, --st-desk-glass-flat). */
+  background: var(--st-desk-glass-flat);
   box-shadow: var(--st-desk-shadow-glass);
   color: var(--st-text);
   overflow: clip;
@@ -784,7 +794,6 @@ button.dwin-light {
   border: var(--st-border-width) solid var(--st-desk-glass-border);
   border-radius: var(--st-desk-radius);
   background: var(--st-desk-glass-strong);
-  backdrop-filter: blur(var(--st-desk-blur));
   box-shadow: var(--st-desk-shadow-soft);
   color: var(--st-desk-heading);
   text-decoration: none;
@@ -1010,7 +1019,6 @@ button.dwin-light {
 .site .desk .install-url .server-address {
   border-color: var(--st-desk-glass-border);
   background: var(--st-desk-glass);
-  backdrop-filter: blur(var(--st-desk-blur));
 }
 
 /* Plans as windows. */
@@ -1084,7 +1092,6 @@ button.dwin-light {
   padding: var(--st-space-3xs) var(--st-space-l);
   border-radius: var(--st-radius-pill);
   background: var(--st-desk-glass-strong);
-  backdrop-filter: blur(var(--st-desk-blur));
   color: var(--st-desk-heading);
   font-size: 0.8125rem;
 }
@@ -1390,8 +1397,7 @@ button.dwin-light {
 .site .desk-page .table-scroll {
   border: var(--st-border-width) solid var(--st-desk-glass-border);
   border-radius: var(--st-desk-radius);
-  background: var(--st-desk-glass);
-  backdrop-filter: blur(var(--st-desk-blur));
+  background: var(--st-desk-glass-flat);
 }
 
 .site .compare-cards {

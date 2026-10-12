@@ -50,7 +50,7 @@ test.describe("menu bar", () => {
     expect(await hrefs(page, "header .site-nav a")).toEqual(["/en#how", "/en/gallery", "/docs/", "/en/pricing"]);
     // Signed in through the E2E bypass, so the bar links to the canvases.
     await expect(bar.locator(".menubar-link")).toHaveAttribute("href", "/en/canvases");
-    await expect(bar.locator(".menubar-pill")).toHaveAttribute("href", "/en#install");
+    await expect(bar.locator(".menubar-pill")).toHaveAttribute("href", "/en/install");
     await expect(bar.locator(".lang-switch")).toHaveAttribute("lang", "ar");
     // The clock is client only and decorative.
     await expect(bar.locator(".menubar-clock")).toHaveAttribute("aria-hidden", "true");

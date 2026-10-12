@@ -4,12 +4,11 @@
  * In-page links scroll there instead of jumping: the menu bar's "How it works", "Gallery" and
  * "Add to Claude", the hero buttons, and the dock. On the landing page, the Pricing link scrolls
  * to the pricing section instead of leaving the page (the full pricing page stays one click away
- * from that section). Uses the story's smooth scroller when it runs, else native smooth scrolling;
- * under prefers-reduced-motion it jumps. Focus moves to the target (SC 2.4.3), the URL hash
+ * from that section). Native smooth scrolling (the menu bar's height comes off through
+ * scroll-padding, desktop.css); under prefers-reduced-motion it jumps. Focus moves to the target (SC 2.4.3), the URL hash
  * updates, and modified clicks (new tab, and so on) are left alone.
  */
 import { useEffect } from "react";
-import { storyBus } from "./story/story-bus";
 
 /** Paths whose page has a section on the landing page: last path segment to section id. */
 const SECTIONS: Record<string, string> = { pricing: "pricing" };
@@ -40,8 +39,7 @@ export function AnchorScroll() {
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
       // A section heading can be visually hidden; land on the start of its section instead.
       const to = target.closest<HTMLElement>("section") ?? target;
-      if (storyBus.scrollTo && !reduce) storyBus.scrollTo(to);
-      else to.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      to.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
       if (`#${target.id}` !== location.hash) history.pushState(null, "", `#${target.id}`);
       if (!target.hasAttribute("tabindex") && !target.matches("a, button, input, select, textarea")) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });

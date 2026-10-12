@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build:ui": "vite build --config ui/canvas/vite.config.ts",
-    "build": "npm run build:ui && next build",
+    "build": "node scripts/build-plugin-zip.mjs && npm run build:ui && next build",
     "build:docs": "node scripts/build-docs.mjs",
     "preview": "npm run build:docs && opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy:preview": "npm run build:docs && opennextjs-cloudflare build && opennextjs-cloudflare deploy",

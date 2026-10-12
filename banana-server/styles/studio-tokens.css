@@ -299,6 +299,11 @@
   /* Window glass and its parts. */
   --st-desk-glass: #1f1f1f87;
   --st-desk-glass-strong: #161616e0;
+  /* Window glass without a live blur: as dark as the blurred glass over the desk, opaque enough
+     that the grain does not show through. Live blurs are kept to small chrome (menu bar, dock,
+     menus): every repaint under a blurred window redraws the blur, which costs a weak GPU or
+     software compositing most of its frames while the page scrolls. */
+  --st-desk-glass-flat: #141414d9;
   --st-desk-glass-solid: #141414;
   --st-desk-glass-border: #ffffff1f;
   --st-desk-glass-edge: #ffffff12;

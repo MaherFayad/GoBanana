@@ -206,7 +206,7 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
   };
 
   const layer = (
-    <div ref={layerRef} className="wl" data-mode={mode} data-kind={kind} data-zoomed={zoomed ? "" : undefined} data-lenis-prevent="">
+    <div ref={layerRef} className="wl" data-mode={mode} data-kind={kind} data-zoomed={zoomed ? "" : undefined}>
       <div ref={backRef} className="wl-backdrop" aria-hidden="true" />
       <div
         ref={winRef}

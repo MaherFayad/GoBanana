@@ -184,9 +184,11 @@ function ZoomVars({ target }: { target: RefObject<HTMLElement | null> }) {
       el.style.setProperty("--bn-chrome", String(chromeScale(zoom)));
     };
     write(store.getState().transform[2]);
-    // A new value restyles every element on the board, so a zoom gesture (pinch sends many small
-    // steps per second) writes when the zoom moved past ZOOM_VAR_STEP from the last write, and
-    // the exact value once it settles. Chrome is off by under that step mid-gesture, exact at rest.
+    // A new value restyles every element on the board (about 2,600 on a big board: 50 ms on a
+    // fast laptop, 200 ms on a 4x slower one), so a zoom gesture (pinch and Ctrl + wheel send
+    // many small steps per second) writes only when the zoom moved past ZOOM_VAR_STEP from the
+    // last write, and the exact value once it settles. Mid-gesture the chrome scales with the
+    // board (within that step), exact at rest.
     const unsubscribe = store.subscribe((s) => {
       const zoom = s.transform[2];
       if (zoom === last) return;
@@ -206,7 +208,7 @@ function ZoomVars({ target }: { target: RefObject<HTMLElement | null> }) {
 }
 
 /** Zoom ratio past which ZoomVars rewrites the chrome scale mid-gesture. */
-const ZOOM_VAR_STEP = 1.1;
+const ZOOM_VAR_STEP = 2;
 /** Quiet time after the last zoom step before ZoomVars writes the exact value. */
 const ZOOM_VAR_SETTLE_MS = 120;
 

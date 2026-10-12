@@ -1,8 +1,13 @@
 /**
  * Scroll motion for the landing story (docs/landing-motion-spec.md), loaded on demand by
  * StoryMotion.tsx and never under prefers-reduced-motion:
- * - Lenis smooth scroll (lerp 0.1), driving GSAP ScrollTrigger.
- * - `[data-reveal]`: every word blurs in (blur 8px to 0, opacity 0 to 1, y 12px to 0), scrubbed.
+ * - Native scroll, read by GSAP ScrollTrigger. No smooth scroll library: the browser scrolls on
+ *   its compositor thread, so the page follows the wheel at once and stays smooth while the main
+ *   thread is busy (a script smooth scroll lagged about a second behind the wheel and dropped
+ *   frames whenever the main thread did, on a 4x slower CPU most of them). The scrubbed tweens
+ *   below ease on their own.
+ * - `[data-reveal]`: every word fades and rises in (opacity 0 to 1, y 12px to 0), scrubbed. No
+ *   blur: a filter per word repainted every word on every scroll frame.
  * - `[data-parallax]`: windows drift a little against the scroll.
  * - `[data-row]` (768px and up): the board row is pinned and the page scroll moves it sideways;
  *   focus inside it scrolls the page so the focused card is in view, and the prev / next buttons
@@ -15,7 +20,6 @@
  */
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import { watchPageCover } from "@/components/window/cover";
 import { storyBus } from "./story-bus";
 
@@ -51,19 +55,10 @@ export function mountMotion(root: HTMLElement): () => void {
   const rtl = getComputedStyle(root).direction === "rtl";
   const sign = rtl ? -1 : 1;
 
-  const lenis = new Lenis({ lerp: 0.1, autoRaf: false });
-  lenis.on("scroll", ScrollTrigger.update);
-  const tick = (t: number) => lenis.raf(t * 1000);
-  gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
   // Under an app window the landing is inert and blurred out of sight: no ticks until it closes.
   const unwatch = watchPageCover((covered) => (covered ? gsap.ticker.sleep() : gsap.ticker.wake()));
   root.setAttribute("data-motion", "");
-  // In-page links glide like the wheel; the menu bar's height comes off so headings stay visible.
-  storyBus.scrollTo = (target) => {
-    const bar = document.querySelector<HTMLElement>(".menubar")?.offsetHeight ?? 0;
-    lenis.scrollTo(target, { offset: -(bar + 16), duration: 1.2 });
-  };
 
   const ctx = gsap.context(() => {
     for (const el of root.querySelectorAll<HTMLElement>("[data-reveal]")) {
@@ -71,10 +66,9 @@ export function mountMotion(root: HTMLElement): () => void {
       if (!words.length) continue;
       gsap.fromTo(
         words,
-        { opacity: 0, filter: "blur(8px)", y: 12 },
+        { opacity: 0, y: 12 },
         {
           opacity: 1,
-          filter: "blur(0px)",
           y: 0,
           ease: "none",
           stagger: 0.08,
@@ -111,10 +105,10 @@ export function mountMotion(root: HTMLElement): () => void {
       const start = rtl ? track.scrollWidth - card.offsetLeft - card.offsetWidth : card.offsetLeft;
       const gutter = parseFloat(getComputedStyle(track).paddingInlineStart) || 0;
       const view = sticky.clientWidth;
-      const now = lenis.scroll - rowTrigger.start;
+      const now = window.scrollY - rowTrigger.start;
       if (start - now >= 0 && start + card.offsetWidth - now <= view) return;
       const want = Math.min(dist, Math.max(0, start - gutter));
-      lenis.scrollTo(rowTrigger.start + want, { immediate: true, force: true });
+      window.scrollTo({ top: rowTrigger.start + want, behavior: "instant" });
       ScrollTrigger.update();
     };
     if (row && track && sticky) {
@@ -137,9 +131,9 @@ export function mountMotion(root: HTMLElement): () => void {
         const card = track.querySelector<HTMLElement>(".row-card");
         const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
         const step = (card?.offsetWidth ?? 400) + gap;
-        const now = lenis.scroll - rowTrigger.start;
+        const now = window.scrollY - rowTrigger.start;
         const next = Math.min(rowTrigger.end - rowTrigger.start, Math.max(0, Math.round(now / step + delta) * step));
-        lenis.scrollTo(rowTrigger.start + next, { duration: 0.9 });
+        window.scrollTo({ top: rowTrigger.start + next, behavior: "smooth" });
       };
     }
 
@@ -185,10 +179,7 @@ export function mountMotion(root: HTMLElement): () => void {
     ctx.revert();
     unwatch();
     gsap.ticker.wake();
-    gsap.ticker.remove(tick);
-    lenis.destroy();
     root.removeAttribute("data-motion");
     storyBus.rowStep = null;
-    storyBus.scrollTo = null;
   };
 }

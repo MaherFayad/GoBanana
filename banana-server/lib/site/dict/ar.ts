@@ -629,6 +629,37 @@ export const ar: Dict = {
     secondary: "قراءة الدليل",
     canvases: "لوحاتك",
   },
+  install: {
+    title: "أضف إلى Claude",
+    windowTitle: "أضف {app} إلى Claude",
+    lead: "إضافة واحدة تضيف موصل {app} ومهاراته (الأفكار الجامحة، لوحة المراجع، Frankenstein it، التسليم، النقد، الألوان).",
+    tabsLabel: "أين تستخدم Claude",
+    tabs: { app: "تطبيق Claude", file: "رفع ملف", code: "Claude Code", other: "وكلاء آخرون" },
+    app: {
+      intro: "في تطبيق Claude لسطح المكتب أو على claude.ai (Pro أو Max أو Team أو Enterprise):",
+      steps: [
+        "افتح Customize من الشريط الجانبي، ثم تبويب Plugins.",
+        "اختر Add، ثم Add marketplace، ثم Add from a repository.",
+        "الصق المستودع أدناه وأضفه.",
+        "ابحث عن {app} في القائمة واختر Add. سجل الدخول حين يطلب Claude ذلك.",
+      ],
+      repoLabel: "المستودع",
+      note: "تجلب الإضافة الموصل معها. إن لم يظهر {app} ضمن Connectors، أضف عنوان الخادم من تبويب وكلاء آخرون.",
+    },
+    file: {
+      intro: "لا تصل إلى GitHub؟ ثبت الإضافة من ملف:",
+      steps: ["نزل ملف الإضافة.", "في Customize ثم Plugins، اختر Add ثم Upload plugin.", "اختر الملف. سجل الدخول حين يطلب Claude ذلك."],
+      download: "نزل الإضافة (.zip)",
+    },
+    code: {
+      intro: "في Claude Code، شغل هذين الأمرين:",
+      label: "Claude Code",
+    },
+    other: {
+      intro: "Cursor وVS Code وWindsurf وCodex وChatGPT وغيرها من عملاء MCP: أضف عنوان الخادم هذا كموصل مخصص أو خادم MCP.",
+      docs: "الخطوات لكل عميل",
+    },
+  },
   share: {
     madeWith: "لوحة صنعت باستخدام {app}",
     cta: "إضافة إلى Claude",

@@ -56,7 +56,7 @@ function ShareBar() {
         {APP_NAME}
       </a>
       <p className="share-made">{fmt(t.share.madeWith)}</p>
-      <a className="st-btn" data-variant="primary" data-size="sm" href={`${href("en")}#install`}>
+      <a className="st-btn" data-variant="primary" data-size="sm" href={href("en", "install")}>
         {t.share.cta}
       </a>
     </nav>
@@ -105,7 +105,7 @@ export default async function SharedCanvasPage({ params }: Props) {
         title={shared.title}
         state={shared.state}
         titleEnd={
-          <a className="st-btn share-cta" data-variant="primary" data-size="sm" href={`${href("en")}#install`}>
+          <a className="st-btn share-cta" data-variant="primary" data-size="sm" href={href("en", "install")}>
             {t.share.cta}
           </a>
         }

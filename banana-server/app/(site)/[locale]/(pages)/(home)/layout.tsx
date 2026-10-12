@@ -8,8 +8,8 @@
  *
  * A scroll story after ssscript.app (docs/landing-motion-spec.md). The persistent layer: the menu
  * bar and dock (layout), a fixed notification stack, and a fixed stage behind everything with the
- * 3D Bend tile, the desk background and the mouse glyph trail (StoryStage). Scroll motion (Lenis,
- * GSAP ScrollTrigger: word blur-ins, the pinned board row, the export fan, the file pile) loads
+ * 3D Bend tile, the desk background and the mouse glyph trail (StoryStage). Scroll motion (native
+ * scroll read by GSAP ScrollTrigger: word fade-ins, the pinned board row, the export fan, the file pile) loads
  * on demand in StoryMotion, and none of it runs under prefers-reduced-motion.
  *
  * Sections, in order: the hero desktop (the "Add GoBanana" window, four callouts, reference icons
@@ -209,7 +209,7 @@ function AddBody({ t, locale, url, level }: AddProps) {
     const yesNo = (v: boolean) => (v ? p.yes : p.no);
     const planCta = (plan: Plan) =>
       plan === "free" ? (
-        <RollButton href="#install" size="md" variant="secondary">
+        <RollButton href={href(locale, "install")} size="md" variant="secondary">
           {bidi(s.pricing.ctaFree)}
         </RollButton>
       ) : (
@@ -280,7 +280,7 @@ function AddBody({ t, locale, url, level }: AddProps) {
             <Lines as="h1" id="hero-title" className="is-hero" lines={[bidi(s.hero.dim), bidi(s.hero.bright)]} reveal={false} />
             <p className="story-lead">{bidi(s.hero.lead)}</p>
             <div className="actions">
-              <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
+              <RollButton href={href(locale, "install")} variant="primary" icon={<ArrowEndIcon size={16} />}>
                 {bidi(s.hero.add)}
               </RollButton>
               <RollButton href="#gallery" variant="ghost">
@@ -447,7 +447,7 @@ function AddBody({ t, locale, url, level }: AddProps) {
             <p className="story-lead" data-reveal="">
               {bt(s.ship.lead)}
             </p>
-            <RollButton href="#install" variant="primary" icon={<ArrowEndIcon size={16} />}>
+            <RollButton href={href(locale, "install")} variant="primary" icon={<ArrowEndIcon size={16} />}>
               {bidi(s.hero.add)}
             </RollButton>
           </div>

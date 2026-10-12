@@ -72,7 +72,7 @@ export default async function PricingPage({ params }: Props) {
     if (user?.plan === plan) return null;
     if (plan === "free") {
       return (
-        <Link className="st-btn" data-variant="secondary" data-size="md" href={`${href(locale)}#install`}>
+        <Link className="st-btn" data-variant="secondary" data-size="md" href={href(locale, "install")}>
           {fmt(t.cta.free)}
         </Link>
       );

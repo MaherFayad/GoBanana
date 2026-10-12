@@ -86,9 +86,9 @@ export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; s
             { kind: "lang" as const, to: other, label: c.language.label, name: c.language.switchTo, hint: other.toUpperCase() },
           ]}
         />
-        <a className="menubar-pill" href={`${href(locale)}#install`}>
+        <Link className="menubar-pill" href={href(locale, "install")}>
           <RollLabel>{c.addToClaude}</RollLabel>
-        </a>
+        </Link>
       </div>
     </header>
   );
