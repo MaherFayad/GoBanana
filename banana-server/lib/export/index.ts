@@ -13,6 +13,8 @@ import { claudeMdSection, copilotInstructions, cursorRule } from "./harness";
 import { htmlBoard } from "./html-board";
 import { buildKitModel, type KitModel, type KitOptions } from "./model";
 import { reviewMd } from "./review";
+import { STITCH_MD_FILE, stitchMd, WIREFRAME_FILE } from "./stitch-md";
+import { wireframeHtml } from "./wireframe-html";
 import { appSlug } from "./scope";
 import { tailwindCss } from "./tailwind";
 import { tokensJson } from "./tokens";
@@ -31,6 +33,8 @@ export const EXPORT_FORMATS = [
   "cursor_rules",
   "copilot",
   "claude_md",
+  "stitch_md",
+  "wireframe_html",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -92,6 +96,8 @@ const GENERATORS: Record<ExportFormat, Generator> = {
     path: (m) => `.github/instructions/${appSlug()}-${m.slug}.instructions.md`,
   },
   claude_md: { name: fixed("CLAUDE.md"), mime: "text/markdown", build: marked(claudeMdSection), path: fixed("CLAUDE.md"), append: () => true },
+  stitch_md: { name: fixed(STITCH_MD_FILE), mime: "text/markdown", build: stitchMd, path: inDir(STITCH_MD_FILE) },
+  wireframe_html: { name: fixed(WIREFRAME_FILE), mime: "text/html", build: wireframeHtml, path: inDir(WIREFRAME_FILE) },
 };
 
 export function isExportFormat(value: unknown): value is ExportFormat {

@@ -1,6 +1,6 @@
 ---
 name: gobanana-explore
-description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-handoff to hand a kept direction to a coding tool.
+description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
 ---
 
 # GoBanana explore
@@ -179,6 +179,7 @@ Then:
 - **Hand off:** turn a kept direction into scoped files for Claude Code, Cursor, Copilot, v0 or Lovable (gobanana-handoff).
 - **Build then critique:** build the page, then screenshot and grade it against the direction (gobanana-critique).
 - **Palette:** colors from the art direction or UI references, with WCAG checks (gobanana-palette).
+- **Frankenstein it:** cut the best parts out of the UI references (a nav from one, a hero from another, cards from a third) and stitch 3 or 4 new page variants on the board, each part linked to its source (gobanana-frankenstein).
 - **Turn it up or down:** wildness N+1 or N-1, a lens, other taste words, or another page from the wild spots.
 
 ## When things go wrong

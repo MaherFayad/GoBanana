@@ -18,6 +18,7 @@ import type {
   UploadItem,
 } from "@/lib/canvas/types";
 import type { Zone } from "@/lib/direction-detail";
+import type { Part, StitchData } from "@/lib/stitch/types";
 
 export type { Tag } from "@/lib/canvas/types";
 
@@ -49,12 +50,17 @@ export type SectionNodeData = Omit<SectionItem, Geometry> & {
   expandedHeight?: number | null;
 };
 
+/** A stitch frame: rows of slots, each showing a crop of a part from `CanvasState.parts`. */
+/** Same fields as StitchData; a mapped type because React Flow needs `data` to be a plain object type. */
+export type StitchNodeData = Pick<StitchData, keyof StitchData>;
+
 export type ImageFlowNode = Node<ImageNodeData, "image">;
 export type UploadFlowNode = Node<UploadNodeData, "upload">;
 export type NoteFlowNode = Node<NoteNodeData, "note">;
 export type SwatchFlowNode = Node<SwatchNodeData, "swatch">;
 export type TypeSampleFlowNode = Node<TypeSampleNodeData, "typeSample">;
 export type SectionFlowNode = Node<SectionNodeData, "section">;
+export type StitchFlowNode = Node<StitchNodeData, "stitch">;
 
 export type ReferenceFlowNode = ImageFlowNode | UploadFlowNode;
 export type CanvasFlowNode =
@@ -63,7 +69,8 @@ export type CanvasFlowNode =
   | NoteFlowNode
   | SwatchFlowNode
   | TypeSampleFlowNode
-  | SectionFlowNode;
+  | SectionFlowNode
+  | StitchFlowNode;
 
 export type CanvasNodeType = CanvasFlowNode["type"];
 
@@ -74,9 +81,10 @@ export interface NodeDataByType {
   swatch: SwatchNodeData;
   typeSample: TypeSampleNodeData;
   section: SectionNodeData;
+  stitch: StitchNodeData;
 }
 
-export const NODE_TYPES: readonly CanvasNodeType[] = ["image", "upload", "note", "swatch", "typeSample", "section"];
+export const NODE_TYPES: readonly CanvasNodeType[] = ["image", "upload", "note", "swatch", "typeSample", "section", "stitch"];
 
 /**
  * A search result waiting in the tray. Same fields as `Reference` in
@@ -131,6 +139,8 @@ export interface CanvasState {
    * a save without it keeps the stored one (lib/db/canvases.ts saveCanvasState).
    */
   taste?: string[];
+  /** Parts library for stitches (lib/stitch/types.ts), up to MAX_PARTS. The UI and the tools both edit it. */
+  parts?: Part[];
 }
 
 /** Default sizes for new nodes, in canvas pixels. */
@@ -141,6 +151,8 @@ export const DEFAULT_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   swatch: { w: 220, h: 250 },
   typeSample: { w: 320, h: 170 },
   section: { w: 616, h: 420 },
+  // Website frame; mobile and tablet frames are narrower (lib/stitch/size.ts stitchSize).
+  stitch: { w: 720, h: 900 },
 };
 
 /** Smallest size a node can be resized to. Keeps controls inside at least 24x24 px. */
@@ -153,6 +165,7 @@ export const MIN_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   swatch: { w: 200, h: 230 },
   typeSample: { w: 220, h: 140 },
   section: { w: 296, h: 48 },
+  stitch: { w: 200, h: 160 },
 };
 
 export const NOTE_COLORS = ["yellow", "blue", "pink", "green", "gray"] as const;

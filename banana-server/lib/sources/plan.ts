@@ -102,13 +102,14 @@ export function hasArtLane(lanes: LaneTexts): boolean {
  * "design".
  */
 export function galleryWords(site: SourceSite, topic: string): string {
-  const fixed = sourceEntry(site).query;
-  if (fixed) return fixed;
+  const entry = sourceEntry(site);
+  if (entry.query) return entry.query;
   const plain = cleanQuery(topic.replace(/(^|\s)-\S+/g, " "))
     .replace(/\b(app ui|ui design|website ui|dashboard ui|ui ux|ui|ux|single screen|app|design)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
-  return plain || "design";
+  const words = plain || "design";
+  return entry.suffix ? `${words} ${entry.suffix}` : words;
 }
 
 export type PlannedRequest = {

@@ -8,6 +8,8 @@ import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, loadCanvas, toSnapshot, type TrayReference } from "@/lib/canvas/store";
 import type { CanvasDirection, CanvasItem, CanvasSnapshot } from "@/lib/canvas/types";
+import { roleName, skeleton, skeletonLines, type SkeletonRow } from "@/lib/stitch/skeleton";
+import { PART_ROLES, type Crop, type PartRole, type StitchMode, type StitchPlatform } from "@/lib/stitch/types";
 import {
   CANVAS_NOT_FOUND,
   lazyTool,
@@ -22,7 +24,7 @@ export const TOOL_NAME = "get_canvas";
 
 export const TOOL_DESCRIPTION =
   "Read a canvas: its brief, directions (platform, pages, kept or not, visual spec), sections, items with their source links and notes, swatches and palettes. " +
-  "Use it to see what the user kept or changed before you suggest next steps or export. " +
+  "Also the parts library and the Frankenstein pages. Use it to see what the user kept or changed before next steps or export. " +
   "Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.";
 
 export const inputSchema = z.object({
@@ -32,7 +34,70 @@ export const inputSchema = z.object({
 /** Canvases the list shows, most recently updated first. */
 export const RECENT_CANVASES = 10;
 
-export type GetCanvasOutput = { canvas: CanvasSnapshot; tray: TrayReference[] };
+export type PartSummary = { id: string; role: PartRole; sourceSite: string; sourceUrl: string; title?: string; crop: Crop; note?: string; guessed?: boolean };
+export type StitchOverview = { id: string; title: string; platform: StitchPlatform; mode: StitchMode; note?: string; variantOf?: string; skeleton: SkeletonRow[] };
+
+export type GetCanvasOutput = {
+  canvas: Omit<CanvasSnapshot, "parts" | "stitches">;
+  tray: TrayReference[];
+  /** Parts library grouped by role (roles with parts only, in PART_ROLES order). */
+  parts: { role: PartRole; parts: PartSummary[] }[];
+  /** Frankenstein pages (stitch frames), compact. */
+  stitches: StitchOverview[];
+};
+
+export function partsByRole(c: CanvasSnapshot): GetCanvasOutput["parts"] {
+  const list = c.parts ?? [];
+  return PART_ROLES.flatMap((role) => {
+    const parts = list
+      .filter((p) => p.role === role)
+      .map((p) => ({
+        id: p.id,
+        role: p.role,
+        sourceSite: p.sourceSite,
+        sourceUrl: p.sourceUrl,
+        ...(p.title ? { title: p.title } : {}),
+        crop: p.crop,
+        ...(p.note ? { note: p.note } : {}),
+        ...(p.guessedCrop ? { guessed: true } : {}),
+      }));
+    return parts.length > 0 ? [{ role, parts }] : [];
+  });
+}
+
+export function stitchOverview(c: CanvasSnapshot): StitchOverview[] {
+  return (c.stitches ?? []).map((s) => ({
+    id: s.id,
+    title: s.title,
+    platform: s.platform,
+    mode: s.mode,
+    ...(s.note ? { note: s.note } : {}),
+    ...(s.variantOf ? { variantOf: s.variantOf } : {}),
+    skeleton: skeleton(s.rows),
+  }));
+}
+
+/** Text lines for the parts library and the Frankenstein pages. */
+export function stitchLines(c: CanvasSnapshot): string[] {
+  const lines: string[] = [];
+  const groups = partsByRole(c);
+  if (groups.length > 0) {
+    lines.push(`Parts library (${(c.parts ?? []).length}):`);
+    for (const g of groups) {
+      lines.push(`  ${roleName(g.role)}:`);
+      for (const p of g.parts) lines.push(`    - ${p.id} from ${p.sourceSite} ${p.sourceUrl}${p.guessed ? " (guessed crop)" : ""}${p.note ? ` note: ${p.note}` : ""}`);
+    }
+  }
+  const stitches = c.stitches ?? [];
+  if (stitches.length > 0) {
+    lines.push(`Frankenstein pages (${stitches.length}):`);
+    for (const s of stitches) {
+      lines.push(`- ${s.title} (${s.id}, ${s.platform}, ${s.mode})${s.variantOf ? ` remix of ${s.variantOf}` : ""}${s.note ? `: ${s.note}` : ""}`);
+      lines.push(...(s.rows.length > 0 ? skeletonLines(s.rows, "    ") : ["    (no rows yet)"]));
+    }
+  }
+  return lines;
+}
 
 function describeItem(it: CanvasItem): string {
   switch (it.type) {
@@ -111,6 +176,7 @@ export function canvasText(c: CanvasSnapshot, trayCount: number): string {
   c.palettes.forEach((p, i) => {
     lines.push(`Palette ${i + 1}: ${p.colors.map((col) => `${col.hex}${col.role ? ` ${col.role}` : ""}`).join(", ")}`);
   });
+  lines.push(...stitchLines(c));
   if (trayCount > 0) lines.push(`${trayCount} search results wait in the tray. Place them with add_to_canvas.`);
   lines.push("Always show each reference's source link next to it.");
   return lines.join("\n");
@@ -164,7 +230,8 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
         palettes,
         webUrl: canvasWebUrl(deps.appUrl(), canvasId),
       });
-      const out: GetCanvasOutput = { canvas: compactDirections(canvas), tray: loaded.state.tray };
+      const { parts: _p, stitches: _s, ...rest } = compactDirections(canvas);
+      const out: GetCanvasOutput = { canvas: rest, tray: loaded.state.tray, parts: partsByRole(canvas), stitches: stitchOverview(canvas) };
       return toolResult(canvasText(canvas, loaded.state.tray.length), out);
     } catch {
       console.error("[get_canvas] failed");

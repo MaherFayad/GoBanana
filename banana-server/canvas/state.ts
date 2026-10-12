@@ -11,6 +11,8 @@
  */
 import type { CanvasItem } from "@/lib/canvas/types";
 import type { Zone } from "@/lib/direction-detail";
+import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
+import type { Part } from "@/lib/stitch/types";
 import { cleanTaste } from "@/lib/taste";
 import {
   type CanvasFlowNode,
@@ -160,6 +162,9 @@ export function cleanData<K extends CanvasNodeType>(type: K, raw: unknown): Node
       });
       return out as NodeDataByType[K];
     }
+    case "stitch":
+      // Slots whose part is missing from the library are pruned in parseState, which sees the parts.
+      return cleanStitchData(d) as NodeDataByType[K];
     default:
       return null;
   }
@@ -255,13 +260,25 @@ export function parseState(raw: unknown): CanvasState {
     tray.push(ref);
   }
   const taste = cleanTaste(src.taste);
+  // Parts library. Kept as a key only when the input has it, so a save without it (an older canvas
+  // UI) keeps the stored library (lib/db/keep.ts) instead of wiping it.
+  const hasParts = Array.isArray(src.parts);
+  const parts = hasParts ? parseParts(src.parts, safeUrl, siteFromUrl) : [];
   return {
     version: STATE_VERSION,
     viewport: parseViewport(src.viewport),
-    nodes: orderStored(nodes),
+    nodes: orderStored(hasParts ? pruneStitches(nodes, parts) : nodes),
     tray,
     ...(taste.length > 0 ? { taste } : {}),
+    ...(hasParts ? { parts } : {}),
   };
+}
+
+/** Drop stitch slots whose part is not in the library. */
+function pruneStitches(nodes: StoredNode[], parts: readonly Part[]): StoredNode[] {
+  if (!nodes.some((n) => n.type === "stitch")) return nodes;
+  const ids = new Set(parts.map((p) => p.id));
+  return nodes.map((n) => (n.type === "stitch" ? { ...n, data: pruneStitch(n.data, ids) } : n));
 }
 
 function orderStored(nodes: StoredNode[]): StoredNode[] {
@@ -293,7 +310,15 @@ export function filterBlocked(state: CanvasState, isBlocked?: IsBlocked): { stat
     }
     return true;
   });
-  return { state: { ...state, nodes, tray }, removed };
+  if (!state.parts) return { state: { ...state, nodes, tray }, removed };
+  const parts = state.parts.filter((p) => {
+    if (blockedRef(p, isBlocked)) {
+      removed += 1;
+      return false;
+    }
+    return true;
+  });
+  return { state: { ...state, nodes: parts.length < state.parts.length ? pruneStitches(nodes, parts) : nodes, tray, parts }, removed };
 }
 
 // ---------------------------------------------------------------------------
@@ -332,14 +357,16 @@ export interface Deserialized {
   nodes: CanvasFlowNode[];
   viewport: StoredViewport;
   tray: TrayReference[];
-  /** How many items and tray results the takedown filter hid. */
+  /** Parts library for stitch frames (empty when the canvas has none). */
+  parts: Part[];
+  /** How many items, tray results and parts the takedown filter hid. */
   removed: number;
 }
 
 /** Stored JSON (unknown) -> React Flow nodes, viewport and tray, with the takedown filter applied. */
 export function deserializeState(raw: unknown, opts: DeserializeOptions = {}): Deserialized {
   const { state, removed } = filterBlocked(parseState(raw), opts.isBlocked);
-  return { nodes: stateToNodes(state), viewport: state.viewport, tray: state.tray, removed };
+  return { nodes: stateToNodes(state), viewport: state.viewport, tray: state.tray, parts: state.parts ?? [], removed };
 }
 
 function round(n: number): number {
@@ -365,11 +392,15 @@ export function flowNodeToStored(node: CanvasFlowNode): StoredNode | null {
   } as StoredNode);
 }
 
-/** React Flow nodes + viewport + tray -> the JSON saved in `canvases.state`. */
+/**
+ * React Flow nodes + viewport + tray (+ parts library) -> the JSON saved in `canvases.state`.
+ * Leave `parts` out to keep the stored library on save; pass a list (even empty) to replace it.
+ */
 export function serializeState(
   nodes: readonly CanvasFlowNode[],
   viewport: StoredViewport,
   tray: readonly TrayReference[] = [],
+  parts?: readonly Part[],
 ): CanvasState {
   const stored: StoredNode[] = [];
   for (const n of orderNodes(nodes)) {
@@ -381,21 +412,26 @@ export function serializeState(
     const c = parseTrayReference(r);
     if (c) cleanTray.push(c);
   }
+  const cleanParts = parts ? parseParts(parts, safeUrl, siteFromUrl) : undefined;
   return {
     version: STATE_VERSION,
     viewport: { x: round(viewport.x), y: round(viewport.y), zoom: round(viewport.zoom) || 1 },
-    nodes: stored,
+    nodes: cleanParts ? pruneStitches(stored, cleanParts) : stored,
     tray: cleanTray,
+    ...(cleanParts ? { parts: cleanParts } : {}),
   };
 }
 
 // ---------------------------------------------------------------------------
 // Bridge to the CanvasSnapshot shape in lib/canvas/types.ts (exports, get_canvas)
 
-/** Stored state -> CanvasItem list with absolute coordinates (children converted from parent-relative). */
+/**
+ * Stored state -> CanvasItem list with absolute coordinates (children converted from parent-relative).
+ * Stitch frames are not CanvasItems; lib/canvas/store.ts toSnapshot lists them as `stitches`.
+ */
 export function stateToItems(state: CanvasState): CanvasItem[] {
   const sections = new Map(state.nodes.filter((n) => n.type === "section").map((n) => [n.id, n]));
-  return state.nodes.map((n): CanvasItem => {
+  return state.nodes.flatMap((n): CanvasItem[] => {
     const parent = n.parentId ? sections.get(n.parentId) : undefined;
     const geo = {
       id: n.id,
@@ -408,24 +444,26 @@ export function stateToItems(state: CanvasState): CanvasItem[] {
     switch (n.type) {
       case "image": {
         const { width: _w, height: _h, ...d } = n.data;
-        return { ...geo, type: "image", ...d };
+        return [{ ...geo, type: "image", ...d }];
       }
       case "upload": {
         const { width: _w, height: _h, ...d } = n.data;
-        return { ...geo, type: "upload", ...d };
+        return [{ ...geo, type: "upload", ...d }];
       }
       case "note": {
         const { manualHeight: _m, ...d } = n.data;
-        return { ...geo, type: "note", ...d };
+        return [{ ...geo, type: "note", ...d }];
       }
       case "swatch":
-        return { ...geo, type: "swatch", ...n.data };
+        return [{ ...geo, type: "swatch", ...n.data }];
       case "typeSample":
-        return { ...geo, type: "typeSample", ...n.data };
+        return [{ ...geo, type: "typeSample", ...n.data }];
       case "section": {
         const { collapsed: _c, expandedHeight: _e, ...d } = n.data;
-        return { ...geo, type: "section", ...d };
+        return [{ ...geo, type: "section", ...d }];
       }
+      case "stitch":
+        return [];
     }
   });
 }

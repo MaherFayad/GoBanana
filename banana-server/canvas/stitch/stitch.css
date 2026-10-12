@@ -1,0 +1,558 @@
+/* Frankenstein pages (stitch frames), the Parts tab and the crop editor. docs/stitch-spec.md.
+   Parts are hotlinked images cropped with CSS only: an overflow hidden box with the crop's aspect
+   ratio, the image scaled and moved inside it (canvas/stitch/crop.ts). Crops are physical
+   (image space), so crop boxes, the page and the editor stage are always ltr. */
+
+/* ------------------------------------------------------------------ crop box */
+
+.bn-crop {
+  position: relative;
+  inline-size: 100%;
+  overflow: hidden;
+  direction: ltr;
+  background: var(--st-canvas-placeholder-bg);
+}
+
+.bn-crop img {
+  display: block;
+  max-inline-size: none;
+  block-size: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.bn-crop-placeholder {
+  display: grid;
+  place-items: center;
+  min-block-size: 64px;
+  border: var(--st-border-width) dashed var(--st-border-strong);
+}
+
+.bn-crop-missing {
+  padding: var(--st-space-xs);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+  text-align: center;
+}
+
+.bn-crop[data-failed] {
+  display: grid;
+  place-items: center;
+}
+
+/* ------------------------------------------------------------------ the page node */
+
+.bn-node.bn-stitch {
+  block-size: auto;
+  min-block-size: 100%;
+  background: var(--st-bg-surface);
+}
+
+.bn-stitch-measure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+  padding: var(--st-space-xs);
+}
+
+.bn-stitch-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--st-space-xs);
+  min-inline-size: 0;
+}
+
+.bn-stitch-heading {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.bn-stitch-eyebrow {
+  margin: 0;
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-xs);
+  letter-spacing: var(--st-tracking-caps);
+  text-transform: uppercase;
+}
+
+.bn-stitch-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--st-text);
+  font-size: var(--st-text-m);
+  font-weight: var(--st-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bn-stitch-idea {
+  margin: var(--st-space-4xs) 0 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  line-height: var(--st-leading-snug);
+}
+
+.bn-stitch-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-3xs);
+}
+
+/* View switch: a segmented radio group. */
+.bn-stitch-modes {
+  display: inline-flex;
+  gap: var(--st-space-4xs);
+  padding: var(--st-space-4xs);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-2);
+}
+
+.bn-stitch-mode {
+  min-block-size: var(--st-control-h-xs);
+  padding-inline: var(--st-space-xs);
+  border: 0;
+  border-radius: var(--st-radius-pill);
+  background: transparent;
+  color: var(--st-text-muted);
+  font: inherit;
+  font-size: var(--st-text-xs);
+  cursor: pointer;
+}
+
+.bn-stitch-mode:hover {
+  color: var(--st-text);
+}
+
+.bn-stitch-mode[aria-checked="true"] {
+  background: var(--st-bg-surface-4);
+  color: var(--st-text);
+}
+
+.bn-stitch-mode:focus-visible {
+  outline: var(--st-border-width-strong) solid var(--st-focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* Platform frame. */
+.bn-stitch-frame {
+  overflow: hidden;
+  border: var(--st-border-width-strong) solid var(--st-border-strong);
+  border-radius: var(--st-radius);
+  background: var(--st-bg-surface-2);
+}
+
+.bn-stitch-frame[data-platform="mobile"] {
+  padding: var(--st-space-xs) var(--st-space-3xs) var(--st-space-s);
+  border-width: 6px;
+  border-radius: 36px;
+}
+
+.bn-stitch-frame[data-platform="tablet"] {
+  padding: var(--st-space-s) var(--st-space-xs);
+  border-width: 8px;
+  border-radius: 28px;
+}
+
+.bn-stitch-notch {
+  inline-size: 30%;
+  block-size: 8px;
+  margin: 0 auto var(--st-space-xs);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-border-strong);
+}
+
+.bn-stitch-frame[data-platform="tablet"] .bn-stitch-notch {
+  inline-size: 8px;
+}
+
+.bn-stitch-browser {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xs);
+  block-size: 22px;
+  padding-inline: var(--st-space-xs);
+  border-block-end: var(--st-border-width) solid var(--st-border);
+  background: var(--st-bg-surface-3);
+}
+
+.bn-stitch-dots {
+  inline-size: 30px;
+  block-size: 8px;
+  background: radial-gradient(circle at 4px 50%, var(--st-text-subtle) 3px, transparent 3.5px) 0 0 / 11px 8px repeat-x;
+}
+
+.bn-stitch-url {
+  flex: 0 1 40%;
+  block-size: 10px;
+  margin-inline: auto;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-5);
+}
+
+.bn-stitch-page {
+  display: flex;
+  flex-direction: column;
+  direction: ltr;
+  overflow: hidden;
+  border-radius: var(--st-radius-sm);
+}
+
+.bn-stitch-frame[data-platform="mobile"] .bn-stitch-page {
+  border-radius: 20px;
+}
+
+.bn-stitch-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.bn-stitch-empty {
+  margin: 0;
+  padding: var(--st-space-xl) var(--st-space-s);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-s);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ slots */
+
+.bn-stitch-slot {
+  position: relative;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  outline: none;
+  cursor: grab;
+}
+
+.bn-stitch-slot:focus-visible {
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 calc(2px * var(--bn-chrome, 1)) var(--st-focus-halo-color),
+    inset 0 0 0 calc(4px * var(--bn-chrome, 1)) var(--st-focus-ring-color);
+}
+
+.bn-stitch-slot:focus-visible::after,
+.bn-stitch-slot[data-drop]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 calc(2px * var(--bn-chrome, 1)) var(--st-focus-ring-color);
+}
+
+.bn-stitch-slot[data-drop]::after {
+  box-shadow: inset 0 0 0 calc(3px * var(--bn-chrome, 1)) var(--st-canvas-selection-ring-color);
+}
+
+.bn-stitch-slot-bar {
+  position: absolute;
+  inset-block-start: var(--st-space-3xs);
+  inset-inline-start: var(--st-space-3xs);
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-4xs);
+  max-inline-size: calc((100% - var(--st-space-xs)) * var(--bn-zoom, 1));
+  scale: var(--bn-chrome, 1);
+  transform-origin: top left;
+}
+
+.bn-stitch-role {
+  background: var(--st-bg-surface);
+  color: var(--st-text);
+}
+
+.bn-stitch-note {
+  position: absolute;
+  inset-inline: var(--st-space-3xs);
+  inset-block-end: var(--st-space-3xs);
+  z-index: 4;
+  display: none;
+  margin: 0;
+  padding: var(--st-space-3xs) var(--st-space-2xs);
+  border-radius: var(--st-radius-sm);
+  background: var(--st-bg-surface);
+  box-shadow: var(--st-shadow-menu);
+  color: var(--st-text);
+  font-size: var(--st-text-xs);
+  line-height: var(--st-leading-snug);
+}
+
+.bn-stitch-slot:hover .bn-stitch-note,
+.bn-stitch-slot:focus-within .bn-stitch-note,
+.bn-stitch[data-mode="wireframe"] .bn-stitch-note {
+  display: block;
+}
+
+.bn-stitch[data-mode="wireframe"] .bn-stitch-note {
+  position: static;
+  margin: var(--st-space-3xs);
+  box-shadow: none;
+}
+
+.bn-stitch-note-edit {
+  position: absolute;
+  inset-inline: var(--st-space-3xs);
+  inset-block-end: var(--st-space-3xs);
+  z-index: 5;
+}
+
+/* Wireframe: a light wash and big role labels over the grey parts. */
+.bn-stitch[data-mode="wireframe"] .bn-crop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--st-bg-surface);
+  opacity: 0.35;
+}
+
+.bn-stitch-wire-label {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  z-index: 3;
+  translate: 0 -50%;
+  color: var(--st-text);
+  font-size: clamp(14px, 6cqi, 40px);
+  font-weight: var(--st-weight-bold);
+  letter-spacing: var(--st-tracking-caps);
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.bn-stitch-slot {
+  container-type: inline-size;
+}
+
+/* ------------------------------------------------------------------ Parts tab */
+
+.bn-parts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  padding: var(--st-space-s);
+  overflow-y: auto;
+}
+
+.bn-parts-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-2xs);
+}
+
+.bn-parts-hint {
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+}
+
+.bn-parts-role {
+  margin: 0 0 var(--st-space-2xs);
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+}
+
+.bn-parts-list {
+  display: grid;
+  gap: var(--st-space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bn-parts-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-3xs);
+}
+
+.bn-parts-pick {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: var(--st-border-width-strong) solid transparent;
+  border-radius: var(--st-radius-sm);
+  background: none;
+  cursor: grab;
+}
+
+.bn-parts-pick[aria-pressed="true"] {
+  border-color: var(--st-canvas-selection-ring-color);
+}
+
+.bn-parts-pick:focus-visible {
+  outline: var(--st-border-width-strong) solid var(--st-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.bn-parts-order {
+  position: absolute;
+  inset-block-start: var(--st-space-3xs);
+  inset-inline-end: var(--st-space-3xs);
+  display: grid;
+  place-items: center;
+  min-inline-size: 22px;
+  block-size: 22px;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-canvas-selection-ring-color);
+  color: var(--st-canvas-node-badge-text);
+  font-size: var(--st-text-xs);
+  font-weight: var(--st-weight-bold);
+}
+
+.bn-parts-meta,
+.bn-parts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-3xs);
+  min-inline-size: 0;
+}
+
+.bn-parts-note {
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+  line-height: var(--st-leading-snug);
+}
+
+.bn-parts-used {
+  color: var(--st-text-subtle);
+  font-size: var(--st-text-xs);
+}
+
+/* ------------------------------------------------------------------ crop editor */
+
+.bn-crop-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+  gap: var(--st-space-m);
+}
+
+@media (max-width: 720px) {
+  .bn-crop-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.bn-crop-stage-wrap {
+  min-inline-size: 0;
+}
+
+.bn-crop-stage {
+  position: relative;
+  direction: ltr;
+  max-block-size: 60vh;
+  overflow: auto;
+  touch-action: none;
+  background: var(--st-canvas-placeholder-bg);
+}
+
+.bn-crop-stage img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  user-select: none;
+}
+
+.bn-crop-rect {
+  position: absolute;
+  box-sizing: border-box;
+  border: var(--st-border-width-strong) solid var(--st-canvas-selection-ring-color);
+  box-shadow: 0 0 0 9999px var(--st-scrim-50);
+  cursor: move;
+}
+
+.bn-crop-handle {
+  position: absolute;
+  inline-size: 14px;
+  block-size: 14px;
+  border: var(--st-border-width) solid var(--st-canvas-resize-handle-border);
+  border-radius: 3px;
+  background: var(--st-canvas-resize-handle-fill);
+}
+
+.bn-crop-handle[data-pos="nw"] { inset-block-start: -8px; inset-inline-start: -8px; cursor: nwse-resize; }
+.bn-crop-handle[data-pos="n"] { inset-block-start: -8px; inset-inline-start: calc(50% - 7px); cursor: ns-resize; }
+.bn-crop-handle[data-pos="ne"] { inset-block-start: -8px; inset-inline-end: -8px; cursor: nesw-resize; }
+.bn-crop-handle[data-pos="e"] { inset-block-start: calc(50% - 7px); inset-inline-end: -8px; cursor: ew-resize; }
+.bn-crop-handle[data-pos="se"] { inset-block-end: -8px; inset-inline-end: -8px; cursor: nwse-resize; }
+.bn-crop-handle[data-pos="s"] { inset-block-end: -8px; inset-inline-start: calc(50% - 7px); cursor: ns-resize; }
+.bn-crop-handle[data-pos="sw"] { inset-block-end: -8px; inset-inline-start: -8px; cursor: nesw-resize; }
+.bn-crop-handle[data-pos="w"] { inset-block-start: calc(50% - 7px); inset-inline-start: -8px; cursor: ew-resize; }
+
+.bn-crop-source {
+  margin: var(--st-space-2xs) 0 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+}
+
+.bn-crop-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  min-inline-size: 0;
+}
+
+.bn-crop-fields fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.bn-crop-fields legend {
+  margin-block-end: var(--st-space-3xs);
+  padding: 0;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-medium);
+}
+
+.bn-crop-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--st-space-3xs);
+}
+
+.bn-crop-numbers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--st-space-2xs);
+}
+
+.bn-crop-numbers legend {
+  grid-column: 1 / -1;
+}
+
+.bn-crop-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-4xs);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+}
+
+.bn-crop-preview-label {
+  margin: 0 0 var(--st-space-3xs);
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+}
+
+@media (forced-colors: active) {
+  .bn-crop-rect {
+    border-color: Highlight;
+  }
+
+  .bn-stitch-slot:focus-visible::after {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

@@ -1,4 +1,6 @@
 /** Builders for new nodes. Pure, so they can run in Vitest and on the server (add_to_canvas). */
+import { stitchSize } from "@/lib/stitch/size";
+import type { Part } from "@/lib/stitch/types";
 import { DEFAULT_PAIRING_ID } from "./fonts";
 import { estimateNoteHeight } from "./note-layout";
 import { siteFromUrl } from "./state";
@@ -7,6 +9,8 @@ import {
   type ImageFlowNode,
   type NoteFlowNode,
   type SectionFlowNode,
+  type StitchFlowNode,
+  type StitchNodeData,
   type SwatchFlowNode,
   type Tag,
   type TrayReference,
@@ -89,4 +93,10 @@ export function swatchNode(center: Point, hex: string, opts: { role?: string; ok
 export function typeSampleNode(center: Point, pairingId = DEFAULT_PAIRING_ID, id = newNodeId("type")): TypeSampleFlowNode {
   const size = DEFAULT_SIZE.typeSample;
   return { id, type: "typeSample", position: centered(center, size), width: size.w, height: size.h, data: { pairingId } };
+}
+
+/** A stitch frame ("Frankenstein page"), sized for its platform and rows (lib/stitch/size.ts). */
+export function stitchNode(center: Point, data: StitchNodeData, parts: readonly Part[], id = newNodeId("st")): StitchFlowNode {
+  const size = stitchSize(data, parts);
+  return { id, type: "stitch", position: centered(center, size), width: size.w, height: size.h, data };
 }

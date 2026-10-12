@@ -1,12 +1,13 @@
 # GoBanana plugin
 
-Claude plugin for the GoBanana MCP server: 8 skills that drive the server's 12 tools for one wild page or two: exploration, moodboards, scoped exports, hand-off and critique. Design spec for the current behavior: `docs/wild-directions-v2-spec.md` in the monorepo. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
+Claude plugin for the GoBanana MCP server: 9 skills that drive the server's 16 tools for one wild page or two: exploration, moodboards, Frankenstein pages, scoped exports, hand-off and critique. Design spec for the current behavior: `docs/wild-directions-v2-spec.md` in the monorepo. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
 
 This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is not loaded for plugin users, and `claude plugin validate --strict` fails on it.
 
 ## Hard rules
 - The server does no AI work. Skills tell the user's own agent what to think and which tools to call.
-- Never download, save or copy third-party reference images. Not in skills, evals, fixtures or docs. URLs and metadata only.
+- Never download, save or copy third-party reference images. Not in skills, evals, fixtures or docs. URLs and metadata only. A Frankenstein part is a crop rectangle the browser applies, never an image file.
+- User-facing words say "Frankenstein it" and "Frankenstein pages"; the tool names (`cut_parts`, `stitch_page`, `remix_stitch`, `update_stitch`, `stitch_md`) stay as they are.
 - Every reference shows its source link, in every skill reply and every export.
 - No scraping instructions of any kind. References come only from `search_references`.
 - The server returns text; the agent writes files to disk.

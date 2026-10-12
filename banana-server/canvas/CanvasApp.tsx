@@ -15,6 +15,7 @@
  */
 import "@xyflow/react/dist/style.css";
 import "./canvas.css";
+import "./stitch/stitch.css";
 
 import {
   PanOnScrollMode,
@@ -30,6 +31,8 @@ import {
   type Viewport,
 } from "@xyflow/react";
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useId,
@@ -82,7 +85,20 @@ import { collectPeerRects, computeSnap, guidesEqual, unionRect, type SnapGuide }
 import { deserializeState, orderNodes, serializeState, stateKey, type Deserialized, type IsBlocked } from "./state";
 import { Toolbar, type ToolbarProps } from "./Toolbar";
 import { Tray, TRAY_DND_TYPE } from "./Tray";
-import { DEFAULT_SIZE, MIN_SIZE, type CanvasFlowNode, type CanvasState, type TrayReference } from "./types";
+import { DEFAULT_SIZE, MIN_SIZE, type CanvasFlowNode, type CanvasState, type StitchFlowNode, type TrayReference } from "./types";
+import { MAX_PARTS, type Part } from "@/lib/stitch/types";
+import { StitchContext, type CropTarget, type StitchActions } from "./stitch/context";
+import type { CropEditorProps, CropEditorValue } from "./stitch/CropEditor";
+import { stitchSize } from "@/lib/stitch/size";
+import { findSlot, newPartId, roleLabel, setSlotCrop, stackParts, usageFromKey, usageKey } from "./stitch/edit";
+
+/**
+ * The crop editor loads on demand (docs/worker-size.md): the import is dropped from the server
+ * build, where `typeof window` folds to "undefined".
+ */
+const CropEditor = lazy(() =>
+  typeof window === "undefined" ? new Promise<never>(() => {}) : import("./stitch/CropEditor"),
+);
 import {
   clearanceAbove,
   clearanceBelow,
@@ -333,6 +349,9 @@ function CanvasEditor({
   const rf = useReactFlow<CanvasFlowNode>();
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<CanvasFlowNode>(initial.nodes);
   const [tray, setTray] = useState<TrayReference[]>(initial.tray);
+  // Parts library for Frankenstein pages (stitches). Always saved, so removing the last part sticks.
+  const [parts, setParts] = useState<Part[]>(initial.parts);
+  const [cropTarget, setCropTarget] = useState<CropTarget | null>(null);
   const [viewport, setViewport] = useState<Viewport>(initial.viewport);
   const trayStart = (c: boolean) =>
     initialTrayOpen({
@@ -376,10 +395,12 @@ function CanvasEditor({
   // Latest nodes and tray for event handlers (kept in sync after each commit).
   const nodesRef = useRef(nodes);
   const trayRef = useRef(tray);
+  const partsRef = useRef(parts);
   useLayoutEffect(() => {
     nodesRef.current = nodes;
     trayRef.current = tray;
-  }, [nodes, tray]);
+    partsRef.current = parts;
+  }, [nodes, tray, parts]);
   const uid = useId().replace(/:/g, "");
   const trayId = `bn-tray-${uid}`;
   const boardHintId = `bn-board-hint-${uid}`;
@@ -410,7 +431,7 @@ function CanvasEditor({
             toastId = null;
           }
         },
-        initialKey: stateKey(serializeState(initial.nodes, initial.viewport, initial.tray)),
+        initialKey: stateKey(serializeState(initial.nodes, initial.viewport, initial.tray, initial.parts)),
       },
     );
     return s;
@@ -419,8 +440,8 @@ function CanvasEditor({
   useEffect(() => {
     if (readOnly) return;
     if (nodes.some((n) => n.dragging || n.resizing)) return;
-    saver.schedule(serializeState(nodes, viewport, tray));
-  }, [nodes, viewport, tray, readOnly, saver]);
+    saver.schedule(serializeState(nodes, viewport, tray, parts));
+  }, [nodes, viewport, tray, parts, readOnly, saver]);
 
   useEffect(() => {
     const flush = () => void saver.flush();
@@ -646,6 +667,159 @@ function CanvasEditor({
     }),
     [readOnly, loadFonts, sections, remove, resize, menuFor, setMenuFor, duplicateIds, editingId, announce, focusNode, setNodes],
   );
+
+  // ------------------------------------------------------------------ Frankenstein pages (stitches)
+  const partsById = useMemo(() => new Map(parts.map((p) => [p.id, p])), [parts]);
+  const stitch = useMemo<StitchActions>(
+    () => ({
+      parts,
+      partsById,
+      openCrop: (target) => {
+        if (!readOnly) setCropTarget(target);
+      },
+    }),
+    [parts, partsById, readOnly],
+  );
+  // Which parts the pages use; the key only changes when the part ids in use change.
+  const pagesKey = usageKey(nodes.flatMap((n) => (n.type === "stitch" ? [n.data] : [])));
+  const usage = useMemo(() => usageFromKey(pagesKey), [pagesKey]);
+
+  /** "Frankenstein it": a new page with the picked parts, one per row, placed in free space and selected. */
+  const stackPicked = useCallback(
+    (ids: string[]) => {
+      if (readOnly) return;
+      const picked = ids.map((id) => partsRef.current.find((p) => p.id === id)).filter((p): p is Part => Boolean(p));
+      if (picked.length === 0) return;
+      const data = stackParts(picked);
+      const size = stitchSize(data, picked);
+      const current = nodesRef.current;
+      const position = freeSpot(viewportCenter(), size, takenRects(current));
+      const node: StitchFlowNode = {
+        id: newNodeId("stitch"),
+        type: "stitch",
+        position,
+        width: size.w,
+        height: size.h,
+        zIndex: placementZ(current, "stitch", { ...position, ...size }).z,
+        selected: true,
+        data,
+      };
+      setNodes((nds) => [...nds.map((n) => (n.selected ? ({ ...n, selected: false } as CanvasFlowNode) : n)), node]);
+      announce(`Frankenstein page made from ${picked.length} ${plural(picked.length, "part", "parts")}`);
+      focusNode(node.id);
+      requestAnimationFrame(() => void rf.fitView({ nodes: [{ id: node.id }], padding: FIT_PADDING, duration: zoomDuration(), maxZoom: 1 }));
+    },
+    [announce, focusNode, readOnly, rf, setNodes, viewportCenter],
+  );
+
+  const removePart = useCallback(
+    (part: Part) => {
+      if ((usage.get(part.id) ?? 0) > 0) {
+        announce("This part is used in a Frankenstein page. Remove it from the page first.");
+        return;
+      }
+      setParts((ps) => ps.filter((p) => p.id !== part.id));
+      announce(`${roleLabel(part.role)} part removed`);
+    },
+    [announce, usage],
+  );
+
+  /** Props for the crop editor from what it was opened for, or null when the target is gone. */
+  const cropProps = (target: CropTarget): Omit<CropEditorProps, "onClose"> | null => {
+    if (target.kind === "cut") {
+      const n = nodes.find((x) => x.id === target.nodeId);
+      if (!n || n.type !== "image") return null;
+      const d = n.data;
+      return {
+        heading: "Cut part",
+        imageUrl: d.imageUrl,
+        imageTitle: d.title ?? undefined,
+        site: siteName(d.sourceSite, d.sourceUrl),
+        sourceUrl: d.sourceUrl,
+        imageWidth: d.width ?? undefined,
+        imageHeight: d.height ?? undefined,
+        initial: { crop: { x: 0, y: 0, w: 1, h: 0.35 }, role: "hero", theme: "unknown" },
+        partFields: true,
+        saveLabel: "Add part",
+        onSave: (v: CropEditorValue) => {
+          if (parts.length >= MAX_PARTS) {
+            announce(`The parts library is full. Remove a part first.`);
+            pushToast({ kind: "error", title: "Parts library is full", body: `A canvas keeps up to ${MAX_PARTS} parts. Remove one, then cut again.` });
+            return;
+          }
+          const w = v.imageWidth ?? d.width ?? undefined;
+          const h = v.imageHeight ?? d.height ?? undefined;
+          const part: Part = {
+            id: newPartId(),
+            role: v.role,
+            imageUrl: d.imageUrl,
+            ...(d.thumbUrl ? { thumbUrl: d.thumbUrl } : {}),
+            sourceUrl: d.sourceUrl,
+            sourceSite: siteName(d.sourceSite, d.sourceUrl),
+            ...(d.title ? { title: d.title } : {}),
+            crop: v.crop,
+            ...(w && h ? { imageWidth: w, imageHeight: h } : {}),
+            theme: v.theme,
+            ...(v.note ? { note: v.note } : {}),
+            fromItemId: n.id,
+          };
+          setParts((ps) => [...ps, part]);
+          announce(`${roleLabel(v.role)} part added to the Parts tab`);
+        },
+      };
+    }
+    if (target.kind === "part") {
+      const part = parts.find((p) => p.id === target.partId);
+      if (!part) return null;
+      return {
+        heading: `Edit part: ${roleLabel(part.role)}`,
+        imageUrl: part.imageUrl,
+        imageTitle: part.title,
+        site: siteName(part.sourceSite, part.sourceUrl),
+        sourceUrl: part.sourceUrl,
+        imageWidth: part.imageWidth,
+        imageHeight: part.imageHeight,
+        initial: { crop: part.crop, role: part.role, theme: part.theme, note: part.note },
+        partFields: true,
+        onSave: (v: CropEditorValue) => {
+          setParts((ps) =>
+            ps.map((p) => {
+              if (p.id !== part.id) return p;
+              const { guessedCrop: _g, note: _n, ...rest } = p;
+              return { ...rest, crop: v.crop, role: v.role, theme: v.theme, ...(v.note ? { note: v.note } : {}) };
+            }),
+          );
+          announce("Part saved");
+        },
+      };
+    }
+    const n = nodes.find((x) => x.id === target.nodeId);
+    if (!n || n.type !== "stitch") return null;
+    const pos = findSlot(n.data, target.slotId);
+    const slot = pos ? n.data.rows[pos.row]?.slots[pos.col] : undefined;
+    const part = slot ? partsById.get(slot.partId) : undefined;
+    if (!slot || !part) return null;
+    return {
+      heading: `Recrop ${roleLabel(slot.role)}`,
+      imageUrl: part.imageUrl,
+      imageTitle: part.title,
+      site: siteName(part.sourceSite, part.sourceUrl),
+      sourceUrl: part.sourceUrl,
+      imageWidth: part.imageWidth,
+      imageHeight: part.imageHeight,
+      initial: { crop: slot.crop ?? part.crop, role: slot.role },
+      partFields: false,
+      onSave: (v: CropEditorValue) => {
+        const r = setSlotCrop(n.data, slot.id, v.crop, v.role);
+        if (r.data) {
+          const next = r.data;
+          setNodes((nds) => nds.map((x) => (x.id === n.id ? ({ ...x, data: next } as CanvasFlowNode) : x)));
+        }
+        announce(r.message);
+      },
+    };
+  };
+  const cropOpen = cropTarget ? cropProps(cropTarget) : null;
 
   const addReference = useCallback(
     (ref: TrayReference, dropPoint?: { x: number; y: number }) => {
@@ -1115,10 +1289,12 @@ function CanvasEditor({
       const next = data.nodes.map((n) => (selected.has(n.id) ? ({ ...n, selected: true } as CanvasFlowNode) : n));
       const known = new Set(trayRef.current.map((r) => r.id));
       const added = data.tray.filter((r) => !known.has(r.id)).length;
+      const nextParts = data.parts;
       setNodes(next);
       setTray(data.tray);
+      setParts(nextParts);
       // The server already has this; only changes made after it are saved.
-      saver.markSaved(serializeState(next, liveRef.current.viewport, data.tray));
+      saver.markSaved(serializeState(next, liveRef.current.viewport, data.tray, nextParts));
       if (added > 0) {
         announce(`${added} new ${plural(added, "result", "results")}`);
         if (!liveRef.current.trayOpen) setTrayPulse((n) => n + 1);
@@ -1151,6 +1327,7 @@ function CanvasEditor({
 
   return (
     <CanvasActionsContext.Provider value={actions}>
+      <StitchContext.Provider value={stitch}>
       <div className="bn-shell" onKeyDown={onShellKeyDown}>
         <Toolbar
           appName={appName}
@@ -1195,6 +1372,11 @@ function CanvasEditor({
               onToggle={toggleTray}
               rail={!compact}
               readOnly={readOnly}
+              parts={parts}
+              partUsage={usage}
+              onEditPart={(p) => setCropTarget({ kind: "part", partId: p.id })}
+              onRemovePart={removePart}
+              onStackParts={stackPicked}
             />
           )}
           <main
@@ -1313,7 +1495,20 @@ function CanvasEditor({
           onIndex={(index) => setPreview((p) => (p ? { ...p, index } : p))}
           onClose={() => setPreview(null)}
         />
+        {cropOpen && (
+          <Suspense fallback={null}>
+            <CropEditor
+              {...cropOpen}
+              onSave={(v) => {
+                cropOpen.onSave(v);
+                setCropTarget(null);
+              }}
+              onClose={() => setCropTarget(null)}
+            />
+          </Suspense>
+        )}
       </div>
+      </StitchContext.Provider>
     </CanvasActionsContext.Provider>
   );
 }

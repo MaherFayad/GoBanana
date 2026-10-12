@@ -456,7 +456,7 @@
     {
       "name": "get_canvas",
       "title": "Get canvas",
-      "description": "Read a canvas: sections, items with source links and notes, palettes and the brief. Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.",
+      "description": "Read a canvas: sections, items with source links and notes, palettes, the brief, the parts library grouped by role, and Frankenstein pages (stitches) with their row and slot skeletons. Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -491,7 +491,7 @@
     {
       "name": "export_kit",
       "title": "Export kit",
-      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief. Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt. You write the files.",
+      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief, stitch_md (FRANKENSTEIN.md: a skeleton per Frankenstein page with roles, source links and notes), wireframe_html (frankenstein-wireframe.html: grey boxes with role labels, no reference images). Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt, stitch_md. You write the files.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -519,7 +519,9 @@
                 "review",
                 "cursor_rules",
                 "copilot",
-                "claude_md"
+                "claude_md",
+                "stitch_md",
+                "wireframe_html"
               ]
             }
           },
@@ -544,6 +546,512 @@
             ],
             "default": "page",
             "description": "page (default): only the named pages, inherits the project's design system. system: the direction becomes the product's design system."
+          }
+        }
+      }
+    },
+    {
+      "name": "cut_parts",
+      "title": "Cut parts",
+      "description": "Frankenstein it, step 1: add parts to the canvas parts library. A part is a role plus a crop rectangle (fractions) over a board image item or a tray reference; the browser applies the crop, nothing is downloaded or stored. Pass the crop you judged by looking; without one the server guesses a band by role and image aspect and marks the part guessedCrop. Every part keeps its source link. Library limit 80 parts.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "cuts"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "cuts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 24,
+            "items": {
+              "type": "object",
+              "required": [
+                "role"
+              ],
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "description": "Board image item to cut from."
+                },
+                "referenceId": {
+                  "type": "string",
+                  "description": "Tray or search reference to cut from."
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "nav",
+                    "hero",
+                    "logos",
+                    "features",
+                    "cards",
+                    "gallery",
+                    "stats",
+                    "testimonial",
+                    "pricing",
+                    "cta",
+                    "form",
+                    "faq",
+                    "content",
+                    "footer",
+                    "sidebar",
+                    "toolbar",
+                    "table",
+                    "chart",
+                    "filters",
+                    "status-header",
+                    "tabbar",
+                    "list",
+                    "detail",
+                    "sheet",
+                    "empty",
+                    "other"
+                  ]
+                },
+                "crop": {
+                  "type": "object",
+                  "required": [
+                    "x",
+                    "y",
+                    "w",
+                    "h"
+                  ],
+                  "description": "Rectangle as fractions (0 to 1) of the source image, x and y from the top left. The browser applies it; no image is cut or stored.",
+                  "properties": {
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "w": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "h": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                },
+                "theme": {
+                  "type": "string",
+                  "enum": [
+                    "light",
+                    "dark",
+                    "unknown"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 280,
+                  "description": "What to steal, starting with steal:"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "stitch_page",
+      "title": "Stitch a Frankenstein page",
+      "description": "Stack parts into new pages in a frame sized for the platform (390, 834 or 1440). Pass rows of part ids, or a recipe (roles top to bottom) plus variants (1 to 6) and the server fills each role from the parts library with seeded picks, mixing at least 3 sources per variant when it can. Frames go side by side on the canvas. Every slot shows its source.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "mobile",
+              "tablet",
+              "website",
+              "webapp"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "collage",
+              "wireframe",
+              "even"
+            ],
+            "default": "collage"
+          },
+          "directionId": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 280,
+            "description": "The idea in one line."
+          },
+          "rows": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "type": "object",
+              "required": [
+                "slots"
+              ],
+              "properties": {
+                "slots": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "partId"
+                    ],
+                    "properties": {
+                      "partId": {
+                        "type": "string"
+                      },
+                      "crop": {
+                        "type": "object",
+                        "required": [
+                          "x",
+                          "y",
+                          "w",
+                          "h"
+                        ],
+                        "description": "Rectangle as fractions (0 to 1) of the source image, x and y from the top left. The browser applies it; no image is cut or stored.",
+                        "properties": {
+                          "x": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "y": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "w": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "h": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        }
+                      },
+                      "note": {
+                        "type": "string",
+                        "maxLength": 280
+                      }
+                    }
+                  }
+                },
+                "widths": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "recipe": {
+            "type": "array",
+            "maxItems": 14,
+            "items": {
+              "type": "string",
+              "enum": [
+                "nav",
+                "hero",
+                "logos",
+                "features",
+                "cards",
+                "gallery",
+                "stats",
+                "testimonial",
+                "pricing",
+                "cta",
+                "form",
+                "faq",
+                "content",
+                "footer",
+                "sidebar",
+                "toolbar",
+                "table",
+                "chart",
+                "filters",
+                "status-header",
+                "tabbar",
+                "list",
+                "detail",
+                "sheet",
+                "empty",
+                "other"
+              ]
+            }
+          },
+          "variants": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6,
+            "default": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "remix_stitch",
+      "title": "Remix a Frankenstein page",
+      "description": "Make new variants of a Frankenstein page next to it. lock keeps slots (slot ids or roles); vary names the roles to swap (default: every unlocked slot). Seeded: the same call gives the same result.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "stitchId",
+          "count"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "stitchId": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "lock": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Slot ids (sl-...) or roles to keep."
+          },
+          "vary": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "nav",
+                "hero",
+                "logos",
+                "features",
+                "cards",
+                "gallery",
+                "stats",
+                "testimonial",
+                "pricing",
+                "cta",
+                "form",
+                "faq",
+                "content",
+                "footer",
+                "sidebar",
+                "toolbar",
+                "table",
+                "chart",
+                "filters",
+                "status-header",
+                "tabbar",
+                "list",
+                "detail",
+                "sheet",
+                "empty",
+                "other"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "update_stitch",
+      "title": "Edit a Frankenstein page",
+      "description": "Edit one Frankenstein page with ops: swap (slotId, partId), move (slotId, rowId, index), moveRow (rowId, index), remove (slotId or rowId), insert (index, slots, widths), crop (slotId, crop), widths (rowId, widths), mode (collage, wireframe, even), note (note, optional slotId), title (title).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "stitchId",
+          "ops"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "stitchId": {
+            "type": "string"
+          },
+          "ops": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "op"
+              ],
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "swap",
+                    "move",
+                    "moveRow",
+                    "remove",
+                    "insert",
+                    "crop",
+                    "widths",
+                    "mode",
+                    "note",
+                    "title"
+                  ]
+                },
+                "slotId": {
+                  "type": "string"
+                },
+                "rowId": {
+                  "type": "string"
+                },
+                "partId": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "slots": {
+                  "type": "array",
+                  "maxItems": 3,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "partId"
+                    ],
+                    "properties": {
+                      "partId": {
+                        "type": "string"
+                      },
+                      "crop": {
+                        "type": "object",
+                        "required": [
+                          "x",
+                          "y",
+                          "w",
+                          "h"
+                        ],
+                        "description": "Rectangle as fractions (0 to 1) of the source image, x and y from the top left. The browser applies it; no image is cut or stored.",
+                        "properties": {
+                          "x": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "y": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "w": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "h": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        }
+                      },
+                      "note": {
+                        "type": "string",
+                        "maxLength": 280
+                      }
+                    }
+                  }
+                },
+                "widths": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "crop": {
+                  "type": "object",
+                  "required": [
+                    "x",
+                    "y",
+                    "w",
+                    "h"
+                  ],
+                  "description": "Rectangle as fractions (0 to 1) of the source image, x and y from the top left. The browser applies it; no image is cut or stored.",
+                  "properties": {
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "w": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "h": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "collage",
+                    "wireframe",
+                    "even"
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 280
+                },
+                "title": {
+                  "type": "string",
+                  "maxLength": 80
+                }
+              }
+            }
           }
         }
       }

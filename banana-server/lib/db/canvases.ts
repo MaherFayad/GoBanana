@@ -2,7 +2,8 @@
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { canvases, directions } from "@/db/schema";
-import { isStateObject, stateHasTaste } from "@/lib/taste";
+import { isStateObject } from "@/lib/taste";
+import { KEEP_STORED } from "./keep";
 import { isUuid } from "./ids";
 import { clampListLimit, cleanPreviews } from "./summary";
 import {
@@ -101,13 +102,18 @@ export async function listOwnedCanvases(db: Db, userId: string, opts: { limit?: 
 }
 
 /**
- * New state for a save. The canvas UI does not know about `taste` (lib/taste.ts), so a save
- * without it keeps the stored one, in the same statement (no extra read, no race).
+ * New state for a save. Keys in KEEP_STORED (`taste`, which the canvas UI does not know about, and
+ * the stitch `parts` library, which an older canvas UI leaves out) keep their stored value when the
+ * save omits them, in the same statement (no extra read, no race). A save that sets a key, even to
+ * an empty list, replaces it.
  */
-function keepTaste(state: unknown): unknown {
-  if (!isStateObject(state) || stateHasTaste(state)) return state;
-  const json = JSON.stringify(state);
-  return sql`CASE WHEN ${canvases.state} ? 'taste' THEN ${json}::jsonb || jsonb_build_object('taste', ${canvases.state} -> 'taste') ELSE ${json}::jsonb END`;
+function keepStored(state: unknown): unknown {
+  if (!isStateObject(state)) return state;
+  const missing = KEEP_STORED.filter((k) => !Object.hasOwn(state, k));
+  if (missing.length === 0) return state;
+  // Keys are constants from KEEP_STORED, never user input. The new JSON goes in once as a parameter.
+  const keys = sql.raw(missing.map((k) => `'${k}'`).join(", "));
+  return sql`${JSON.stringify(state)}::jsonb || (SELECT coalesce(jsonb_object_agg(kept.key, kept.value), '{}'::jsonb) FROM jsonb_each(${canvases.state}) AS kept WHERE kept.key IN (${keys}))`;
 }
 
 export async function saveCanvasState(
@@ -123,7 +129,7 @@ export async function saveCanvasState(
   const where = opts.ifUpdatedAt ? and(owner, sql`${updatedAtMs} = ${opts.ifUpdatedAt.toISOString()}`) : owner;
   const rows = await db
     .update(canvases)
-    .set({ state: keepTaste(state), updatedAt })
+    .set({ state: keepStored(state), updatedAt })
     .where(where)
     .returning({ id: canvases.id });
   if (rows.length > 0) return { ok: true, updatedAt };

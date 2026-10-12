@@ -21,6 +21,8 @@ import { SearchIcon } from "./icons";
 import { SourceChip } from "./nodes/chips";
 import { siteName } from "./labels";
 import { zoneOf, type Zone } from "@/lib/direction-detail";
+import type { Part } from "@/lib/stitch/types";
+import { PartsPanel } from "./stitch/PartsPanel";
 import type { TrayReference } from "./types";
 
 /** Drag data type for tray tiles. */
@@ -31,6 +33,9 @@ export const ZONE_TABS: readonly { zone: Zone; label: string }[] = [
   { zone: "ui", label: "UI" },
   { zone: "art", label: "Art direction" },
 ];
+
+/** Tray tabs: the result zones, then the parts library for Frankenstein pages. */
+export type TrayTab = Zone | "parts";
 
 export const PANEL_MIN = 260;
 export const PANEL_MAX = 520;
@@ -72,9 +77,31 @@ export interface TrayProps {
   /** Show the 42px rail. Off in compact frames, where the top bar has the results button. */
   rail?: boolean;
   readOnly?: boolean;
+  /** Parts library (Frankenstein pages). The Parts tab shows when `parts` is passed. */
+  parts?: readonly Part[];
+  partUsage?: ReadonlyMap<string, number>;
+  onEditPart?: (part: Part) => void;
+  onRemovePart?: (part: Part) => void;
+  /** "Frankenstein it": a new page from the picked parts, in pick order. */
+  onStackParts?: (ids: string[]) => void;
 }
 
-export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, rail = true, readOnly = false }: TrayProps) {
+export function Tray({
+  id,
+  items,
+  onAdd,
+  onPreview,
+  pulse = 0,
+  open,
+  onToggle,
+  rail = true,
+  readOnly = false,
+  parts,
+  partUsage,
+  onEditPart,
+  onRemovePart,
+  onStackParts,
+}: TrayProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const [width, setWidth] = useState(PANEL_DEFAULT);
   const drag = useRef<{ x: number; w: number; rtl: boolean } | null>(null);
@@ -133,14 +160,18 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
   const zonePanelId = `${id}-zone-panel`;
 
   // Tabs: "UI" and "Art direction" (wild directions v2 zones). Results without a zone are UI.
-  const [zone, setZone] = useState<Zone>("ui");
-  const tabRefs = useRef<Partial<Record<Zone, HTMLButtonElement | null>>>({});
-  const counts: Record<Zone, number> = { ui: 0, art: 0 };
+  const [tab, setTab] = useState<TrayTab>("ui");
+  const tabRefs = useRef<Partial<Record<TrayTab, HTMLButtonElement | null>>>({});
+  const counts: Record<TrayTab, number> = { ui: 0, art: 0, parts: parts?.length ?? 0 };
   for (const r of items) counts[zoneOf(r.zone)] += 1;
+  const tabs: readonly { zone: TrayTab; label: string }[] = parts ? [...ZONE_TABS, { zone: "parts", label: "Parts" }] : ZONE_TABS;
+  const zone: TrayTab = tab === "parts" && !parts ? "ui" : tab;
+  const setZone = setTab;
   const shown = items.filter((r) => zoneOf(r.zone) === zone);
+  const showTabs = items.length > 0 || (parts?.length ?? 0) > 0;
   const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const rtl = isRtl(e.currentTarget);
-    const order = ZONE_TABS.map((t) => t.zone);
+    const order = tabs.map((t) => t.zone);
     const at = order.indexOf(zone);
     let next: number | null = null;
     if (e.key === (rtl ? "ArrowLeft" : "ArrowRight")) next = (at + 1) % order.length;
@@ -192,7 +223,7 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
               </p>
             )}
           </div>
-          {items.length === 0 ? (
+          {!showTabs ? (
             <div className="st-empty" data-variant="centered">
               <SearchIcon size={24} />
               <p className="st-empty-title">No results yet.</p>
@@ -201,7 +232,7 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
           ) : (
             <>
             <div className="bn-tray-tabs" role="tablist" aria-label="Result types" onKeyDown={onTabKey}>
-              {ZONE_TABS.map((t) => (
+              {tabs.map((t) => (
                 <button
                   key={t.zone}
                   ref={(el) => {
@@ -222,7 +253,16 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
               ))}
             </div>
             <div className="bn-tray-zone" role="tabpanel" id={zonePanelId} aria-labelledby={`${id}-tab-${zone}`}>
-            {shown.length === 0 ? (
+            {zone === "parts" && parts ? (
+              <PartsPanel
+                parts={parts}
+                usage={partUsage ?? new Map()}
+                readOnly={readOnly}
+                onEdit={(p) => onEditPart?.(p)}
+                onRemove={(p) => onRemovePart?.(p)}
+                onStack={(ids) => onStackParts?.(ids)}
+              />
+            ) : shown.length === 0 ? (
               <div className="st-empty" data-variant="centered">
                 <SearchIcon size={24} />
                 <p className="st-empty-title">{zone === "art" ? "No art direction results yet." : "No UI results yet."}</p>

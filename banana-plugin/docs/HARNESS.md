@@ -12,10 +12,14 @@ The harness pack is the set of files `gobanana-handoff` writes so a coding tool 
 | BUILD-PROMPT.md | `design/explorations/<slug>/BUILD-PROMPT.md` | One prompt to paste into any tool: pages, platform, spec, constraints, done when | Free |
 | DESIGN.md | `design/explorations/<slug>/DESIGN.md` | Google Labs DESIGN.md format. Tokens written as overrides for the pages; lints with `@google/design.md` | Free |
 | REVIEW.md | `design/explorations/<slug>/REVIEW.md` | Checklist for build then critique (`gobanana-critique`) | Pro |
+| FRANKENSTEIN.md | `design/explorations/<slug>/FRANKENSTEIN.md` | Frankenstein pages from `gobanana-frankenstein`: a skeleton per page (role, steal note, source link per slot) and build guidance: take the structure, not the pixels, and unify to one theme | Free |
+| frankenstein-wireframe.html | `design/explorations/<slug>/frankenstein-wireframe.html` | A standalone low fi wireframe: grey boxes per slot with role labels and notes, a sources list, no reference images | Pro |
 | Cursor rule | `.cursor/rules/<slug>.mdc` | The rules, with `globs` set to the pages | Pro |
 | Copilot instructions | `.github/instructions/<slug>.instructions.md` | The rules, with `applyTo` set to the pages | Pro |
 | AGENTS.md section | `AGENTS.md`, between `<!-- gobanana:<slug> -->` markers | Which pages, where the files are, ship vs explore | Pro |
 | CLAUDE.md section | `CLAUDE.md`, between the same markers | Same, for Claude Code | Pro |
+
+When the canvas has Frankenstein pages, BUILD-PROMPT.md lists them, so a coding tool can build from a skeleton. Open frankenstein-wireframe.html in a browser to see the structure; it loads no reference images.
 
 Every file opens with the same scope block:
 
@@ -39,7 +43,7 @@ Ask for `scope: "system"` only when the direction should become the product's de
 - `AGENTS.md` and `CLAUDE.md` are never overwritten. GoBanana adds or updates only its own section between `<!-- gobanana:<slug> -->` and `<!-- /gobanana:<slug> -->`.
 - `.github/copilot-instructions.md`, the project's root `DESIGN.md`, tokens, theme and global CSS are never touched in page scope.
 - Files under `design/explorations/<slug>/` and the per slug Cursor and Copilot files belong to GoBanana. On a second export the agent shows the diff and asks before replacing them.
-- No reference images go in the repo. Files link to sources.
+- No reference images go in the repo. Files link to sources. Frankenstein parts are crops the browser applies, never image files.
 
 ## Examples
 

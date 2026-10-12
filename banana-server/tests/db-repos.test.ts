@@ -121,13 +121,19 @@ describe("drizzle repositories", () => {
     expect(res.ok).toBe(true);
   });
 
-  it("keeps the stored taste when a save does not set it, in the same statement", async () => {
-    const { db, calls } = fakeDb([[[CANVAS]], [[CANVAS]]]);
+  it("keeps the stored taste and parts when a save does not set them, in the same statement", async () => {
+    const { db, calls } = fakeDb([[[CANVAS]], [[CANVAS]], [[CANVAS]]]);
     await saveCanvasState(db, ALICE, CANVAS, { nodes: [] });
-    expect(calls[0]!.sql).toMatch(/CASE WHEN "canvases"\."state" \? 'taste' THEN \$\d+::jsonb \|\| jsonb_build_object\('taste', "canvases"\."state" -> 'taste'\)/);
-    // A save that sets taste (even to an empty list) writes it as given.
+    expect(calls[0]!.sql).toMatch(
+      /\$\d+::jsonb \|\| \(SELECT coalesce\(jsonb_object_agg\(kept\.key, kept\.value\), '\{\}'::jsonb\) FROM jsonb_each\("canvases"\."state"\) AS kept WHERE kept\.key IN \('taste', 'parts'\)\)/,
+    );
+    // The new state goes in once, not once per kept key.
+    expect(calls[0]!.params.filter((p) => typeof p === "string" && p.startsWith("{")).length).toBe(1);
+    // A save that sets taste (even to an empty list) writes it as given; parts still kept.
     await saveCanvasState(db, ALICE, CANVAS, { nodes: [], taste: [] });
-    expect(calls[1]!.sql).not.toContain("CASE");
+    expect(calls[1]!.sql).toContain("IN ('parts')");
+    await saveCanvasState(db, ALICE, CANVAS, { nodes: [], taste: [], parts: [] });
+    expect(calls[2]!.sql).not.toContain("jsonb_each");
   });
 
   it("counts canvases", async () => {

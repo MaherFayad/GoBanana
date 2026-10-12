@@ -43,6 +43,8 @@ function baseLabel(n: CanvasFlowNode): string {
       return `Type sample: ${findPairing(n.data.pairingId)?.name ?? n.data.pairingId}`;
     case "section":
       return `Section: ${n.data.title}${n.data.collapsed ? ", collapsed" : ""}`;
+    case "stitch":
+      return `Frankenstein page: ${n.data.title}, ${n.data.rows.length} row${n.data.rows.length === 1 ? "" : "s"}`;
   }
 }
 
@@ -60,5 +62,7 @@ export function shortLabel(n: CanvasFlowNode): string {
       return "type sample";
     case "section":
       return `section ${n.data.title}`;
+    case "stitch":
+      return `Frankenstein page ${n.data.title}`;
   }
 }

@@ -19,6 +19,7 @@ import { ShortcutKeys } from "@/components/studio/Kbd";
 import { Tooltip } from "@/components/studio/Tooltip";
 import { PreviewIcon } from "@/components/studio/icons";
 import { useCanvasActions } from "../context";
+import { useStitch } from "../stitch/context";
 import { siteName, tagLabel } from "../labels";
 import type { ReferenceFlowNode } from "../types";
 import { chromeMode, isClick, isPlainClick, wantFullImage } from "../zoom-chrome";
@@ -36,6 +37,7 @@ function candidates(thumbUrl: string | null | undefined, imageUrl: string): stri
 
 export function ImageNode({ id, type, data, selected, width, parentId }: NodeProps<ReferenceFlowNode>) {
   const actions = useCanvasActions();
+  const { openCrop } = useStitch();
   const isUpload = type === "upload";
   const site = isUpload ? "Your upload" : siteName(data.sourceSite, data.sourceUrl);
   const urls = candidates(data.thumbUrl, data.imageUrl);
@@ -98,6 +100,8 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
       },
     },
   ];
+  // Cut a part for Frankenstein pages: a crop rectangle over this hotlinked image, nothing is copied.
+  if (type === "image") items.push({ label: "Cut part", onSelect: () => openCrop({ kind: "cut", nodeId: id }), movesFocus: true });
   if (data.tag)
     items.push({ label: "Clear Ship or Explore mark", onSelect: () => actions.updateData<"image">(id, { tag: null }) });
 

@@ -1,6 +1,6 @@
 ---
 name: gobanana-moodboard
-description: Build and arrange a GoBanana moodboard from references in the canvas tray - one section per direction, an "Art direction" row above the "UI references" grid, a "steal:" note on each placed reference, and an optional "Shipped today" note - and optionally rebuild it as a FigJam board through the Figma MCP or an HTML board. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "add steal notes", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use gobanana-explore.
+description: Build and arrange a GoBanana moodboard from references in the canvas tray - one section per direction, an "Art direction" row above the "UI references" grid, a "steal:" note on each placed reference, and an optional "Shipped today" note - and optionally rebuild it as a FigJam board through the Figma MCP or an HTML board. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "add steal notes", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use gobanana-explore; to stitch parts of them into new pages, use gobanana-frankenstein.
 ---
 
 # GoBanana moodboard
@@ -54,6 +54,12 @@ Pass `sectionId` to arrange one section only.
 ### 4. Show it
 
 Say the board is ready. If the client shows the canvas inline, point to it. **Always** give the web link (`webUrl`) too.
+
+### 5. Offer next steps
+
+- **Frankenstein it:** cut the best parts out of the UI references and stitch 3 or 4 new page variants from them, every part linked to its source (gobanana-frankenstein).
+- **FigJam or HTML board:** see below.
+- **Hand off** a kept direction to a coding tool (gobanana-handoff).
 
 ## FigJam board (optional)
 

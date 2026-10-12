@@ -35,7 +35,7 @@ Look in the repo, then confirm in one line ("I see Cursor and Claude Code; I'll 
 | `lovable-tagger` in package.json, a Lovable remote, or the user says Lovable | Lovable | `build_prompt` (paste it) |
 | the user says v0, or a v0 link | v0 | `build_prompt` (paste it) |
 
-Always include `direction_md`, `build_prompt` and `review`. Add `design_md` when the user wants a DESIGN.md too.
+Always include `direction_md`, `build_prompt` and `review`. Add `design_md` when the user wants a DESIGN.md too. When the canvas has Frankenstein pages (stitches in `get_canvas`) and the user wants to build one, add `stitch_md` (FRANKENSTEIN.md, Free) and, on Pro, `wireframe_html` (frankenstein-wireframe.html); with no kept direction, export only those two plus `build_prompt` and leave out `directionId`.
 
 ### 3. Export
 
@@ -51,6 +51,8 @@ Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and t
 | `copilot` | `.github/instructions/<slug>.instructions.md`, with `applyTo` for the pages | Pro |
 | `agents_md` | a section for `AGENTS.md` | Pro |
 | `claude_md` | a section for `CLAUDE.md` | Pro |
+| `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md`: a skeleton per Frankenstein page with source links | Free |
+| `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html`: grey boxes, no reference images | Pro |
 
 ### 4. Write the files
 

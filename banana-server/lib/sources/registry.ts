@@ -52,6 +52,8 @@ export type SourceEntry = {
   platforms: readonly Platform[];
   tags: readonly string[];
   query?: string;
+  /** Words added after the topic for this gallery ("community component" on 21st.dev, which mostly indexes list pages otherwise). */
+  suffix?: string;
   /**
    * UI galleries whose items are not all UI (Figma Community also hosts icon sets and
    * illustrations): their titles still have to pass the UI gate.
@@ -270,6 +272,20 @@ export const SOURCE_REGISTRY = [
     tags: ["bento grid", "bento"],
     query: "bento grid",
     measured: gallery(5, 31, 31, 13, "topic words rarely match; searched as \"bento grid\""),
+  },
+  {
+    id: "21st",
+    name: "21st.dev",
+    domain: "21st.dev",
+    scope: "21st.dev",
+    item: /^\/@?[a-z0-9._-]+\/components\/[a-z0-9-]+\/?$/i,
+    imageHosts: ["cdn.21st.dev"],
+    role: "gallery",
+    zone: "ui",
+    platforms: ["website", "webapp"],
+    tags: ["component", "components", "react", "shadcn", "hero section", "animated"],
+    suffix: "community component",
+    measured: gallery(5, 50, 28, 28, "owner request; React component gallery; plain topics give 40% item pages, with \"community component\" 56%; list pages are dropped by the item check"),
   },
   // Web app galleries.
   {

@@ -2,7 +2,7 @@
  * `export_kit` (spec section 6, wild directions v2): turn a canvas into text files for one wild
  * page (default scope "page") or a whole design system (scope "system"). Each file comes with a
  * suggested repo path; the agent writes them to disk.
- * Free: design_md, brief, direction_md and build_prompt. Pro: all formats.
+ * Free: design_md, brief, direction_md, build_prompt and stitch_md. Pro: all formats.
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
@@ -24,8 +24,8 @@ export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
   "Export a canvas as files. Default scope page: one wild page on top of the project's design system. Formats: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
-  "tokens, tailwind, figjam_spec, html_board, brief. Optional: directionId, pages (routes or globs), scope. " +
-  "Write each file to its path. Free plan: design_md, brief, direction_md, build_prompt.";
+  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html (Frankenstein pages). " +
+  "Write each file to its path. Free: design_md, brief, direction_md, build_prompt, stitch_md.";
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),

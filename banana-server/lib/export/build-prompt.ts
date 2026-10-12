@@ -3,6 +3,7 @@ import type { KitModel } from "./model";
 import { directionRefs } from "./model";
 import { globsText, pagesText, scopeBlock } from "./scope";
 import { SPEC_AXES, bullets, exploreLine, fontsLine, kitTitle, refLine, shipLine, typeScaleText } from "./scoped";
+import { stitchSection } from "./stitch-md";
 import { mdText } from "./util";
 
 export function buildPromptMd(m: KitModel): string {
@@ -41,6 +42,7 @@ export function buildPromptMd(m: KitModel): string {
     }
   }
 
+  out.push(...stitchSection(m, "###"));
   out.push("### Platform constraints", "", bullets([`${m.platform.columns}, ${m.platform.margins}.`, `Targets: ${m.platform.targets}.`, ...m.platform.constraints]), "");
   out.push(
     "### Type and color",

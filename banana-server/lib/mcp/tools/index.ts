@@ -9,6 +9,10 @@ import { register as newCanvas } from "./new_canvas";
 import { register as addToCanvas } from "./add_to_canvas";
 import { register as arrangeCanvas } from "./arrange_canvas";
 import { register as getCanvas } from "./get_canvas";
+import { register as cutParts } from "./cut_parts";
+import { register as stitchPage } from "./stitch_page";
+import { register as remixStitch } from "./remix_stitch";
+import { register as updateStitch } from "./update_stitch";
 import { register as extractPalette } from "./extract_palette";
 import { register as exportKit } from "./export_kit";
 import { register as deleteCanvas } from "./delete_canvas";
@@ -27,6 +31,11 @@ export const tools: RegisterTool[] = [
   addToCanvas,
   arrangeCanvas,
   getCanvas,
+  // Frankenstein it: cut parts out of references and stitch them into new pages.
+  cutParts,
+  stitchPage,
+  remixStitch,
+  updateStitch,
   extractPalette,
   exportKit,
   deleteCanvas,

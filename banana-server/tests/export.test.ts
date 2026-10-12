@@ -74,6 +74,8 @@ describe("exportKit", () => {
       ["gobanana-frosted-checkout.mdc", "text/markdown", ".cursor/rules/gobanana-frosted-checkout.mdc", false],
       ["gobanana-frosted-checkout.instructions.md", "text/markdown", ".github/instructions/gobanana-frosted-checkout.instructions.md", false],
       ["CLAUDE.md", "text/markdown", "CLAUDE.md", true],
+      ["FRANKENSTEIN.md", "text/markdown", `${dir}/FRANKENSTEIN.md`, false],
+      ["frankenstein-wireframe.html", "text/html", `${dir}/frankenstein-wireframe.html`, false],
     ]);
     for (const f of files) expect(f.content.length).toBeGreaterThan(100);
   });
@@ -82,6 +84,8 @@ describe("exportKit", () => {
     expect([...EXPORT_FORMATS]).toEqual([...QUOTA_FORMATS]);
   });
 });
+
+const STITCH_FILES = ["FRANKENSTEIN.md", "frankenstein-wireframe.html"];
 
 describe.each(fixtures)("fixture %s", (_name, snapshot) => {
   const files = exportKit(snapshot, EXPORT_FORMATS);
@@ -136,7 +140,8 @@ describe.each(fixtures)("fixture %s", (_name, snapshot) => {
     for (const item of refs) {
       const url = safeUrl(item.sourceUrl);
       if (!url) continue;
-      for (const f of files) {
+      // The Frankenstein files list the sources of their slots (tests/export-stitch.test.ts).
+      for (const f of files.filter((x) => !STITCH_FILES.includes(x.name))) {
         if (f.name === "board.html") expect(f.content, f.name).toContain(`href="${escapeHtml(url)}"`);
         else if (f.name.endsWith(".json")) expect(f.content, f.name).toContain(JSON.stringify(url));
         else expect(f.content, `${f.name} ${url}`).toContain(url);
@@ -217,7 +222,7 @@ describe.each(fixtures)("fixture %s", (_name, snapshot) => {
         expect(f.content, f.name).toContain("Scope: one wild page, not the product design system.");
         continue;
       }
-      if (f.name === "theme.css" || f.name === "board.html") {
+      if (f.name === "theme.css" || f.name.endsWith(".html")) {
         expect(f.content, f.name).toContain("Scope: one wild page, not the product design system.");
         continue;
       }

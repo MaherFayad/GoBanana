@@ -7,6 +7,7 @@
  * (React Flow child positions must be converted from parent-relative first).
  */
 import type { DirectionDetail, Zone } from "@/lib/direction-detail";
+import type { Crop, Part, PartRole, PartTheme, StitchMode, StitchPlatform } from "@/lib/stitch/types";
 
 export type { DirectionDetail, Zone } from "@/lib/direction-detail";
 
@@ -135,6 +136,49 @@ export interface CanvasPalette {
   contrast: ContrastResult[];
 }
 
+/** One slot of a stitch with its part resolved: what it shows and where it came from. */
+export interface StitchSlotSnapshot {
+  id: string;
+  role: PartRole;
+  partId: string;
+  imageUrl: string;
+  thumbUrl?: string;
+  sourceUrl: string;
+  sourceSite: string;
+  title?: string;
+  /** The crop shown: the slot's override, else the part's crop. */
+  crop: Crop;
+  /** The slot's note, else the part's note. */
+  note?: string;
+  theme?: PartTheme;
+  imageWidth?: number;
+  imageHeight?: number;
+}
+
+export interface StitchRowSnapshot {
+  id: string;
+  slots: StitchSlotSnapshot[];
+  widths?: number[];
+}
+
+/** A stitch frame ("Frankenstein page") with absolute geometry and resolved slots. */
+export interface StitchSnapshot {
+  id: string;
+  title: string;
+  platform: StitchPlatform;
+  mode: StitchMode;
+  note?: string;
+  directionId?: string;
+  variantOf?: string;
+  variant?: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  sectionId: string | null;
+  rows: StitchRowSnapshot[];
+}
+
 export interface CanvasSnapshot {
   id?: string;
   title: string;
@@ -147,6 +191,10 @@ export interface CanvasSnapshot {
   sections: CanvasSection[];
   items: CanvasItem[];
   palettes: CanvasPalette[];
+  /** Parts library cut from references (lib/stitch). Missing on snapshots built before stitches. */
+  parts?: Part[];
+  /** Stitch frames, in reading order. Missing on snapshots built before stitches. */
+  stitches?: StitchSnapshot[];
   /** Link to the canvas on the web. Used as the source of notes and swatches in exports. */
   webUrl?: string | null;
   updatedAt?: string | null;

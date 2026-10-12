@@ -4,7 +4,8 @@
  * only; nothing is shared across Workers isolates.
  */
 import { planOf, type Plan, type Usage } from "@/lib/quota";
-import { isStateObject, stateHasTaste } from "@/lib/taste";
+import { isStateObject } from "@/lib/taste";
+import { KEEP_STORED } from "./keep";
 import { parseDirectionDetail } from "./detail";
 import { isUuid, referenceRowId } from "./ids";
 import { clampListLimit, referencesFromState } from "./summary";
@@ -120,10 +121,13 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         if (opts.ifUpdatedAt && opts.ifUpdatedAt.getTime() !== c.updatedAt.getTime()) {
           return { ok: false, reason: "conflict" };
         }
-        // Same as saveCanvasState: a save without `taste` keeps the stored one.
+        // Same as saveCanvasState: a save without `taste` or `parts` keeps the stored one.
         const prev = c.state;
-        const keep = isStateObject(state) && !stateHasTaste(state) && isStateObject(prev) && stateHasTaste(prev);
-        c.state = keep ? { ...clone(state), taste: clone(prev.taste) } : clone(state);
+        const next = clone(state);
+        if (isStateObject(next) && isStateObject(prev)) {
+          for (const key of KEEP_STORED) if (!Object.hasOwn(next, key) && Object.hasOwn(prev, key)) next[key] = clone(prev[key]);
+        }
+        c.state = next;
         c.updatedAt = tick();
         return { ok: true, updatedAt: c.updatedAt };
       },

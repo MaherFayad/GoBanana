@@ -320,3 +320,15 @@ describe("source registry", () => {
     expect(forced.find((r) => r.site === "awwwards")!.query).not.toMatch(/app ui|-template/);
   });
 });
+
+describe("21st.dev gallery", async () => {
+  const { galleryWords } = await import("@/lib/sources/plan");
+  const { isItemPage } = await import("@/lib/sources/item-page");
+  it("adds its suffix so component pages come back, not list pages", () => {
+    expect(galleryWords("21st" as never, "pricing ui design -template")).toBe("pricing community component");
+  });
+  it("keeps component pages and drops list pages", () => {
+    expect(isItemPage(new URL("https://21st.dev/@yura/components/blackhole-hero-section"), "21st" as never)).toBe(true);
+    expect(isItemPage(new URL("https://21st.dev/community/components/s/hero"), "21st" as never)).toBe(false);
+  });
+});

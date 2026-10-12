@@ -4,6 +4,7 @@ import { dimText, directionRefs } from "./model";
 import { pairingSource } from "./design-md";
 import { globsText, pagesText, scopeBlock } from "./scope";
 import { SPEC_AXES, bullets, exploreLine, focusSources, fontsLine, kitTitle, refLine, shipLine, statusText } from "./scoped";
+import { stitchSection } from "./stitch-md";
 import { mdText, wildnessLabel } from "./util";
 
 function directionBlock(m: KitModel, d: DirectionSummary, i: number): string[] {
@@ -67,6 +68,7 @@ export function directionMd(m: KitModel): string {
   if (m.focus.length === 0) out.push("No bend directions were run for this board. The references below are the whole direction.", "");
   m.focus.forEach((d, i) => out.push(...directionBlock(m, d, i)));
 
+  out.push(...stitchSection(m));
   const p = m.platform;
   out.push("## Platform defaults", "");
   out.push(

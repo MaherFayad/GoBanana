@@ -20,6 +20,8 @@ export const EXPORT_FORMATS = [
   "cursor_rules",
   "copilot",
   "claude_md",
+  "stitch_md",
+  "wireframe_html",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -47,7 +49,8 @@ export const PLAN_LIMITS: Readonly<Record<Plan, PlanLimits>> = {
     uploads: false,
     uploadBytes: 0,
     // Free keeps the scoped DESIGN.md and brief, plus the two files that make one wild page buildable.
-    exportFormats: ["design_md", "brief", "direction_md", "build_prompt"],
+    // stitch_md (FRANKENSTEIN.md) is Free; wireframe_html is Pro (owner to confirm, 2026-10-12).
+    exportFormats: ["design_md", "brief", "direction_md", "build_prompt", "stitch_md"],
   },
   pro_monthly: {
     searchesPerMonth: 300,

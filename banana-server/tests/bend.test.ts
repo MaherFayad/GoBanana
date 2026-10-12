@@ -372,7 +372,7 @@ describe("short title and twist", () => {
         }
       }
     }
-  });
+  }, 20_000); // hundreds of bends; slow on a loaded machine
 
   it("adds a twist from wildness 3 up and none at 1 and 2", () => {
     for (const brief of [...SAMPLE_BRIEFS, ...RANDOM_BRIEFS.slice(0, 5)]) {

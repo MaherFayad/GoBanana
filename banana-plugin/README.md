@@ -6,7 +6,7 @@ GoBanana is a Claude plugin for one crazy idea over a page or two: a launch page
 
 Ask your agent to "go wild" on a page. GoBanana bends the brief into unexpected directions, each with a full visual spec, fills a moodboard canvas with two zones of linked references (the wild idea as images, and real UI for your platform), and hands the direction you keep to Claude Code, Cursor, Copilot, Codex, v0 or Lovable as scoped files. Then it can screenshot what you built and grade it against the direction.
 
-The plugin connects your agent to the GoBanana MCP server and adds 8 skills that tell the agent which tools to call, in which order, and how to present the results.
+The plugin connects your agent to the GoBanana MCP server and adds 9 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, beta. The server runs at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen. See [Placeholders](#placeholders).
 
@@ -40,7 +40,8 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 4. **Shipped vs next.** If you have a Mobbin connector, the agent adds a "Shipped today" note with links to real shipped screens for the same page. Links only, never images.
 5. **Board.** Per direction: an "Art direction" row (2 to 4) above a "UI references" grid (6 to 8), each tile with a short "steal:" note and its source link.
 6. **Hand off.** Scoped files for your coding tools, under `design/explorations/<slug>/` ([docs/HARNESS.md](docs/HARNESS.md)).
-7. **Build then critique.** Screenshots at your platform's sizes, a pass or fix grade per checklist item, the top 3 fixes, applied inside the page only.
+7. **Frankenstein it (optional).** Cut the best parts out of the references (a nav here, a hero there) and stitch new page variants from them, every part linked to its source. See [Frankenstein it](#frankenstein-it).
+8. **Build then critique.** Screenshots at your platform's sizes, a pass or fix grade per checklist item, the top 3 fixes, applied inside the page only.
 
 ## Skills
 
@@ -53,6 +54,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 | `gobanana-agents-md` | "AGENTS.md", "rules for coding agents" | A scoped section merged into AGENTS.md or CLAUDE.md, never overwriting |
 | `gobanana-asset-kit` | "asset kit", "tokens for this page" | Override tokens, Tailwind theme, safe gradients, one font pairing, one icon set, for the page only |
 | `gobanana-handoff` | "hand this off", "Cursor rules for this", "prompt for v0" | Detects your tools, exports the harness pack, writes each file at its path, merges into AGENTS.md or CLAUDE.md |
+| `gobanana-frankenstein` | "frankenstein it", "nav from this, hero from that", "make new layouts from my board" | Cuts parts out of the board's UI references (role, crop, light or dark, steal note), stitches 3 or 4 page variants from a recipe, reviews and fixes them, remixes with a lock, exports FRANKENSTEIN.md |
 | `gobanana-critique` | "critique the build", "does this match the direction" | Screenshots at platform sizes, grades the REVIEW.md checklist with evidence, top 3 fixes inside page scope |
 
 ### Platforms
@@ -76,15 +78,16 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `delete_canvas`, `export_kit`.
+`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `delete_canvas`, `export_kit`, `cut_parts`, `stitch_page`, `remix_stitch`, `update_stitch`.
 
 - `bend_brief` takes `platform` and up to 3 `pages`, and returns `wildSpots` when no pages are given.
 - `search_references` returns two zones, `ui` and `art`. Sources: UI galleries by platform, plus Pinterest, Dribbble, Behance and Awwwards. At most 2 results per studio, newer work first, UI kits dropped.
   - Website galleries: Lapa Ninja, Siteinspire, CSS Design Awards, landing.love, Unsection, Supahero, The FWA, Httpster, Dark Design.
-  - Web app galleries: Refero, SaaSFrame, Nicelydone. Mobile galleries: ScreensDesign, 60fps, Figma Community. Style: Bento Grids.
+  - Web app galleries: Refero, SaaSFrame, Nicelydone. Components: 21st.dev (React and Tailwind components, good parts for Frankenstein pages). Mobile galleries: ScreensDesign, 60fps, Figma Community. Style: Bento Grids.
   - Art direction: Fonts In Use, typographic posters, Swissted, The Brand Identity, BP&O, Cosmos, Are.na, Designspiration.
   - Reached through web image search only, never scraped. Each search picks galleries by platform and style words.
 - `add_to_canvas` reference items take a `note` (what to steal, up to 280 characters).
+- `cut_parts`, `stitch_page`, `remix_stitch` and `update_stitch` power Frankenstein it. A part is a role plus a crop rectangle over a hotlinked image; the browser applies it. `get_canvas` lists parts by role and each Frankenstein page with its skeleton.
 - `delete_canvas` deletes a canvas for good (sections, items, tray, share link) and frees a slot. It needs `confirm: true`, and the skills call it only after you say yes to a named board. You can also delete boards from the web dashboard.
 
 The server does no AI work: bend moves and specs are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
@@ -108,8 +111,25 @@ If your client cannot show the canvas inline, every skill gives you the web link
 | `claude_md` | Section in `CLAUDE.md` | Pro |
 | `tokens`, `tailwind` | Override tokens and theme for the pages | Pro |
 | `figjam_spec`, `html_board` | Board as FigJam spec or HTML | Pro |
+| `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | Free |
+| `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro |
 
 Free also covers `bend_brief` (unlimited), 30 searches a month and 3 canvases. When you hit a limit, the skills show the plain upgrade message once and stop; they never retry in a loop. At the canvas limit they offer to add to an existing board or delete an old one, and delete only after you say yes.
+
+## Frankenstein it
+
+Frankenstein pages: the nav from one reference, part of the hero from another, the cards from a third, stacked into a new page. Several at once. Light next to dark is fine. It is for ideas over one page, not a finished design or your product's system.
+
+`gobanana-frankenstein` works the way a designer slices a swipe file:
+
+1. **Pick the board, the platform and one page type** (landing, pricing, dashboard home, a phone home screen).
+2. **Look and slice.** The agent looks at each reference when it can see it, picks the strongest parts, and calls `cut_parts` with a role, a tight crop, light or dark, and a `steal:` note. It aims for 2 to 4 candidates per role from at least 4 sources. If it cannot see the images it says so, cuts by role only, and every crop is marked as a guess.
+3. **Stack.** `stitch_page` with a recipe (for a website: nav, hero, logos, features, cards, testimonial, cta, footer) and 3 or 4 variants, or with the exact rows you dictated ("nav from this, hero from that").
+4. **Judge and fix.** Rhythm, hierarchy, contrast jumps, seams, and whether it reads as one page. Fixes go through `update_stitch` (swap, move, recrop, widths); `remix_stitch` keeps the rows you like and swaps the rest. Modes `even` and `wireframe` help you judge structure.
+5. **Present.** A numbered skeleton per variant: role, what it steals, and the source link.
+6. **Hand off.** FRANKENSTEIN.md (Free) and frankenstein-wireframe.html (Pro, grey boxes, no reference images). BUILD-PROMPT.md lists the Frankenstein pages. Build, then critique.
+
+Nothing is cut out of an image file. A part is a rectangle the browser shows over the original image at its source, and every part keeps its link.
 
 ## Harness pack
 
@@ -119,6 +139,7 @@ Free also covers `bend_brief` (unlimited), 30 searches a month and 3 canvases. W
 
 - **GoBanana never downloads, stores or re-hosts reference images.** It keeps URLs and metadata only. Images load in your browser from their source.
 - **Every reference shows its source link**: on the canvas, in share links, in every export, and in every skill reply.
+- **Parts are crops in the browser, not files.** Frankenstein it never cuts or saves pieces of a reference; the crop is a rectangle over the hotlinked image.
 - **Never copy reference images into your repo.** The skills will not do it, and the files they write tell coding agents not to either.
 - **Mobbin stays on your side.** The agent uses your own Mobbin connector, adds links only, and never sends Mobbin to the GoBanana server.
 - **No scraping.** References come from web search results only.

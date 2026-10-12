@@ -32,7 +32,9 @@ import type {
   CanvasSnapshot,
   ContrastResult,
   PaletteColor,
+  StitchSnapshot,
 } from "@/lib/canvas/types";
+import type { Part, StitchData } from "@/lib/stitch/types";
 import type { CanvasRecord, DirectionRecord, PaletteRecord, Repos } from "@/lib/db/types";
 import { GAP, ZONE_LABEL_SPACE, type LayoutKind } from "@/lib/layout";
 import type { TakedownMatcher } from "@/lib/takedown";
@@ -264,6 +266,7 @@ export function toSnapshot(input: {
     colors: paletteColors(p.colors),
     contrast: contrastResults(p.contrast),
   }));
+  const parts = input.state.parts ?? [];
   return {
     id: input.canvas.id,
     title: input.canvas.title,
@@ -274,9 +277,71 @@ export function toSnapshot(input: {
     sections,
     items,
     palettes,
+    parts,
+    stitches: stitchSnapshots(input.state),
     webUrl: input.webUrl ?? null,
     updatedAt: input.canvas.updatedAt.toISOString(),
   };
+}
+
+/** One stitch's rows with each slot's part resolved. Slots whose part is gone are left out. */
+export function resolveStitchRows(data: StitchData, parts: readonly Part[] | ReadonlyMap<string, Part>): StitchSnapshot["rows"] {
+  const byId = parts instanceof Map ? parts : new Map((parts as readonly Part[]).map((p) => [p.id, p]));
+  return data.rows.flatMap((row) => {
+    const slots = row.slots.flatMap((slot) => {
+      const p = byId.get(slot.partId);
+      if (!p) return [];
+      const note = slot.note ?? p.note;
+      return [
+        {
+          id: slot.id,
+          role: slot.role,
+          partId: p.id,
+          imageUrl: p.imageUrl,
+          ...(p.thumbUrl ? { thumbUrl: p.thumbUrl } : {}),
+          sourceUrl: p.sourceUrl,
+          sourceSite: p.sourceSite,
+          ...(p.title ? { title: p.title } : {}),
+          crop: slot.crop ?? p.crop,
+          ...(note ? { note } : {}),
+          ...(p.theme ? { theme: p.theme } : {}),
+          ...(p.imageWidth ? { imageWidth: p.imageWidth } : {}),
+          ...(p.imageHeight ? { imageHeight: p.imageHeight } : {}),
+        },
+      ];
+    });
+    if (slots.length === 0) return [];
+    return [{ id: row.id, slots, ...(row.widths && slots.length === row.slots.length ? { widths: row.widths } : {}) }];
+  });
+}
+
+/** Stitch frames with absolute geometry, in reading order (top to bottom, left to right). */
+export function stitchSnapshots(state: CanvasState): StitchSnapshot[] {
+  const parts = new Map((state.parts ?? []).map((p) => [p.id, p]));
+  const sections = new Map(state.nodes.filter((n) => n.type === "section").map((n) => [n.id, n]));
+  const out: StitchSnapshot[] = [];
+  for (const n of state.nodes) {
+    if (n.type !== "stitch") continue;
+    const parent = n.parentId ? sections.get(n.parentId) : undefined;
+    const d = n.data;
+    out.push({
+      id: n.id,
+      title: d.title,
+      platform: d.platform,
+      mode: d.mode,
+      ...(d.note ? { note: d.note } : {}),
+      ...(d.directionId ? { directionId: d.directionId } : {}),
+      ...(d.variantOf ? { variantOf: d.variantOf } : {}),
+      ...(d.variant ? { variant: d.variant } : {}),
+      x: n.x + (parent?.x ?? 0),
+      y: n.y + (parent?.y ?? 0),
+      w: n.w,
+      h: n.h,
+      sectionId: parent ? parent.id : null,
+      rows: resolveStitchRows(d, parts),
+    });
+  }
+  return out.sort((a, b) => a.y - b.y || a.x - b.x);
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +401,7 @@ const PREFIX: Record<CanvasNodeType, string> = {
   swatch: "sw",
   typeSample: "type",
   section: "sec",
+  stitch: "st",
 };
 
 /** Tile size for a reference: 280 px wide, height from its aspect ratio (clamped), like the canvas UI. */

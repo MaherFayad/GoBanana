@@ -4,7 +4,8 @@ type: agent
 
 You are the get_canvas tool of the GoBanana MCP server. Reply with plain text only, no commentary.
 - If the input has no canvasId, reply exactly: "No canvases yet. Create one with new_canvas."
-- If the input canvasId is cv_demo, reply with the canvas below, exactly as written.
+- If the input canvasId is cv_demo, reply with the first canvas below, exactly as written.
+- If the input canvasId is cv_stitch, reply with the second canvas below (after the line "=== cv_stitch"), exactly as written.
 - For any other canvasId, reply exactly: "Canvas not found. Pass a canvasId from get_canvas or new_canvas."
 
 Canvas cv_demo "Frosted checkout"
@@ -29,6 +30,8 @@ Tray (10 references, not placed yet; zone in brackets):
 9. [r9, direction d1, ui] Glass checkout bottom sheet (dribbble.com): https://dribbble.com/shots/10000009-glass-bottom-sheet
 10. [r10, direction d2, ui] Receipt style order summary app (dribbble.com): https://dribbble.com/shots/10000010-receipt-summary
 Notes: none
+Parts: none yet
+Frankenstein pages (stitches): none yet
 Palette (6 colors):
 1. #1F2A44 oklch(0.288 0.050 265.9) role: primary
 2. #C8553D oklch(0.593 0.152 33.4) role: secondary
@@ -45,3 +48,25 @@ Contrast (text needs 4.5:1, SC 1.4.3; UI parts need 3:1, SC 1.4.11):
 - #8A8F98 on #1A1C2E: 5.17:1, text pass, UI pass, tag ship
 - #C8553D on #F4F1EA: 3.86:1, text fail, UI pass, tag explore
 - #8A8F98 on #F4F1EA: 2.88:1, text fail, UI fail, tag explore
+
+=== cv_stitch
+Canvas cv_stitch "Studio site ideas"
+Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_stitch
+Brief: landing page for a small design tool startup
+Platform: website
+Directions: none
+Sections:
+- s1 "UI references" (8 items)
+Items (placed images; itemId, zone, title, site, size, source link, image):
+1. [it_201, ui] Dev tool landing page, dark (lapa.ninja), 1440x6200 full page: https://www.lapa.ninja/post/devtool-dark/ image https://cdn.lapa.ninja/assets/images/devtool-dark.jpg
+2. [it_202, ui] Coffee roaster homepage (awwwards.com), 1440x5400 full page: https://www.awwwards.com/sites/coffee-roaster image https://assets.awwwards.com/awards/media/coffee-roaster.jpg
+3. [it_203, ui] Fintech pricing page, bento cards (dribbble.com), 1600x1200: https://dribbble.com/shots/20000203-fintech-pricing image https://cdn.dribbble.com/userupload/20000203/fintech-pricing.png
+4. [it_204, ui] Studio portfolio, editorial grid (siteinspire.com), 1440x4800 full page: https://www.siteinspire.com/websites/20000204-studio-portfolio image https://images.siteinspire.com/20000204.jpg
+5. [it_205, ui] AI startup hero, gradient (landing.love), 1440x900: https://landing.love/sites/ai-startup-hero image https://landing.love/images/ai-startup-hero.jpg
+6. [it_206, ui] Climate nonprofit homepage (behance.net), 1440x5000 full page: https://www.behance.net/gallery/20000206/climate-nonprofit image https://mir-s3-cdn-cf.behance.net/project_modules/20000206.jpg
+7. [it_207, ui] SaaS testimonial wall (dribbble.com), 1600x1200: https://dribbble.com/shots/20000207-testimonial-wall image https://cdn.dribbble.com/userupload/20000207/testimonial-wall.png
+8. [it_208, ui] Agency footer, big type (lapa.ninja), 1440x1100: https://www.lapa.ninja/post/agency-footer/ image https://cdn.lapa.ninja/assets/images/agency-footer.jpg
+Tray: empty
+Notes: none
+Parts: none yet
+Frankenstein pages (stitches): none yet

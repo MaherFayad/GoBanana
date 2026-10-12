@@ -2,6 +2,7 @@ import type { NodeTypes } from "@xyflow/react";
 import { ImageNode } from "./ImageNode";
 import { NoteNode } from "./NoteNode";
 import { SectionNode } from "./SectionNode";
+import { StitchNode } from "./StitchNode";
 import { SwatchNode } from "./SwatchNode";
 import { TypeSampleNode } from "./TypeSampleNode";
 
@@ -13,4 +14,5 @@ export const nodeTypes = {
   swatch: SwatchNode,
   typeSample: TypeSampleNode,
   section: SectionNode,
+  stitch: StitchNode,
 } satisfies NodeTypes;

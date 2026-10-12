@@ -9,6 +9,7 @@ import type {
   ContrastResult,
   NoteItem,
   ReferenceItem,
+  StitchSnapshot,
   Tag,
 } from "../canvas/types";
 import { isReference } from "../canvas/types";
@@ -218,6 +219,8 @@ export interface KitModel {
   rounded: [string, Dim][];
   spacing: [string, Dim][];
   components: ComponentToken[];
+  /** Stitch frames ("Frankenstein pages") for the focus directions or no direction, in reading order. */
+  stitches: StitchSnapshot[];
 }
 
 // ---------- builders ----------
@@ -620,6 +623,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     ],
     spacing: platform.spacing.map(([k, d]): [string, Dim] => [k, { ...d }]),
     components: buildComponents(ship),
+    stitches: (snapshot.stitches ?? []).filter((st) => !st.directionId || !knownIds.has(st.directionId) || focusIds.has(st.directionId)),
   };
 }
 
