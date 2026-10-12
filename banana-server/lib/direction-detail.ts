@@ -80,6 +80,8 @@ export interface DirectionDetail {
   twist?: string;
   prompt?: string;
   wildness?: number;
+  /** The working UI part the wild idea becomes ("progress", "Sadu weaving as the progress bar ..."). */
+  mechanic?: { element: string; how: string };
   /** "keep" or "drop" from rate_directions; missing means not rated yet. */
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */

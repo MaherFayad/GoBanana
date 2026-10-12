@@ -3,7 +3,7 @@
     {
       "name": "bend_brief",
       "title": "Bend a brief",
-      "description": "Turn a brief into unexpected directions for one page or two, each with a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off.",
+      "description": "Turn a brief into unexpected directions for one page or two, each with a short title (at most 4 words, naming the idea), a mechanic (the working UI part the idea becomes: progress, total, cta, divider, section-nav, header or empty-state), a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off. A Gulf or Arabic brief with no lens gets lens suggestions.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -37,7 +37,7 @@
           },
           "lens": {
             "type": "string",
-            "description": "Culture lens preset id, for example sadu, najdi, kufic, mashrabiya, desert-modern"
+            "description": "Culture lens preset id: sadu, najdi, kufic, mashrabiya, desert-modern, memphis, swiss-international, japanese-ma, talli, qatt-asiri"
           },
           "count": {
             "type": "integer",
@@ -77,6 +77,16 @@
             },
             "maxItems": 3,
             "description": "Up to 3 pages or screens the wild idea is for, such as onboarding, pricing page, /launch."
+          },
+          "mustKeep": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "minItems": 1,
+            "maxItems": 6,
+            "description": "Patterns users rely on that no direction may break, like clear total or one primary action. Checkout briefs keep both by default."
           }
         }
       }

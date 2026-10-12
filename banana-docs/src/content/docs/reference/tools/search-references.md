@@ -45,7 +45,8 @@ A direction search runs several lanes at once, each with its own wording:
 - UI kits, templates and "for Adobe XD" or "Figma kit" titles are dropped.
 - At most 2 results per studio or creator, newer work first on Dribbble and Behance.
 - Wrong platform titles (web dashboards on a phone brief, phone screens on a web app brief).
-- Art zone junk: shops, product listings, prices, fashion, Etsy or Amazon, logo sheets, stock.
+- Art zone junk: shops, product listings, prices, fashion, Etsy or Amazon, logo sheets, stock, and music, band, tour or merch titles (unless the art query is about music).
+- Look-alike traditions for a lens query (talli drops Egyptian tulle-bi-telli). The reply says in one line how many lens and music or merch results it dropped (`droppedWhy`), so the agent can rephrase.
 - Anything you rated `bad` before, and anything already on the same board.
 - Taken down links and domains.
 
@@ -95,7 +96,7 @@ Added to the tray of canvas c3f1a0d2-....
 Rate standouts and misses with rate_references (ids in brackets).
 ```
 
-`structuredContent` carries `references[]` (each with `id`, `title`, `sourceUrl`, `sourceSite`, `imageUrl`, `thumbUrl`, `zone`, `lane`), `zones` (counts), `queries`, `lanes`, `sources`, `dropped` and `addedToTray`.
+`structuredContent` carries `references[]` (each with `id`, `title`, `sourceUrl`, `sourceSite`, `imageUrl`, `thumbUrl`, `zone`, `lane`), `zones` (counts), `queries`, `lanes`, `sources`, `dropped`, `droppedWhy` (`lens`, `offTopic` and art `junk` counts, when above 0) and `addedToTray`.
 
 ## Messages
 

@@ -6,11 +6,11 @@
  * idea is never searched raw; it reaches results only through the bridge lane and style words.
  *
  *   UI_NEG       -template -kit -free -wireframe
- *   fidelity     "{domain} {surface} {UI_NEG}"             dribbble.com/shots, then pinterest.com/pin
+ *   fidelity     "{domain} {page} {surface} {UI_NEG}"      dribbble.com/shots, then pinterest.com/pin
  *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
  *   locale (ar)  "arabic {surface} {UI_NEG}"               replaces the fidelity Pinterest page
  *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
- *   component    "{core} {component} ui {UI_NEG}"          dribbble.com/shots, up to 2 from the brief
+ *   component    "{core} {page} {component} {surface} {UI_NEG}"  dribbble.com/shots, up to 2 from the brief and pages
  *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
@@ -20,7 +20,7 @@
  * it already names a UI, else as "{q} app ui" and "{q} ui design", at most 4 requests.
  */
 import type { Platform } from "../direction-detail";
-import { hasUiWord } from "./quality";
+import { hasUiWord, lensNegatives } from "./quality";
 import { cleanQuery } from "./query";
 import { sourceEntry } from "./registry";
 import { SOURCE_SITES, isGallery, laneZone, type LaneName, type Mix, type Reference, type SourceSite, type Zone, type ZoneInput } from "./types";
@@ -53,7 +53,7 @@ export type LaneTexts = {
   fidelity?: string;
   /** Fidelity with the domain cut to its core noun ("saudi fintech" to "fintech"), when different. */
   fidelityCore?: string;
-  /** Component lanes from the brief: "{core} {component} ui" ("banking quick actions ui"), at most 2. */
+  /** Component lanes from the brief and pages: "{core} {page} {component} {surface}" ("flight checkout fare summary app ui"), at most 2. */
   component?: string[];
   /** The idea applied to UI: "{ingredient} ui design" (UI briefs whose ingredient has a head word). */
   bridge?: string;
@@ -276,8 +276,10 @@ export function artRequests(queries: readonly string[] | undefined, galleries: r
   list.forEach((q, i) => {
     const ideaWord = bridgeHead(q) ?? undefined;
     const idea = ideaWord ? { ideaWord } : {};
-    out.push({ lane: "art", query: `${q} ${ART_NEG}`, site: "pinterest", ...idea });
-    out.push({ lane: "art", query: `${q} ${ART_NEG}`, site: "behance", ...idea });
+    // A lens query also cuts the look-alike tradition ("talli" adds -tulle -assiut -egyptian).
+    const neg = [lensNegatives(q), ART_NEG].filter(Boolean).join(" ");
+    out.push({ lane: "art", query: `${q} ${neg}`, site: "pinterest", ...idea });
+    out.push({ lane: "art", query: `${q} ${neg}`, site: "behance", ...idea });
     if (i === 0) for (const site of galleries) out.push({ lane: "art", query: galleryWords(site, q), site, ...idea });
   });
   return out;

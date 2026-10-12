@@ -30,18 +30,20 @@ Pass `moves` to `bend_brief` to limit them, for example `["material", "era"]`.
 
 ## Culture lenses
 
-| Id | Tradition | Arabic name |
-| --- | --- | --- |
-| `sadu` | Sadu weaving | نسيج السدو |
-| `najdi` | Najdi architecture | العمارة النجدية |
-| `kufic` | Square Kufic geometry | الزخرفة الكوفية الهندسية |
-| `mashrabiya` | Mashrabiya | المشربية |
-| `desert-modern` | Desert modern | الحداثة الصحراوية |
-| `memphis` | Memphis design | تصميم ممفيس |
-| `swiss-international` | Swiss International Style | الأسلوب السويسري الدولي |
-| `japanese-ma` | Japanese ma (negative space) | الفراغ الياباني |
+| Id | Tradition | Arabic name | Arabic display font |
+| --- | --- | --- | --- |
+| `sadu` | Sadu weaving | نسيج السدو | Kufam |
+| `najdi` | Najdi architecture | العمارة النجدية | Reem Kufi |
+| `kufic` | Square Kufic geometry | الزخرفة الكوفية الهندسية | Qahiri |
+| `mashrabiya` | Mashrabiya | المشربية | El Messiri |
+| `talli` | Talli braiding (Emirati metallic braid) | التلي | Amiri |
+| `qatt-asiri` | Al Qatt Al Asiri (Asir wall painting) | القط العسيري | Rakkas |
+| `desert-modern` | Desert modern | الحداثة الصحراوية | Alexandria |
+| `memphis` | Memphis design | تصميم ممفيس | Lalezar |
+| `swiss-international` | Swiss International Style | الأسلوب السويسري الدولي | IBM Plex Sans Arabic |
+| `japanese-ma` | Japanese ma (negative space) | الفراغ الياباني | Tajawal |
 
-A lens makes every direction pull from that tradition. The skills suggest a lens when you mention Saudi, Gulf, Arabic or regional heritage, and never use sacred text or religious verses.
+A lens makes every direction pull from that tradition. Each lens is curated: search phrasings that find the tradition, words that drop look-alikes from results (talli drops Egyptian tulle-bi-telli, Sadu drops the Romanian village of the same name) and an Arabic display font on Google Fonts. When a brief names a Gulf or Arab market or Arabic and no lens is set, `bend_brief` suggests some. The skills never use sacred text or religious verses.
 
 ## Learning
 

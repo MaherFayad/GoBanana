@@ -1,7 +1,10 @@
 [
   {
     "id": "sadu",
-    "name": { "en": "Sadu weaving", "ar": "نسيج السدو" },
+    "name": {
+      "en": "Sadu weaving",
+      "ar": "نسيج السدو"
+    },
     "region": "gcc",
     "terms": [
       "Sadu weaving",
@@ -14,11 +17,27 @@
       "Sadu rug",
       "hand loom stripes",
       "diamond weave motif"
-    ]
+    ],
+    "anchors": [
+      "sadu"
+    ],
+    "exclude": [
+      "romania",
+      "romanian",
+      "sibiu",
+      "sadhu"
+    ],
+    "arabicFont": {
+      "family": "Kufam",
+      "url": "https://fonts.google.com/specimen/Kufam"
+    }
   },
   {
     "id": "najdi",
-    "name": { "en": "Najdi architecture", "ar": "العمارة النجدية" },
+    "name": {
+      "en": "Najdi architecture",
+      "ar": "العمارة النجدية"
+    },
     "region": "gcc",
     "terms": [
       "Najdi mud architecture",
@@ -31,11 +50,29 @@
       "palm trunk ceiling",
       "Najdi courtyard",
       "Masmak fort facade"
-    ]
+    ],
+    "anchors": [
+      "najdi",
+      "diriyah",
+      "masmak"
+    ],
+    "exclude": [
+      "sheep",
+      "lamb",
+      "horse",
+      "horses"
+    ],
+    "arabicFont": {
+      "family": "Reem Kufi",
+      "url": "https://fonts.google.com/specimen/Reem+Kufi"
+    }
   },
   {
     "id": "kufic",
-    "name": { "en": "Square Kufic geometry", "ar": "الزخرفة الكوفية الهندسية" },
+    "name": {
+      "en": "Square Kufic geometry",
+      "ar": "الزخرفة الكوفية الهندسية"
+    },
     "region": "gcc",
     "terms": [
       "square Kufic pattern",
@@ -48,11 +85,25 @@
       "angular Kufic pattern",
       "Kufic block pattern",
       "Kufic grid poster"
-    ]
+    ],
+    "anchors": [
+      "kufic"
+    ],
+    "exclude": [
+      "tattoo",
+      "tattoos"
+    ],
+    "arabicFont": {
+      "family": "Qahiri",
+      "url": "https://fonts.google.com/specimen/Qahiri"
+    }
   },
   {
     "id": "mashrabiya",
-    "name": { "en": "Mashrabiya", "ar": "المشربية" },
+    "name": {
+      "en": "Mashrabiya",
+      "ar": "المشربية"
+    },
     "region": "gcc",
     "terms": [
       "mashrabiya screen",
@@ -65,11 +116,30 @@
       "geometric lattice panel",
       "Jeddah rawasheen",
       "perforated screen facade"
-    ]
+    ],
+    "anchors": [
+      "mashrabiya",
+      "rawasheen",
+      "rawashin"
+    ],
+    "exclude": [
+      "lamp",
+      "lamps",
+      "room divider",
+      "curtain",
+      "curtains"
+    ],
+    "arabicFont": {
+      "family": "El Messiri",
+      "url": "https://fonts.google.com/specimen/El+Messiri"
+    }
   },
   {
     "id": "desert-modern",
-    "name": { "en": "Desert modern", "ar": "الحداثة الصحراوية" },
+    "name": {
+      "en": "Desert modern",
+      "ar": "الحداثة الصحراوية"
+    },
     "region": "gcc",
     "terms": [
       "desert modernism architecture",
@@ -83,11 +153,24 @@
       "palm shadow pattern",
       "desert minimalism",
       "salt flat horizon"
-    ]
+    ],
+    "anchors": [],
+    "exclude": [
+      "realtor",
+      "for rent",
+      "wedding"
+    ],
+    "arabicFont": {
+      "family": "Alexandria",
+      "url": "https://fonts.google.com/specimen/Alexandria"
+    }
   },
   {
     "id": "memphis",
-    "name": { "en": "Memphis design", "ar": "تصميم ممفيس" },
+    "name": {
+      "en": "Memphis design",
+      "ar": "تصميم ممفيس"
+    },
     "region": "global",
     "terms": [
       "Memphis Group design",
@@ -100,11 +183,30 @@
       "postmodern furniture",
       "bacterio print",
       "Memphis Milano poster"
-    ]
+    ],
+    "anchors": [
+      "memphis",
+      "sottsass",
+      "bacterio"
+    ],
+    "exclude": [
+      "tennessee",
+      "grizzlies",
+      "elvis",
+      "graceland",
+      "beale"
+    ],
+    "arabicFont": {
+      "family": "Lalezar",
+      "url": "https://fonts.google.com/specimen/Lalezar"
+    }
   },
   {
     "id": "swiss-international",
-    "name": { "en": "Swiss International Style", "ar": "الأسلوب السويسري الدولي" },
+    "name": {
+      "en": "Swiss International Style",
+      "ar": "الأسلوب السويسري الدولي"
+    },
     "region": "global",
     "terms": [
       "Swiss grid poster",
@@ -117,11 +219,32 @@
       "Akzidenz Grotesk poster",
       "modular grid layout",
       "Swiss book cover"
-    ]
+    ],
+    "anchors": [
+      "swiss",
+      "muller-brockmann",
+      "akzidenz",
+      "helvetica"
+    ],
+    "exclude": [
+      "swiss army",
+      "watch",
+      "watches",
+      "chocolate",
+      "cheese",
+      "alps"
+    ],
+    "arabicFont": {
+      "family": "IBM Plex Sans Arabic",
+      "url": "https://fonts.google.com/specimen/IBM+Plex+Sans+Arabic"
+    }
   },
   {
     "id": "japanese-ma",
-    "name": { "en": "Japanese ma", "ar": "الفراغ الياباني" },
+    "name": {
+      "en": "Japanese ma",
+      "ar": "الفراغ الياباني"
+    },
     "region": "global",
     "terms": [
       "Japanese negative space",
@@ -134,6 +257,92 @@
       "washi paper texture",
       "Japanese editorial layout",
       "asymmetric Japanese layout"
-    ]
+    ],
+    "anchors": [
+      "shoji",
+      "tatami",
+      "wabi",
+      "sumi"
+    ],
+    "exclude": [
+      "anime",
+      "manga",
+      "sushi"
+    ],
+    "arabicFont": {
+      "family": "Tajawal",
+      "url": "https://fonts.google.com/specimen/Tajawal"
+    }
+  },
+  {
+    "id": "talli",
+    "name": {
+      "en": "Talli braiding",
+      "ar": "التلي"
+    },
+    "region": "gcc",
+    "terms": [
+      "Emirati talli braiding",
+      "talli braid trim",
+      "Emirati talli",
+      "talli silver braid",
+      "talli gold braid",
+      "khaleeji talli trim",
+      "talli bobbin braiding",
+      "Emirati braided trim",
+      "UAE talli craft",
+      "talli metallic braid"
+    ],
+    "anchors": [
+      "talli"
+    ],
+    "exclude": [
+      "tulle",
+      "assiut",
+      "asyut",
+      "egyptian",
+      "egypt",
+      "telli"
+    ],
+    "arabicFont": {
+      "family": "Amiri",
+      "url": "https://fonts.google.com/specimen/Amiri"
+    }
+  },
+  {
+    "id": "qatt-asiri",
+    "name": {
+      "en": "Al Qatt Al Asiri",
+      "ar": "القط العسيري"
+    },
+    "region": "gcc",
+    "terms": [
+      "Qatt Asiri mural",
+      "Asiri wall painting",
+      "Asiri painted majlis",
+      "Asiri geometric mural",
+      "Rijal Almaa houses",
+      "Asiri painted door",
+      "Asiri triangle bands",
+      "Abha painted interior",
+      "Asir folk painting",
+      "Qatt Asiri art"
+    ],
+    "anchors": [
+      "qatt",
+      "asiri",
+      "asir"
+    ],
+    "exclude": [
+      "cat",
+      "cats",
+      "kitten",
+      "kittens",
+      "map"
+    ],
+    "arabicFont": {
+      "family": "Rakkas",
+      "url": "https://fonts.google.com/specimen/Rakkas"
+    }
   }
 ]

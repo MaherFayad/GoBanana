@@ -37,6 +37,7 @@ import {
 import { WILDNESS } from "./wildness";
 import { familyOf } from "./families";
 import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, type Market } from "./market";
+import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -67,6 +68,8 @@ export type { BendInput, BendResult, Direction, MoveId, Wildness, WildSpot } fro
 export { detectPlatform, PLATFORM_PROFILES } from "@/lib/platform";
 export { fixCase, VERIFIED_STYLE_WORDS } from "./spec";
 export { detectDomain } from "./tone";
+export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
+export type { Mechanic, MechanicElement } from "./mechanic";
 
 /** How many wild spots a result suggests. */
 export const WILD_SPOTS_SHOWN = 5;
@@ -80,8 +83,8 @@ export function wildSpotsFor(platform: Platform): WildSpot[] {
 
 /** Hard cap on any search query length, in words (focused queries are capped lower, at MAX_FOCUSED_QUERY_WORDS). */
 export const MAX_QUERY_WORDS = 9;
-/** Hard cap on title length, in words. */
-export const MAX_TITLE_WORDS = 10;
+/** Hard cap on title length, in words: a title names the idea, never the brief. */
+export const MAX_TITLE_WORDS = 4;
 /** Hard cap on twist length, in words (not counting the "Twist:" label). */
 export const MAX_TWIST_WORDS = 8;
 /** Directions at this wildness and up always carry a twist. */
@@ -108,6 +111,37 @@ function contentStems(text: string): string[] {
 
 function wordCount(text: string): number {
   return text.split(/\s+/).filter(Boolean).length;
+}
+
+/** Words a clipped title never ends on ("One typeface only, no" becomes "One typeface only"). */
+const TITLE_TAIL_STOP = new Set(["a", "an", "the", "and", "or", "of", "for", "to", "with", "in", "on", "at", "by", "no", "per", "one", "every", "all", "only"]);
+
+/** A title cut to MAX_TITLE_WORDS: the part before the first comma, then trailing filler words dropped. */
+export function clipTitle(text: string): string {
+  const head = (text.split(",")[0] ?? text).trim();
+  const ws = head.split(/\s+/).filter(Boolean).slice(0, MAX_TITLE_WORDS);
+  while (ws.length > 1 && TITLE_TAIL_STOP.has(ws.at(-1)!.toLowerCase())) ws.pop();
+  return ws.join(" ").replace(/[,:;.\s]+$/, "");
+}
+
+/** Lenses that fit a brief's market, best first (suggested when no lens is set). */
+const LENS_HINTS: readonly [RegExp, readonly string[]][] = [
+  [/\b(uae|emirati|emirates|dubai|abu dhabi|sharjah)\b/i, ["talli", "sadu", "mashrabiya"]],
+  [/\b(abha|asir|aseer)\b/i, ["qatt-asiri", "najdi", "sadu"]],
+  [/\b(jeddah|hejaz|hijaz|makkah|mecca|madinah|medina)\b/i, ["mashrabiya", "qatt-asiri", "kufic"]],
+  [/\b(saudi|ksa|riyadh|diriyah|najd|dammam)\b/i, ["najdi", "qatt-asiri", "sadu"]],
+  [/\b(kuwait|kuwaiti|bedouin)\b/i, ["sadu", "talli", "kufic"]],
+];
+const GCC_LENSES = ["sadu", "talli", "qatt-asiri"] as const;
+
+/**
+ * Up to 3 lens ids to suggest for a brief that names a Gulf or Arab market or Arabic, when no lens
+ * is set: the city or country's own crafts first, else Sadu, talli and Al Qatt Al Asiri. [] otherwise.
+ */
+export function suggestLenses(brief: string): string[] {
+  const hit = LENS_HINTS.find(([re]) => re.test(brief));
+  if (hit) return [...hit[1]];
+  return needsArabic(brief) ? [...GCC_LENSES] : [];
 }
 
 function combinations<T>(items: readonly T[], k: number): T[][] {
@@ -502,6 +536,11 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   const garnishUse = new Map<MoveId, number>();
   const titles = new Set<string>();
   const directions: Direction[] = [];
+  // Must-keeps (the agent's, plus a clear total and one primary action for a brief that pays):
+  // a direction whose ingredients break one is dropped; a mechanic never reskins a protected total
+  // or main button. Never part of the seed, so ids never move.
+  const protect = protectedElements(input.brief, input.mustKeep ?? []);
+  const mechanicUse = new Map<MechanicElement, number>();
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -510,6 +549,15 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       if (!canRender(template, vars)) continue;
       const text = render(template, vars);
       if (wordCount(text) <= maxWords && !taken?.has(text.toLowerCase())) return text;
+    }
+    return null;
+  };
+  /** First title template, in list order (the plainest first), that fits the cap and is not taken, or null. */
+  const fitTitle = (list: readonly string[], vars: TemplateVars): string | null => {
+    for (const template of list) {
+      if (!canRender(template, vars)) continue;
+      const text = render(template, vars);
+      if (wordCount(text) <= MAX_TITLE_WORDS && !titles.has(text.toLowerCase())) return text;
     }
     return null;
   };
@@ -538,7 +586,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     let title: string | null = null;
     const [h1, h2] = headline;
     if (h1 && h2) {
-      title = fit(`h:${pairKey(h1, h2)}`, PAIR_TEMPLATES[pairKey(h1, h2)] ?? [], vars, MAX_TITLE_WORDS, titles);
+      title = fitTitle(PAIR_TEMPLATES[pairKey(h1, h2)] ?? [], vars);
       if (!title) {
         const lensSet = Boolean(lens);
         const [lead, other] = strength(h2, lensSet) < strength(h1, lensSet) ? [h2, h1] : [h1, h2];
@@ -548,7 +596,12 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     }
     if (!title) {
       const lead = headline[0] ?? moves[0]!;
-      title = fit(`h:${lead}`, SINGLE_TEMPLATES[lead], vars, MAX_TITLE_WORDS, titles) ?? shortest(SINGLE_TEMPLATES[lead], vars);
+      title = fitTitle(SINGLE_TEMPLATES[lead], vars);
+      // Nothing fits in 4 words: the idea itself, clipped; then another ingredient; then the mood.
+      const clipped = [lead, ...moves.filter((m) => m !== lead)]
+        .map((m) => clipTitle(shortest(SINGLE_TEMPLATES[m], vars)))
+        .concat(clipTitle(`${mood.label} ${clipTitle(shortest(SINGLE_TEMPLATES[lead], vars))}`));
+      title ??= clipped.find((t) => t && !titles.has(t.toLowerCase())) ?? clipped[0]!;
     }
     titles.add(title.toLowerCase());
 
@@ -596,6 +649,16 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const lead = headline[0] ?? moves[0]!;
     const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
+    if (brokenMustKeep(ingredients, protect)) return;
+    const leadEntry = picked[moves.indexOf(lead)]!;
+    const mechanic = pickMechanic({
+      lead,
+      entry: leadEntry,
+      others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
+      protect,
+      used: mechanicUse,
+    });
+    mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
     const byMove: Partial<Record<MoveId, ListEntry>> = {};
     moves.forEach((m, j) => {
       if (picked[j]) byMove[m] = picked[j];
@@ -613,7 +676,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       component: signatureComponent(input.brief, platform),
       arabic: locale.arabic,
     });
-    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords });
+    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages });
     const searchQueries = [
       ...new Set(
         [lanes.fidelity, lanes.taste, ...(lanes.component ?? []), lanes.hero, lanes.bridge, lanes.locale].filter((q): q is string =>
@@ -636,6 +699,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       pages: [...pages],
       spec,
       artQueries: artQueries(promptMoves, byMove, lead, mood),
+      mechanic,
     });
   });
 
@@ -644,7 +708,8 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     subject: fixCase(subject.title),
     wildness,
     wildnessLabel: rule.label,
-    lens: lens ? { id: lens.id, name: lens.name } : null,
+    lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont } : null,
+    suggestedLenses: lens ? [] : suggestLenses(input.brief),
     platform,
     pages,
     wildSpots,
@@ -662,11 +727,17 @@ const bare = (line: string) => line.replace(/\.$/, "");
  */
 export function formatDirections(result: BendResult): string {
   const lensNote = result.lens ? `, lens: ${result.lens.name.en}` : "";
+  const lensLine = result.lens
+    ? `Lens ${result.lens.name.en} (${result.lens.name.ar}). Arabic display font: ${result.lens.arabicFont.family} (${result.lens.arabicFont.url}).`
+    : result.suggestedLenses.length > 0
+      ? `This brief names an Arab or Gulf market and no lens is set. Try bend_brief again with lens ${result.suggestedLenses.map((l) => `"${l}"`).join(", ")} to pull a real local craft into every direction.`
+      : "";
   const profile = PLATFORM_PROFILES[result.platform];
   const lines = [
     `${result.directions.length} directions for "${result.brief}" (wildness ${result.wildness}, ${result.wildnessLabel}${lensNote}):`,
     `Platform: ${result.platform} (${profile.label}). Each direction is for one wild page or two, not the product's main design.`,
   ];
+  if (lensLine) lines.push(lensLine);
   if (result.pages.length > 0) lines.push(`Pages: ${result.pages.join(", ")}.`);
   else if (result.wildSpots.length > 0) {
     lines.push("Pages: none given. Where weirdness pays off (wildSpots):");
@@ -678,6 +749,7 @@ export function formatDirections(result: BendResult): string {
     const sp = d.spec;
     lines.push(`${i + 1}. ${d.title}${twist} [${d.move}] query: ${d.searchQuery}`);
     lines.push(`   id: ${d.id}. Prompt: ${d.prompt}`);
+    lines.push(`   Mechanic: build this direction around ${d.mechanic.element} = ${bare(d.mechanic.how)}. Search for UI that has this element.`);
     lines.push(
       `   Spec: type ${sp.typeVoice}: ${bare(sp.typography)} | color: ${bare(sp.color)} | layout: ${bare(sp.layout)} | imagery: ${bare(sp.imagery)} | motion: ${bare(sp.motion)} | texture: ${bare(sp.texture)} | icons: ${bare(sp.iconography)} | density: ${bare(sp.density)}`,
     );
@@ -688,6 +760,7 @@ export function formatDirections(result: BendResult): string {
   });
   lines.push(
     "",
+    "Build each direction around its mechanic: that element is where the wild idea works as a real part of the page; keep everything else familiar. When you search, look for UI that has this element (for example 'flight checkout progress bar app ui').",
     "Next: call search_references with a direction id (after saving to a canvas) or a direction's query to pull UI references and art direction images (the art queries). Pick the directions that excite the user, or bend again at a different wildness.",
   );
   return lines.join("\n");

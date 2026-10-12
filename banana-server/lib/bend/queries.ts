@@ -6,11 +6,14 @@
  *
  * - idea: the direction's lead ingredient, raw ("Sadu weaving", "crushed velvet"). It is never
  *   searched raw; it feeds the bridge lane only.
- * - fidelity: "{domain} {surface}" ("flight app ui"): real product UI for the brief.
+ * - fidelity: "{domain} {page} {surface}" ("flight checkout app ui"): real product UI for the page the
+ *   brief names. "{domain} {surface}" ("flight app ui") pulled tracking, search and seat screens
+ *   for a checkout brief (field report, 2026-10-12).
  * - taste: "{style} {domain} {component} ui design" ("big typography flight checkout ui design").
  *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21.
- * - component: "{core} {component} ui" ("banking quick actions ui", "flight seat selection ui"),
- *   up to 2, from the components the brief names.
+ * - component: "{core} {page} {component} {surface}" ("flight checkout fare summary app ui",
+ *   "banking quick actions app ui"), up to 2, from the pages given to bend_brief and the components
+ *   the brief names.
  * - bridge: "{ingredient} ui design" (UI briefs): the idea already applied to UI. Kept only when
  *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
  * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
@@ -107,7 +110,7 @@ const UI_BRIEF_WORDS = new Set([
 const COMPONENTS = [
   "order tracking", "product detail", "music player", "empty state", "bottom sheet", "tab bar", "landing page",
   "pricing page", "hero section", "saas dashboard", "analytics dashboard", "data table", "admin panel", "404 page",
-  "sign up page", "kanban board", "onboarding", "login", "paywall", "settings", "profile", "checkout", "chat",
+  "sign up page", "kanban board", "onboarding", "login", "paywall", "settings", "profile", "checkout", "payment", "chat",
   "notification", "search", "calendar", "widget", "map", "stats", "wallet", "booking", "feed", "camera", "timer",
   "footer", "dashboard", "card",
 ];
@@ -127,6 +130,8 @@ const LANE_COMPONENTS = [
   "playlist", "now playing", "send money", "transfer", "payment method", "receipt", "budget", "goals",
   "sidebar", "navigation", "date picker", "pricing table", "testimonials", "feature section", "gallery",
   "inbox", "messages", "reviews", "virtual tour", "floor plan", "mortgage calculator", "course", "quiz",
+  "fare summary", "price breakdown", "order summary", "payment bottom sheet", "passenger details", "promo code",
+  "trip summary", "baggage", "payment methods",
 ].filter((c, i, all) => all.indexOf(c) === i);
 
 /** Components that only repeat the surface: never a component lane of their own. */
@@ -359,7 +364,48 @@ function styleWords(style: string): string {
 export function fidelityQuery(brief: string, platform?: Platform): string {
   const p = briefParts(brief, platform);
   if (!p.ui) return capWords(`${extractSubject(p.main, 1).full} app ui`, MAX_LANE_WORDS + 1);
-  return capWords(`${p.domain.join(" ")} ${SURFACE_WORDS[p.surface]}`);
+  return pageForm(p.domain, briefPage(p), SURFACE_WORDS[p.surface]);
+}
+
+/**
+ * The page the brief names, for the UI lanes ("checkout" in "flight checkout screen"), or "" when
+ * it names none or only the surface (dashboard, landing page, card, widget).
+ */
+function briefPage(p: BriefParts): string {
+  const flat = ` ${tokens(p.main).map((t) => t.word).join(" ")} `;
+  return PAGE_NOUNS.find((c) => flat.includes(` ${c} `)) ?? "";
+}
+
+/** The parts a page is judged by, searched when the brief names only the page. */
+const PAGE_PARTS: Readonly<Record<string, readonly string[]>> = {
+  checkout: ["price breakdown", "payment bottom sheet"],
+  payment: ["payment bottom sheet", "payment methods"],
+  cart: ["order summary", "promo code"],
+  booking: ["date picker", "price breakdown"],
+};
+/** Domains whose price breakdown is a fare summary. */
+const FARE_DOMAINS = new Set(["flight", "flights", "airline", "airlines", "travel", "airport", "rail", "train", "bus"]);
+
+function pageParts(page: string, core: string): string[] {
+  const parts = PAGE_PARTS[page] ?? [];
+  return parts.map((c) => (c === "price breakdown" && FARE_DOMAINS.has(core) ? "fare summary" : c));
+}
+
+/** Components that are whole pages or screens (a part like "data table" or "tab bar" is not), longest first. */
+const PAGE_NOUNS = [
+  "order tracking", "product detail", "music player", "empty state", "pricing page", "sign up page", "404 page",
+  "onboarding", "login", "paywall", "settings", "profile", "checkout", "payment", "chat", "search", "calendar",
+  "wallet", "booking", "feed", "inbox", "cart", "notification",
+];
+
+/** "{domain} {page} {surface}" within MAX_FOCUSED_QUERY_WORDS: the domain drops to its core noun, then the page goes. */
+function pageForm(domain: readonly string[], page: string, surface: string): string {
+  const fits = (d: string, pg: string) => words(`${d} ${pg} ${surface}`).length <= MAX_FOCUSED_QUERY_WORDS;
+  const full = domain.join(" ");
+  const core = coreNoun(domain) ?? "";
+  if (fits(full, page)) return capWords(`${full} ${page} ${surface}`);
+  if (fits(core, page)) return capWords(`${core} ${page} ${surface}`);
+  return capWords(`${full} ${surface}`);
 }
 
 /** Last words that are not the core of a domain ("fleet management" is about fleets). */
@@ -374,7 +420,7 @@ function coreNoun(domain: readonly string[]): string | undefined {
 export function fidelityCoreQuery(brief: string, platform?: Platform): string | null {
   const p = briefParts(brief, platform);
   if (!p.ui || p.domain.length < 2) return null;
-  return capWords(`${coreNoun(p.domain)} ${SURFACE_WORDS[p.surface]}`);
+  return pageForm([coreNoun(p.domain)!], briefPage(p), SURFACE_WORDS[p.surface]);
 }
 
 /**
@@ -441,21 +487,48 @@ export function bridgeQuery(brief: string, ingredient: string): string | null {
 }
 
 /**
- * Component lanes: "{core} {component} ui" for up to 2 components the brief names ("banking quick
- * actions ui", "flight seat selection ui"). The taste lane's component goes last, so the lanes
- * differ from taste when the brief names more. A component that only repeats the surface
+ * Components of the pages given to bend_brief ("fare summary", "payment bottom sheet"): each page
+ * as the known component it contains, else its own words (1 to 3 content words).
+ */
+function pageComponents(pages: readonly string[] | undefined): string[] {
+  const out: string[] = [];
+  for (const page of pages ?? []) {
+    const toks = tokens(page);
+    const ws = toks.map((t) => t.word);
+    let known: string | undefined;
+    for (let i = 0; i < ws.length && !known; i++) known = knownAt(ws, i)?.phrase;
+    const c = known ?? (ws.length >= 1 && ws.length <= 3 && toks.every(listWord) ? ws.join(" ") : undefined);
+    if (c && !out.includes(c)) out.push(c);
+  }
+  return out;
+}
+
+/**
+ * Component lanes: "{core} {page} {component} {surface}" for up to 2 components ("flight checkout
+ * fare summary app ui", "banking quick actions app ui"): the pages given to bend_brief first, then
+ * the components the brief names. Page plus component finds the part on the right screen ("flight
+ * app ui" pulled tracking, search and seat screens for a checkout, field report 2026-10-12). Over
+ * the word cap the page goes, then the core noun. The taste lane's component goes last, so the
+ * lanes differ from taste when the brief names more. A component that only repeats the surface
  * (dashboard, card, widget, landing page) gets no lane. Empty for briefs that name no UI.
  */
-export function componentQueries(brief: string, platform?: Platform): string[] {
+export function componentQueries(brief: string, platform?: Platform, pages?: readonly string[]): string[] {
   const p = briefParts(brief, platform);
   if (!p.ui) return [];
   const core = coreNoun(p.domain) ?? "";
-  const named = p.components.filter((c) => !SURFACE_COMPONENTS.has(c));
+  const page = briefPage(p);
+  const surface = SURFACE_WORDS[p.surface];
+  let named = [...pageComponents(pages), ...p.components].filter((c, i, all) => !SURFACE_COMPONENTS.has(c) && all.indexOf(c) === i);
+  // Only the page named: search its standard parts ("flight checkout fare summary app ui").
+  if (named.every((c) => c === page)) named = [...pageParts(page, core), ...named];
   const ordered = [...named.filter((c) => c !== p.component), ...named.filter((c) => c === p.component)];
   const fidelity = fidelityQuery(brief, platform);
   const out: string[] = [];
   for (const c of ordered) {
-    const q = capWords(`${core} ${c} ui`);
+    const pg = page && !c.split(" ").includes(page) ? page : "";
+    const options = [`${core} ${pg} ${c} ${surface}`, `${core} ${c} ${surface}`, `${c} ${surface}`];
+    const form = options.find((o) => words(o).length <= MAX_FOCUSED_QUERY_WORDS) ?? options.at(-1)!;
+    const q = capWords(form);
     if (q !== fidelity && !out.includes(q)) out.push(q);
     if (out.length >= MAX_COMPONENT_LANES) break;
   }
@@ -464,7 +537,7 @@ export function componentQueries(brief: string, platform?: Platform): string[] {
 
 /** Component lane words for the `app` arm: "{core} {component} app ui". */
 export function componentAppText(text: string): string {
-  return / app ui$/.test(text) ? text : text.replace(/ ui$/, " app ui");
+  return / (?:app|ipad app|website|dashboard) ui$/.test(text) ? text : text.replace(/ ui$/, " app ui");
 }
 
 /**
@@ -508,6 +581,8 @@ export type LaneOptions = {
   platform?: Platform;
   /** The direction's verified style words (spec.styleWords): the taste lane uses them when the user gave no taste. */
   styleWords?: readonly string[];
+  /** Pages given to bend_brief ("fare summary"): their components lead the component lanes. */
+  pages?: readonly string[];
 };
 
 /** Taste lane variants for a direction (same style pick as laneTexts; no taste lane, none). */
@@ -549,7 +624,7 @@ export function laneTexts(
   lanes.fidelity = fidelityQuery(b, platform);
   const core = fidelityCoreQuery(b, platform);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
-  const components = componentQueries(b, platform);
+  const components = componentQueries(b, platform, opts.pages);
   if (components.length > 0) lanes.component = components;
   const bridge = bridgeQuery(b, idea);
   if (bridge) lanes.bridge = bridge;

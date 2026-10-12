@@ -372,17 +372,20 @@ function sentence(text: string): string {
 // Art queries
 
 const ART_TAIL: Record<MoveId, { tail: string; skip: RegExp }> = {
-  transplant: { tail: "", skip: /$^/ },
+  transplant: { tail: "design close-up", skip: /\b(poster|posters|cover|covers|label|labels|sign|signs|map|chart|card|cards|menu|ticket|tickets|stamp|stamps|board|page|manual|program|playbill|catalog)\b/i },
   material: { tail: "texture", skip: /\b(texture|paper|glass|print)\b/i },
   era: { tail: "poster", skip: /\b(poster|posters|graphics|design|art|aesthetic|cover|covers|flyer|flyers|ads|typography|zine|illustration|architecture|magazine|catalog|print)\b/i },
-  lens: { tail: "pattern", skip: /\b(pattern|fabric|textile|print|art|weaving|painting|tiles?|rugs?|embroidery|knit|quilts?|posters?|neon|silver|mosaic|pottery|porcelain|doors?|windows?|screens|labels|curtains|crests|marquetry|enamel|craft|palette|sweater|woodcut|impression|miniature|cloth|seals?)\b/i },
-  scale: { tail: "poster", skip: /$^/ },
+  lens: { tail: "pattern", skip: /\b(pattern|fabric|textile|print|art|weaving|braid|braiding|trim|mural|murals|majlis|house|interior|painted|painting|tiles?|rugs?|embroidery|knit|quilts?|posters?|neon|silver|mosaic|pottery|porcelain|doors?|windows?|screens|labels|curtains|crests|marquetry|enamel|craft|palette|sweater|woodcut|impression|miniature|cloth|seals?)\b/i },
+  // Subject, medium and composition, never an abstract word alone: "oversized stripes poster"
+  // returned White Stripes band posters (field report, 2026-10-12).
+  scale: { tail: "graphic print close-up", skip: /$^/ },
   constraint: { tail: "poster", skip: /\b(poster|print|art|typography|lettering)\b/i },
 };
 
 /**
- * 1 to 3 raw image queries of the direction's ingredients, for the art zone: "korean bojagi
- * pattern", "synthwave 1984 poster", "holographic foil texture". Never UI words.
+ * 1 to 3 image queries of the direction's ingredients for the art zone, phrased as a visual
+ * (subject, medium, composition): "korean bojagi pattern", "synthwave 1984 poster", "holographic
+ * foil texture", "oversized stripes graphic print close-up". At most 6 words, never UI words.
  */
 export function artQueries(
   moves: readonly MoveId[],
@@ -400,7 +403,7 @@ export function artQueries(
     const base = m === "scale" ? `oversized ${e.query}` : e.query;
     const { tail, skip } = ART_TAIL[m];
     const q = words(tail && !skip.test(base) && words(base).length < 4 ? `${base} ${tail}` : base)
-      .slice(0, 5)
+      .slice(0, 6)
       .join(" ");
     if (UI_WORDS.test(q) || out.some((o) => o.toLowerCase() === q.toLowerCase())) continue;
     out.push(q);

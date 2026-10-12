@@ -84,15 +84,20 @@ describe("brief lanes", () => {
     expect(isArabicBrief("banking app")).toBe(false);
   });
 
-  it("fidelity: {domain} {surface}, with a core-noun fallback for compound domains", () => {
-    expect(fidelityQuery(CANVAS_BRIEF)).toBe("flight app ui");
+  it("fidelity: {domain} {page} {surface}, with a core-noun fallback for compound domains", () => {
+    // The page the brief names keeps results on that screen: "flight app ui" pulled tracking,
+    // search and seat screens for a checkout (field report, 2026-10-12).
+    expect(fidelityQuery(CANVAS_BRIEF)).toBe("flight checkout app ui");
+    expect(fidelityQuery("GCC mobile flight checkout")).toBe("flight checkout app ui");
     expect(fidelityQuery("saudi fintech app")).toBe("saudi fintech app ui");
     expect(fidelityCoreQuery("saudi fintech app")).toBe("fintech app ui");
     expect(fidelityQuery("luxury hotel website")).toBe("luxury hotel website ui");
     expect(fidelityQuery("logistics dashboard")).toBe("logistics dashboard ui");
     expect(fidelityQuery("Dashboard for a fleet management company")).toBe("fleet management dashboard ui");
     expect(fidelityCoreQuery("Dashboard for a fleet management company")).toBe("fleet dashboard ui");
-    expect(fidelityQuery("banking app onboarding")).toBe("banking app ui");
+    expect(fidelityQuery("banking app onboarding")).toBe("banking onboarding app ui");
+    // A part is not a page: "data table" never joins the fidelity lane.
+    expect(fidelityQuery("Logistics fleet management dashboard with fleet map, data table")).toBe("fleet management dashboard ui");
     expect(fidelityCoreQuery("banking app onboarding")).toBeNull();
     // A brief that names no UI is still searched in UI forms.
     expect(fidelityQuery("poster for a jazz festival")).toBe("jazz festival poster app ui");
@@ -149,8 +154,8 @@ describe("brief lanes", () => {
     expect(lanes).toMatchObject({
       idea: "crushed velvet",
       taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} flight checkout ui design`,
-      fidelity: "flight app ui",
-      component: ["flight checkout ui"],
+      fidelity: "flight checkout app ui",
+      component: ["flight checkout fare summary app ui", "flight checkout payment bottom sheet app ui"],
       bridge: "crushed velvet ui design",
       hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
       locale: "arabic flight app ui",
@@ -184,19 +189,31 @@ describe("brief lanes", () => {
     expect(briefComponents("Flight checkout screen for a GCC travel OTA")).toEqual(["checkout"]);
   });
 
-  it("component lanes: {core} {component} ui, at most 2, never just the surface", () => {
+  it("component lanes: {core} {page} {component} {surface}, at most 2, never just the surface", () => {
     expect(componentQueries("Retail banking mobile app homepage: balance, quick actions, recent transactions")).toEqual([
-      "banking balance ui",
-      "banking quick actions ui",
+      "banking balance app ui",
+      "banking quick actions app ui",
     ]);
-    expect(componentQueries("Flight booking app with seat selection and boarding pass")).toEqual(["flight seat selection ui", "flight boarding pass ui"]);
-    expect(componentQueries("Crypto wallet app: portfolio, swap, price chart")).toEqual(["crypto portfolio ui", "crypto swap ui"]);
-    expect(componentQueries("Logistics fleet management dashboard with fleet map, data table")).toEqual(["fleet map ui", "fleet data table ui"]);
-    expect(componentQueries("Food delivery app order tracking screen")).toEqual(["order tracking ui"]);
+    expect(componentQueries("Flight booking app with seat selection and boarding pass")).toEqual([
+      "flight booking seat selection app ui",
+      "flight booking boarding pass app ui",
+    ]);
+    expect(componentQueries("Crypto wallet app: portfolio, swap, price chart")).toEqual(["crypto wallet portfolio app ui", "crypto wallet swap app ui"]);
+    expect(componentQueries("Logistics fleet management dashboard with fleet map, data table")).toEqual(["fleet map dashboard ui", "fleet data table dashboard ui"]);
+    expect(componentQueries("Food delivery app order tracking screen")).toEqual(["order tracking app ui"]);
+    // Pages given to bend_brief lead, with the brief's page: the part on the right screen.
+    expect(componentQueries("GCC mobile flight checkout", "mobile", ["fare summary", "payment bottom sheet"])).toEqual([
+      "flight checkout fare summary app ui",
+      "flight checkout payment bottom sheet app ui",
+    ]);
+    // Only the page named: its standard parts, a fare summary for travel.
+    expect(componentQueries("GCC mobile flight checkout")).toEqual(["flight checkout fare summary app ui", "flight checkout payment bottom sheet app ui"]);
+    expect(componentQueries("food delivery cart")).toEqual(["delivery cart order summary app ui", "delivery cart promo code app ui"]);
     expect(componentQueries("logistics dashboard")).toEqual([]);
     expect(componentQueries("poster for a jazz festival")).toEqual([]);
     expect(componentAppText("banking quick actions ui")).toBe("banking quick actions app ui");
     expect(componentAppText("flight app ui")).toBe("flight app ui");
+    expect(componentAppText("fleet map dashboard ui")).toBe("fleet map dashboard ui");
   });
 
   it("picks styles by direction id, deterministically", () => {
@@ -225,9 +242,11 @@ describe("bend output", () => {
     const byId = new Map([...w5, ...w4].map((d) => [d.id, d]));
     expect(byId.get("bd-8dti7s7c")?.searchQuery).toBe("crushed velvet");
     expect(byId.get("bd-8hfupzvw")?.searchQuery).toBe("vintage car dashboard");
-    expect(byId.get("bd-mwz3t0yp")?.searchQuery).toBe("Art Nouveau 1900");
-    expect(byId.get("bd-dwyo4stn")?.searchQuery).toBe("oversized film frames");
-    for (const id of ["bd-8dti7s7c", "bd-8hfupzvw", "bd-mwz3t0yp", "bd-dwyo4stn"]) {
+    // Titles hold 4 words: "Art Nouveau 1900 Sadu red stripes" does not fit, so the lens (the stronger move) leads alone.
+    expect(byId.get("bd-mwz3t0yp")?.searchQuery).toBe("Sadu red stripes");
+    // Its ingredients break a checkout must-keep (a clear total or one primary action), so it is dropped.
+    expect(byId.has("bd-dwyo4stn")).toBe(false);
+    for (const id of ["bd-8dti7s7c", "bd-8hfupzvw", "bd-mwz3t0yp"]) {
       const d = byId.get(id)!;
       // No taste given: the taste lane gets the direction's own style words, never DEFAULT_TASTE as the user's taste.
       expect(d.searchQueries).toEqual(
@@ -243,9 +262,10 @@ describe("bend output", () => {
     expect(tasted.directions.map((d) => d.id)).toEqual(base.directions.map((d) => d.id));
     for (const d of tasted.directions) {
       expect(d.searchQueries).toEqual([
-        "flight app ui",
+        "flight checkout app ui",
         "monochrome flight checkout ui design",
-        "flight checkout ui",
+        "flight checkout fare summary app ui",
+        "flight checkout payment bottom sheet app ui",
         "monochrome flight app single screen",
         `${d.searchQuery} ui design`,
       ]);

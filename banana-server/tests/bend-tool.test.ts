@@ -58,7 +58,7 @@ describe("bend_brief tool", () => {
       properties: Record<string, Record<string, unknown>>;
       required: string[];
     };
-    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "lens", "moves", "pages", "platform", "taste", "wildness"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "lens", "moves", "mustKeep", "pages", "platform", "taste", "wildness"]);
     expect(json.required.sort()).toEqual(["brief", "wildness"]);
     expect(json.properties.wildness?.maximum).toBe(5);
     expect(json.properties.count?.maximum).toBe(8);

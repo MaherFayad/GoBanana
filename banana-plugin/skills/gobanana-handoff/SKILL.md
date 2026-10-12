@@ -14,6 +14,7 @@ Turn one kept direction into the files a coding tool needs to build its page or 
 - **Never overwrite `AGENTS.md` or `CLAUDE.md`.** Merge one section between `<!-- gobanana:<slug> -->` and `<!-- /gobanana:<slug> -->` markers. Text outside the markers stays byte for byte. Never touch `.github/copilot-instructions.md`, global Cursor rules, the project's own `DESIGN.md`, tokens or theme.
 - **Files that GoBanana owns** (`design/explorations/<slug>/*`, `.cursor/rules/gobanana-<slug>.mdc`, `.github/instructions/gobanana-<slug>.instructions.md`): if one already exists from an earlier export, show what changes and ask before replacing it.
 - **No reference images in the repo.** The files link to sources; never download or save images.
+- **Arabic copy rules,** when the pages have Arabic: noun-form labels (الدفع, ملخص الرحلة), no diacritics, Western digits (0 to 9), Latin IATA codes (RUH, DXB). Put them in BUILD-PROMPT.md if the export does not already say so.
 - Plain words, no em dashes.
 
 ## Steps
