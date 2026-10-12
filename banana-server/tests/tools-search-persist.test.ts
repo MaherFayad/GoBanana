@@ -88,7 +88,7 @@ describe("search_references with the database", () => {
     expect(res.isError).toBeFalsy();
     // Every lane is a UI lane from the canvas brief; the raw idea is never searched on its own.
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
-    expect(plan[0]).toMatchObject({ lane: "fidelity", query: "flight app ui -template -kit -free -wireframe" });
+    expect(plan[0]).toMatchObject({ lane: "fidelity", query: "flight checkout app ui -template -kit -free -wireframe" });
     expect(plan.some((r) => r.query === dir.searchQuery)).toBe(false);
     expect((res.structuredContent as { addedToTray: boolean }).addedToTray).toBe(true);
 

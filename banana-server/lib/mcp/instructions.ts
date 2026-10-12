@@ -13,6 +13,7 @@ export const SERVER_INSTRUCTIONS = [
   "3. Place them in that direction's UI grid with add_to_canvas { type: 'screen', imageUrl: image_url, sourceUrl: mobbin_url, app, platform, note: 'steal: ...', directionId }. Add one note 'Shipped today: [App, screen](mobbin link), ...' and a 'BUILD ON: [App, screen](mobbin link)' line in each idea note.",
   "Mobbin screens are hotlinked from the connector's image_url and always link to their Mobbin page: never download them, never pass them to search_references. A wild or fitting one can be a Frankenstein part (cut_parts with its itemId, for example a real pay bar under a wild hero), never the whole page. With no Mobbin connector, skip all of this and do not mention Mobbin.",
   "",
+  "Taste first: ask the user for 3 to 5 style words or a reference board before bend_brief; never invent them. Build each kept direction around its mechanic, and for a Gulf or Arabic brief pass a lens (sadu, talli, qatt-asiri).",
   "Flow: get_canvas (reuse a matching board) or new_canvas, bend_brief with the platform and the page, keep the best 3 directions, search_references once per kept direction, rate_references (bad for junk, great for 1 to 3 standouts), add_to_canvas with 6 to 8 UI and 2 to 4 art per direction (art in the art row, each with a 'steal:' note), arrange_canvas, then open_canvas and give the web link.",
   "Always show each reference's source link. Never download or copy reference images.",
 ].join("\n");

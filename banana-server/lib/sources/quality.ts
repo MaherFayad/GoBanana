@@ -5,6 +5,7 @@
  * The bar: polished, high-resolution design work (curated Dribbble shots, good pins), never
  * clip art, stock previews, product listings or tiny thumbnails.
  */
+import lensesJson from "../bend/lenses.json";
 import { SOURCE_REGISTRY, registryItemPath } from "./registry";
 import type { Reference } from "./types";
 
@@ -309,6 +310,37 @@ const EDUCATION_WORDS = wordsRe(
 const tokensOf = (text: string) => new Set((text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).map((w) => w.replace(/s$/, "")));
 
 /**
+ * Off-topic art titles: music acts, tours and merch. "oversized stripes poster" returned White
+ * Stripes band posters (field report, 2026-10-12). Skipped when the art query is itself about
+ * music (MUSIC_QUERY: "gig poster", "1960s jazz album covers"); a word the query names is exempt.
+ */
+const OFF_TOPIC_ART_WORDS = wordsRe(
+  "music|musician|musicians|band|bands|tour|tours|world tour|concert|concerts|gig|gigs|album|albums|lyrics|discography|setlist|merch|merchandise|fan art|fanart|tribute",
+);
+const MUSIC_QUERY = wordsRe(
+  "music|tour|concert|concerts|gig|gigs|album|albums|jazz|rave|disco|record|vinyl|cassette|playbill|program|festival|hip hop|punk|britpop|italo|acid house|synthwave|flyers?",
+);
+
+/** Why the art gate dropped a title: shop or product junk, an off-tradition lens result, or music and merch. */
+export type ArtDropReason = "junk" | "lens" | "offTopic";
+
+/**
+ * The art gate with its reason, or null to keep: lens exclusions first (lensExcludeWords), then
+ * isArtJunk's shop and product rules, then music and merch titles (OFF_TOPIC_ART_WORDS).
+ */
+export function artDropReason(title: string | undefined, artQuery = ""): ArtDropReason | null {
+  const t = (title ?? "").replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  if (titleHasAny(t, lensExcludeWords(artQuery))) return "lens";
+  if (isArtJunk(t, artQuery)) return "junk";
+  if (!MUSIC_QUERY.test(artQuery)) {
+    const m = OFF_TOPIC_ART_WORDS.exec(t);
+    if (m && ![...tokensOf(m[0])].every((w) => tokensOf(artQuery).has(w))) return "offTopic";
+  }
+  return null;
+}
+
+/**
  * The art lane's junk gate. Drops shops, prices and product codes, fashion and clothing
  * listings, product listings (stickers, mugs, pillows, air fresheners, seed packets), logo sheets,
  * stock and asset packs, and classroom or kids' learning material. A product or classroom word the
@@ -396,4 +428,35 @@ export function recencyScore(ref: Pick<Reference, "sourceUrl" | "imageUrl" | "ti
   }
   score += titleYearScore(ref.title ?? "", now);
   return Math.max(-2, Math.min(2, score));
+}
+
+// ---------------------------------------------------------------------------
+// Cultural lens exclusions (lib/bend/lenses.json): a query about a lens drops titles from the
+// look-alike tradition ("talli" queries drop Egyptian tulle-bi-telli: tulle, assiut, egyptian).
+
+type LensWords = { anchors: readonly string[]; terms: readonly string[]; exclude: readonly string[] };
+const LENS_WORDS: readonly LensWords[] = lensesJson;
+
+/**
+ * Exclusion words of every lens a query is about: it names one of the lens's anchors ("talli")
+ * as a whole word, or contains one of its terms. Empty for any other query.
+ */
+export function lensExcludeWords(query: string | undefined): string[] {
+  const q = (query ?? "").toLowerCase().replace(/\s+/g, " ");
+  if (!q.trim()) return [];
+  const out = new Set<string>();
+  for (const lens of LENS_WORDS) {
+    const hit = titleHasAny(q, lens.anchors) || lens.terms.some((t) => q.includes(t.toLowerCase()));
+    if (hit) for (const w of lens.exclude) out.add(w);
+  }
+  return [...out];
+}
+
+/** Search negatives for a lens query: its one-word exclusions as "-word", at most 6. "" for any other query. */
+export function lensNegatives(query: string | undefined): string {
+  return lensExcludeWords(query)
+    .filter((w) => !w.includes(" "))
+    .slice(0, 6)
+    .map((w) => `-${w}`)
+    .join(" ");
 }

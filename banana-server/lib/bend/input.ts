@@ -8,6 +8,7 @@ export const DEFAULT_COUNT = 6;
 export const MAX_COUNT = 8;
 export const MAX_PAGES = 3;
 export const MAX_PAGE_LENGTH = 60;
+export const MAX_MUST_KEEPS = 6;
 
 /** Strict input schema. Also advertised to agents as the tool's JSON schema. */
 export const bendInputSchema = z.object({
@@ -49,6 +50,12 @@ export const bendInputSchema = z.object({
     .max(MAX_PAGES)
     .optional()
     .describe('Up to 3 pages the wild idea is for, like "pricing page" or "onboarding". Leave out to get suggestions.'),
+  mustKeep: z
+    .array(z.string().trim().min(1).max(MAX_PAGE_LENGTH))
+    .min(1)
+    .max(MAX_MUST_KEEPS)
+    .optional()
+    .describe('Patterns users rely on that no direction may break, like "clear total" or "one primary action". Checkout briefs keep both by default.'),
 });
 
 const MESSAGES: Record<string, string> = {
@@ -59,6 +66,7 @@ const MESSAGES: Record<string, string> = {
   count: `count must be a whole number from 1 to ${MAX_COUNT}.`,
   platform: `platform must be one of: ${PLATFORMS.join(", ")}.`,
   pages: `pages must be 1 to ${MAX_PAGES} page names, each up to ${MAX_PAGE_LENGTH} characters.`,
+  mustKeep: `mustKeep must be 1 to ${MAX_MUST_KEEPS} short patterns, each up to ${MAX_PAGE_LENGTH} characters, like "clear total".`,
 };
 
 export type ParseResult =
@@ -75,7 +83,7 @@ export function parseBendInput(raw: unknown): ParseResult {
     const field = String(result.error.issues[0]?.path[0] ?? "");
     return { ok: false, message: MESSAGES[field] ?? "Send a brief and a wildness from 1 to 5." };
   }
-  const { brief, wildness, moves, lens, count, platform, pages } = result.data;
+  const { brief, wildness, moves, lens, count, platform, pages, mustKeep } = result.data;
   return {
     ok: true,
     input: {
@@ -86,6 +94,7 @@ export function parseBendInput(raw: unknown): ParseResult {
       ...(lens ? { lens } : {}),
       ...(platform ? { platform } : {}),
       ...(pages ? { pages } : {}),
+      ...(mustKeep ? { mustKeep } : {}),
     },
   };
 }

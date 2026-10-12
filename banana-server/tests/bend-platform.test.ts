@@ -220,7 +220,7 @@ describe("visual spec", () => {
 });
 
 describe("art queries", () => {
-  it("are 1 to 3 raw ingredient queries with no UI words", () => {
+  it("are 1 to 3 visual ingredient queries of at most 6 words with no UI words", () => {
     for (const brief of [...Object.values(PLATFORM_BRIEFS), "podcast player", "flight checkout screen"]) {
       for (const w of LEVELS) {
         for (const lens of [undefined, "sadu"]) {
@@ -229,7 +229,7 @@ describe("art queries", () => {
             expect(d.artQueries.length).toBeLessThanOrEqual(3);
             for (const q of d.artQueries) {
               expect(q, q).not.toMatch(UI_WORDS);
-              expect(words(q).length, q).toBeLessThanOrEqual(5);
+              expect(words(q).length, q).toBeLessThanOrEqual(6);
             }
           }
         }

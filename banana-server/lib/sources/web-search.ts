@@ -30,7 +30,7 @@
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
-import { bigEnough, isArtJunk, isJunk, isKitTitle, isUiResult, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
+import { artDropReason, bigEnough, isJunk, isKitTitle, isUiResult, lensExcludeWords, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
 import {
   CREATOR_CAP,
   FALLBACK_MIN_GOOD,
@@ -100,11 +100,26 @@ export type WebSearchResult = SourceSearchResult & {
   ok: boolean;
   /** Results dropped as list pages, low quality (stock, shop listings, small images) or not UI. Set when above 0. */
   dropped?: number;
+  /** Why some of the dropped results went: off-tradition lens results, music or merch and shop or product art titles. Set when above 0. */
+  droppedWhy?: DropWhy;
   /** Serper requests sent (one credit each). Set once the adapter got as far as searching. */
   requests?: number;
   /** Plain query path: what was searched, in order, each with its site operator. */
   queries?: string[];
 };
+
+/** Counts of results dropped for a reason the agent can act on (rephrase the query). */
+export type DropWhy = { lens?: number; offTopic?: number; junk?: number };
+
+/** Sum of drop reasons, or undefined when nothing was dropped for one. */
+export function sumWhy(list: readonly (DropWhy | undefined)[]): DropWhy | undefined {
+  const out: DropWhy = {};
+  for (const k of ["lens", "offTopic", "junk"] as const) {
+    const n = list.reduce((sum, w) => sum + (w?.[k] ?? 0), 0);
+    if (n > 0) out[k] = n;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
 
 export type WebSearchAdapter = SourceAdapter & {
   id: "web_search";
@@ -263,6 +278,8 @@ export type MapOptions = {
   artQuery?: string;
   /** Art zone ranking: titles that name the idea's head word score up. */
   ideaWord?: string;
+  /** UI zone: the query words, so a lens query drops off-tradition titles (the art gate uses artQuery). */
+  lensQuery?: string;
 };
 
 export type MapResult = {
@@ -270,6 +287,8 @@ export type MapResult = {
   references: Reference[];
   /** List pages, low-quality and non-UI results dropped (not counting off-site, unsafe or blocked ones). */
   dropped: number;
+  /** Of those, the ones dropped as off-tradition (lens) or music and merch (art). Set when above 0. */
+  why?: DropWhy;
 };
 
 /**
@@ -282,6 +301,8 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
   const seenSource = new Set<string>();
   const seenImage = new Set<string>();
   let dropped = 0;
+  const why = { lens: 0, offTopic: 0, junk: 0 };
+  const lensWords = opts.gate === "art" ? [] : lensExcludeWords(opts.lensQuery);
 
   for (const raw of images as SerperImage[]) {
     if (!raw || typeof raw !== "object") continue;
@@ -337,8 +358,14 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
       continue;
     }
     // UI zone: the title names a UI (untitled ones go too). Art zone: the junk gate instead.
-    if (opts.gate === "art" ? isArtJunk(title, opts.artQuery) : !isUiResult(title, sourceUrl)) {
+    // Art zone: lens exclusions, shop junk, music and merch titles. UI zone: the gate, then lens exclusions.
+    const reason = opts.gate === "art" ? artDropReason(title, opts.artQuery) : !isUiResult(title, sourceUrl) ? "junk" : titleHasAny(title, lensWords) ? "lens" : null;
+    if (reason) {
       dropped++;
+      if (reason === "lens") why.lens++;
+      if (reason === "offTopic") why.offTopic++;
+      // Art zone shop and product listings (the UI gate's non-UI titles are not counted here).
+      if (reason === "junk" && opts.gate === "art") why.junk++;
       continue;
     }
 
@@ -390,7 +417,12 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     }
     out.push(ref);
   }
-  return { references: rankReferences(out, opts.ideaWord ? { ideaWord: opts.ideaWord } : {}).slice(0, Math.max(0, opts.count)), dropped };
+  const reasons = sumWhy([why]);
+  return {
+    references: rankReferences(out, opts.ideaWord ? { ideaWord: opts.ideaWord } : {}).slice(0, Math.max(0, opts.count)),
+    dropped,
+    ...(reasons ? { why: reasons } : {}),
+  };
 }
 
 /** Same as mapSerperImagesWithStats, references only. */
@@ -526,7 +558,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const artIdea = art ? bridgeHead(q.query) ?? undefined : undefined;
     if (planned.length === 0) return failure(NOTES.noResults);
 
-    type Slot = { site: SourceSite; query: string; images: unknown[]; full: boolean; page: number; refs: Reference[]; dropped: number };
+    type Slot = { site: SourceSite; query: string; images: unknown[]; full: boolean; page: number; refs: Reference[]; dropped: number; why?: DropWhy };
     const slots: Slot[] = [];
     const sent: string[] = [];
     let requests = 0;
@@ -555,11 +587,12 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
           allowlist,
           takedowns,
           count: excludedKeys.size > 0 ? 50 : count,
-          ...(art ? { gate: "art" as const, artQuery: q.query, ...(artIdea ? { ideaWord: artIdea } : {}) } : {}),
+          ...(art ? { gate: "art" as const, artQuery: q.query, ...(artIdea ? { ideaWord: artIdea } : {}) } : { lensQuery: q.query }),
         });
         const kept = excludedKeys.size > 0 ? mapped.references.filter((r) => !excludedKeys.has(itemKey(r.sourceUrl))) : mapped.references;
         slot.refs = nudgeByCreator(kept.slice(0, count), prefer).map((r) => ({ ...r, zone: art ? ("art" as const) : ("ui" as const) }));
         slot.dropped = mapped.dropped;
+        slot.why = mapped.why;
       });
       references = capByCreator(
         interleaveReferences(
@@ -602,6 +635,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     if (note) result.note = note;
     const dropped = slots.reduce((n, s) => n + s.dropped, 0);
     if (dropped > 0) result.dropped = dropped;
+    const droppedWhy = sumWhy(slots.map((s) => s.why));
+    if (droppedWhy) result.droppedWhy = droppedWhy;
     return result;
   }
 
@@ -625,6 +660,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       req: PlannedRequest;
       refs: Reference[];
       dropped: number;
+      why?: DropWhy;
       ok: boolean;
       status: number;
       /** Page 1 came back full (10 images), so a page 2 may exist. */
@@ -646,7 +682,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         allowlist,
         takedowns,
         count: SERPER_PAGE_SIZE,
-        ...(zone === "art" ? { gate: "art" as const, artQuery: words, ...(req.ideaWord ? { ideaWord: req.ideaWord } : {}) } : {}),
+        ...(zone === "art" ? { gate: "art" as const, artQuery: words, ...(req.ideaWord ? { ideaWord: req.ideaWord } : {}) } : { lensQuery: words }),
       });
       // Precision filter for the bridge lane (titles name the idea; round 10: 11 of 39 did) and the
       // locale lane (titles name the subject, so Quran and calligraphy apps drop out of "arabic flight app ui").
@@ -658,6 +694,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       return {
         references: kept.map((r) => ({ ...r, lane: req.lane, query: words, zone })),
         dropped: mapped.dropped + (mapped.references.length - onTopic.length),
+        ...(mapped.why ? { why: mapped.why } : {}),
         before: onTopic.length,
       };
     };
@@ -673,6 +710,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         req,
         refs: mapped.references,
         dropped: mapped.dropped,
+        ...(mapped.why ? { why: mapped.why } : {}),
         ok: true,
         status: 200,
         full: out.images.length >= SERPER_PAGE_SIZE,
@@ -721,6 +759,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         ? interleaveReferences([[...slot.refs, ...mapped.references]], SERPER_PAGE_SIZE * 2)
         : interleaveReferences([slot.refs, mapped.references], SERPER_PAGE_SIZE * 2);
       slot.dropped += mapped.dropped;
+      const why = sumWhy([slot.why, mapped.why]);
+      if (why) slot.why = why;
     });
 
     // Per lane: its requests interleaved, newer work first within the lane's rank, preferred
@@ -758,6 +798,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     if (note) result.note = note;
     const dropped = slots.reduce((n, s) => n + s.dropped, 0);
     if (dropped > 0) result.dropped = dropped;
+    const droppedWhy = sumWhy(slots.map((s) => s.why));
+    if (droppedWhy) result.droppedWhy = droppedWhy;
     return result;
   }
 

@@ -19,13 +19,18 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `platform` | enum | لا | `mobile`، `tablet`، `website`، `webapp`، `any` | اتركه فارغا ليستنتجه من الموجز. [القواعد](/docs/ar/reference/platforms/) |
 | `pages` | string[] | لا | من 1 إلى 3، وكل واحدة حتى 60 حرفا | الصفحات التي تخصها الفكرة. اتركه فارغا لتحصل على `wildSpots` |
 | `moves` | enum[] | لا | `transplant`، `material`، `era`، `constraint`، `scale`، `lens` | يحصر الحركات المستخدمة. الافتراضي الست كلها |
-| `lens` | enum | لا | `sadu`، `najdi`، `kufic`، `mashrabiya`، `desert-modern`، `memphis`، `swiss-international`، `japanese-ma` | كل اتجاه يستلهم من هذا التقليد |
+| `lens` | enum | لا | `sadu`، `najdi`، `kufic`، `mashrabiya`، `talli`، `qatt-asiri`، `desert-modern`، `memphis`، `swiss-international`، `japanese-ma` | كل اتجاه يستلهم من هذا التقليد |
+| `mustKeep` | string[] | لا | من 1 إلى 6، وكل واحد حتى 60 حرفا | أنماط يعتمد عليها المستخدمون ("clear total"، "one primary action"، "step indicator"). يسقط أي اتجاه قد يكسر واحدا منها. موجزات الدفع والسلة والحجز تحافظ افتراضيا على إجمالي واضح وإجراء رئيسي واحد |
 | `taste` | string[] | لا | من 1 إلى 5 كلمات، وكل كلمة حتى 40 حرفا | كلمات الذوق، تحفظ على اللوحة مع `canvasId` |
 | `canvasId` | string | لا | من 1 إلى 100 حرف | يحفظ الاتجاهات على تلك اللوحة، فيقبل `search_references` معرف `directionId` |
 
 ## المخرجات
 
-لكل اتجاه: `id`، و`title`، و`twist` (دائما ابتداء من مستوى الجموح 3)، و`move`، و`searchQuery`، و`platform`، و`pages`، و`artQueries` (من 1 إلى 3 كلمات خام لمنطقة الاتجاه الفني)، و`prompt`، و`spec`:
+لكل اتجاه: `id`، و`title` (الفكرة في 4 كلمات على الأكثر، ولا يذكر الموجز)، و`twist` (دائما ابتداء من مستوى الجموح 3)، و`move`، و`searchQuery`، و`platform`، و`pages`، و`mechanic`، و`artQueries` (من 1 إلى 3 عبارات بحث صور لمنطقة الاتجاه الفني، بصيغة الموضوع والخامة والتكوين)، و`prompt`، و`spec`.
+
+`mechanic` هو `{ element, how }`: الجزء العامل في الصفحة الذي تصبحه الفكرة الجامحة، وهو واحد من `progress` أو `total` أو `cta` أو `divider` أو `section-nav` أو `header` أو `empty-state` (ضفيرة كشريط التقدم، وتبويبات كأقسام، وشريط منسوج كفاصل بين الأقسام). لا يقع أبدا على إجمالي أو زر رئيسي محمي. ابن الاتجاه حوله، وابحث عن واجهات فيها هذا العنصر.
+
+حقول `spec`:
 
 | حقل المواصفات | مثال |
 | --- | --- |
@@ -39,7 +44,7 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `steal[]`، `avoid[]` | How light sits on sandstone; text over sandstone without a solid backing |
 | `styleWords[]`، `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
-ويضاف إليها `platform`، و`pages`، و`wildness`، و`wildnessLabel`، و`lens`، و`wildSpots` (خمسة مواضع، وتكون فارغة إذا مررت `pages`). ومع `canvasId`: يضاف `canvasId` و`saved`.
+ويضاف إليها `platform`، و`pages`، و`wildness`، و`wildnessLabel`، و`lens` (مع `arabicFont`، خط عرض عربي من Google Fonts)، و`suggestedLenses` (حتى 3 معرفات عدسات عندما يذكر الموجز سوقا خليجية أو عربية أو العربية ولم تحدد عدسة)، و`wildSpots` (خمسة مواضع، وتكون فارغة إذا مررت `pages`). ومع `canvasId`: يضاف `canvasId` و`saved`.
 
 ## مثال على الاستدعاء
 
@@ -66,13 +71,15 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 Platform: website (website). Each direction is for one wild page or two, not the product's main design.
 Pages: launch page.
 
-1. Specialty coffee launch in sandstone, rewound to Fluxus 1962 (Twist: emoji instead of icons) [material + era] query: sandstone
+1. Fluxus 1962 sandstone (Twist: only circles and half circles, no exceptions) [material + era] query: sandstone
    id: bd-z0y2y96z. Prompt: Redesign the specialty coffee launch page. Render every surface as sandstone...
+   Mechanic: build this direction around cta = Sandstone skins the main button; still one button with a plain label. Search for UI that has this element.
    Spec: type mono: A monospace for display at clamp(48px, 8vw, 120px)... | color: Chalky terracotta, sage and bone...
    Signature: The hero section rendered in sandstone, with real light and shadow. Pattern: Layered sandstone panels...
    Art queries: sandstone texture; Fluxus graphic design
-2. Specialty coffee launch as a spa-like cereal box (Twist: giant sparklines everywhere) [scale + transplant] query: cereal box
+2. Cereal box (Twist: sparklines blown up huge) [scale + transplant] query: cereal box
    id: bd-mob5pq35. ...
+   Mechanic: build this direction around section-nav = Cereal box as the tabs that switch between sections. Search for UI that has this element.
    Art queries: cereal box; oversized sparklines poster
 
 Saved to canvas c3f1a0d2-.... Pass a direction id as directionId (with this canvasId) to search_references.

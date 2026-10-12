@@ -30,18 +30,20 @@ description: مستويات الجموح الخمسة، والحركات الس�
 
 ## العدسات الثقافية
 
-| المعرّف | التقليد | الاسم العربي |
-| --- | --- | --- |
-| `sadu` | Sadu weaving | نسيج السدو |
-| `najdi` | Najdi architecture | العمارة النجدية |
-| `kufic` | Square Kufic geometry | الزخرفة الكوفية الهندسية |
-| `mashrabiya` | Mashrabiya | المشربية |
-| `desert-modern` | Desert modern | الحداثة الصحراوية |
-| `memphis` | Memphis design | تصميم ممفيس |
-| `swiss-international` | Swiss International Style | الأسلوب السويسري الدولي |
-| `japanese-ma` | Japanese ma (negative space) | الفراغ الياباني |
+| المعرّف | التقليد | الاسم العربي | خط العرض العربي |
+| --- | --- | --- | --- |
+| `sadu` | Sadu weaving | نسيج السدو | Kufam |
+| `najdi` | Najdi architecture | العمارة النجدية | Reem Kufi |
+| `kufic` | Square Kufic geometry | الزخرفة الكوفية الهندسية | Qahiri |
+| `mashrabiya` | Mashrabiya | المشربية | El Messiri |
+| `talli` | Talli braiding | التلي | Amiri |
+| `qatt-asiri` | Al Qatt Al Asiri | القط العسيري | Rakkas |
+| `desert-modern` | Desert modern | الحداثة الصحراوية | Alexandria |
+| `memphis` | Memphis design | تصميم ممفيس | Lalezar |
+| `swiss-international` | Swiss International Style | الأسلوب السويسري الدولي | IBM Plex Sans Arabic |
+| `japanese-ma` | Japanese ma (negative space) | الفراغ الياباني | Tajawal |
 
-العدسة تجعل كل الاتجاهات تستمد من ذلك التقليد. تقترح المهارات عدسة عندما تذكر السعودية أو الخليج أو العربية أو التراث المحلي، ولا تستخدم أبدا النصوص المقدسة أو الآيات الدينية.
+العدسة تجعل كل الاتجاهات تستمد من ذلك التقليد. كل عدسة منتقاة بعناية: عبارات بحث تجد التقليد نفسه، وكلمات تستبعد ما يشبهه من النتائج (التلي يستبعد التلي المصري المعروف بالتل بالتلي، والسدو يستبعد القرية الرومانية التي تحمل الاسم نفسه)، وخط عرض عربي من Google Fonts. وعندما يذكر الموجز سوقا خليجية أو عربية أو العربية دون عدسة، يقترح `bend_brief` بعضها. ولا تستخدم المهارات أبدا النصوص المقدسة أو الآيات الدينية.
 
 ## التعلم
 

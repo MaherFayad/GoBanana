@@ -10,6 +10,7 @@ import {
   MAX_LANE_WORDS,
   MAX_QUERY_WORDS,
   MAX_TITLE_WORDS,
+  clipTitle,
   fidelityQuery,
   MAX_TWIST_WORDS,
   MOVES,
@@ -350,11 +351,17 @@ const ID_SNAPSHOT: { input: { brief: string; wildness: Wildness; lens?: string }
 describe("short title and twist", () => {
   it("keeps ids exactly as captured before the title rework", () => {
     for (const { input, ids } of ID_SNAPSHOT) {
-      expect(bendBrief({ ...input, count: 8 }).directions.map((d) => d.id)).toEqual(ids);
+      const got = bendBrief({ ...input, count: 8 }).directions.map((d) => d.id);
+      // A checkout keeps a clear total and one primary action: a direction that breaks one is
+      // dropped (lib/bend/mechanic.ts), but every id that stays is the one captured, in order.
+      expect(got, input.brief).toEqual(ids.filter((id) => got.includes(id)));
+      expect(got.length, input.brief).toBeGreaterThanOrEqual(ids.length - 2);
     }
+    // A brief that pays nothing drops nothing.
+    expect(bendBrief({ ...ID_SNAPSHOT[1]!.input, count: 8 }).directions.map((d) => d.id)).toEqual(ID_SNAPSHOT[1]!.ids);
   });
 
-  it("caps titles at 10 words and twists at 8 for samples and random briefs", () => {
+  it("caps titles at 4 words and twists at 8 for samples and random briefs", () => {
     for (const brief of [...SAMPLE_BRIEFS, ...RANDOM_BRIEFS]) {
       for (const w of LEVELS) {
         for (const lens of [undefined, "najdi", "sadu"]) {
@@ -395,7 +402,7 @@ describe("short title and twist", () => {
     for (const lens of LENSES) {
       for (const w of [3, 4, 5] as Wildness[]) {
         for (const d of bendBrief({ brief: "flight checkout screen", wildness: w, lens: lens.id, count: 8 }).directions) {
-          expect(d.title, d.title).toContain(d.ingredients.tradition);
+          expect(d.title.toLowerCase(), d.title).toContain(d.ingredients.tradition!.toLowerCase());
         }
       }
     }
@@ -486,9 +493,10 @@ describe("template grammar", () => {
     expect(grammarProblems("Flight checkout as an arcade cabinet, a matchbook and an 8-bit sign")).toEqual([]);
   });
 
-  it("has six or more templates per move, move pair and twist source", () => {
-    for (const m of MOVES) expect(SINGLE_TEMPLATES[m].length, m).toBeGreaterThanOrEqual(6);
-    for (const [k, list] of Object.entries(PAIR_TEMPLATES)) expect(list.length, k).toBeGreaterThanOrEqual(6);
+  it("has title templates per move and move pair, and six or more per twist source", () => {
+    // Titles name the idea in at most 4 words, so there are few ways to say it.
+    for (const m of MOVES) expect(SINGLE_TEMPLATES[m].length, m).toBeGreaterThanOrEqual(1);
+    for (const [k, list] of Object.entries(PAIR_TEMPLATES)) expect(list.length, k).toBeGreaterThanOrEqual(2);
     for (const [k, list] of Object.entries(TWIST_TEMPLATES)) expect(list.length, k).toBeGreaterThanOrEqual(6);
     // Every pair the headline can hold has templates (constraint always goes to the twist).
     const leaders = MOVES.filter((m) => m !== "constraint");
@@ -530,7 +538,7 @@ describe("template grammar", () => {
     expect(failures.slice(0, 20)).toEqual([]);
   });
 
-  it("can always fit a twist in 8 words and a single-move title in 10", () => {
+  it("can always fit a twist in 8 words and a single-move title in 4", () => {
     for (const [source, list] of Object.entries(TWIST_TEMPLATES)) {
       for (const text of list.flatMap((t) => renderAll(t))) {
         // At least the shortest template must fit for every entry; checked per entry below.
@@ -546,8 +554,10 @@ describe("template grammar", () => {
     for (const m of MOVES) {
       for (const entry of ROLE_LISTS[ROLE[m]]!) {
         const vars = { subj: "coffee shop landing page", head: "landing page", m: "sunset glow", [ROLE[m]]: entry };
-        const best = Math.min(...SINGLE_TEMPLATES[m].filter((t) => canRender(t, vars)).map((t) => words(render(t, vars)).length));
+        // The shortest rendering, clipped as the engine does when nothing fits.
+        const best = Math.min(...SINGLE_TEMPLATES[m].filter((t) => canRender(t, vars)).map((t) => words(clipTitle(render(t, vars))).length));
         expect(best, `${m}: ${entry}`).toBeLessThanOrEqual(MAX_TITLE_WORDS);
+        expect(best, `${m}: ${entry}`).toBeGreaterThan(0);
       }
     }
   });

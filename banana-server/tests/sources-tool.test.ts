@@ -161,15 +161,15 @@ describe("search_references tool", () => {
     expect(out.mix).toBe("ui");
     expect(out.lanes).toMatchObject({
       idea: "crushed velvet",
-      fidelity: "flight app ui",
-      component: ["flight checkout ui"],
+      fidelity: "flight checkout app ui",
+      component: ["flight checkout fare summary app ui", "flight checkout payment bottom sheet app ui"],
       bridge: "crushed velvet ui design",
       locale: "arabic flight app ui",
     });
     expect(out.lanes.taste).toBeUndefined();
     expect(out.lanes.hero).toBe("flight app single screen");
     expect(out.lanes.art).toEqual(["crushed velvet"]);
-    expect(out.queries[0]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
+    expect(out.queries[0]).toBe("flight checkout app ui -template -kit -free -wireframe site:dribbble.com/shots");
     expect(out.queries[2]).toBe("crushed velvet ui design -template -kit -free -wireframe site:dribbble.com/shots");
     expect(out.queries[5]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain("UI references:");

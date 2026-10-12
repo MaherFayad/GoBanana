@@ -47,6 +47,8 @@ import {
   capByCreator,
   countNote,
   createWebSearchAdapter,
+  sumWhy,
+  type DropWhy,
   type WebSearchAdapter,
   type WebSearchResult,
 } from "@/lib/sources/web-search";
@@ -167,6 +169,8 @@ export type SearchReferencesOutput = {
   note?: string;
   /** Results dropped as list pages or low quality. */
   dropped?: number;
+  /** Of those, the ones dropped as another tradition (lens), as music and merch, or as shop listings (art). */
+  droppedWhy?: DropWhy;
   /** Style words given in this call, and whether they were saved on the canvas. */
   taste?: string[];
   tasteSaved?: boolean;
@@ -180,10 +184,26 @@ export type SearchReferencesResult = {
   isError?: boolean;
 };
 
+/**
+ * One line on results the lens and junk filters dropped, so the agent can rephrase, or "" when none
+ * were dropped for a reason it can act on.
+ */
+export function dropLine(why: DropWhy | undefined): string {
+  const parts: string[] = [];
+  if (why?.lens) parts.push(`${why.lens} from a look-alike tradition (the lens's excluded words, such as Egyptian tulle for talli)`);
+  if (why?.offTopic) parts.push(`${why.offTopic} art results about music, bands, tours or merch`);
+  if (why?.junk) parts.push(`${why.junk} art results that were shop, stock or product listings`);
+  if (parts.length === 0) return "";
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}` : parts[0];
+  return `Dropped ${list}. If too few are left, rephrase as subject, medium and composition ("talli braid sleeve trim close-up").`;
+}
+
 function resultText(out: SearchReferencesOutput): string {
   const lines: string[] = [];
+  const drops = dropLine(out.droppedWhy);
   if (out.references.length === 0) {
     lines.push(out.note ?? "No references found.");
+    if (drops) lines.push(drops);
     return lines.join("\n");
   }
   const searched = out.lane ? `the ${out.lane} lane "${out.query}"` : `"${out.query}"`;
@@ -215,6 +235,7 @@ function resultText(out: SearchReferencesOutput): string {
     );
   }
   if (out.note) lines.push(out.note);
+  if (drops) lines.push(drops);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
   if (out.learned) lines.push("Some lanes used wording that rated better before.");
   lines.push("Rate standouts and misses with rate_references (ids in brackets).");
@@ -247,6 +268,7 @@ export function directionLanes(direction: Direction, taste: readonly string[]): 
   const lanes = laneTexts(brief, idea, taste, direction.bendId ?? direction.id, {
     ...(detail?.platform ? { platform: detail.platform } : {}),
     ...(detail?.spec?.styleWords?.length ? { styleWords: detail.spec.styleWords } : {}),
+    ...(detail?.pages?.length ? { pages: detail.pages } : {}),
   });
   const art = (detail?.artQueries ?? []).map(artWords).filter(Boolean);
   const fallback = artWords(idea);
@@ -482,6 +504,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         };
         const dropped = (ui?.dropped ?? 0) + (art?.dropped ?? 0);
         if (dropped > 0) result.dropped = dropped;
+        const droppedWhy = sumWhy([ui?.droppedWhy, art?.droppedWhy]);
+        if (droppedWhy) result.droppedWhy = droppedWhy;
         const note = ok ? countNote(references.length, input.count) : (ui?.note ?? art?.note);
         if (note) result.note = note;
         searched = { result, queries: result.queries ?? [query!] };
@@ -521,6 +545,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       const note = [result.note, artNote].filter(Boolean).join(" ");
       if (note) out.note = note;
       if (result.dropped) out.dropped = result.dropped;
+      if (result.droppedWhy) out.droppedWhy = result.droppedWhy;
 
       if (input.canvasId && references.length > 0) {
         out.canvasId = input.canvasId;

@@ -1,4 +1,5 @@
 import type { Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
+import type { Mechanic } from "./mechanic";
 
 export type { Platform, VisualSpec } from "@/lib/direction-detail";
 
@@ -27,6 +28,11 @@ export interface BendInput {
   platform?: Platform;
   /** Up to 3 pages or screens the wild idea is for ("pricing page"). Never changes ids. */
   pages?: string[];
+  /**
+   * Patterns users rely on that no direction may break ("clear total", "one primary action").
+   * Never changes ids: a direction that breaks one is dropped, and mechanics avoid them.
+   */
+  mustKeep?: string[];
 }
 
 /** Tones a list entry can carry; subjects map to compatible tones (lib/bend/tone.ts). */
@@ -114,8 +120,10 @@ export interface Direction {
   pages: string[];
   /** The full visual spec: type, color, layout, imagery, motion and more, for the platform. */
   spec: VisualSpec;
-  /** 1 to 3 raw image queries of the ingredients for the art zone, no UI words. */
+  /** 1 to 3 image queries of the ingredients for the art zone (subject, medium, composition), no UI words. */
   artQueries: string[];
+  /** The working UI part the wild idea becomes (lib/bend/mechanic.ts): build the direction around it. */
+  mechanic: Mechanic;
 }
 
 /** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */
@@ -128,7 +136,17 @@ export interface LensPreset {
   id: string;
   name: { en: string; ar: string };
   region: string;
+  /** Search phrasings, also the lens move's list entries (never reorder: they key direction ids). */
   terms: string[];
+  /** Words that mark a search query as this lens's ("talli"). Empty: only its own terms match. */
+  anchors: string[];
+  /**
+   * Title words that mean an off-tradition result ("talli embroidery" returned Egyptian
+   * tulle-bi-telli): the search drops them (lib/sources/quality.ts lensExcludeWords).
+   */
+  exclude: string[];
+  /** Arabic display font suggestion on Google Fonts. */
+  arabicFont: { family: string; url: string };
 }
 
 export interface BendResult {
@@ -137,7 +155,9 @@ export interface BendResult {
   subject: string;
   wildness: Wildness;
   wildnessLabel: string;
-  lens: { id: string; name: { en: string; ar: string } } | null;
+  lens: { id: string; name: { en: string; ar: string }; arabicFont: { family: string; url: string } } | null;
+  /** Lens ids that fit the brief's Gulf or Arab market when no lens is set, best first; else []. */
+  suggestedLenses: string[];
   platform: Platform;
   pages: string[];
   /** Top places for one wild page on this platform. Empty when pages were given. */

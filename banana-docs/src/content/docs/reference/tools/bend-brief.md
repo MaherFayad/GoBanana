@@ -19,13 +19,18 @@ Bending is deterministic: the same brief, wildness, platform, pages, moves and l
 | `platform` | enum | No | `mobile`, `tablet`, `website`, `webapp`, `any` | Leave out to detect it from the brief. [Rules](/docs/reference/platforms/) |
 | `pages` | string[] | No | 1 to 3, each up to 60 characters | The pages the idea is for. Leave out to get `wildSpots` |
 | `moves` | enum[] | No | `transplant`, `material`, `era`, `constraint`, `scale`, `lens` | Limit which moves are used. Default all six |
-| `lens` | enum | No | `sadu`, `najdi`, `kufic`, `mashrabiya`, `desert-modern`, `memphis`, `swiss-international`, `japanese-ma` | Every direction pulls from that tradition |
+| `lens` | enum | No | `sadu`, `najdi`, `kufic`, `mashrabiya`, `talli`, `qatt-asiri`, `desert-modern`, `memphis`, `swiss-international`, `japanese-ma` | Every direction pulls from that tradition |
+| `mustKeep` | string[] | No | 1 to 6, each up to 60 characters | Patterns users rely on ("clear total", "one primary action", "step indicator"). A direction that would break one is dropped. Checkout, cart and booking briefs keep a clear total and one primary action by default |
 | `taste` | string[] | No | 1 to 5 words, each up to 40 characters | Style words, saved on the canvas with `canvasId` |
 | `canvasId` | string | No | 1 to 100 characters | Saves the directions to that board, so `search_references` can take a `directionId` |
 
 ## Output
 
-Per direction: `id`, `title`, `twist` (always from wildness 3), `move`, `searchQuery`, `platform`, `pages`, `artQueries` (1 to 3 raw words for the art zone), `prompt` and `spec`:
+Per direction: `id`, `title` (the idea in at most 4 words, never the brief), `twist` (always from wildness 3), `move`, `searchQuery`, `platform`, `pages`, `mechanic`, `artQueries` (1 to 3 image queries for the art zone, phrased as subject, medium and composition), `prompt` and `spec`.
+
+`mechanic` is `{ element, how }`: the working part of the page the wild idea becomes, one of `progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state` (a braid as the progress bar, tabs as sections, a woven band as the section divider). It never lands on a protected total or main button. Build the direction around it, and search for UI that has that element.
+
+`spec` fields:
 
 | Spec field | Example |
 | --- | --- |
@@ -39,7 +44,7 @@ Per direction: `id`, `title`, `twist` (always from wildness 3), `move`, `searchQ
 | `steal[]`, `avoid[]` | How light sits on sandstone; text over sandstone without a solid backing |
 | `styleWords[]`, `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
-Plus `platform`, `pages`, `wildness`, `wildnessLabel`, `lens` and `wildSpots` (5 spots, empty when `pages` was given). With `canvasId`: `canvasId` and `saved`.
+Plus `platform`, `pages`, `wildness`, `wildnessLabel`, `lens` (with its `arabicFont`, a Google Fonts display face), `suggestedLenses` (up to 3 lens ids when the brief names a Gulf or Arab market or Arabic and no lens is set) and `wildSpots` (5 spots, empty when `pages` was given). With `canvasId`: `canvasId` and `saved`.
 
 ## Example call
 
@@ -66,13 +71,15 @@ Real output from the bend engine, shortened:
 Platform: website (website). Each direction is for one wild page or two, not the product's main design.
 Pages: launch page.
 
-1. Specialty coffee launch in sandstone, rewound to Fluxus 1962 (Twist: emoji instead of icons) [material + era] query: sandstone
+1. Fluxus 1962 sandstone (Twist: only circles and half circles, no exceptions) [material + era] query: sandstone
    id: bd-z0y2y96z. Prompt: Redesign the specialty coffee launch page. Render every surface as sandstone...
+   Mechanic: build this direction around cta = Sandstone skins the main button; still one button with a plain label. Search for UI that has this element.
    Spec: type mono: A monospace for display at clamp(48px, 8vw, 120px)... | color: Chalky terracotta, sage and bone...
    Signature: The hero section rendered in sandstone, with real light and shadow. Pattern: Layered sandstone panels...
    Art queries: sandstone texture; Fluxus graphic design
-2. Specialty coffee launch as a spa-like cereal box (Twist: giant sparklines everywhere) [scale + transplant] query: cereal box
+2. Cereal box (Twist: sparklines blown up huge) [scale + transplant] query: cereal box
    id: bd-mob5pq35. ...
+   Mechanic: build this direction around section-nav = Cereal box as the tabs that switch between sections. Search for UI that has this element.
    Art queries: cereal box; oversized sparklines poster
 
 Saved to canvas c3f1a0d2-.... Pass a direction id as directionId (with this canvasId) to search_references.
@@ -102,6 +109,7 @@ Pages: none given. Where weirdness pays off (wildSpots):
 | "brief must be 1 to 500 characters, for example "flight checkout screen"." | Shorten the brief |
 | "wildness must be a whole number from 1 (Fresh) to 5 (Bananas)." | Pass 1 to 5 |
 | "pages must be 1 to 3 page names, each up to 60 characters." | Fewer, shorter pages |
+| "mustKeep must be 1 to 6 short patterns, each up to 60 characters, like "clear total"." | Fewer, shorter must keeps |
 | "canvasId must be an id from open_canvas." | Use a real canvas id |
 | "The directions were not saved: that canvas was not found or could not be reached..." | Directions still come back; search with their query text, or bend again with a valid id |
 

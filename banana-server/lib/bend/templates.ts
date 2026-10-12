@@ -23,148 +23,36 @@ export const ROLE: Record<MoveId, string> = {
   lens: "lens",
 };
 
-/** Headline from a single move (wildness 1 and 2, and wildness 3+ when the other move is the twist). */
+/**
+ * Titles name the idea in at most 4 words, never the brief: "GCC travel checkout drawn from Sadu"
+ * read like a template (field report, 2026-10-12). The first template that fits the cap and is not
+ * taken wins, so the plainest form comes first; the others only keep titles unique.
+ */
+/** Title from a single move (wildness 1 and 2, and wildness 3+ when the other move is the twist). */
 export const SINGLE_TEMPLATES: Record<MoveId, readonly string[]> = {
-  transplant: [
-    "{Subj} as {a-obj}",
-    "{Subj} as {a-m-obj}",
-    "What if the {head} were {a-m-obj}",
-    "{Subj} printed on {a-obj}",
-    "{Subj} that works like {a-obj}",
-    "{Subj} hiding inside {a-m-obj}",
-    "Turn the {head} into {a-m-obj}",
-  ],
-  material: [
-    "{Subj} made of {mat}",
-    "{Subj} in {mat}",
-    "{Matlead} {subj}",
-    "{Subj} you could touch, all {mat}",
-    "{Subj} wrapped in {mat}",
-    "{Subj} rendered in {m} {mat}",
-    "{Subj} built from {mat}",
-  ],
-  era: [
-    "{Subj} straight out of {era}",
-    "{Subj}, {era} edition",
-    "{Eralead} {subj}",
-    "{Subj}, rewound to {era}",
-    "{Subj} smuggled back to {era}",
-    "{Subj} as seen in {era}",
-  ],
-  constraint: [
-    "{Subj}, but {rule}",
-    "{Subj} with one rule: {rule}",
-    "{Subj} on a strict diet: {rule}",
-    "Strip the {head} down: {rule}",
-    "{Subj} under one law: {rule}",
-    "{Subj}, rule one: {rule}",
-  ],
-  scale: [
-    "{Subj} with giant {el}",
-    "Tiny {head}, huge {el}",
-    "{Subj} where the {el} are the size of buildings",
-    "{Subj} at billboard scale, all {el}",
-    "{Subj} drowned in oversized {el}",
-    "{Subj} built from oversized {el}",
-  ],
-  lens: [
-    "{Subj} through the eyes of {lens}",
-    "{Subj} in the language of {lens}",
-    "{Subj} drawn from {lens}",
-    "{Subj} meets {lens}",
-    "{Subj}, patterned after {lens}",
-    "{Subj} with the rhythm of {lens}",
-  ],
+  transplant: ["{Obj}", "{M} {obj}", "{Obj} remix"],
+  material: ["All {mat}", "{Mat} everything", "{Mat}"],
+  era: ["{Era} revival", "{Era}", "Back to {era}"],
+  constraint: ["{Rule}"],
+  scale: ["Giant {el}", "Huge {el}", "Billboard {el}"],
+  lens: ["{Lens}", "Modern {lens}", "{Lens} remix"],
 };
 
 /**
- * Headline from the two strongest moves, keyed by the pair in canonical move order.
+ * Title from the two strongest moves, keyed by the pair in canonical move order.
  * Constraint is never in the headline pair (it always becomes the twist), so its pairs are absent.
  */
 export const PAIR_TEMPLATES: Readonly<Record<string, readonly string[]>> = {
-  "transplant+material": [
-    "{Subj} as {a-obj} in {mat}",
-    "{Subj} in {mat}, sold like {a-obj}",
-    "{Subj} as {a-obj}, all {mat}",
-    "{Matlead} {subj}, folded into {a-obj}",
-    "{Subj} in {mat}, packaged like {a-obj}",
-    "What if the {head} were {a-obj} in {mat}",
-    "{Subj} printed on {a-obj} made of {mat}",
-  ],
-  "transplant+era": [
-    "{Subj} as {a-obj} from {era}",
-    "{Eralead} {subj}, packaged like {a-obj}",
-    "{Subj} as {a-obj}, {era} style",
-    "{Subj} printed on {a-obj} from {era}",
-    "{Subj} as {a-obj}, {era} edition",
-    "{Subj} smuggled into {era} as {a-obj}",
-  ],
-  "material+era": [
-    "{Eralead} {subj} in {mat}",
-    "{Subj} in {mat}, rewound to {era}",
-    "{Matlead} {subj} straight out of {era}",
-    "{Subj} cast in {mat}, {era} edition",
-    "{Subj} in {mat}, as seen in {era}",
-    "{Eralead} {subj}, all {mat}",
-  ],
-  "transplant+lens": [
-    "{Subj} as {a-obj} patterned with {lens}",
-    "{Subj} meets {lens}, sold like {a-obj}",
-    "{Subj} as {a-obj} in the language of {lens}",
-    "{Subj} printed on {a-obj}, after {lens}",
-    "{Subj} as {a-obj} drawn from {lens}",
-    "{Subj} meets {lens}, packaged like {a-obj}",
-    "{Subj} as {a-obj} with the rhythm of {lens}",
-    "{Subj} as {a-obj}, after {lens}",
-  ],
-  "material+lens": [
-    "{Subj} in {mat}, patterned after {lens}",
-    "{Subj} meets {lens}, all in {mat}",
-    "{Matlead} {subj} with the rhythm of {lens}",
-    "{Matlead} {subj}, after {lens}",
-    "{Subj} drawn from {lens}, finished in {mat}",
-    "{Matlead} {subj} in the language of {lens}",
-  ],
-  "era+lens": [
-    "{Eralead} {subj} meets {lens}",
-    "{Subj} meets {lens}, rewound to {era}",
-    "{Subj} patterned after {lens}, {era} style",
-    "{Subj} drawn from {lens}, {era} edition",
-    "{Eralead} {subj} with the rhythm of {lens}",
-    "{Subj} in the language of {lens}, {era} edition",
-  ],
-  "transplant+scale": [
-    "{Subj} as {a-obj} with giant {el}",
-    "{Subj} as {a-obj}, {el} blown up huge",
-    "{Subj} printed on {a-obj}, all oversized {el}",
-    "Tiny {head}, huge {el}, packaged like {a-obj}",
-    "{Subj} as {a-obj} buried in giant {el}",
-    "{Subj} folded into {a-obj} with billboard {el}",
-  ],
-  "material+scale": [
-    "{Subj} in {mat} with giant {el}",
-    "{Matlead} {subj}, {el} blown up huge",
-    "Giant {el} in {mat} run the {head}",
-    "{Subj} built from oversized {el} in {mat}",
-    "Tiny {head}, huge {el}, all {mat}",
-    "{Subj} in {mat}, {el} at billboard size",
-  ],
-  "era+scale": [
-    "{Eralead} {subj} with giant {el}",
-    "{Subj}, {era} style, {el} blown up huge",
-    "Tiny {head}, huge {el}, straight out of {era}",
-    "{Subj} rewound to {era}, all oversized {el}",
-    "{Subj} as seen in {era}, with giant {el}",
-    "{Eralead} {subj} built from oversized {el}",
-  ],
-  "scale+lens": [
-    "{Subj} meets {lens}, with giant {el}",
-    "{Subj} patterned after {lens}, {el} blown up huge",
-    "Tiny {head}, huge {el}, patterned after {lens}",
-    "{Subj} with giant {el} drawn from {lens}",
-    "{Subj} with the rhythm of {lens} and giant {el}",
-    "Oversized {el} meet {lens} on the {head}",
-  ],
+  "transplant+material": ["{Mat} {obj}", "{Obj} in {mat}"],
+  "transplant+era": ["{Eralead} {obj}", "{Obj}, {era}"],
+  "material+era": ["{Eralead} {mat}", "{Mat}, {era}"],
+  "transplant+lens": ["{Lens} {obj}", "{Obj} in {lens}"],
+  "material+lens": ["{Lens} in {mat}", "{Mat} {lens}"],
+  "era+lens": ["{Eralead} {lens}", "{Lens}, {era}"],
+  "transplant+scale": ["Giant {el} {obj}", "{Obj} of giant {el}"],
+  "material+scale": ["Giant {mat} {el}", "{Mat} giant {el}"],
+  "era+scale": ["{Eralead} giant {el}", "Giant {el}, {era}"],
+  "scale+lens": ["{Lens}, giant {el}", "Giant {el} in {lens}"],
 };
 
 /** One short line carrying the third move, or a constraint or scale garnish. Shown after "Twist:". */

@@ -19,6 +19,8 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never show a dropped idea.
 - **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build.
+- **Taste first.** Ask the user for 3 to 5 style words or a reference board before `bend_brief`; never invent them.
+- **Arabic copy.** Any Arabic UI copy you write (labels, notes, prompts): noun-form labels (الدفع, not ادفع الآن; ملخص الرحلة, not لخص رحلتك), no diacritics, Western digits (0 to 9), Latin IATA codes (RUH, DXB, JED), right to left.
 - **Right platform.** Never show web dashboards or landing pages on a phone brief, and never phone screens on a website or web app brief. Rate them `bad` with `off_topic`.
 - **One question at most per turn.** When you must ask, fold everything you need (subject, platform, where the weirdness goes) into one short question. Never a list of questions.
 - **Trust write results.** `add_to_canvas`, `rate_directions`, `rate_references` and `arrange_canvas` answers are the record. Do not call `get_canvas` after each write to check it. Read the board at most once, at the end, and only if you need something from it.
@@ -38,11 +40,11 @@ Write a one-line brief (max 500 characters). A good brief names:
 - **The default to escape**, if they named one ("looks like every fintech app").
 - **Must keep**, if any (brand color, Arabic and English).
 
-If the ask is too vague to name a subject ("make it cool"), ask ONE short question that folds in the platform and states the wildness default, then stop and wait:
+If the ask is too vague to name a subject ("make it cool"), ask ONE short question that folds in the platform, the taste and states the wildness default, then stop and wait:
 
-> What should I make cool, and is it for a phone app, a website or a web app? I'll go at 3 of 5 unless you say otherwise.
+> What should I make cool, and is it for a phone app, a website or a web app? Give me 3 to 5 style words or a reference board. I'll go at 3 of 5 unless you say otherwise.
 
-Do not ask about wildness, taste or anything else separately. Ask once. If the user said "just go", do not ask; guess and say what you assumed.
+**Taste first.** When the subject is clear but the user gave no style words or board, ask for them in that same one question ("Give me 3 to 5 style words, like minimal or big typography, or a reference board"). Do not ask about wildness or anything else separately. Ask once. If the user said "just go", do not ask; never invent style words for them: each direction then uses its own `spec.styleWords`, and you say so.
 
 ### 2. Pin the platform
 
@@ -87,9 +89,9 @@ Keep the daily task screens (sign in, checkout steps, forms, tables, navigation)
 
 ### 5. Optional: lens, moves, taste
 
-- **Lens** (`lens`): a culture preset when the user mentions Saudi, Gulf, Arabic or regional heritage. Ids: `sadu`, `najdi`, `kufic`, `mashrabiya`, `desert-modern`. Never ask for or use sacred text or religious verses.
+- **Lens** (`lens`): a curated culture preset when the user mentions Saudi, Gulf, Arabic or regional heritage. Gulf ids: `sadu` (Bedouin weaving), `najdi` (mud architecture), `kufic` (square Kufic geometry), `mashrabiya` (lattice screens), `talli` (Emirati metallic braid), `qatt-asiri` (Al Qatt Al Asiri wall painting from Asir), `desert-modern`. Global: `memphis`, `swiss-international`, `japanese-ma`. Each lens has tested search words, drops look-alike traditions from results (talli drops Egyptian tulle-bi-telli) and names an Arabic display font on Google Fonts; use that font in the spec. When a Gulf or Arabic brief has no lens, `bend_brief` suggests some: bend again with one of them unless the user said no lens. Never ask for or use sacred text or religious verses.
 - **Moves** (`moves`): only when the user asks for a kind of bend: `transplant`, `material`, `era`, `constraint`, `scale`, `lens`.
-- **Taste:** use the style words the user gave, if any. Do not ask for taste; the user can add style words later. Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
+- **Taste:** use the 3 to 5 style words or the board the user gave in step 1. Never invent them. Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
 
 ### 6. Pick the canvas: extend one, or create one (do not show it yet)
 
@@ -111,13 +113,15 @@ Use both in the next steps: put the default to escape into the brief you pass to
 
 ### 7. Bend the brief, wide
 
-Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen. Each direction comes back with a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
+Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from step 1 and step 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
+
+**Build every direction around its mechanic.** `mechanic` is `{ element, how }`: the working part of the page the wild idea becomes (`progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state`; for example a braid as the progress bar, tabs as sections, a woven band as the section divider). It never breaks a must keep: the server drops a direction whose ingredients would. Use it in the pattern you describe, in the card, and in searches: look for UI that has that element ("flight checkout progress bar app ui").
 
 ### 8. Triage the ideas (before you show any)
 
 Keep an idea only if all three hold:
 
-- **(a) UI path.** Its `spec.pattern` and `spec.signature` give the named page a concrete UI move on this platform ("fare cards that stack like boarding passes"). If you cannot say it in a few words, it fails.
+- **(a) UI path.** Its `mechanic`, `spec.pattern` and `spec.signature` give the named page a concrete UI move on this platform ("fare cards that stack like boarding passes"). If you cannot say it in a few words, it fails.
 - **(b) Usable UI references.** After search and audit it has at least 6 on-topic UI references for the platform. Art references do not count here.
 - **(c) Not a near duplicate** of a kept idea.
 - **With Mobbin (step 6b):** also drop an idea that lands on the baseline (it only restyles what shipped apps already do), and prefer ideas whose `spec.pattern` keeps the must keeps. Name the Mobbin pattern a kept idea builds on.
@@ -180,8 +184,8 @@ Keep the reply short and in this order: the board link, one line with platform, 
 
 Present each kept direction as a compact card, from its `spec`, five short lines at most, and always end it with its highlights: 2 to 3 UI references and 1 or 2 art references, each written exactly as `[title](sourceUrl) (site)`:
 
-> **1. Checkout as a frosted vinyl sleeve** (transplant + material)
-> Pattern: fare summary slides out of a sleeve. Signature: a half-moon cutout shows the total.
+> **1. Frosted vinyl sleeve** (transplant + material)
+> Mechanic: total = the sleeve frames the total; the amount stays plain and large. Pattern: fare summary slides out of a sleeve.
 > Look: condensed grotesk, frosted off-white with one ink blue accent; the sleeve slides 200ms, still with reduced motion.
 > Why it fits: travel tickets are objects people keep.
 > Art direction: [Frosted record sleeve](sourceUrl) (pinterest.com), [Clear vinyl packaging](sourceUrl) (behance.net)
