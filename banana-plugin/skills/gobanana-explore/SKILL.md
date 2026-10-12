@@ -140,6 +140,8 @@ Each result line shows `[referenceId, lane]` and its zone. Do not pass a directi
 
 The server does not look at images. You do.
 
+**Look at the returned thumbnails before rating or noting.** `search_references` and `add_to_canvas` results carry a small thumbnail after the line that names each reference: name the colors and layout you see, and base every rating and `steal:` note on the image, not the title.
+
 1. **Judge every result** from its title, site and URL, and the image when you can see it.
 2. **Call `rate_references`** with the `canvasId`, once per search. Rate only two kinds of result: the junk (`bad`) and the 1 to 3 standouts (`great`). Leave ordinary good results unrated; there is no "ok" verdict, so never mark every usable result `great`. Always rate the junk so it leaves the tray:
    - **UI zone, `bad`:** wrong platform (a web dashboard on a phone brief), shops, stock, UI kit sales, cluttered sheets, duplicates, near empty mockups, apps for another product, anything not UI.

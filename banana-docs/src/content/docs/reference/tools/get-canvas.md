@@ -12,6 +12,7 @@ description: Read a board - brief, directions with their spec, sections, items w
 | Name | Type | Required | Limits | What it does |
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | No | 1 to 100 characters | The board to read. Leave out to list your recent boards |
+| `thumbs` | boolean | No | default `true` | Small thumbnails of up to 12 placed references after the text (see [get_snapshot](/docs/reference/tools/get-snapshot/)) |
 
 ## List mode
 
@@ -44,6 +45,8 @@ The text lists, in order:
 6. **Parts library** by role, each part with its source, `(guessed crop)` when the server guessed, and its note.
 7. **Frankenstein pages**: title, id, platform, view mode, remix origin, and a skeleton row by row (role, slot id, part id, source link, note).
 8. How many search results wait in the tray.
+9. **Thumbnails**: each placed reference's small image after the line that names it (up to 12; `thumbs: false` to skip), then a line asking the agent to look before it rates or notes.
+10. **Mobbin images to refresh**: Mobbin image links expire about 30 days after the connector returns them. Screens placed more than 25 days ago are listed with how to refresh them: look the screen up again in Mobbin and call `add_to_canvas` with the same `screenId`, which replaces the image in place. Until then the board shows "Image expired, open on Mobbin".
 
 The skills read a board once at the start and trust write results after that, instead of calling `get_canvas` after every change.
 

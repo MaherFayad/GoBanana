@@ -45,6 +45,7 @@ const EXPECTED = [
   "add_to_canvas",
   "arrange_canvas",
   "get_canvas",
+  "get_snapshot",
   "cut_parts",
   "frankenstein_page",
   "remix_frankenstein",

@@ -36,7 +36,8 @@ If the board has fewer than about 6 usable UI references, say so and offer the g
 
 You need to know where things sit on each image to cut it well.
 
-- **If you can see the images** (the user attached screenshots, or your client shows you the image from its URL without saving it), look at each one.
+- **Look at the returned thumbnails before rating or noting.** `get_canvas` and `get_snapshot` (with a `sectionId`) carry a small image after each reference's line; after `frankenstein_page`, call `get_snapshot` with the `stitchId` and check each part's band against its crop.
+- **If you can see the images** (the thumbnails above, the user attached screenshots, or your client shows you the image from its URL without saving it), look at each one.
 - **If the user described them** ("nav is the top strip, the pricing cards sit in the middle"), use their words.
 - **If you cannot see them** (the usual case: most clients do not show the agent an image from its URL), say it once, plainly: "I can't see the images here, so I'm cutting by role and the server guesses each band (nav at the top, the pay button low and narrow, footer at the bottom; a phone presentation shot is cut from its middle phone). The crops are marked as guesses; adjust any of them in the canvas crop editor (Edit crop on a part), or tell me where things sit." Then cut with role only (no `crop`), set `theme` to `unknown`, and start each note with `guessed:` and what the title suggests. Keep the guessed crops: do not download or fetch the images to check them, and never pretend you saw them.
 

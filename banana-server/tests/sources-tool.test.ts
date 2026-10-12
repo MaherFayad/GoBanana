@@ -77,7 +77,7 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste", "zone"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste", "thumbs", "zone"]);
   });
 
   it("validates count and sources", () => {

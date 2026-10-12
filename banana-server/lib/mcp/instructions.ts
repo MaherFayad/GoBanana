@@ -15,4 +15,5 @@ export const SERVER_INSTRUCTIONS = [
   "",
   "Flow: get_canvas (reuse a matching board) or new_canvas, bend_brief with the platform and the page, keep the best 3 directions, search_references once per kept direction, rate_references (bad for junk, great for 1 to 3 standouts), add_to_canvas with 6 to 8 UI and 2 to 4 art per direction (art in the art row, each with a 'steal:' note), arrange_canvas, then open_canvas and give the web link.",
   "Always show each reference's source link. Never download or copy reference images.",
+  "Look before building: call get_snapshot on the board and each Frankenstein page before writing any screen; if you cannot see images, say so and ask; never guess from titles. Rate and note from the thumbnails.",
 ].join("\n");

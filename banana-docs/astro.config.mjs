@@ -167,6 +167,7 @@ export default defineConfig({
 								tool('new_canvas'),
 								tool('open_canvas'),
 								tool('get_canvas'),
+								tool('get_snapshot'),
 								tool('add_to_canvas'),
 								tool('arrange_canvas'),
 								tool('delete_canvas'),

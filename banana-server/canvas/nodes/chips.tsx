@@ -38,18 +38,23 @@ export function TagChip({ tag }: { tag: Tag }) {
   );
 }
 
-/** Shown instead of a broken image: stripes, the image-off glyph, title, source site and a link. */
-export function LinkCard({ title, site, url }: { title?: string | null; site: string; url: string }) {
+/**
+ * Shown instead of a broken image: stripes, the image-off glyph, title, source site and a link.
+ * `mobbin`: Mobbin image links expire after about 30 days, so the card says so and links to the
+ * screen on Mobbin until the agent refreshes the image (add_to_canvas with the screenId).
+ */
+export function LinkCard({ title, site, url, mobbin = false }: { title?: string | null; site: string; url: string; mobbin?: boolean }) {
   return (
-    <div className="bn-linkcard" data-testid="link-card">
+    <div className="bn-linkcard" data-testid="link-card" data-expired={mobbin ? "" : undefined}>
       <ImageOffIcon size={24} />
       <p className="bn-linkcard-title">{title || "Untitled reference"}</p>
       <p className="bn-linkcard-site">{site}</p>
+      {mobbin && <p className="bn-linkcard-why">Image expired</p>}
       <a className="nodrag nopan" href={url} target="_blank" rel="noopener noreferrer nofollow">
-        View on {site}
+        {mobbin ? "Open on Mobbin" : `View on ${site}`}
         <span className="st-visually-hidden"> (opens in a new tab)</span>
       </a>
-      <p className="bn-linkcard-why">The image could not load here.</p>
+      {!mobbin && <p className="bn-linkcard-why">The image could not load here.</p>}
     </div>
   );
 }

@@ -22,6 +22,7 @@ Results are links and titles only. GoBanana never downloads or stores the images
 | `taste` | string[] | No | 1 to 5 words | Style words, saved on the canvas |
 | `sources` | enum[] | No | 1 to 4 source ids | Force sources. Leave out: the server picks galleries by platform and style. [Source ids](/docs/reference/sources/) |
 | `mix` | enum | No | `ui`, `balanced`, `wild` | Ignored. Kept so older calls still work |
+| `thumbs` | boolean | No | default `true` | A small thumbnail of each result (up to 12) after the text, each after the line that names it, so the agent rates and notes from the image, not the title. Fetched per call at the source's small size, never stored. See [get_snapshot](/docs/reference/tools/get-snapshot/) |
 
 ## Lanes
 

@@ -13,6 +13,11 @@ export function buildPromptMd(m: KitModel): string {
   out.push("Paste everything under Prompt into Claude Code, Cursor, v0 or Lovable. It builds only the pages named in it.", "");
 
   out.push("## Prompt", "");
+  // Look first (get_snapshot is a parts view: each part's source image with its crop rect, never a rendered PNG).
+  out.push(
+    `Step 1, look: before you write any screen, call the GoBanana get_snapshot tool for the board (its canvasId is in the board link${m.webUrl ? ` ${m.webUrl}` : ""})${m.stitches.length > 0 ? ` and for each Frankenstein page (stitchId ${m.stitches.map((s) => `\`${s.id}\``).join(", ")})` : ""}. Look at every image and build each row from what you see, not from titles. If you cannot see images, say so and ask.`,
+    "",
+  );
   const where = pagesText(m.pages, m.brief);
   if (m.scope === "page") {
     out.push(

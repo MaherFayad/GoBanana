@@ -415,7 +415,10 @@
                 },
                 "platform": {
                   "type": "string",
-                  "enum": ["ios", "web"]
+                  "enum": [
+                    "ios",
+                    "web"
+                  ]
                 },
                 "directionId": {
                   "type": "string"
@@ -481,6 +484,34 @@
         "properties": {
           "canvasId": {
             "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_snapshot",
+      "title": "Snapshot",
+      "description": "See the board without a browser. With a sectionId: the thumbnails of that section's references with their positions. With a stitchId: the Frankenstein page's rows in order, each part's source image with its crop rect (the band the page uses), role and note. With neither: the board's sections, pages and first references. This is a parts view, not a rendered composite image of the page. Up to 12 thumbnails per call. Call it before you write any screen, and look at every image: build from what you see, not from titles.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "sectionId": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "stitchId": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "thumbs": {
+            "type": "boolean"
           }
         }
       }

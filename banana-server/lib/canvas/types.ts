@@ -66,6 +66,14 @@ export interface ImageItem extends ItemBase {
   tag?: Tag | null;
   /** Board zone: "art" (art direction, the wild idea as images) or "ui". Missing means "ui". */
   zone?: Zone;
+  /** Mobbin screen id from the user's Mobbin connector (screens only), so a refresh finds the same tile. */
+  mobbinId?: string;
+  /** When the image link was placed or last refreshed (ISO date). Mobbin image links expire after about 30 days. */
+  placedAt?: string;
+  /** "build": a screenshot of the user's own build, placed next to its Frankenstein page for review. */
+  kind?: "build";
+  /** The Frankenstein page (stitch) a build sits next to. */
+  stitchId?: string;
 }
 
 /** The user's own image (stored in R2). `sourceUrl` points at the upload or its origin. */

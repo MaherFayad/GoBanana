@@ -6,6 +6,8 @@ Remote MCP server + moodboard canvas for wild design references. Full spec: ../d
 - No AI calls from the server. No LLM, no image generation, no vision APIs.
 - Never download, store or re-host third-party images. URLs and metadata only.
   extract_palette may decode thumbnails in memory; never persist bytes.
+  Tool results may pass small source-size thumbnails through to the agent (lib/vision,
+  allowlisted hosts, capped per call); never stored, cached, logged or served.
 - Every reference shows its source link everywhere.
 - No scraping of Pinterest, Dribbble or any site.
 - Check the takedown list on every search and canvas load.

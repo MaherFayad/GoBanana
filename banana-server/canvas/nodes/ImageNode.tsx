@@ -152,7 +152,7 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
               )}
             </>
           ) : (
-            <LinkCard title={data.title} site={site} url={data.sourceUrl} />
+            <LinkCard title={data.title} site={site} url={data.sourceUrl} mobbin={!isUpload && data.sourceSite === "mobbin.com"} />
           )}
           {/* Source chip sits on the image itself so it is always visible (hard rule 3). */}
           <div className="bn-node-bar bn-node-bar-source">
@@ -178,6 +178,11 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
         )}
         <div className="bn-node-bar bn-node-bar-top">
           {type === "image" && data.zone === "art" && <ArtChip />}
+          {type === "image" && data.kind === "build" && (
+            <span className="st-chip bn-chip" data-tone="neutral" data-testid="build-chip">
+              <span>Build</span>
+            </span>
+          )}
           {data.tag && <TagChip tag={data.tag} />}
           <span className="bn-grow" />
           {canPreview && (

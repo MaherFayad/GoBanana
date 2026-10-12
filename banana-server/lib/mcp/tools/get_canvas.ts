@@ -18,6 +18,7 @@ import {
   TRY_AGAIN,
   type CanvasToolDeps,
 } from "./canvas-shared";
+import { canvasWithThumbs } from "@/lib/vision/wrap";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "get_canvas";
@@ -29,6 +30,10 @@ export const TOOL_DESCRIPTION =
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100).optional().describe("Canvas to read. Leave out to list recent canvases."),
+  thumbs: z
+    .boolean()
+    .optional()
+    .describe("Show small thumbnails of up to 12 placed references; look at them before you judge the board. Default true. Mobbin images that need a refresh are flagged either way."),
 });
 
 /** Canvases the list shows, most recently updated first. */
@@ -254,6 +259,6 @@ export const register: RegisterTool = (server) => {
       inputSchema: lenient(inputSchema),
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
     },
-    async (args, ctx) => live(args, authExtra(ctx)?.userId),
+    async (args, ctx) => canvasWithThumbs(await live(args, authExtra(ctx)?.userId), args),
   );
 };

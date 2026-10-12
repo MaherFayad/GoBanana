@@ -22,6 +22,10 @@ import type { ReferenceRecord } from "@/lib/db/types";
 import type { Zone } from "@/lib/direction-detail";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
 import { checkMobbinScreen, MAX_MOBBIN_IMAGE_URL, MAX_MOBBIN_SOURCE_URL, MOBBIN_SITE } from "@/lib/sources/mobbin";
+import { parseHttpUrl } from "@/lib/sources/url";
+import { parseState } from "@/canvas/state";
+import type { StoredNode } from "@/canvas/types";
+import { placedWithThumbs } from "@/lib/vision/wrap";
 import { canAddItems } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -39,6 +43,10 @@ export const TOOL_NAME = "add_to_canvas";
 export const MAX_ITEMS_PER_CALL = 50;
 /** Longest "what to steal" note on a placed reference. */
 export const MAX_NOTE = 280;
+/** Longest build screenshot or build link URL. */
+export const MAX_BUILD_URL = 2048;
+/** Gap between a Frankenstein page and the builds placed next to it. */
+const BUILD_GAP = 48;
 
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
@@ -60,6 +68,15 @@ const item = z.discriminatedUnion("type", [
     platform: z.enum(["ios", "web"]).optional(),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     directionId: z.string().min(1).max(100).optional(),
+    screenId: z.string().trim().min(1).max(100).optional(),
+  }),
+  z.object({
+    type: z.literal("build"),
+    imageUrl: z.string().trim().min(1).max(MAX_BUILD_URL),
+    url: z.string().trim().min(1).max(MAX_BUILD_URL),
+    stitchId: z.string().min(1).max(120),
+    title: z.string().trim().min(1).max(200).optional(),
+    note: z.string().trim().min(1).max(MAX_NOTE).optional(),
   }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
   z.object({
@@ -76,24 +93,66 @@ const item = z.discriminatedUnion("type", [
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),
-  items: z.array(item).min(1).max(MAX_ITEMS_PER_CALL),
+  items: z
+    .array(item)
+    .min(1)
+    .max(MAX_ITEMS_PER_CALL)
+    .describe(
+      "A screen with the screenId of one already on the board refreshes its image in place (Mobbin image links expire). " +
+        "A build { type: 'build', imageUrl, url, stitchId } is an https screenshot link of the user's own build, placed next to its Frankenstein page for side by side review; never image bytes.",
+    ),
   sectionId: z.string().min(1).max(120).optional().describe("Section to place the items in."),
+  thumbs: z.boolean().optional().describe("Show a small thumbnail of each placed reference in the result; look at them before you write notes. Default true."),
 });
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
+};
+
+type PlacedOut = {
+  id: string;
+  type: string;
+  x: number;
+  y: number;
+  sectionId: string | null;
+  /** Image items: what the tile shows, for the thumbnails in the result. */
+  imageUrl?: string;
+  thumbUrl?: string;
+  title?: string;
+  sourceSite?: string;
 };
 
 export type AddToCanvasOutput = {
   canvasId: string;
-  items: { id: string; type: string; x: number; y: number; sectionId: string | null }[];
+  items: PlacedOut[];
+  /** Mobbin screens already on the board whose image was refreshed in place. */
+  updated?: PlacedOut[];
   skipped: { index: number; reason: string }[];
   webUrl: string;
 };
 
-type Prepared = { node: NewNode; directionId?: string } | { skip: string };
+type Prepared = { node: NewNode; directionId?: string; stitchId?: string; refresh?: string } | { skip: string };
+
+/** A clean https URL (no credentials) within MAX_BUILD_URL characters, or null. */
+function httpsUrl(value: string): URL | null {
+  if (value.length > MAX_BUILD_URL) return null;
+  const url = parseHttpUrl(value);
+  return url && url.protocol === "https:" && !url.username && !url.password ? url : null;
+}
+
+/** Absolute position of a stored node (children of a section are stored relative to it). */
+function absolute(nodes: readonly StoredNode[], n: StoredNode): { x: number; y: number } {
+  const parent = n.parentId ? nodes.find((p) => p.id === n.parentId) : undefined;
+  return { x: n.x + (parent?.x ?? 0), y: n.y + (parent?.y ?? 0) };
+}
+
+function imageOut(node: StoredNode | NewNode): Pick<PlacedOut, "imageUrl" | "thumbUrl" | "title" | "sourceSite"> {
+  if (node.type !== "image") return {};
+  const d = node.data;
+  return { imageUrl: d.imageUrl, ...(d.thumbUrl ? { thumbUrl: d.thumbUrl } : {}), ...(d.title ? { title: d.title } : {}), sourceSite: d.sourceSite };
+}
 
 function referenceNode(ref: {
   imageUrl: string;
@@ -125,8 +184,9 @@ function referenceNode(ref: {
 }
 
 function text(out: AddToCanvasOutput, title: string): string {
-  const lines = [`Added ${out.items.length} item${out.items.length === 1 ? "" : "s"} to "${title}".`];
+  const lines = [`Added ${out.items.length} item${out.items.length === 1 ? "" : "s"} to "${title}".${out.updated?.length ? ` Refreshed ${out.updated.length}.` : ""}`];
   for (const it of out.items) lines.push(`- ${it.type} ${it.id} at (${it.x}, ${it.y})${it.sectionId ? ` in section ${it.sectionId}` : ""}`);
+  for (const u of out.updated ?? []) lines.push(`- refreshed the image of ${u.type} ${u.id} in place`);
   for (const s of out.skipped) lines.push(`Skipped item ${s.index + 1}: ${s.reason}`);
   lines.push(`Web link: ${out.webUrl}`);
   return lines.join("\n");
@@ -152,7 +212,8 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
       const loadMatcher = takedownLoader(deps);
       const matcher = await loadMatcher();
 
-      const outcome = await mutateCanvas<{ placed: PlacedNode[]; skipped: { index: number; reason: string }[] }>(repos, userId, input.canvasId, loadMatcher, (state) => {
+      const placedAt = (deps.now?.() ?? new Date()).toISOString();
+      const outcome = await mutateCanvas<{ placed: PlacedOut[]; updated: PlacedOut[]; skipped: { index: number; reason: string }[] }>(repos, userId, input.canvasId, loadMatcher, (state) => {
         if (input.sectionId && !state.nodes.some((n) => n.id === input.sectionId && n.type === "section")) {
           return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
         }
@@ -181,9 +242,34 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
                 { imageUrl: it.imageUrl, sourceUrl: it.sourceUrl, sourceSite: MOBBIN_SITE, title },
                 { zone: "ui", ...(it.note ? { note: it.note } : {}) },
               );
+              if (node.type === "image") Object.assign(node.data, { placedAt, ...(it.screenId ? { mobbinId: it.screenId } : {}) });
+              // The same screen already on the board: refresh its image link in place (Mobbin links expire).
+              const existing = state.nodes.find(
+                (n) =>
+                  n.type === "image" &&
+                  n.data.sourceSite === MOBBIN_SITE &&
+                  it.screenId !== undefined &&
+                  (n.data.mobbinId === it.screenId || (!n.data.mobbinId && n.data.sourceUrl === it.sourceUrl)),
+              );
+              if (existing) return { node, refresh: existing.id };
               // Mobbin gives no image size: an iPhone screen gets a phone shaped tile.
               if (it.platform === "ios") Object.assign(node, referenceSize(9, 19.5));
               return { node, ...(it.directionId ? { directionId: it.directionId } : {}) };
+            }
+            case "build": {
+              if (/^data:/i.test(it.imageUrl)) return { skip: "pass an https link to the screenshot, not image bytes. Nothing is stored." };
+              const image = httpsUrl(it.imageUrl);
+              const link = httpsUrl(it.url);
+              if (!image) return { skip: "imageUrl must be an https link to a screenshot of the build." };
+              if (!link) return { skip: "url must be the https link to the build." };
+              if (!state.nodes.some((n) => n.type === "stitch" && n.id === it.stitchId)) {
+                return { skip: `Frankenstein page ${it.stitchId} was not found on this canvas. Call get_canvas to see page ids.` };
+              }
+              const ref = { imageUrl: image.toString(), sourceUrl: link.toString() };
+              if (matcher.isReferenceBlocked(ref)) return { skip: "that link was removed after a takedown request." };
+              const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}) });
+              if (node.type === "image") Object.assign(node.data, { kind: "build" as const, stitchId: it.stitchId, placedAt });
+              return { node, stitchId: it.stitchId };
             }
             case "note":
               return { node: { type: "note", data: { text: it.text, color: "yellow" } } };
@@ -196,8 +282,33 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
           }
         });
 
-        const nodes = prepared.flatMap((p) => ("node" in p ? [p] : []));
-        if (nodes.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? `Item ${i + 1}: ${p.skip}` : "")).filter(Boolean).join("\n") };
+        // Refreshes change tiles in place; builds go next to their Frankenstein page; the rest are appended.
+        const updated: PlacedOut[] = [];
+        let base = state;
+        for (const p of prepared) {
+          if (!("node" in p) || !p.refresh || p.node.type !== "image") continue;
+          const fresh = p.node.data;
+          base = {
+            ...base,
+            nodes: base.nodes.map((n) => {
+              if (n.id !== p.refresh || n.type !== "image") return n;
+              const data = {
+                ...n.data,
+                imageUrl: fresh.imageUrl,
+                thumbUrl: null,
+                ...(fresh.placedAt ? { placedAt: fresh.placedAt } : {}),
+                ...(fresh.mobbinId ? { mobbinId: fresh.mobbinId } : {}),
+                ...(fresh.note ? { note: fresh.note } : {}),
+              };
+              const abs = absolute(base.nodes, n);
+              updated.push({ id: n.id, type: n.type, x: abs.x, y: abs.y, sectionId: n.parentId ?? null, ...imageOut({ ...n, data }) });
+              return { ...n, data };
+            }),
+          };
+        }
+        const builds = prepared.flatMap((p) => ("node" in p && p.stitchId ? [p] : []));
+        const nodes = prepared.flatMap((p) => ("node" in p && !p.refresh && !p.stitchId ? [p] : []));
+        if (nodes.length === 0 && builds.length === 0 && updated.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? `Item ${i + 1}: ${p.skip}` : "")).filter(Boolean).join("\n") };
 
         // References found for a saved direction land in that direction's section,
         // which is created on first use (spec section 11: a direction becomes a section).
@@ -223,9 +334,25 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
           }
         }
 
-        const adding = autoSections.length + nodes.length;
-        const cap = canAddItems(plan, itemCount(state), adding, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
-        if (!cap.ok) return { error: cap.message };
+        const adding = autoSections.length + nodes.length + builds.length;
+        if (adding > 0) {
+          const cap = canAddItems(plan, itemCount(state), adding, { upgradeUrl: upgradeUrl(deps), now: deps.now?.() });
+          if (!cap.ok) return { error: cap.message };
+        }
+
+        const buildPlaced: PlacedOut[] = [];
+        for (const b of builds) {
+          const page = base.nodes.find((n) => n.type === "stitch" && n.id === b.stitchId)!;
+          // Right of the page, below any build already there.
+          const beside = base.nodes.filter((n) => n.type === "image" && n.data.kind === "build" && n.data.stitchId === b.stitchId);
+          const x = page.x + page.w + BUILD_GAP;
+          const y = beside.length > 0 ? Math.max(...beside.map((n) => n.y + n.h)) + BUILD_GAP : page.y;
+          const id = (deps.makeId ?? newNodeId)("img");
+          const stored = { id, type: "image", x, y, w: page.w, h: page.h, ...(page.parentId ? { parentId: page.parentId } : {}), data: b.node.data } as StoredNode;
+          base = { ...base, nodes: [...base.nodes, stored] };
+          const abs = absolute(base.nodes, stored);
+          buildPlaced.push({ id, type: "image", x: abs.x, y: abs.y, sectionId: page.parentId ?? null, ...imageOut(stored) });
+        }
 
         const all = [...autoSections, ...nodes.map((p) => p.node)];
         const targetFor = (_node: NewNode, i: number): string | null => {
@@ -233,20 +360,26 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
           const dir = nodes[i - autoSections.length]?.directionId;
           return dir ? sectionByDirection.get(dir) ?? null : null;
         };
-        const { state: next, placed } = appendNodes(state, all, targetFor, deps.makeId);
+        const appended = all.length > 0 ? appendNodes(base, all, targetFor, deps.makeId) : { state: parseState(base), placed: [] as PlacedNode[] };
+        const next = appended.state;
+        const placed: PlacedOut[] = [
+          ...appended.placed.map((p, i) => ({ id: p.id, type: p.type, x: p.x, y: p.y, sectionId: p.sectionId, ...imageOut(all[i]!) })),
+          ...buildPlaced,
+        ];
 
         // Placed references leave the tray, as when the user drags them in.
         const placedRefs = new Set(input.items.flatMap((it, i) => (it.type === "reference" && "node" in prepared[i]! ? [it.referenceId] : [])));
         const finalState = { ...next, tray: next.tray.filter((r) => !placedRefs.has(r.id)) };
 
         const skipped = prepared.flatMap((p, index) => ("skip" in p ? [{ index, reason: p.skip }] : []));
-        return { state: finalState, value: { placed, skipped } };
+        return { state: finalState, value: { placed, updated, skipped } };
       });
       if (!outcome.ok) return mutateError(outcome);
 
       const out: AddToCanvasOutput = {
         canvasId: input.canvasId,
-        items: outcome.value.placed.map((p: PlacedNode) => ({ id: p.id, type: p.type, x: p.x, y: p.y, sectionId: p.sectionId })),
+        items: outcome.value.placed,
+        ...(outcome.value.updated.length > 0 ? { updated: outcome.value.updated } : {}),
         skipped: outcome.value.skipped,
         webUrl: canvasWebUrl(deps.appUrl(), input.canvasId),
       };
@@ -269,6 +402,6 @@ export const register: RegisterTool = (server) => {
       inputSchema: lenient(inputSchema),
       annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
     },
-    async (args, ctx) => live(args, authExtra(ctx)?.userId),
+    async (args, ctx) => placedWithThumbs(await live(args, authExtra(ctx)?.userId), args),
   );
 };

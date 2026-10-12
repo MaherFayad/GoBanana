@@ -51,7 +51,7 @@ export const TOOL_NAME = "frankenstein_page";
 export const TOOL_DESCRIPTION =
   "Frankenstein it, step 2: stack parts from the library into new Frankenstein pages, top to bottom, in a frame for the platform. " +
   `Pass rows of part ids (1 to ${MAX_SLOTS_PER_ROW} per row), or a recipe of roles plus variants (1 to ${MAX_VARIANTS}) and each role is filled from the library, mixing sources. ` +
-  "For ideas, not a finished design.";
+  "For ideas, not a finished design. Then call get_snapshot with the stitchId to see each part before you judge or build the page.";
 
 const slotInput = z.object({
   partId: idSchema,

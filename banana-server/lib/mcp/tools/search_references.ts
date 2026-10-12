@@ -55,6 +55,7 @@ import { getConfig } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { plausibleId, takedownLoader, tasteInputSchema, upgradeUrl } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool } from "./types";
+import { searchWithThumbs } from "@/lib/vision/wrap";
 
 export const TOOL_NAME = "search_references";
 
@@ -68,7 +69,8 @@ export const TOOL_DESCRIPTION =
   "Pass canvasId to add the results to that canvas tray. " +
   "Pass taste with a few style words for the look the user likes, such as minimal, glassmorphism, dark mode, big typography; it is saved on the canvas. " +
   "To redo one lane with better words, pass directionId, lane and query (lane art takes raw words, no UI words). " +
-  "Rate results with rate_references so later searches improve. mix is ignored.";
+  "Rate results with rate_references so later searches improve. mix is ignored. " +
+  "The result carries a small thumbnail of up to 12 results (thumbs: false to skip): rate and note from the thumbnails, not the titles.";
 
 export const inputSchema = z.object({
   directionId: z.string().min(1).max(100).optional(),
@@ -86,6 +88,7 @@ export const inputSchema = z.object({
     .optional()
     .describe('"ui" for UI references, "art" for art direction (the wild idea as images), "both" (default for a directionId; a query defaults to "ui").'),
   mix: z.enum(MIXES).optional().describe("Ignored. Kept so older calls still work."),
+  thumbs: z.boolean().optional().describe("Show a small thumbnail of each result (up to 12). Default true."),
 });
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
@@ -645,7 +648,7 @@ export const register: RegisterTool = (server) => {
     },
     async (args, ctx) => {
       defaultTool ??= createSearchReferencesTool(createDefaultDeps());
-      return defaultTool(args as SearchReferencesInput, authExtra(ctx)?.userId);
+      return searchWithThumbs(await defaultTool(args as SearchReferencesInput, authExtra(ctx)?.userId), args);
     },
   );
 };

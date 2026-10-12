@@ -16,7 +16,8 @@ This page summarizes. The binding texts are the [privacy notice](https://gobanan
 5. **Never in your repo.** The skills will not copy reference images into your project, and the files they write tell coding agents not to either.
 6. **Mobbin through your own connector.** GoBanana never searches Mobbin. Screens your agent finds with your Mobbin connector can go on the board, shown straight from Mobbin's image link and linked to their Mobbin page, never downloaded or stored.
 7. **Palettes in memory.** Thumbnails are read for a moment to compute colors, then dropped.
-8. **No referrer.** Board images load with no referrer, so source sites do not see which board showed them.
+8. **Thumbnails pass through to your agent.** So your agent can see the references it rates and builds from, a tool result can carry small thumbnails: fetched at the source's own small size during that one call, from the allowed image hosts only, and handed to the agent. They are never stored, cached, logged or served at any address.
+9. **No referrer.** Board images load with no referrer, so source sites do not see which board showed them.
 
 ## Takedowns
 

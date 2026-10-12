@@ -14,13 +14,15 @@ description: Place references (with a steal note), Mobbin screens, notes, color 
 | `canvasId` | string | Yes | 1 to 100 characters | The board |
 | `items` | object[] | Yes | 1 to 50 per call | What to place, see below |
 | `sectionId` | string | No | 1 to 120 characters | Put the items in this section |
+| `thumbs` | boolean | No | default `true` | A small thumbnail of each placed reference in the result (up to 12), so the agent checks what it placed |
 
 ### Item types
 
 | `type` | Fields | Notes |
 | --- | --- | --- |
 | `reference` | `referenceId` (required), `note` (1 to 280 characters) | A search result from the tray. The note says what to steal: start it with `steal:` |
-| `screen` | `imageUrl` and `sourceUrl` (required), `app`, `title`, `platform` (`ios` or `web`), `note`, `directionId` | A Mobbin screen from your own Mobbin connector: its `image_url` and `mobbin_url`, passed as returned. `sourceUrl` must be an https page on mobbin.com, `imageUrl` https on mobbin.com. Placed as a UI reference with source mobbin.com, hotlinked, never fetched. `ios` gives a phone shaped tile. See [Using Mobbin alongside](/docs/guides/mobbin/) |
+| `screen` | `imageUrl` and `sourceUrl` (required), `app`, `title`, `platform` (`ios` or `web`), `note`, `directionId` | A Mobbin screen from your own Mobbin connector: its `image_url` and `mobbin_url`, passed as returned. `sourceUrl` must be an https page on mobbin.com, `imageUrl` https on mobbin.com. Placed as a UI reference with source mobbin.com, hotlinked, never fetched. `ios` gives a phone shaped tile. Pass the connector's screen id as `screenId`: adding the same `screenId` again replaces the image of the tile already on the board (Mobbin image links expire after about 30 days; `get_canvas` lists the ones to refresh). See [Using Mobbin alongside](/docs/guides/mobbin/) |
+| `build` | `imageUrl`, `url` and `stitchId` (required), `title`, `note` | A screenshot of your own build, for side by side review: `imageUrl` is an https link to the screenshot, `url` the https link to the build. Placed to the right of its Frankenstein page, the same size, with a Build chip. Image bytes are refused; nothing is stored |
 | `note` | `text` (1 to 2000 characters) | A yellow note. Links are clickable. Caps labels like `WILD:` show as chips |
 | `swatch` | `hex` (`#abc` or `#aabbcc`), `role` (up to 60 characters) | A color swatch, tagged `explore` until a contrast check says otherwise |
 | `section` | `title` (1 to 120 characters), `directionId` | A frame that groups items |

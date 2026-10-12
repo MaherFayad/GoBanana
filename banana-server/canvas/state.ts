@@ -116,6 +116,10 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
     note: str(d.note, 2000) ?? null,
     tag: isTag(d.tag) ? d.tag : null,
     zone: isZone(d.zone) ? d.zone : undefined,
+    mobbinId: str(d.mobbinId, 100),
+    placedAt: typeof d.placedAt === "string" && Number.isFinite(Date.parse(d.placedAt)) ? d.placedAt.slice(0, 40) : undefined,
+    kind: d.kind === "build" ? ("build" as const) : undefined,
+    stitchId: str(d.stitchId, 120),
     width: positiveNum(d.width) ?? null,
     height: positiveNum(d.height) ?? null,
   });

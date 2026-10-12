@@ -14,13 +14,15 @@ description: يضع على اللوحة مراجع (مع ملاحظة «خذ م�
 | `canvasId` | string | نعم | من 1 إلى 100 حرف | اللوحة |
 | `items` | object[] | نعم | من 1 إلى 50 في كل استدعاء | ما تريد وضعه، انظر أدناه |
 | `sectionId` | string | لا | من 1 إلى 120 حرفا | يضع العناصر في هذا القسم |
+| `thumbs` | boolean | لا | القيمة الافتراضية `true` | صورة مصغرة لكل مرجع موضوع في النتيجة (حتى 12)، حتى يتحقق الوكيل مما وضعه |
 
 ### أنواع العناصر
 
 | `type` | الحقول | ملاحظات |
 | --- | --- | --- |
 | `reference` | `referenceId` (مطلوب)، `note` (من 1 إلى 280 حرفا) | نتيجة بحث من الدرج. الملاحظة تقول ما الذي تأخذه منه: ابدأها بـ `steal:` |
-| `screen` | `imageUrl` و`sourceUrl` (مطلوبان)، `app`، `title`، `platform` (`ios` أو `web`)، `note`، `directionId` | شاشة Mobbin من موصل Mobbin الخاص بك: قيمتا `image_url` و`mobbin_url` كما أعادهما. يجب أن يكون `sourceUrl` صفحة https على mobbin.com، و`imageUrl` رابط https على mobbin.com. توضع كمرجع واجهة مصدره mobbin.com، تحمل من رابطها مباشرة ولا يجلبها الخادم أبدا. القيمة `ios` تعطي بطاقة بشكل الهاتف. راجع [استخدام Mobbin جنبا إلى جنب](/docs/ar/guides/mobbin/) |
+| `screen` | `imageUrl` و`sourceUrl` (مطلوبان)، `app`، `title`، `platform` (`ios` أو `web`)، `note`، `directionId` | شاشة Mobbin من موصل Mobbin الخاص بك: قيمتا `image_url` و`mobbin_url` كما أعادهما. يجب أن يكون `sourceUrl` صفحة https على mobbin.com، و`imageUrl` رابط https على mobbin.com. توضع كمرجع واجهة مصدره mobbin.com، تحمل من رابطها مباشرة ولا يجلبها الخادم أبدا. القيمة `ios` تعطي بطاقة بشكل الهاتف. مرر معرف الشاشة من الموصل في `screenId`: إضافة نفس `screenId` مرة أخرى تستبدل صورة البطاقة الموجودة على اللوحة (روابط صور Mobbin تنتهي بعد نحو 30 يوما، و`get_canvas` يسرد ما يحتاج تحديثا). راجع [استخدام Mobbin جنبا إلى جنب](/docs/ar/guides/mobbin/) |
+| `build` | `imageUrl` و`url` و`stitchId` (مطلوبة)، `title`، `note` | لقطة شاشة من بنائك أنت للمراجعة جنبا إلى جنب: `imageUrl` رابط https للقطة، و`url` رابط https للبناء. توضع يمين صفحة فرانكنشتاين الخاصة بها وبنفس حجمها مع شارة Build. بيانات الصور المباشرة مرفوضة، ولا يحفظ شيء |
 | `note` | `text` (من 1 إلى 2000 حرف) | ملاحظة صفراء. الروابط فيها قابلة للنقر. والتسميات بالأحرف الكبيرة مثل `WILD:` تظهر كشارات |
 | `swatch` | `hex` (`#abc` أو `#aabbcc`)، `role` (حتى 60 حرفا) | عينة لون، موسومة `explore` حتى يقول فحص التباين غير ذلك |
 | `section` | `title` (من 1 إلى 120 حرفا)، `directionId` | إطار يجمع العناصر |

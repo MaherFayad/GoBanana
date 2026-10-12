@@ -6,7 +6,7 @@ GoBanana is a Claude plugin for one crazy idea over a page or two: a launch page
 
 Ask your agent to "go wild" on a page. GoBanana bends the brief into unexpected directions, each with a full visual spec, fills a moodboard canvas with two zones of linked references (the wild idea as images, and real UI for your platform), and hands the direction you keep to Claude Code, Cursor, Copilot, Codex, v0 or Lovable as scoped files. Then it can screenshot what you built and grade it against the direction.
 
-The plugin connects your agent to the GoBanana MCP server and adds 9 skills that tell the agent which tools to call, in which order, and how to present the results.
+The plugin connects your agent to the GoBanana MCP server and adds 10 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, beta. The server runs at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen. See [Placeholders](#placeholders).
 
@@ -62,6 +62,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 | `gobanana-asset-kit` | "asset kit", "tokens for this page" | Override tokens, Tailwind theme, safe gradients, one font pairing, one icon set, for the page only |
 | `gobanana-handoff` | "hand this off", "Cursor rules for this", "prompt for v0" | Detects your tools, exports the harness pack, writes each file at its path, merges into AGENTS.md or CLAUDE.md |
 | `gobanana-frankenstein` | "frankenstein it", "nav from this, hero from that", "make new layouts from my board" | Cuts parts out of the board's UI references (role, crop, light or dark, steal note), stitches 3 or 4 page variants from a recipe, reviews and fixes them, remixes with a lock, exports FRANKENSTEIN.md |
+| `gobanana-build` | "build this Frankenstein page", "code this screen from the parts" | Refreshes the direction from the board, looks at each part with get_snapshot, builds row by row against the parts with an RTL note per part, runs a drift check, and places a screenshot of the build next to the page |
 | `gobanana-critique` | "critique the build", "does this match the direction" | Screenshots at platform sizes, grades the REVIEW.md checklist with evidence, top 3 fixes inside page scope |
 
 ### Platforms
