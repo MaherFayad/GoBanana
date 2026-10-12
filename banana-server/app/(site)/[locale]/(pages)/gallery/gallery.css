@@ -47,15 +47,24 @@
 .site .gx-filter .ex-seg {
   margin: 0;
   list-style: none;
+  align-items: center;
+}
+
+/* The site's prose list rules (a gap between items) would push every pill after the first down. */
+.site .gx-filter .ex-seg li {
+  display: flex;
+  margin: 0;
+  padding: 0;
 }
 
 .site .gx-filter a {
   display: inline-flex;
   align-items: center;
-  min-block-size: 2.25rem;
+  min-block-size: 2rem;
   padding-inline: 0.875rem;
   border-radius: var(--st-radius-pill);
   color: var(--st-desk-body);
+  transition: background-color 160ms ease, color 160ms ease;
   font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
@@ -71,9 +80,16 @@
   color: var(--st-desk-heading);
 }
 
+/* The ring sits inside the pill so it never runs past the segmented control's edge. */
 .site .gx-filter a:focus-visible {
   outline: 2px solid var(--st-desk-heading);
-  outline-offset: 1px;
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site .gx-filter a {
+    transition: none;
+  }
 }
 
 .site .gx-count {
