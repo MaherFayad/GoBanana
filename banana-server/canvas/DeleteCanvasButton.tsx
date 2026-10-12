@@ -4,7 +4,7 @@
  * "Delete canvas" for the web canvas top bar (owner only: the Toolbar shows it only on the web
  * canvas when it is not read only, so never in the shared view or the inline app in chat).
  *
- * Same flow as the dashboard (app/(site)/[locale]/canvases/Dashboard.tsx): a danger-tone confirm
+ * Same flow as the dashboard (app/(site)/[locale]/(pages)/(home)/canvases/Dashboard.tsx): a danger-tone confirm
  * (role="alertdialog") that names the canvas, Cancel first and focused, Escape closes. Delete
  * calls DELETE /api/canvas/:id; on success (or 404, already gone) the page goes to the
  * dashboard, on failure the dialog stays open with the reason in an alert.

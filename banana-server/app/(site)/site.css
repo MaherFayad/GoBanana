@@ -235,9 +235,8 @@ body:has(> .site) {
 
 /* Footer (SiteChrome.tsx SiteFooter), the same on every page as the landing page's own footer
    (story-footer): the mark tile and the name, the year, the source note and the language switch,
-   then the link columns. One solid desk-black band that runs to the bottom of the page and
-   covers the film grain; its bottom padding is the room for the fixed dock, so the dock floats
-   over the footer and no lighter strip shows under it. */
+   then the link columns. No band of its own: it sits on the page background and runs to the
+   bottom; its bottom padding is the room for the fixed dock, so the dock floats over the footer. */
 .site {
   --site-dock-room: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
@@ -245,7 +244,7 @@ body:has(> .site) {
 .site .site-footer,
 .site .story .story-footer {
   position: relative;
-  background: var(--st-desk-bg);
+  background: none;
 }
 
 .site .site-footer {
@@ -833,13 +832,10 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
 /* ------------------------------------------------------------------ account (System Settings) */
 
-/* One glass window (desktop.css .dwin): the list at the start, the settings pane beside it. */
-.site .settings-page {
-  max-inline-size: calc(56rem + 2 * var(--site-gutter));
-}
-
-/* The same window opened over a page (WindowLayer, @modal/(.)account): it fills the layer's frame
-   and scrolls inside; zoomed it loses its corners. */
+/* One glass window (desktop.css .dwin): the list at the start, the settings pane beside it.
+   It always stands in a WindowLayer, over the page that opened it (@modal/(.)account) or, on a
+   direct load, over the home page: it fills the layer's frame and scrolls inside; zoomed it
+   loses its corners. */
 .site .wl .dwin.settings {
   flex: 1 1 auto;
   min-block-size: 0;
@@ -1571,4 +1567,11 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 .site .nf-panel > .nf-actions {
   justify-content: center;
   margin-block-start: var(--st-space-2xl);
+}
+
+/* English engine text (titles, briefs, spec lines) on the Arabic site keeps its left-to-right
+   reading order (lang="en" dir="auto") but lines up with the mirrored page, on the right (the
+   end of a left to right line). */
+[dir="rtl"] [lang="en"][dir="auto"]:dir(ltr) {
+  text-align: end;
 }

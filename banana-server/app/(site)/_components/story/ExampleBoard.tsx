@@ -42,6 +42,7 @@ export function RefList({
   steal = true,
   eager = 0,
   limit,
+  link = true,
 }: {
   refs: readonly ExampleRef[];
   t: T;
@@ -51,6 +52,8 @@ export function RefList({
   /** How many of the first tiles load eagerly. */
   eager?: number;
   limit?: number;
+  /** Tiles link to their sources (false on a card that opens the board as a whole). */
+  link?: boolean;
 }) {
   const shown = limit ? refs.slice(0, limit) : refs;
   return (
@@ -64,6 +67,7 @@ export function RefList({
           steal={steal}
           eager={i < eager}
           lang={en}
+          link={link}
         />
       ))}
     </ul>

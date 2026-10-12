@@ -266,7 +266,9 @@ html:has(.site .menubar) {
    soft shadow, compact rows with an optional hint at the end, separators between groups. Opens
    with a quick fade and a small slide from the top (0ms under reduced motion). */
 
-.site .menubar-wide {
+/* A wrapper only: a link keeps its own box, since display: contents would make it unfocusable
+   (and give a window opened from it no frame to grow out of). */
+.site .menubar-wide:not(a) {
   display: contents;
 }
 
@@ -418,6 +420,35 @@ html:has(.site .menubar) {
 
 .site .dwin[data-minimised] .dwin-bar {
   border-block-end-color: transparent;
+}
+
+/* Right to left (Arabic), as macOS draws it: the lights stay top left in their usual order
+   (close, minimise, zoom) and the title sits in the middle of the bar, read right to left. */
+.site .dwin-lights {
+  direction: ltr;
+}
+
+.site[dir="rtl"] .dwin-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  direction: ltr;
+}
+
+.site[dir="rtl"] .dwin-bar > .dwin-lights {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.site[dir="rtl"] .dwin-bar > .dwin-title {
+  grid-column: 2;
+  direction: rtl;
+  text-align: center;
+}
+
+.site[dir="rtl"] .dwin-bar > .dwin-tools {
+  grid-column: 3;
+  justify-self: end;
+  direction: rtl;
 }
 
 .site .dwin-bar[data-can-move] {

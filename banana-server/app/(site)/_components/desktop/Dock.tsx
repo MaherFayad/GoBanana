@@ -3,7 +3,11 @@
  * width; on phones it respects safe-area-inset-bottom. Each item's name is real text, shown as a
  * label above the icon on hover and focus, so the name is never only a tooltip. Arabic mirrors
  * the order through the flex direction (the page is rtl).
+ *
+ * Site pages go through the router (Next Link), so "Your canvases" opens as a window over the
+ * page and grows out of its icon; the docs (a separate static app) stay plain links.
  */
+import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { CanvasesIcon, ChecklistIcon, DocsIcon, type IconComponent } from "@/components/studio/icons";
 import type { Dict } from "@/lib/site/dict";
@@ -30,15 +34,29 @@ export function Dock({ locale, t }: { locale: Locale; t: Dict }) {
       <ul className="dock-list">
         {items.map(({ href: to, label, Icon }, i) => (
           <li key={to} className={i === 0 ? "dock-item is-home" : "dock-item"}>
-            <a className="dock-link" href={to}>
-              <span className="dock-icon" aria-hidden="true">
-                {Icon ? <Icon size={24} /> : <BrandMark />}
-              </span>
-              <span className="dock-label">{label}</span>
-            </a>
+            {to.startsWith(DOCS_HREF) ? (
+              <a className="dock-link" href={to}>
+                <DockBody label={label} Icon={Icon} />
+              </a>
+            ) : (
+              <Link className="dock-link" href={to}>
+                <DockBody label={label} Icon={Icon} />
+              </Link>
+            )}
           </li>
         ))}
       </ul>
     </nav>
+  );
+}
+
+function DockBody({ label, Icon }: { label: string; Icon: IconComponent | null }) {
+  return (
+    <>
+      <span className="dock-icon" aria-hidden="true">
+        {Icon ? <Icon size={24} /> : <BrandMark />}
+      </span>
+      <span className="dock-label">{label}</span>
+    </>
   );
 }

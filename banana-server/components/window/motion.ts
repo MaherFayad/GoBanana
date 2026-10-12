@@ -29,7 +29,9 @@ if (typeof document !== "undefined") {
   document.addEventListener(
     "click",
     (e) => {
-      const el = (e.target as Element | null)?.closest?.<HTMLElement>("a, button");
+      let el = (e.target as Element | null)?.closest?.<HTMLElement>("a, button");
+      // A menu item leaves with its menu (the phone Menu): grow out of the menu's button instead.
+      if (el?.closest('[role="menu"]')) el = document.querySelector<HTMLElement>('[aria-haspopup="menu"][aria-expanded="true"]') ?? el;
       if (el) lastPress = { el, at: Date.now() };
     },
     true,

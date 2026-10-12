@@ -1,7 +1,8 @@
 /**
  * Site shell for /en/... and /ar/...: the `.site` wrapper (Studio tokens, fonts through :lang),
  * the skip link and one toast stack. The public pages add the header and footer in
- * (pages)/layout.tsx; the canvases dashboard (canvases/) has its own workspace shell.
+ * (pages)/layout.tsx. The canvases dashboard and account settings are windows over the landing
+ * ((pages)/(home)) or over the page that opened them (@modal).
  * Routes: see lib/site/i18n.ts.
  *
  * `lang` and `dir` are set on the wrapper below and on <html> by app/layout.tsx (from the

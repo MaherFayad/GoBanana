@@ -33,9 +33,30 @@
   outline: none;
 }
 
+/* The window itself only takes focus by script (it is not in the tab order), like <main>: no ring. */
+.wl .wl-window:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* The canvas: a large window with a margin of desk around it. */
 .wl[data-kind="canvas"] .wl-window {
   inset: clamp(0.5rem, 2.2vw, 2.25rem);
+}
+
+/*
+ * The canvases dashboard: a Finder window under the menu bar, as wide as the old page was.
+ * A size container, so the dashboard can size its sticky sidebar and Inspector to the window
+ * (dashboard.css, `cqb`).
+ */
+.wl[data-kind="finder"] .wl-window {
+  --wl-edge: clamp(0.5rem, 2.2vw, 2.25rem);
+
+  inset-block: calc(var(--desk-bar, 1.75rem) + var(--wl-edge)) var(--wl-edge);
+  inset-inline: 0;
+  inline-size: min(104rem, 100% - 2 * var(--wl-edge));
+  margin-inline: auto;
+  container-type: size;
 }
 
 /* A centred settings window that scrolls inside. */
@@ -58,8 +79,19 @@
 }
 
 /* A direct load opens in CSS, so the first paint is already moving (before hydration). */
-.wl[data-mode="page"] .wl-window {
+.wl:is([data-mode="page"], [data-mode="home"]) .wl-window {
   animation: wl-open var(--st-window-open) var(--st-window-ease) backwards;
+}
+
+/* Over the home page the backdrop fades in under the window, as when it opens from a link. */
+.wl[data-mode="home"] .wl-backdrop {
+  animation: wl-fade var(--st-window-open) ease backwards;
+}
+
+@keyframes wl-fade {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes wl-open {
@@ -70,14 +102,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wl[data-mode="page"] .wl-window {
+  .wl[data-mode="page"] .wl-window,
+  .wl[data-mode="home"] :is(.wl-window, .wl-backdrop) {
     animation: wl-fade var(--st-duration-zoom) ease backwards;
-  }
-
-  @keyframes wl-fade {
-    from {
-      opacity: 0;
-    }
   }
 }
 
@@ -88,5 +115,19 @@
     block-size: auto;
     max-block-size: none;
     margin: 0;
+  }
+
+}
+
+/* Phones (the dashboard's phone layout starts here): the whole screen under the menu bar. */
+@media (max-width: 767.98px) {
+  .wl[data-kind="finder"] .wl-window {
+    inset: var(--desk-bar, 2.75rem) 0 0;
+    inline-size: auto;
+    margin: 0;
+  }
+
+  .wl[data-kind="finder"][data-zoomed] .wl-window {
+    inset-block-start: 0;
   }
 }

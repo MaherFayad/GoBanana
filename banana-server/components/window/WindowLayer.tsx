@@ -9,6 +9,10 @@
  *   backdrop; the window is a modal dialog (the rest of the page is inert, page scroll is held).
  *   Close and minimize animate, then go back in history, so Back and close land on the same
  *   page. The browser's Back button closes it too: the window then leaves through a ghost copy.
+ * - `home`: a direct load (or refresh) of a window that sits on the home page (the canvases
+ *   dashboard, account settings): the landing renders behind it, blurred and inert, as in
+ *   `overlay`, but the window is drawn on the server and opens in CSS on first paint. Close goes
+ *   to `closeHref` (the home page), which keeps the landing mounted (it is their layout).
  * - `page`: a direct load of the same URL. The window stands on the desk; close goes to
  *   `closeHref`.
  *
@@ -25,9 +29,9 @@ import "./window-layer.css";
 import { animateClose, animateMinimize, animateOpen, animateResize, dockTarget, ghostClose, recentPress } from "./motion";
 
 type Props = {
-  mode: "overlay" | "page";
-  /** Sizing: a large app window (canvas) or a centred settings window. */
-  kind: "canvas" | "settings";
+  mode: "overlay" | "home" | "page";
+  /** Sizing: a large app window (canvas), a Finder window under the menu bar (canvases), or a centred settings window. */
+  kind: "canvas" | "finder" | "settings";
   /** Accessible name of the dialog. */
   label: string;
   /** Where close goes on a direct load. */
@@ -81,6 +85,8 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
   const [zoomed, setZoomed] = useState(false);
   const live = useRef<{ leaving: boolean; origin: HTMLElement | null }>({ leaving: false, origin: null });
   const overlay = mode === "overlay";
+  // A dialog over a page (inert behind it, scroll held), whether it opened in place or loaded so.
+  const modal = mode !== "page";
 
   useLayoutEffect(() => {
     const win = winRef.current;
@@ -96,7 +102,7 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
     const before = document.activeElement as HTMLElement | null;
     const scope = layer.closest(".site") ?? document.body;
     win.focus({ preventScroll: true });
-    if (!overlay) return;
+    if (!modal) return;
 
     // A sheet or confirm (a modal <dialog>, in the top layer) that led here would cover the
     // window: close it (its own close handler keeps its state in step).
@@ -108,7 +114,9 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
     root.style.overflow = "hidden";
     const undoInert = isolate(layer);
     modalStack.push(win);
-    const title = document.title;
+    // An overlay names the tab after the window and gives the page its title back; a direct
+    // load already has the window's title from its route metadata.
+    const title = overlay ? document.title : null;
     // Back (or any history move) while the window is up: the router drops the window on its
     // next render, so a copy of it animates out from where it is now.
     const path = location.pathname;
@@ -128,13 +136,13 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
       modalStack.remove(win);
       undoInert();
       root.style.overflow = scroll;
-      document.title = title;
+      if (title !== null) document.title = title;
       const focusBack = state.origin?.isConnected ? state.origin.querySelector<HTMLElement>("button, a") ?? state.origin : before;
       if (focusBack?.isConnected) requestAnimationFrame(() => focusBack.focus({ preventScroll: true }));
     };
     // The origin is read once per open; a new origin only matters for a new window.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [overlay, mounted]);
+  }, [overlay, modal, mounted]);
 
   useLayoutEffect(() => {
     if (overlay && mounted) document.title = label;
@@ -170,6 +178,9 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     // A dialog opened inside the window (a confirm) handles its own Escape.
+    // A search field with text clears itself on Escape first.
+    const field = e.target as HTMLInputElement;
+    if (field.type === "search" && field.value) return;
     if (escapeCloses && e.key === "Escape" && !e.defaultPrevented && !(e.target as Element).closest("dialog[open]")) {
       e.stopPropagation();
       frame.close();
@@ -182,9 +193,9 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
       <div
         ref={winRef}
         className="wl-window"
-        role={overlay ? "dialog" : undefined}
-        aria-modal={overlay ? true : undefined}
-        aria-label={overlay ? label : undefined}
+        role={modal ? "dialog" : undefined}
+        aria-modal={modal ? true : undefined}
+        aria-label={modal ? label : undefined}
         tabIndex={-1}
         onKeyDown={onKeyDown}
       >

@@ -1,6 +1,7 @@
 /**
  * Signed-in pages and the 404 on the GoBanana desktop (docs/site-redesign-spec.md): the canvases
- * dashboard as a Finder window (search, Icons / List, collapse, Shared links, the Inspector, and
+ * dashboard as a Finder window (a window over the home page on a direct load, see
+ * window-layer.spec.ts) (search, Icons / List, collapse, Shared links, the Inspector, and
  * on phones a segmented control, rows and a bottom-sheet dialog), the account page as a System
  * Settings window with usage meters, and the "moved to the Trash" 404. Runs against `next dev`
  * with the E2E sign-in bypass (demo cards and sample usage, no database).
@@ -30,7 +31,7 @@ async function mockThumbs(page: Page) {
 async function openDashboard(page: Page, url = "/en/canvases") {
   await mockThumbs(page);
   await page.goto(url);
-  await expect(page.locator(".dash-win")).toBeVisible();
+  await expect(page.locator(".wl .dash-win")).toBeVisible();
 }
 
 test.describe("canvases dashboard (Finder window)", () => {
@@ -38,7 +39,10 @@ test.describe("canvases dashboard (Finder window)", () => {
     await openDashboard(page);
     await expect(page.locator(".site-header.menubar")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Canvases" })).toBeVisible();
-    await expect(page.locator(".dash-side .dwin-lights")).toHaveAttribute("aria-hidden", "true");
+    // Working traffic lights: the dashboard is a window that closes.
+    const lights = page.locator(".dash-side .dwin-lights");
+    await expect(lights.getByRole("button", { name: "Close GoBanana canvases" })).toBeVisible();
+    await expect(lights.getByRole("button", { name: "Minimise GoBanana canvases" })).toBeVisible();
     const cards = page.locator(".lab-card");
     await expect(cards).toHaveCount(4);
     // A card is one quiet button (its title) plus one meta line; no per-card details button.
@@ -70,7 +74,7 @@ test.describe("canvases dashboard (Finder window)", () => {
     await expect(sidebar.getByRole("link", { name: "Setup guide" })).toHaveAttribute("href", "/docs/start/install/");
     await expect(sidebar.getByRole("link", { name: "Account" })).toHaveAttribute("href", "/en/account");
     await expect(sidebar.getByRole("button", { name: "Sign out" })).toBeVisible();
-    await axe(page, ".site", "dashboard");
+    await axe(page, ".wl", "dashboard");
   });
 
   test("search filters titles and briefs, announces the count, and clears", async ({ page }) => {
@@ -102,7 +106,7 @@ test.describe("canvases dashboard (Finder window)", () => {
     await expect(page.getByRole("group", { name: "View as" }).getByRole("button", { name: "List" })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: "Expand sidebar" }).click();
     await expect(page.locator(".lab")).not.toHaveAttribute("data-collapsed", "");
-    await axe(page, ".site", "dashboard list view");
+    await axe(page, ".wl", "dashboard list view");
   });
 
   test("Shared links filters the list", async ({ page }) => {
@@ -111,6 +115,11 @@ test.describe("canvases dashboard (Finder window)", () => {
     await expect(page).toHaveURL(/view=shared/);
     await expect(page.getByRole("heading", { level: 1, name: "Shared links" })).toBeVisible();
     await expect(page.locator(".lab-card")).toHaveCount(1);
+    // In place: one window, not a second one stacked by the intercepted route.
+    await expect(page.locator(".wl")).toHaveCount(1);
+    await page.goBack();
+    await expect(page.getByRole("heading", { level: 1, name: "Canvases" })).toBeVisible();
+    await expect(page.locator(".lab-card")).toHaveCount(4);
   });
 
   test("New canvas explains where canvases start and links to the setup guide", async ({ page }) => {
@@ -130,8 +139,8 @@ test.describe("canvases dashboard (Finder window)", () => {
     const main = (await page.locator(".dash-main").boundingBox())!;
     expect(side.x).toBeGreaterThan(main.x);
     await expect(page.getByRole("searchbox", { name: "البحث في اللوحات" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "دليل الإعداد" })).toHaveAttribute("href", "/docs/ar/start/install/");
-    await axe(page, ".site", "dashboard ar");
+    await expect(page.locator(".wl").getByRole("link", { name: "دليل الإعداد" })).toHaveAttribute("href", "/docs/ar/start/install/");
+    await axe(page, ".wl", "dashboard ar");
   });
 
   test.describe("on a phone", () => {
@@ -177,7 +186,7 @@ test.describe("canvases dashboard (Finder window)", () => {
 test.describe("account (System Settings window)", () => {
   test("the list jumps to Plan, Usage and Shared links; usage shows as meters", async ({ page }) => {
     await page.goto("/en/account");
-    await expect(page.locator(".settings.dwin")).toBeVisible();
+    await expect(page.locator(".wl .settings.dwin")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Account" })).toBeVisible();
     const list = page.getByRole("navigation", { name: "Settings" });
     expect(await list.getByRole("link").evaluateAll((els) => els.map((el) => el.getAttribute("href")))).toEqual([
@@ -194,7 +203,7 @@ test.describe("account (System Settings window)", () => {
     await expect(meter).toHaveAttribute("aria-valuemax", "300");
     await expect(meter).toHaveAttribute("aria-valuetext", "37 of 300");
     await expect(page.getByRole("link", { name: "See shared links" })).toHaveAttribute("href", "/en/canvases?view=shared");
-    await axe(page, ".site", "account");
+    await axe(page, ".wl", "account");
   });
 
   test("Arabic account mirrors the list to the right", async ({ page }) => {
@@ -202,7 +211,7 @@ test.describe("account (System Settings window)", () => {
     const side = (await page.locator(".settings-side").boundingBox())!;
     const pane = (await page.locator(".settings-pane").boundingBox())!;
     expect(side.x).toBeGreaterThan(pane.x);
-    await axe(page, ".site", "account ar");
+    await axe(page, ".wl", "account ar");
   });
 });
 

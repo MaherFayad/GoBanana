@@ -43,6 +43,8 @@
   font-size: 0.75rem;
   line-height: 1;
   white-space: nowrap;
+  /* Center on the cap height, not the font box (Instrument Sans sits high in its box). */
+  text-box: trim-both cap alphabetic;
 }
 
 .ex-count {
@@ -345,6 +347,47 @@
 
 [dir="rtl"] .ex-more svg {
   scale: -1 1;
+}
+
+/* Home page card: "Open the board" is stretched over the whole card, so a click anywhere opens
+   the board window (ExampleCard.tsx). The card lifts a little on hover; the tiles zoom as one. */
+.ex-card {
+  position: relative;
+  border-radius: 1rem;
+  transition: translate var(--st-duration-zoom, 200ms) ease;
+}
+
+.ex-card .ex-more::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--st-space-xs));
+  z-index: 1;
+  border-radius: 1.25rem;
+}
+
+.ex-card .ex-more:focus-visible {
+  outline: none;
+}
+
+.ex-card .ex-more:focus-visible::after {
+  outline: 2px solid var(--st-desk-heading);
+  outline-offset: 2px;
+}
+
+.ex-card:hover {
+  translate: 0 -2px;
+}
+
+.ex-card:hover .ex-tile-img img {
+  scale: 1.04;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-card,
+  .ex-card:hover {
+    translate: none;
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------------------------ Frankenstein page */

@@ -6,7 +6,12 @@
  * feedback, Account, Sign out), a toolbar (title and count, a search over titles and briefs, an
  * Icons / List switch, New canvas), the canvases, and an Inspector at the end side.
  *
- * - The lights are a picture (aria-hidden): the dashboard is a page, not a window that closes.
+ * - The dashboard always stands in a WindowLayer (CanvasesWindow.tsx): over the page that opened
+ *   it, or over the home page on a direct load. Its traffic lights (`lights`) close it, minimize
+ *   it into the dock and zoom it; on phones they sit in the slim title bar.
+ * - Canvases / Shared links switch on the client (history.pushState, so `?view=shared` is still
+ *   a real URL and works without JavaScript): a router navigation to the same URL would be
+ *   intercepted again and stack a second window over a directly loaded one.
  * - Collapse keeps the sidebar to its icons; the choice and the Icons / List view are remembered
  *   in localStorage (wrapped in try/catch: private windows and blocked storage use the defaults).
  * - A card is one button (its title, stretched over the card): a click or Enter fills the Inspector
@@ -23,8 +28,8 @@
  * - Nothing here is draggable, so no drag alternative is needed.
  */
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useSyncExternalStore, type ReactNode, type Ref } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useId, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode, type Ref } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { Dialog } from "@/components/studio/Dialog";
 import {
@@ -70,14 +75,14 @@ type Links = {
 type Props = {
   locale: Locale;
   appName: string;
-  view: "all" | "shared";
+  /** Every canvas; the view (`?view=shared`) is read from the URL here. */
   cards: DashCard[];
-  total: number;
-  sharedCount: number;
   failed: boolean;
   email: string | null;
   links: Links;
   t: Labels;
+  /** The window's working traffic lights (FrameLights). */
+  lights: ReactNode;
 };
 
 type Layout = "grid" | "list";
@@ -126,15 +131,15 @@ function usePref(p: ReturnType<typeof pref>): string {
   return useSyncExternalStore(p.subscribe, p.get, () => p.fallback);
 }
 
-/** The traffic lights: a picture of a window, so hidden from assistive tech. */
-function Lights() {
-  return (
-    <span className="dwin-lights" aria-hidden="true">
-      <span className="dwin-light" data-light="close" />
-      <span className="dwin-light" data-light="min" />
-      <span className="dwin-light" data-light="zoom" />
-    </span>
-  );
+/**
+ * A plain click on a Canvases / Shared links link changes the URL in place (the Next router
+ * picks it up for useSearchParams); new tab and other modified clicks keep the link.
+ */
+function switchView(e: MouseEvent<HTMLAnchorElement>) {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  const to = e.currentTarget.getAttribute("href");
+  if (to && to !== location.pathname + location.search) window.history.pushState(null, "", to);
 }
 
 /** One sidebar row. Collapsed, the label is visually hidden and shown as a tooltip. */
@@ -145,6 +150,7 @@ function NavRow({
   href,
   current,
   count,
+  inPlace = false,
 }: {
   collapsed: boolean;
   label: string;
@@ -152,6 +158,8 @@ function NavRow({
   href: string;
   current?: boolean;
   count?: number;
+  /** A view of this window (switchView), not a page. */
+  inPlace?: boolean;
 }) {
   const body = (
     <>
@@ -165,7 +173,11 @@ function NavRow({
     </>
   );
   // The docs (a separate static app) and mail links skip the router.
-  const link = href.startsWith("/docs/") || href.startsWith("mailto:") ? (
+  const link = inPlace ? (
+    <a className="lab-nav-item" href={href} aria-current={current ? "page" : undefined} onClick={switchView}>
+      {body}
+    </a>
+  ) : href.startsWith("/docs/") || href.startsWith("mailto:") ? (
     <a className="lab-nav-item" href={href}>
       {body}
     </a>
@@ -308,7 +320,12 @@ function DeleteTitle({ template, title }: { template: string; title: string }) {
   );
 }
 
-export function Dashboard({ locale, appName, view, cards, total, sharedCount, failed, email, links, t }: Props) {
+export function Dashboard({ locale, appName, cards: all, failed, email, links, t, lights }: Props) {
+  const total = all.length;
+  const sharedCount = all.filter((c) => c.shared).length;
+  // Shared links only when there is one to show (the sidebar hides it at 0).
+  const view: "all" | "shared" = useSearchParams().get("view") === "shared" && sharedCount > 0 ? "shared" : "all";
+  const cards = view === "shared" ? all.filter((c) => c.shared) : all;
   const collapsed = usePref(collapsedPref) === "1";
   const layout: Layout = usePref(layoutPref) === "list" ? "list" : "grid";
   const [query, setQuery] = useState("");
@@ -332,7 +349,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
   const headingRef = useRef<HTMLHeadingElement>(null);
   const live = cards.filter((c) => !removed.has(c.id));
   // Cards still in the server's list but deleted here; zero again once router.refresh() lands.
-  const gone = cards.filter((c) => removed.has(c.id));
+  const gone = all.filter((c) => removed.has(c.id));
   const liveTotal = Math.max(0, total - gone.length);
   const liveShared = Math.max(0, sharedCount - gone.filter((c) => c.shared).length);
 
@@ -377,6 +394,8 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
       return;
     }
     if (armed === id) {
+      // Back from the canvas, the card needs two clicks again.
+      setArmed(null);
       router.push(canvasHref(id));
       return;
     }
@@ -388,7 +407,8 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
   const shown = q
     ? live.filter((c) => c.title.toLocaleLowerCase(locale).includes(q) || (c.brief ?? "").toLocaleLowerCase(locale).includes(q))
     : live;
-  const current = live.find((c) => c.id === selected) ?? null;
+  // The selected canvas, else the first one in this view (the selection may be in the other view).
+  const current = live.find((c) => c.id === selected) ?? live[0] ?? null;
   const title = view === "shared" ? t.sharedTitle : t.title;
   const collapseLabel = collapsed ? t.expand : t.collapse;
   const setupLabel = fmt(t.newCta, { app: appName });
@@ -399,7 +419,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
         {/* ------------------------------------------------------------ sidebar */}
         <aside className="lab-side dash-side" aria-label={t.sidebarLabel}>
           <div className="dash-side-top">
-            <Lights />
+            {lights}
             <Tooltip content={collapseLabel} side="end">
               <button
                 type="button"
@@ -422,11 +442,11 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
             </p>
             <ul>
               <li>
-                <NavRow collapsed={collapsed} label={t.canvases} icon={<CanvasesIcon size={16} />} href={links.all} current={view === "all"} count={liveTotal} />
+                <NavRow collapsed={collapsed} label={t.canvases} icon={<CanvasesIcon size={16} />} href={links.all} current={view === "all"} count={liveTotal} inPlace />
               </li>
               {liveShared > 0 ? (
                 <li>
-                  <NavRow collapsed={collapsed} label={t.shared} icon={<ShareIcon size={16} />} href={links.shared} current={view === "shared"} count={liveShared} />
+                  <NavRow collapsed={collapsed} label={t.shared} icon={<ShareIcon size={16} />} href={links.shared} current={view === "shared"} count={liveShared} inPlace />
                 </li>
               ) : null}
             </ul>
@@ -479,9 +499,11 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
 
         {/* ------------------------------------------------------------ canvases */}
         <section className="lab-main dash-main" aria-labelledby="lab-title">
-          <div className="dash-phone-bar" aria-hidden="true">
-            <Lights />
-            <span className="dash-phone-title">{fmt(t.windowTitle, { app: appName })}</span>
+          <div className="dash-phone-bar">
+            {lights}
+            <span className="dash-phone-title" aria-hidden="true">
+              {fmt(t.windowTitle, { app: appName })}
+            </span>
           </div>
 
           <header className="lab-head dash-toolbar">
@@ -551,19 +573,19 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
 
           {/* Phones: the sidebar's two views as a segmented control. */}
           <nav className="dash-seg" aria-label={t.showLabel}>
-            <Link className="dash-seg-item" href={links.all} aria-current={view === "all" ? "page" : undefined}>
+            <a className="dash-seg-item" href={links.all} aria-current={view === "all" ? "page" : undefined} onClick={switchView}>
               {t.canvases}
               <span className="dash-seg-count" dir="ltr">
                 {liveTotal}
               </span>
-            </Link>
+            </a>
             {liveShared > 0 ? (
-              <Link className="dash-seg-item" href={links.shared} aria-current={view === "shared" ? "page" : undefined}>
+              <a className="dash-seg-item" href={links.shared} aria-current={view === "shared" ? "page" : undefined} onClick={switchView}>
                 {t.shared}
                 <span className="dash-seg-count" dir="ltr">
                   {liveShared}
                 </span>
-              </Link>
+              </a>
             ) : (
               <span className="dash-seg-item" aria-disabled="true">
                 {t.shared}
@@ -637,7 +659,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
           ) : (
             <ul className="lab-grid" aria-label={t.listLabel}>
               {shown.map((card) => {
-                const isSel = card.id === selected;
+                const isSel = card.id === current?.id;
                 const refs =
                   card.referenceCount === 0
                     ? t.noRefs

@@ -2157,15 +2157,17 @@ button.bn-light[data-light="min"]::before {
 }
 
 .bn-tray-tab {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--st-space-2xs);
+  gap: var(--st-space-3xs);
+  min-inline-size: 0;
   min-block-size: var(--st-target-min);
-  padding-inline: var(--st-space-s);
+  padding-inline: var(--st-space-xs);
   border: 0;
   border-radius: var(--st-radius-pill);
+  white-space: nowrap;
   background: transparent;
   color: var(--st-text-muted);
   font: inherit;

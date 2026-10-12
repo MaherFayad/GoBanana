@@ -1,0 +1,32 @@
+/* One example board in a Finder window (BoardWindow.tsx): the window fills the layer, the body scrolls. */
+
+.wl .board-window {
+  /* Solid, so the page behind does not show through a long read. */
+  background: var(--st-desk-glass-solid);
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+.wl .board-window-body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.wl .board-window-stitch {
+  margin-block-start: var(--st-space-5xl);
+}
+
+.wl .board-window-foot {
+  margin: var(--st-space-5xl) 0 0;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.wl .board-window-foot a {
+  color: var(--st-desk-heading);
+}

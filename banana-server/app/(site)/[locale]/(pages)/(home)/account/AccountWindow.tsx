@@ -17,9 +17,9 @@ import { getDict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
 import { getAccountUsage, getSiteUser, SIGN_IN_PATH, type AccountUsage } from "@/lib/site/session";
 import { e2eAuthBypass, SIGN_OUT_PATH } from "@/lib/web-auth";
-import { bidi } from "../../../_components/Bidi";
-import { TwoToneHeading } from "../../../_components/desktop/TwoToneHeading";
-import { Window } from "../../../_components/desktop/Window";
+import { bidi } from "../../../../_components/Bidi";
+import { TwoToneHeading } from "../../../../_components/desktop/TwoToneHeading";
+import { Window } from "../../../../_components/desktop/Window";
 import { DeleteAccount } from "./DeleteAccount";
 
 /**

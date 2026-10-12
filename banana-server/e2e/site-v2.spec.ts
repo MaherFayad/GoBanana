@@ -232,7 +232,7 @@ test.describe("phone home screen", () => {
 });
 
 test.describe("Arabic", () => {
-  test("the page is rtl with the Arabic font; the menu bar and window lights mirror", async ({ page }) => {
+  test("the page is rtl with the Arabic font; the menu bar mirrors, window lights stay left as on macOS", async ({ page }) => {
     await open(page, "/ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
@@ -242,10 +242,14 @@ test.describe("Arabic", () => {
     const brand = (await page.getByRole("banner").locator(".brand").boundingBox())!;
     const pill = (await page.getByRole("banner").locator(".menubar-pill").boundingBox())!;
     expect(brand.x).toBeGreaterThan(pill.x);
-    // Traffic lights sit at the window's right (inline start).
+    // As macOS draws an Arabic window: the lights stay at the left, close first, and the title is centred.
     const win = (await page.locator("#install").boundingBox())!;
     const close = (await page.locator("#install .dwin-light[data-light='close']").boundingBox())!;
-    expect(close.x).toBeGreaterThan(win.x + win.width / 2);
+    const zoom = (await page.locator("#install .dwin-light[data-light='zoom']").boundingBox())!;
+    expect(close.x).toBeLessThan(win.x + win.width / 2);
+    expect(close.x).toBeLessThan(zoom.x);
+    const title = (await page.locator("#install .dwin-title").boundingBox())!;
+    expect(Math.abs(title.x + title.width / 2 - (win.x + win.width / 2))).toBeLessThan(4);
     // Code stays ltr.
     await expect(page.getByTestId("code-server-url").first().locator("code")).toHaveAttribute("dir", "ltr");
     await axe(page, ".s-hero", "ar hero");

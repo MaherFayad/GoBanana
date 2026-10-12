@@ -26,9 +26,11 @@ type Props = {
   steal?: boolean;
   /** Language of the work's title (titles are English). */
   lang?: string;
+  /** False on a preview that opens something else as a whole (a home page card): a picture with its source chip, no link. */
+  link?: boolean;
 };
 
-export function RefTile({ r, name, labels, eager = false, steal = false, lang }: Props) {
+export function RefTile({ r, name, labels, eager = false, steal = false, lang, link = true }: Props) {
   const [failed, setFailed] = useState(false);
   const img = useRef<HTMLImageElement>(null);
 
@@ -38,9 +40,11 @@ export function RefTile({ r, name, labels, eager = false, steal = false, lang }:
   }, []);
 
   if (failed) return null;
+  const Box = link ? "a" : "span";
+  const boxProps = link ? { href: r.href, target: "_blank", rel: "noopener noreferrer" } : {};
   return (
     <li className="ex-tile">
-      <a className="ex-tile-link" href={r.href} target="_blank" rel="noopener noreferrer">
+      <Box className="ex-tile-link" {...boxProps}>
         <span className="ex-tile-img">
           {/* eslint-disable-next-line @next/next/no-img-element -- third-party image hotlinked from its source on purpose (hard rule 2) */}
           <img
@@ -54,14 +58,16 @@ export function RefTile({ r, name, labels, eager = false, steal = false, lang }:
             onError={() => setFailed(true)}
           />
         </span>
-        <span className="ex-chip" aria-hidden="true" dir="ltr">
-          <ExternalIcon size={12} />
+        <span className="ex-chip" aria-hidden={link ? true : undefined} dir="ltr">
+          {link ? <ExternalIcon size={12} /> : null}
           {r.site}
         </span>
-        <span className="st-visually-hidden">
-          {name} ({labels.newTab})
-        </span>
-      </a>
+        {link ? (
+          <span className="st-visually-hidden">
+            {name} ({labels.newTab})
+          </span>
+        ) : null}
+      </Box>
       {steal && r.steal ? (
         <p className="ex-steal">
           <span className="ex-steal-k">{labels.steal}</span> <span lang={lang} dir="auto">{r.steal}</span>

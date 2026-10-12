@@ -1281,7 +1281,7 @@ html.lenis body {
   }
 
   .story .mail-read {
-    padding: var(--st-space-s) var(--st-space-2xl) var(--st-space-2xl);
+    padding: var(--st-space-2xl) var(--st-space-2xl) var(--st-space-3xl);
   }
 
   .story .mail-read-meta {

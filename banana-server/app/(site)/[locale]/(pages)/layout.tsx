@@ -1,5 +1,5 @@
 /**
- * Public pages (landing, pricing, account, takedown, terms, privacy): header, main and footer.
+ * Public pages (landing, canvases, account, pricing, takedown, terms, privacy): header, main and footer.
  * The header (the desktop menu bar) shows "Your canvases" when someone is signed in, else
  * "Sign in". The dock sits at the bottom of every public page.
  */

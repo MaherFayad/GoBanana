@@ -1,21 +1,17 @@
 /*
  * Canvases dashboard (Dashboard.tsx) as a Finder window on the GoBanana desktop: one glass
- * window (.dwin from desktop.css) under the menu bar, holding an inset glass sidebar, the
- * toolbar and canvases, and an Inspector at the end side. Under 768px it becomes a phone screen:
+ * window (.dwin from desktop.css) holding an inset glass sidebar, the toolbar and canvases, and
+ * an Inspector at the end side. It always stands in a WindowLayer (kind "finder", a size
+ * container): the window fills the layer's frame and scrolls inside, with the sidebar and the
+ * Inspector sticky, sized to the frame through `cqb`. Under 768px it becomes a phone screen:
  * a slim title bar, a segmented control, rows, and the Inspector as a bottom sheet.
  * Tokens only (the --st-desk-* group for the desk), logical properties only.
  */
 
-.site .dash-desk {
-  padding: var(--st-space-xl) var(--site-gutter) var(--st-space-5xl);
-}
-
 .site .dash {
   --lab-side: 15rem;
-  --dash-top: calc(var(--desk-bar) + var(--st-space-xl));
 
-  max-inline-size: 104rem;
-  margin-inline: auto;
+  block-size: 100%;
 }
 
 .site .dash[data-collapsed] {
@@ -26,19 +22,27 @@
   display: grid;
   grid-template-columns: var(--lab-side) minmax(0, 1fr) minmax(16rem, 21rem);
   align-items: start;
-  min-block-size: calc(100svh - var(--dash-top) - var(--st-space-5xl));
-  overflow: visible;
+  block-size: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--st-desk-glass-strong);
+}
+
+/* Zoomed, or on a phone, the window meets the screen edges: no corners. */
+.site .wl[data-zoomed] .dwin.dash-win {
+  border-color: transparent;
+  border-radius: 0;
 }
 
 /* ------------------------------------------------------------------ sidebar */
 
 .site .dash-side {
   position: sticky;
-  inset-block-start: var(--dash-top);
+  inset-block-start: var(--st-space-s);
   display: flex;
   flex-direction: column;
   gap: var(--st-space-3xl);
-  max-block-size: calc(100svh - var(--dash-top) - var(--st-space-xl));
+  max-block-size: calc(100cqb - 2 * var(--st-space-s) - 2 * var(--st-border-width));
   min-inline-size: 0;
   margin: var(--st-space-s);
   padding: var(--st-space-l) var(--st-space-s);
@@ -622,9 +626,9 @@
 /* A flat pane at the window's end, set off by one hairline: no box in a box. */
 .site .dash-inspector {
   position: sticky;
-  inset-block-start: var(--dash-top);
+  inset-block-start: 0;
   align-self: stretch;
-  max-block-size: calc(100svh - var(--dash-top) - var(--st-space-xl));
+  max-block-size: calc(100cqb - 2 * var(--st-border-width));
   min-inline-size: 0;
   overflow: auto;
   border-inline-start: var(--st-border-width) solid var(--st-desk-glass-edge);
@@ -817,13 +821,11 @@
 /* ------------------------------------------------------------------ phone screen */
 
 @media (max-width: 767.98px) {
-  .site .dash-desk {
-    padding: var(--st-space-l) var(--st-space-s) var(--st-space-3xl);
-  }
-
   .site .dwin.dash-win {
     grid-template-columns: minmax(0, 1fr);
-    min-block-size: 0;
+    align-content: start;
+    border-color: transparent;
+    border-radius: 0;
   }
 
   .site .dash-phone-bar {
