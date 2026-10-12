@@ -12,6 +12,7 @@
 import { NodeToolbar, Position, type NodeProps, type OnResizeEnd } from "@xyflow/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useCanvasActions } from "../context";
+import { LinkedText } from "../linkify";
 import { CheckIcon } from "../icons";
 import {
   heightChanged,
@@ -42,16 +43,25 @@ function noteColor(c: string | null | undefined): NoteColor {
 }
 
 /** The note's text as labeled segments: a chip and a paragraph each, with a rule between. */
-export function NoteText({ text }: { text: string }) {
+export function NoteText({ text, focusable = true }: { text: string; focusable?: boolean }) {
   const segments = useMemo(() => parseNoteSegments(text), [text]);
   if (!text.trim()) return <p className="bn-note-text bn-note-empty">Empty note. Press F2 or double click to write.</p>;
-  if (segments.length === 1 && !segments[0]?.label) return <p className="bn-note-text">{text}</p>;
+  if (segments.length === 1 && !segments[0]?.label)
+    return (
+      <p className="bn-note-text">
+        <LinkedText text={text} focusable={focusable} />
+      </p>
+    );
   return (
     <>
       {segments.map((s, i) => (
         <div key={i} className="bn-note-seg">
           {s.label && <span className="bn-note-label">{s.label}</span>}
-          {s.text && <p className="bn-note-text">{s.text}</p>}
+          {s.text && (
+            <p className="bn-note-text">
+              <LinkedText text={s.text} focusable={focusable} />
+            </p>
+          )}
         </div>
       ))}
     </>
@@ -301,7 +311,7 @@ export function NoteNode({ id, data, selected, parentId, width, height, dragging
             onPointerEnter={enter}
             onPointerLeave={leave}
           >
-            <NoteText text={data.text} />
+            <NoteText text={data.text} focusable={false} />
           </div>
         </NodeToolbar>
       )}

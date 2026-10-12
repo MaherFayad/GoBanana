@@ -17,6 +17,7 @@ import type {
   TypeSampleItem,
   UploadItem,
 } from "@/lib/canvas/types";
+import type { Zone } from "@/lib/direction-detail";
 
 export type { Tag } from "@/lib/canvas/types";
 
@@ -92,6 +93,8 @@ export type TrayReference = {
   height?: number;
   /** Direction the result came from; dropping it lands in that section when present. */
   directionId?: string;
+  /** Board zone from the search ("art" for art direction results). Missing means "ui". */
+  zone?: Zone;
 };
 
 export interface StoredViewport {

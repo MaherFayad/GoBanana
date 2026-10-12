@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: 'design-kit/06-sources.md'
+path: 'design/explorations/*/kit/06-sources.md'
 ---

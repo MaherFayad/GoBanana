@@ -20,10 +20,17 @@ import { PreviewIcon } from "@/components/studio/icons";
 import { SearchIcon } from "./icons";
 import { SourceChip } from "./nodes/chips";
 import { siteName } from "./labels";
+import { zoneOf, type Zone } from "@/lib/direction-detail";
 import type { TrayReference } from "./types";
 
 /** Drag data type for tray tiles. */
 export const TRAY_DND_TYPE = "application/x-moodboard-reference";
+
+/** Tray tabs, in order. */
+export const ZONE_TABS: readonly { zone: Zone; label: string }[] = [
+  { zone: "ui", label: "UI" },
+  { zone: "art", label: "Art direction" },
+];
 
 export const PANEL_MIN = 260;
 export const PANEL_MAX = 520;
@@ -123,6 +130,30 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
   };
 
   const panelId = `${id}-panel`;
+  const zonePanelId = `${id}-zone-panel`;
+
+  // Tabs: "UI" and "Art direction" (wild directions v2 zones). Results without a zone are UI.
+  const [zone, setZone] = useState<Zone>("ui");
+  const tabRefs = useRef<Partial<Record<Zone, HTMLButtonElement | null>>>({});
+  const counts: Record<Zone, number> = { ui: 0, art: 0 };
+  for (const r of items) counts[zoneOf(r.zone)] += 1;
+  const shown = items.filter((r) => zoneOf(r.zone) === zone);
+  const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const rtl = isRtl(e.currentTarget);
+    const order = ZONE_TABS.map((t) => t.zone);
+    const at = order.indexOf(zone);
+    let next: number | null = null;
+    if (e.key === (rtl ? "ArrowLeft" : "ArrowRight")) next = (at + 1) % order.length;
+    else if (e.key === (rtl ? "ArrowRight" : "ArrowLeft")) next = (at - 1 + order.length) % order.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = order.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const z = order[next]!;
+    setZone(z);
+    tabRefs.current[z]?.focus();
+  };
 
   return (
     <aside id={id} className="bn-tray" aria-label="Sidebar">
@@ -168,8 +199,42 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
               <p className="st-empty-body">Ask your agent to search for references. Results show up here.</p>
             </div>
           ) : (
-            <ul ref={listRef} className="st-tile-grid bn-tray-list" aria-label="Search results">
-              {items.map((ref, index) => {
+            <>
+            <div className="bn-tray-tabs" role="tablist" aria-label="Result types" onKeyDown={onTabKey}>
+              {ZONE_TABS.map((t) => (
+                <button
+                  key={t.zone}
+                  ref={(el) => {
+                    tabRefs.current[t.zone] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`${id}-tab-${t.zone}`}
+                  className="bn-tray-tab"
+                  aria-selected={zone === t.zone}
+                  aria-controls={zonePanelId}
+                  tabIndex={zone === t.zone ? 0 : -1}
+                  onClick={() => setZone(t.zone)}
+                >
+                  <span>{t.label}</span>
+                  <span className="bn-tray-tab-count">{counts[t.zone]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="bn-tray-zone" role="tabpanel" id={zonePanelId} aria-labelledby={`${id}-tab-${zone}`}>
+            {shown.length === 0 ? (
+              <div className="st-empty" data-variant="centered">
+                <SearchIcon size={24} />
+                <p className="st-empty-title">{zone === "art" ? "No art direction results yet." : "No UI results yet."}</p>
+                <p className="st-empty-body">
+                  {zone === "art"
+                    ? "Searches for a direction add the wild idea as images here."
+                    : "Searches add app screens, pages and components here."}
+                </p>
+              </div>
+            ) : (
+            <ul ref={listRef} className="st-tile-grid bn-tray-list" aria-label={zone === "art" ? "Art direction results" : "UI results"}>
+              {shown.map((ref, index) => {
                 const title = ref.title || "Untitled reference";
                 const site = siteName(ref.sourceSite, ref.sourceUrl);
                 return (
@@ -207,6 +272,9 @@ export function Tray({ id, items, onAdd, onPreview, pulse = 0, open, onToggle, r
                 );
               })}
             </ul>
+            )}
+            </div>
+            </>
           )}
           <div
             className="bn-splitter"

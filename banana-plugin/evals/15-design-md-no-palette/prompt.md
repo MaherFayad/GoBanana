@@ -7,4 +7,4 @@ timeout_seconds: 600
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Bash]
 ---
 
-Turn board cv_demo into a DESIGN.md.
+Turn the frosted sleeve direction on board cv_demo into a DESIGN.md for our checkout page.

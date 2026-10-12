@@ -562,6 +562,13 @@ export const ar: Dict = {
     noMatchTitle: "لا توجد لوحات تطابق «{q}»",
     noMatchBody: "يبحث في عناوين اللوحات وأوصافها.",
     clearSearch: "مسح البحث",
+    deleteCanvas: "حذف اللوحة",
+    deleteTitle: "حذف {title}؟",
+    deleteBody: "سيحذف هذا اللوحة نهائيا مع أقسامها وعناصرها ودرجها واتجاهاتها ورابط العرض. لا يمكن التراجع عن ذلك.",
+    deleteUploads: "تُحذف أيضا الصور التي رفعتها إليها، إلا إذا كانت تظهر في لوحة أخرى لك.",
+    deleteCancel: "إلغاء",
+    deleteDone: "حُذفت {title}.",
+    deleteFailed: "تعذر حذف {title}. أعيدت إلى قائمتك. حاول مجددا بعد دقيقة.",
   },
   notFound: {
     metaTitle: "الصفحة غير موجودة",

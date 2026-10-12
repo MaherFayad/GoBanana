@@ -182,4 +182,82 @@ export const hostileCanvas: CanvasSnapshot = {
   palettes: [],
 };
 
-export const FIXTURES = { checkout: checkoutCanvas, qahwa: qahwaCanvas, hostile: hostileCanvas } as const;
+/**
+ * The live test that found the scope bugs: a phone brief, one direction rated keep with a full
+ * visual spec, art and UI references with what to steal notes, and one direction never rated.
+ */
+export const financeCanvas: CanvasSnapshot = {
+  id: "cnv_finance",
+  title: "Pocket ledger",
+  brief: "personal finance app home screen on iPhone",
+  wildness: 4,
+  lens: null,
+  webUrl: "https://app.example.com/c/cnv_finance",
+  directions: [
+    {
+      id: "f1",
+      move: "transplant",
+      title: "Balance as a pawn shop ticket",
+      searchQuery: "pawn shop ticket stub typography",
+      detail: {
+        platform: "mobile",
+        pages: ["home screen"],
+        twist: "Your balance is a stamped pawn ticket you can tear along the dotted line",
+        wildness: 4,
+        verdict: "keep",
+        artQueries: ["pawn shop ticket stub", "rubber stamp date ink"],
+        spec: {
+          typography: "Condensed serif numerals for the balance, plain sans for everything else",
+          typeVoice: "serif-editorial",
+          color: "Warm paper base, one stamp red accent at 10 percent, ink text at 12:1",
+          layout: "One column ticket card on top, transactions as torn stubs below, tab bar at the bottom",
+          imagery: "No photos; stamps and perforation lines only",
+          motion: "Ticket tears with a short 200ms slide; nothing moves with reduced motion on",
+          texture: "Light paper grain on the ticket only",
+          iconography: "Stamp style outline icons, 2px stroke",
+          density: "Roomy: one balance, three recent stubs above the fold",
+          signature: "Balance shown as a stamped pawn ticket with a perforated edge",
+          pattern: "Ticket card as the hero summary, stubs as list rows",
+          steal: ["the stamped date as a section divider", "perforation as a row separator"],
+          avoid: ["tiny stamp text under 15px", "red for anything but alerts"],
+          styleWords: ["retro", "paper"],
+          whyItFits: "Money feels physical again, which suits a budgeting app for people who like cash",
+        },
+      },
+    },
+    { id: "f2", move: "era", title: "Ledger as a 1980s bank statement", searchQuery: "1980s bank statement print design", detail: { platform: "mobile" } },
+  ],
+  sections: [
+    { id: "fs1", title: "Pawn ticket", directionId: "f1", x: 0, y: 0, w: 700, h: 600 },
+    { id: "fs2", title: "80s statement", directionId: "f2", x: 760, y: 0, w: 400, h: 300 },
+  ],
+  items: [
+    {
+      id: "fa1", type: "image", sectionId: "fs1", x: 16, y: 40, w: 300, h: 220, zone: "art",
+      imageUrl: "https://i.pinimg.com/736x/ab/cd/ef/abcdef123456.jpg",
+      sourceUrl: "https://www.pinterest.com/pin/123456789012345678/",
+      sourceSite: "pinterest", title: "Vintage pawn ticket stack",
+      note: "steal: the stamped date as a section divider",
+    },
+    {
+      id: "fu1", type: "image", sectionId: "fs1", x: 330, y: 40, w: 300, h: 220, zone: "ui",
+      imageUrl: "https://cdn.dribbble.com/userupload/98765432/file/original-wallet.png",
+      sourceUrl: "https://dribbble.com/shots/24000001-Wallet-Home-Screen",
+      sourceSite: "dribbble", title: "Wallet home screen", tag: "ship",
+      note: "steal: big balance with a quiet list under it",
+    },
+  ],
+  palettes: [
+    {
+      colors: [
+        { hex: "#F3EBDD", role: "surface", tag: "ship" },
+        { hex: "#1E1B18", role: "ink", tag: "ship" },
+        { hex: "#B3261E", role: "primary", tag: "ship" },
+        { hex: "#E8B04B", role: "accent", tag: "explore" },
+      ],
+      contrast: [pair("#1E1B18", "#F3EBDD", "ship"), pair("#FFFFFF", "#B3261E", "ship"), pair("#1E1B18", "#E8B04B", "explore")],
+    },
+  ],
+};
+
+export const FIXTURES = { checkout: checkoutCanvas, qahwa: qahwaCanvas, hostile: hostileCanvas, finance: financeCanvas } as const;

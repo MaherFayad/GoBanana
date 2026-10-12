@@ -2,6 +2,7 @@
 import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { canvases, directions } from "@/db/schema";
+import { parseDirectionDetail } from "./detail";
 import { isUuid } from "./ids";
 import type { DirectionRecord, DirectionRepo, NewDirection } from "./types";
 
@@ -12,20 +13,40 @@ const columns = {
   move: directions.move,
   title: directions.title,
   searchQuery: directions.searchQuery,
+  detail: directions.detail,
 };
+
+type Row = Omit<DirectionRecord, "detail"> & { detail: unknown };
+
+/** Row to record: the jsonb detail is validated, invalid shapes read as null. */
+function toRecord(row: Row): DirectionRecord {
+  return { ...row, detail: parseDirectionDetail(row.detail) };
+}
 
 /** Insert or refresh directions, keyed by (canvas_id, bend_id). */
 export async function upsertDirections(db: Db, canvasId: string, rows: readonly NewDirection[]): Promise<void> {
   if (!isUuid(canvasId) || rows.length === 0) return;
   await db
     .insert(directions)
-    .values(rows.map((d) => ({ canvasId, bendId: d.bendId, move: d.move, title: d.title, searchQuery: d.searchQuery })))
+    .values(
+      rows.map((d) => ({
+        canvasId,
+        bendId: d.bendId,
+        move: d.move,
+        title: d.title,
+        searchQuery: d.searchQuery,
+        detail: parseDirectionDetail(d.detail),
+      })),
+    )
     .onConflictDoUpdate({
       target: [directions.canvasId, directions.bendId],
       set: {
         move: sql`excluded.move`,
         title: sql`excluded.title`,
         searchQuery: sql`excluded.search_query`,
+        // A new detail replaces the old one but keeps the stored verdict; no detail keeps the old one.
+        detail: sql`case when excluded.detail is null then ${directions.detail}
+          else excluded.detail || jsonb_strip_nulls(jsonb_build_object('verdict', ${directions.detail} -> 'verdict')) end`,
       },
     });
 }
@@ -46,12 +67,30 @@ export async function findDirectionForUser(
     .innerJoin(canvases, eq(directions.canvasId, canvases.id))
     .where(and(eq(canvases.userId, userId), match, canvasId ? eq(directions.canvasId, canvasId) : undefined))
     .limit(1);
-  return row ?? null;
+  return row ? toRecord(row) : null;
 }
 
 export async function listDirections(db: Db, canvasId: string): Promise<DirectionRecord[]> {
   if (!isUuid(canvasId)) return [];
-  return db.select(columns).from(directions).where(eq(directions.canvasId, canvasId));
+  const rows = await db.select(columns).from(directions).where(eq(directions.canvasId, canvasId));
+  return rows.map(toRecord);
+}
+
+/** Set `detail.verdict` (rate_directions), keeping the rest of the detail. Ownership is checked by the caller. */
+export async function setDirectionVerdict(
+  db: Db,
+  canvasId: string,
+  ids: readonly string[],
+  verdict: "keep" | "drop",
+): Promise<number> {
+  const rowIds = [...new Set(ids)].filter(isUuid);
+  if (!isUuid(canvasId) || rowIds.length === 0) return 0;
+  const changed = await db
+    .update(directions)
+    .set({ detail: sql`coalesce(${directions.detail}, '{}'::jsonb) || jsonb_build_object('verdict', ${verdict}::text)` })
+    .where(and(eq(directions.canvasId, canvasId), inArray(directions.id, rowIds)))
+    .returning({ id: directions.id });
+  return changed.length;
 }
 
 /** Delete directions of one canvas by row uuid (rate_directions drop). Ownership is checked by the caller. */
@@ -93,6 +132,7 @@ export function directionRepo(db: Db): DirectionRepo {
     findForUser: (userId, directionId, canvasId) => findDirectionForUser(db, userId, directionId, canvasId),
     listForCanvas: (canvasId) => listDirections(db, canvasId),
     deleteMany: (canvasId, ids) => deleteDirections(db, canvasId, ids),
+    setVerdict: (canvasId, ids, verdict) => setDirectionVerdict(db, canvasId, ids, verdict),
     recentQueriesForUser: (userId, opts) => recentDirectionQueries(db, userId, opts),
   };
 }

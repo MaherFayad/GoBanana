@@ -36,13 +36,20 @@ interface LintReport {
 }
 
 describe.each(Object.entries(FIXTURES))("design.md CLI on fixture %s", (name, snapshot) => {
+  // Page scope (the default) and system scope DESIGN.md must both lint clean.
   const designMd = exportKit(snapshot, ["design_md"])[0]?.content ?? "";
   const path = join(dir, `${name}-DESIGN.md`);
   writeFileSync(path, designMd);
   const model = buildKitModel(snapshot);
+  const systemPath = join(dir, `${name}-system-DESIGN.md`);
+  writeFileSync(systemPath, exportKit(snapshot, ["design_md"], { scope: "system" })[0]?.content ?? "");
+  const systemModel = buildKitModel(snapshot, { scope: "system" });
 
-  it("passes lint with no errors and no warnings", async () => {
-    const { stdout, code } = await cli(["lint", "--format", "json", path]);
+  it.each([
+    ["page", path],
+    ["system", systemPath],
+  ])("passes lint with no errors and no warnings (%s scope)", async (_scope, file) => {
+    const { stdout, code } = await cli(["lint", "--format", "json", file]);
     const report = JSON.parse(stdout) as LintReport;
     expect(report.summary.errors, JSON.stringify(report.findings, null, 2)).toBe(0);
     expect(code).toBe(0);
@@ -59,9 +66,14 @@ describe.each(Object.entries(FIXTURES))("design.md CLI on fixture %s", (name, sn
   }, 30_000);
 
   it("theme.css matches `export --format css-tailwind`", async () => {
-    const { stdout, code } = await cli(["export", "--format", "css-tailwind", path]);
+    const { stdout, code } = await cli(["export", "--format", "css-tailwind", systemPath]);
     expect(code).toBe(0);
-    expect(tailwindThemeBlock(model)).toBe(stdout);
-    expect(tailwindCss(model).endsWith(stdout)).toBe(true);
+    expect(tailwindThemeBlock(systemModel)).toBe(stdout);
+    expect(tailwindCss(systemModel).endsWith(stdout)).toBe(true);
+    // Page scope sets the same variables on a wrapper instead of @theme (fluid type aside).
+    const cliVars = stdout.split("\n").filter((l) => l.startsWith("  --") && !/--text-(display|headline):/.test(l));
+    const pageCss = tailwindCss(model);
+    for (const v of cliVars) expect(pageCss).toContain(v);
+    expect(pageCss).not.toContain("@theme");
   }, 30_000);
 });

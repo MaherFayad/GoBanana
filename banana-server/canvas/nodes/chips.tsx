@@ -53,3 +53,13 @@ export function LinkCard({ title, site, url }: { title?: string | null; site: st
     </div>
   );
 }
+
+/** Small "Art" badge on art direction references (zone "art"): the wild idea as an image, not a UI reference. */
+export function ArtChip() {
+  return (
+    <span className="st-chip bn-chip bn-chip-art" data-tone="neutral" data-testid="art-chip">
+      <span>Art</span>
+      <span className="st-visually-hidden"> direction reference</span>
+    </span>
+  );
+}

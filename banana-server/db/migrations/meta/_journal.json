@@ -29,6 +29,13 @@
       "when": 1791741355509,
       "tag": "0003_feedback",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791787863591,
+      "tag": "0004_directions_detail",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@
  */
 import type { Plan, UsageStore } from "@/lib/quota";
 import type { Reference } from "@/lib/sources/types";
+import type { DirectionDetail } from "@/lib/direction-detail";
 import type { ArmStat } from "@/lib/learning/arms";
 import type { DirectionReason, IngredientStat } from "@/lib/learning/directions";
 import type { FeedbackReason, FeedbackVerdict } from "@/lib/learning/hints";
@@ -77,7 +78,17 @@ export interface CanvasRepo {
   ): Promise<boolean>;
 }
 
-export type NewDirection = { bendId: string; move: string; title: string; searchQuery: string };
+export type NewDirection = {
+  bendId: string;
+  move: string;
+  title: string;
+  searchQuery: string;
+  /**
+   * Wild directions v2 detail (`directions.detail`). Missing or null leaves the stored detail as it
+   * is; a new detail replaces it but keeps a stored `verdict` (rate_directions owns that field).
+   */
+  detail?: DirectionDetail | null;
+};
 
 export type DirectionRecord = {
   /** Row uuid. */
@@ -88,6 +99,8 @@ export type DirectionRecord = {
   move: string;
   title: string;
   searchQuery: string;
+  /** Validated `directions.detail` (lib/db/detail.ts); null on older rows or when the stored shape is invalid. */
+  detail?: DirectionDetail | null;
 };
 
 export interface DirectionRepo {
@@ -104,6 +117,11 @@ export interface DirectionRepo {
    * canvas is the user's first. No other table references a direction row.
    */
   deleteMany(canvasId: string, ids: readonly string[]): Promise<number>;
+  /**
+   * Set `detail.verdict` on directions of a canvas by row uuid, keeping the rest of the detail;
+   * returns how many rows changed. Callers check that the canvas is the user's first.
+   */
+  setVerdict(canvasId: string, ids: readonly string[], verdict: "keep" | "drop"): Promise<number>;
   /**
    * Search texts of the directions on the user's most recently updated canvases (at most
    * `canvasLimit`), skipping `excludeCanvasId`. bend_brief uses it so new boards do not repeat

@@ -563,6 +563,13 @@ export const en = {
     noMatchTitle: "No canvases match “{q}”",
     noMatchBody: "Search looks at titles and briefs.",
     clearSearch: "Clear search",
+    deleteCanvas: "Delete canvas",
+    deleteTitle: "Delete {title}?",
+    deleteBody: "This deletes the canvas for good: its sections, items, tray, directions and view link. It cannot be undone.",
+    deleteUploads: "Images you uploaded to it are deleted too, unless another canvas of yours shows them.",
+    deleteCancel: "Cancel",
+    deleteDone: "Deleted {title}.",
+    deleteFailed: "Could not delete {title}. It is back in your list. Try again in a minute.",
   },
   notFound: {
     metaTitle: "Page not found",

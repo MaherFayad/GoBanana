@@ -22,7 +22,8 @@ import { useCanvasActions } from "../context";
 import { siteName, tagLabel } from "../labels";
 import type { ReferenceFlowNode } from "../types";
 import { chromeMode, isClick, isPlainClick, wantFullImage } from "../zoom-chrome";
-import { LinkCard, SourceChip, TagChip } from "./chips";
+import { LinkedText } from "../linkify";
+import { ArtChip, LinkCard, SourceChip, TagChip } from "./chips";
 import { NodeMenu, type MenuItem } from "./NodeMenu";
 import { Resizer } from "./Resizer";
 
@@ -165,9 +166,14 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
             }}
           />
         ) : (
-          data.note && <p className="bn-image-note">{data.note}</p>
+          data.note && (
+            <p className="bn-image-note">
+              <LinkedText text={data.note} />
+            </p>
+          )
         )}
         <div className="bn-node-bar bn-node-bar-top">
+          {type === "image" && data.zone === "art" && <ArtChip />}
           {data.tag && <TagChip tag={data.tag} />}
           <span className="bn-grow" />
           {canPreview && (

@@ -119,7 +119,7 @@ export interface CanvasAppProps {
   /** Called after each successful save. */
   onSaved?: (state: CanvasState) => void;
   /** Web canvas only: shows Upload and Share in the toolbar. Leave unset inline (MCP Apps). */
-  web?: Pick<ToolbarProps, "plan" | "shareToken" | "pricingHref">;
+  web?: Pick<ToolbarProps, "plan" | "shareToken" | "pricingHref" | "dashboardHref">;
   /**
    * Start with the search results panel closed, even on a wide frame (the inline canvas in
    * chat). A toggle this session wins. New results never open it; the count badge pulses.
@@ -288,6 +288,8 @@ function previewList(nodes: readonly CanvasFlowNode[], id: string): { items: Pre
             sourceUrl: n.data.sourceUrl,
             site: n.type === "upload" ? "Your upload" : siteName(n.data.sourceSite, n.data.sourceUrl),
             upload: n.type === "upload",
+            note: n.data.note ?? null,
+            ...(n.type === "image" && n.data.zone === "art" ? { zone: "art" as const } : {}),
           },
         ]
       : [],
@@ -304,6 +306,7 @@ function trayPreviewList(tray: readonly TrayReference[], id: string): { items: P
     sourceUrl: r.sourceUrl,
     site: siteName(r.sourceSite, r.sourceUrl),
     upload: false,
+    ...(r.zone === "art" ? { zone: "art" as const } : {}),
   }));
   return { items, index: Math.max(0, items.findIndex((it) => it.key === id)) };
 }

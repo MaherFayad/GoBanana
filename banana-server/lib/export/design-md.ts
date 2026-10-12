@@ -1,6 +1,7 @@
 import { stringify } from "yaml";
 import type { ComponentToken, KitModel } from "./model";
 import { colorByName, dimText } from "./model";
+import { globsText, pagesText, scopeBlock } from "./scope";
 import { mdAutolink, mdText, ratioText, wildnessLabel } from "./util";
 
 /** Front matter object in the shape the design.md CLI reads. Only ship colors. */
@@ -48,13 +49,19 @@ function list(lines: string[]): string {
 
 function overview(m: KitModel): string {
   const out: string[] = [];
+  // Page scope: the scope lines open the Overview (inside a section, so design.md lint stays clean).
+  const scope = scopeBlock(m);
+  if (scope.length > 0) out.push(scope.join("\n"));
   out.push(
     `${mdText(m.title)} is a moodboard built for this brief: ${m.brief ? `"${mdText(m.brief, 500)}"` : "no brief was given"}. ` +
       `Wildness was set to ${wildnessLabel(m.wildness)}${m.lens ? ` with the ${mdText(m.lens)} culture lens` : ""}. ` +
-      `This file turns the board into tokens and rules a coding agent can follow.`,
+      (m.scope === "page"
+        ? `This file turns the board into page level tokens and rules for ${pagesText(m.pages, m.brief)} only, on ${m.platform.label.toLowerCase()}. The rest of the product keeps its own design system.`
+        : `This file turns the board into tokens and rules a coding agent can follow, for ${m.platform.label.toLowerCase()}.`),
   );
-  const kept = m.directions.filter((d) => d.kept);
-  const dropped = m.directions.filter((d) => !d.kept);
+  const kept = m.directions.filter((d) => d.status === "kept");
+  const unrated = m.directions.filter((d) => d.status === "unrated");
+  const dropped = m.directions.filter((d) => d.status === "dropped");
   if (kept.length > 0) {
     out.push(
       `Directions kept on the board:\n\n${list(
@@ -62,8 +69,11 @@ function overview(m: KitModel): string {
       )}`,
     );
   }
+  if (unrated.length > 0) {
+    out.push(`Directions not rated yet: ${unrated.map((d) => mdText(d.direction.title)).join("; ")}.`);
+  }
   if (dropped.length > 0) {
-    out.push(`Directions tried and not kept: ${dropped.map((d) => mdText(d.direction.title)).join("; ")}.`);
+    out.push(`Directions dropped: ${dropped.map((d) => mdText(d.direction.title)).join("; ")}.`);
   }
   const sites = [...new Set(m.references.map((r) => r.site))];
   out.push(
@@ -86,7 +96,11 @@ function colors(m: KitModel): string {
   if (m.ship.length === 0) {
     out.push("No colors are tagged ship yet, so the front matter has no color tokens. Run a palette on the board and tag a swatch ship once it passes contrast.");
   } else {
-    out.push("These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board and are the only colors for production.");
+    out.push(
+      m.scope === "page"
+        ? "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board. Use them only on the pages this file applies to, as overrides on top of the project's own colors."
+        : "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board and are the only colors for production.",
+    );
     out.push(
       list(
         m.ship.map((c) => {
@@ -127,7 +141,7 @@ function typography(m: KitModel): string {
   const out: string[] = [];
   out.push(
     `${p.display.family} for display and ${p.body.family} for body (${p.licence}, from Google Fonts). ` +
-      (m.pairingFromCanvas ? "This pairing was picked on the board." : "No type sample was on the board, so this is the default pairing.") +
+      pairingSource(m) +
       ` Mood: ${p.mood.join(", ")}. Load it from ${mdAutolink(p.url)}.`,
   );
   out.push(
@@ -143,14 +157,25 @@ function typography(m: KitModel): string {
       'This pairing supports Arabic. Set `dir="rtl"` and `lang="ar"` on Arabic pages, and use logical CSS properties (margin-inline-start, not margin-left) so layouts mirror. Never add letter spacing to Arabic text: it breaks the joins between letters. Arabic needs taller lines, so these tokens use a larger line height than a Latin-only system would.',
     );
   } else {
-    out.push(`Fallback stacks: ${p.display.family}, ${p.display.fallback} and ${p.body.family}, ${p.body.fallback}. Keep body text at 16px or larger.`);
+    out.push(`Fallback stacks: ${p.display.family}, ${p.display.fallback} and ${p.body.family}, ${p.body.fallback}. Keep body text at ${m.platform.type.body}px or larger.`);
+  }
+  if (m.platform.fluid) {
+    out.push(`On the web, set display to \`${m.platform.fluid.display}\` and headline to \`${m.platform.fluid.headline}\`; the px tokens above are the largest size.`);
   }
   return out.join("\n\n");
 }
 
+export function pairingSource(m: KitModel): string {
+  if (m.pairingFrom === "canvas") return "This pairing was picked on the board.";
+  const voice = m.focus.find((d) => d.detail?.spec)?.detail?.spec?.typeVoice;
+  if (m.pairingFrom === "voice" && voice) return `Picked for the direction's ${voice.replace(/-/g, " ")} type voice.`;
+  return "No type sample was on the board, so this is the default pairing.";
+}
+
 function layout(m: KitModel): string {
   const out: string[] = [];
-  out.push(`Spacing uses a 4px base: ${m.spacing.map(([k, d]) => `${k} ${dimText(d)}`).join(", ")}. Use md inside a block, lg between blocks and xl between page sections.`);
+  out.push(`${m.platform.label}. ${m.platform.layout}`);
+  out.push(`Spacing uses a 4px base: ${m.spacing.map(([k, d]) => `${k} ${dimText(d)}`).join(", ")}. Use md inside a block, lg between blocks and xl between page sections. Targets: ${m.platform.targets}.`);
   const sectionCount = m.sections.length;
   if (sectionCount > 0) {
     out.push(
@@ -159,8 +184,8 @@ function layout(m: KitModel): string {
   }
   out.push(
     m.wildness >= 4
-      ? `Wildness is ${wildnessLabel(m.wildness)}, so the references break the grid on purpose. Keep that energy in hero areas and marketing moments, and keep forms, tables and checkout steps on a regular grid so tasks stay easy.`
-      : `Wildness is ${wildnessLabel(m.wildness)}. Use a regular 12 column grid on desktop and 4 columns on mobile, and let one bold element per screen carry the direction.`,
+      ? `Wildness is ${wildnessLabel(m.wildness)}, so the references break the grid on purpose. Keep that energy in hero areas and marketing moments, and keep forms, tables and checkout steps on the regular grid (${m.platform.columns}) so tasks stay easy.`
+      : `Wildness is ${wildnessLabel(m.wildness)}. Keep the regular grid (${m.platform.columns}) and let one bold element per screen carry the direction.`,
   );
   return out.join("\n\n");
 }
@@ -209,16 +234,29 @@ function components(m: KitModel): string {
 }
 
 function dosAndDonts(m: KitModel): string {
-  const dos: string[] = ["Do use only the tokens in the front matter for production screens."];
+  const dos: string[] =
+    m.scope === "page"
+      ? [
+          `Do use these tokens only on ${pagesText(m.pages, m.brief)} (${globsText(m.globs)}), as page level overrides on top of the project's design system.`,
+          "Do keep using the project's own components and tokens everywhere else, and its existing DESIGN.md for anything this file does not cover.",
+        ]
+      : ["Do use only the tokens in the front matter for production screens."];
   dos.push("Do keep text at 4.5:1 contrast or more and UI parts at 3:1 or more.");
-  const kept = m.directions.filter((d) => d.kept);
-  if (kept.length > 0) dos.push(`Do carry the kept direction${kept.length === 1 ? "" : "s"} into key screens: ${kept.map((d) => mdText(d.direction.title)).join("; ")}.`);
+  const kept = m.scope === "page" ? m.focus : m.directions.filter((d) => d.kept);
+  if (kept.length > 0) {
+    dos.push(
+      m.scope === "page"
+        ? `Do carry ${kept.length === 1 ? "this direction" : "these directions"} into these pages only: ${kept.map((d) => mdText(d.direction.title)).join("; ")}.`
+        : `Do carry the kept direction${kept.length === 1 ? "" : "s"} into key screens: ${kept.map((d) => mdText(d.direction.title)).join("; ")}.`,
+    );
+  }
   dos.push(`Do load ${m.pairing.display.family} and ${m.pairing.body.family} from Google Fonts under their open licence.`);
   const donts: string[] = [];
   if (m.explore.length > 0) donts.push(`Don't use the explore colors (${m.explore.map((c) => c.hex).join(", ")}) in production without a design review.`);
   for (const c of m.components) if (!c.textColor) donts.push(`Don't put text on ${c.name}: it is a fill only.`);
   donts.push("Don't copy reference images into the product or the repo. Link to the source instead.");
-  const dropped = m.directions.filter((d) => !d.kept);
+  if (m.scope === "page") donts.push("Don't add these tokens to the global theme or change shared components for every page; add a local variant instead.");
+  const dropped = m.directions.filter((d) => d.status === "dropped");
   if (dropped.length > 0) donts.push(`Don't drift back to directions that were dropped: ${dropped.map((d) => mdText(d.direction.title)).join("; ")}.`);
   return list([...dos, ...donts]);
 }

@@ -1,46 +1,53 @@
 ---
 name: gobanana-design-md
-description: Turn a GoBanana moodboard canvas into a DESIGN.md design system file that coding agents can follow, write it to disk, and lint it until it passes. Use when the user mentions "DESIGN.md", "design system file", "design spec for my agent", "turn this board into a design system", "write the design rules down", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md) from the GoBanana MCP server, then npx @google/design.md lint. For AGENTS.md use gobanana-agents-md; for tokens and Tailwind use gobanana-asset-kit.
+description: Turn one kept GoBanana direction into a scoped DESIGN.md for the page or two it is for (design/explorations/<slug>/DESIGN.md), write it to disk and lint it until it passes. It inherits the project's own design system and never replaces the project's DESIGN.md unless the user asks for scope "system". Use when the user mentions "DESIGN.md", "design spec for this page", "design file for my agent", "write the direction down", "turn this board into a design spec", or "lint my DESIGN.md". Runs get_canvas and export_kit (design_md, optionally direction_md) from the GoBanana MCP server, then npx @google/design.md lint. For the full hand-off pack (build prompt, Cursor rules, Copilot, AGENTS.md section) use gobanana-handoff; for tokens use gobanana-asset-kit.
 ---
 
 # GoBanana DESIGN.md
 
-Export the canvas as a DESIGN.md (Google Labs DESIGN.md format, alpha), save it in the user's project, and make sure it lints clean.
+Export a kept direction as a DESIGN.md (Google Labs DESIGN.md format, alpha) scoped to its pages, save it in the user's project, and make sure it lints clean.
 
 ## Ground rules
 
-- **The server returns text; you write the file.** Never ask the user to copy and paste it.
-- **Ship vs explore.** Only colors tagged `ship` go in the front matter. They passed WCAG 2.2 contrast: SC 1.4.3 at 4.5:1 for text and SC 1.4.11 at 3:1 for UI parts. Colors tagged `explore` stay in prose under Colors, marked "concept only". Never move an `explore` color into the front matter to fix a lint error.
-- **Sources stay linked.** Keep any Sources list or reference links the export includes. Never copy reference images into the repo.
+- **Page scope by default.** A GoBanana direction is one wild idea for a page or two, not the product's design system. The default export (`scope: "page"`) applies only to the named pages, inherits the project's own design system, and writes its tokens as overrides. It goes to `design/explorations/<slug>/DESIGN.md`. Never write to or replace the project's own `DESIGN.md` unless the user asks for scope `system` in so many words ("make this our design system", "replace our DESIGN.md").
+- **The server returns text; you write the file** at the returned `path`. Never ask the user to copy and paste.
+- **Ship vs explore.** Only colors tagged `ship` go in the front matter (WCAG 2.2: SC 1.4.3 at 4.5:1 for text, SC 1.4.11 at 3:1 for UI parts). `explore` colors stay in prose, marked "concept only". Never move an `explore` color into the front matter to fix a lint error.
+- **Sources stay linked.** Keep any Sources list. Never copy reference images into the repo.
 - Plain words, no em dashes.
 
 ## Steps
 
-1. **Find the canvas.** Use the `canvasId` from this conversation, or ask. Call `get_canvas`.
-2. **Check for a palette.** If the canvas has no palette, run `extract_palette` first (see gobanana-palette) with `addSwatches: true`. DESIGN.md colors come from `ship` swatches; without them the file has no colors.
-3. **Export.** Call `export_kit` with `canvasId` and `formats: ["design_md"]`. This format is on the Free plan.
-4. **Write the file.** Save the returned `content` as `DESIGN.md` at the project root, or where the user asks.
-   - If a `DESIGN.md` already exists, do not overwrite it silently. Show what would change and ask. If they want both, save the new one as `DESIGN.banana.md`.
-5. **Lint.** Run:
+1. **Find the canvas and the direction.** Use the `canvasId` from this conversation, or ask. Call `get_canvas`. Pick the kept direction the user means (`directionId`). If several are kept and the user did not say, ask which one, or export the one they liked most and say so.
+2. **Find the pages.** Use the direction's `pages`, or the routes the user names (`app/pricing/page.tsx`, `/launch`, `app/onboarding/**`). Look at the project's routes if it helps. Pass them as `pages`.
+3. **Check for a palette.** If the canvas has no palette, run `extract_palette` first (gobanana-palette) with `addSwatches: true`.
+4. **Export.** Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and `formats: ["design_md"]`. Add `"direction_md"` if the user wants the full visual spec too. Both are on the Free plan.
+5. **Write the file** at the returned `path` (for example `design/explorations/frosted-sleeve/DESIGN.md`). Create the folders.
+   - **The project already has a root `DESIGN.md`:** leave it alone. Tell the user in one line that the scoped file sits next to the project's system and inherits it.
+   - **A file already exists at the scoped path** (an earlier export): do not overwrite it silently. Show what would change and ask. If they want both, save the new one with a `.banana.md` suffix (`DESIGN.banana.md`) in the same folder.
+6. **Lint.** Run on the written path:
 
    ```bash
-   npx --yes @google/design.md@0.4.0 lint DESIGN.md
+   npx --yes @google/design.md@0.4.0 lint design/explorations/<slug>/DESIGN.md
    ```
 
    The output is JSON with `findings` and a `summary` of `errors`, `warnings` and `infos`. The exit code can be 0 even with warnings, so read the summary.
-6. **Fix and re-run.** Fix every error, and every warning you can, then lint again. Stop after 3 rounds and show the user anything left. Common fixes:
-   - `broken-ref`: a component uses a key outside `backgroundColor`, `textColor`, `typography`, `rounded`, `padding`, `size`, `height`, `width`, or points at a token that does not exist (for example `{colors.accent}` with no `accent`). Remove the key or point at a real token.
-   - `section-order`: sections must run Overview, Colors, Typography, Layout, Elevation & Depth, Shapes, Components, Do's and Don'ts. Reorder; do not delete content.
-   - `missing-primary`, `missing-typography`: add the missing token from a `ship` swatch or the chosen font pairing. If none passes contrast, tell the user instead of inventing one.
-   - `contrast-ratio`: a text and background pair fails. Pick another `ship` color for that component, or tell the user which pair fails and by how much.
+7. **Fix and re-run.** Fix every error and every warning you can, then lint again. Stop after 3 rounds and show what is left. Common fixes:
+   - `broken-ref`: a component uses a key outside `backgroundColor`, `textColor`, `typography`, `rounded`, `padding`, `size`, `height`, `width`, or points at a token that does not exist. Remove the key or point at a real token.
+   - `section-order`: Overview, Colors, Typography, Layout, Elevation & Depth, Shapes, Components, Do's and Don'ts. Reorder; do not delete content. Keep the scope lines in Overview.
+   - `missing-primary`, `missing-typography`: add the token from a `ship` swatch or the export's font pairing. If none passes contrast, tell the user instead of inventing one.
+   - `contrast-ratio`: pick another `ship` color for that component, or say which pair fails and by how much.
    - `unknown-key`, `orphaned-tokens`: remove the stray key, or use the token in a component.
-7. **Report.** Say where the file is, that lint passes (or what is left), and how many colors are `ship` vs `explore`.
-8. **Offer next steps:** an AGENTS.md that points coding agents at this file (gobanana-agents-md), and tokens plus a Tailwind theme (gobanana-asset-kit).
+8. **Report** in a few lines: where the file is, the scope in one line ("Applies only to /pricing; inherits your design system, does not change it."), lint status, and how many colors are `ship` vs `explore`.
+9. **Offer next steps:** the full hand-off pack for the user's coding tools (gobanana-handoff), or build the page and grade it (gobanana-critique).
+
+## Scope "system" (only when asked)
+
+If the user explicitly wants the direction to become the product's design system, call `export_kit` with `scope: "system"`. The returned `path` is the root `DESIGN.md`. If one exists, do not overwrite it silently: show what would change and ask; if they want both, save as `DESIGN.banana.md`. Say in one line that this changes the whole product, not one page.
 
 ## When things go wrong
 
 - **Quota or plan message:** show it as is, with its upgrade link, once. Do not retry or loop.
-- **`npx` cannot run** (no Node, no network): say so, give the exact lint command for the user to run later, and still check the file by eye against the section order and component keys above.
-- **Inline canvas not shown:** give the canvas web link from `open_canvas` or `get_canvas` so the user can review the board.
+- **`npx` cannot run** (no Node, no network): say so, give the exact lint command, and check the file by eye against the section order and component keys above.
+- **Inline canvas not shown:** give the canvas web link.
 - **Tool error or timeout:** retry once at most, then tell the user in one line.
 - **GoBanana tools missing:** ask the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

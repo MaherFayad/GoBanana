@@ -14,6 +14,12 @@ export const EXPORT_FORMATS = [
   "figjam_spec",
   "html_board",
   "brief",
+  "direction_md",
+  "build_prompt",
+  "review",
+  "cursor_rules",
+  "copilot",
+  "claude_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -40,7 +46,8 @@ export const PLAN_LIMITS: Readonly<Record<Plan, PlanLimits>> = {
     shareLinks: false,
     uploads: false,
     uploadBytes: 0,
-    exportFormats: ["design_md", "brief"],
+    // Free keeps the scoped DESIGN.md and brief, plus the two files that make one wild page buildable.
+    exportFormats: ["design_md", "brief", "direction_md", "build_prompt"],
   },
   pro_monthly: {
     searchesPerMonth: 300,

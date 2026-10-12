@@ -317,6 +317,20 @@
   display: none;
 }
 
+/* Delete outcome line (Dashboard.tsx). Empty until a delete finishes. */
+.site .dash-delete-note:empty {
+  display: none;
+}
+
+.site .dash-delete-note {
+  margin: var(--st-space-xl) var(--st-space-2xl) 0;
+}
+
+.site .dash-delete-note .st-alert {
+  margin: 0;
+  max-inline-size: none;
+}
+
 .site .lab-new p {
   margin: 0;
   max-inline-size: none;
@@ -731,6 +745,11 @@
 .site .lab-open {
   inline-size: 100%;
   border-radius: var(--st-radius-pill);
+}
+
+/* Delete canvas: quiet, last in the Inspector, so it is never the first thing reached. */
+.site .lab-delete {
+  align-self: flex-start;
 }
 
 .site .lab-details-none {

@@ -1,23 +1,33 @@
 ---
-expect:
-  canvasId: string
+type: agent
 ---
+
+You are the get_canvas tool of the GoBanana MCP server. Reply with plain text only, no commentary.
+- If the input has no canvasId, reply exactly: "No canvases yet. Create one with new_canvas."
+- If the input canvasId is cv_demo, reply with the canvas below, exactly as written.
+- For any other canvasId, reply exactly: "Canvas not found. Pass a canvasId from get_canvas or new_canvas."
 
 Canvas cv_demo "Frosted checkout"
 Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_demo
 Brief: flight checkout screen that does not look like every other travel app
 Wildness: 4
-Directions searched: d1 "Your screen as a frosted vinyl sleeve", d2 "Brutalist receipt, type only", d3 "Risograph print, two inks, misregistered"
+Platform: mobile
+Directions:
+- d1 "Your screen as a frosted vinyl sleeve" (kept). Pages: checkout. Pattern: the summary slides out of a sleeve card. Signature: sleeve card with a half-moon cutout for the total. Type voice: condensed. Steal: the frosted window that shows the total; the record label as a badge.
+- d2 "Brutalist receipt, type only" (kept). Pages: checkout. Pattern: the summary as a printed receipt with a tear line. Signature: receipt card with dotted leaders and a stamped total. Type voice: mono. Steal: dotted leaders between label and price; the stamped PAID mark.
+- d3 "Risograph print, two inks, misregistered" (not rated). Pages: checkout. Pattern: two-ink cards with the second ink offset on purpose. Type voice: display-retro.
 Sections: none yet
-Tray (8 references, not placed yet):
-1. [r1, direction d1] Frosted sleeve checkout (dribbble.com): https://dribbble.com/shots/10000001-frosted-sleeve-checkout
-2. [r2, direction d1] Vinyl record packaging set (pinterest.com): https://www.pinterest.com/pin/100000000000000002/
-3. [r3, direction d1] Glass payment card (dribbble.com): https://dribbble.com/shots/10000003-glass-payment-card
-4. [r4, direction d2] Brutalist receipt UI (pinterest.com): https://www.pinterest.com/pin/100000000000000004/
-5. [r5, direction d2] Thermal printer type specimen (pinterest.com): https://www.pinterest.com/pin/100000000000000005/
-6. [r6, direction d2] Monospace order summary (dribbble.com): https://dribbble.com/shots/10000006-mono-order-summary
-7. [r7, direction d3] Risograph boarding pass (dribbble.com): https://dribbble.com/shots/10000007-riso-boarding-pass
-8. [r8, direction d3] Two-ink poster series (pinterest.com): https://www.pinterest.com/pin/100000000000000008/
+Tray (10 references, not placed yet; zone in brackets):
+1. [r1, direction d1, ui] Frosted sleeve checkout (dribbble.com): https://dribbble.com/shots/10000001-frosted-sleeve-checkout
+2. [r2, direction d1, art] Vinyl record packaging set (pinterest.com): https://www.pinterest.com/pin/100000000000000002/
+3. [r3, direction d1, ui] Glass payment card (dribbble.com): https://dribbble.com/shots/10000003-glass-payment-card
+4. [r4, direction d2, ui] Brutalist receipt UI (pinterest.com): https://www.pinterest.com/pin/100000000000000004/
+5. [r5, direction d2, art] Thermal printer type specimen (pinterest.com): https://www.pinterest.com/pin/100000000000000005/
+6. [r6, direction d2, ui] Monospace order summary (dribbble.com): https://dribbble.com/shots/10000006-mono-order-summary
+7. [r7, direction d3, ui] Risograph boarding pass (dribbble.com): https://dribbble.com/shots/10000007-riso-boarding-pass
+8. [r8, direction d3, art] Two-ink poster series (pinterest.com): https://www.pinterest.com/pin/100000000000000008/
+9. [r9, direction d1, ui] Glass checkout bottom sheet (dribbble.com): https://dribbble.com/shots/10000009-glass-bottom-sheet
+10. [r10, direction d2, ui] Receipt style order summary app (dribbble.com): https://dribbble.com/shots/10000010-receipt-summary
 Notes: none
 Palette (6 colors):
 1. #1F2A44 oklch(0.288 0.050 265.9) role: primary

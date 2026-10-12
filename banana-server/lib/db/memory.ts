@@ -5,6 +5,7 @@
  */
 import { planOf, type Plan, type Usage } from "@/lib/quota";
 import { isStateObject, stateHasTaste } from "@/lib/taste";
+import { parseDirectionDetail } from "./detail";
 import { isUuid, referenceRowId } from "./ids";
 import { clampListLimit, referencesFromState } from "./summary";
 import type {
@@ -138,10 +139,19 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     },
     directions: {
       async upsertMany(canvasId, rows) {
-        for (const d of rows) {
+        for (const { detail: rawDetail, ...d } of rows) {
+          // Same as the SQL upsert: a new detail replaces the old one but keeps its verdict.
+          const detail = parseDirectionDetail(rawDetail);
           const existing = data.directions.find((x) => x.canvasId === canvasId && x.bendId === d.bendId);
-          if (existing) Object.assign(existing, { move: d.move, title: d.title, searchQuery: d.searchQuery });
-          else data.directions.push({ id: uuid(), canvasId, ...d });
+          if (existing) {
+            Object.assign(existing, { move: d.move, title: d.title, searchQuery: d.searchQuery });
+            if (detail) {
+              const verdict = existing.detail?.verdict;
+              existing.detail = verdict ? { ...detail, verdict } : detail;
+            }
+          } else {
+            data.directions.push({ id: uuid(), canvasId, ...d, ...(detail ? { detail } : {}) });
+          }
         }
       },
       async findForUser(userId, directionId, canvasId) {
@@ -161,6 +171,16 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         const before = data.directions.length;
         data.directions = data.directions.filter((d) => !(d.canvasId === canvasId && drop.has(d.id)));
         return before - data.directions.length;
+      },
+      async setVerdict(canvasId, ids, verdict) {
+        const set = new Set(ids);
+        let n = 0;
+        for (const d of data.directions) {
+          if (d.canvasId !== canvasId || !set.has(d.id)) continue;
+          d.detail = { ...(d.detail ?? {}), verdict };
+          n++;
+        }
+        return n;
       },
       async recentQueriesForUser(userId, opts) {
         const recent = [...data.canvases.values()]

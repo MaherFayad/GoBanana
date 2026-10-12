@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, loadCanvas, toSnapshot, type TrayReference } from "@/lib/canvas/store";
-import type { CanvasItem, CanvasSnapshot } from "@/lib/canvas/types";
+import type { CanvasDirection, CanvasItem, CanvasSnapshot } from "@/lib/canvas/types";
 import {
   CANVAS_NOT_FOUND,
   lazyTool,
@@ -21,7 +21,7 @@ import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type To
 export const TOOL_NAME = "get_canvas";
 
 export const TOOL_DESCRIPTION =
-  "Read a canvas: its brief, directions, sections, items with their source links and notes, swatches and palettes. " +
+  "Read a canvas: its brief, directions (platform, pages, kept or not, visual spec), sections, items with their source links and notes, swatches and palettes. " +
   "Use it to see what the user kept or changed before you suggest next steps or export. " +
   "Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.";
 
@@ -38,7 +38,7 @@ function describeItem(it: CanvasItem): string {
   switch (it.type) {
     case "image":
     case "upload":
-      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}`;
+      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}`;
     case "note":
       return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}`;
     case "swatch":
@@ -50,12 +50,48 @@ function describeItem(it: CanvasItem): string {
   }
 }
 
+/** Platform, pages, verdict and a compact visual spec of one direction, indented under it. */
+export function directionDetailLines(d: CanvasDirection): string[] {
+  const det = d.detail;
+  const verdict = det?.verdict === "keep" ? "kept" : det?.verdict === "drop" ? "dropped" : "not rated";
+  const head = [det?.platform ? `platform ${det.platform}` : null, det?.pages?.length ? `pages: ${det.pages.join(", ")}` : null, verdict];
+  const lines = [`  ${head.filter(Boolean).join("; ")}`];
+  const spec = det?.spec;
+  if (spec) {
+    const parts = [
+      `type ${spec.typeVoice}`,
+      spec.signature && `signature: ${spec.signature}`,
+      spec.pattern && `pattern: ${spec.pattern}`,
+      spec.layout && `layout: ${spec.layout}`,
+      spec.color && `color: ${spec.color}`,
+      spec.styleWords.length > 0 && `style: ${spec.styleWords.join(", ")}`,
+    ].filter(Boolean);
+    lines.push(`  spec: ${parts.join(" | ")}`);
+  }
+  return lines;
+}
+
+/** get_canvas leaves out the long build prompt; exports read the full detail from the snapshot. */
+function compactDirections(c: CanvasSnapshot): CanvasSnapshot {
+  return {
+    ...c,
+    directions: c.directions.map((d) => {
+      if (!d.detail) return d;
+      const { prompt: _prompt, ...detail } = d.detail;
+      return { ...d, detail };
+    }),
+  };
+}
+
 export function canvasText(c: CanvasSnapshot, trayCount: number): string {
   const lines = [`Canvas "${c.title}" (id ${c.id}).`, `Web link: ${c.webUrl ?? ""}`];
   if (c.brief) lines.push(`Brief: ${c.brief}`);
   if (c.directions.length > 0) {
     lines.push("Directions:");
-    for (const d of c.directions) lines.push(`- ${d.id}: ${d.title} (search: ${d.searchQuery})`);
+    for (const d of c.directions) {
+      lines.push(`- ${d.id}: ${d.title} (search: ${d.searchQuery})`);
+      lines.push(...directionDetailLines(d));
+    }
   }
   const bySection = new Map<string | null, CanvasItem[]>();
   for (const it of c.items) {
@@ -128,7 +164,7 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
         palettes,
         webUrl: canvasWebUrl(deps.appUrl(), canvasId),
       });
-      const out: GetCanvasOutput = { canvas, tray: loaded.state.tray };
+      const out: GetCanvasOutput = { canvas: compactDirections(canvas), tray: loaded.state.tray };
       return toolResult(canvasText(canvas, loaded.state.tray.length), out);
     } catch {
       console.error("[get_canvas] failed");

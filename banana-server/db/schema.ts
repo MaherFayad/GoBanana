@@ -64,6 +64,11 @@ export const directions = pgTable(
     move: text("move").notNull(),
     title: text("title").notNull(),
     searchQuery: text("search_query").notNull(),
+    /**
+     * Wild directions v2 detail (lib/direction-detail.ts DirectionDetail): platform, pages, visual
+     * spec, art queries, twist, prompt, wildness, verdict. Null on rows saved before 0004.
+     */
+    detail: jsonb("detail"),
   },
   (t) => [
     index("directions_canvas_id_idx").on(t.canvasId),

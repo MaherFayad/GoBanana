@@ -17,6 +17,9 @@
  * - Collage images are plain <img> tags pointing at each reference's own thumbnail (never
  *   proxied, stored or re-hosted); a broken one turns into a blank glass cell. A canvas with no
  *   references shows a designed tile with the Bend mark.
+ * - Delete canvas sits last in the Inspector and the sheet. It opens a danger-tone confirm that
+ *   names the canvas (Cancel first and focused, Escape closes), then removes the card at once and
+ *   calls DELETE /api/canvas/:id; a failure puts the card back and says so in a status line.
  * - Nothing here is draggable, so no drag alternative is needed.
  */
 import Link from "next/link";
@@ -41,6 +44,9 @@ import {
   SearchIcon,
   ShareIcon,
   SignOutIcon,
+  TrashIcon,
+  CheckIcon,
+  ErrorIcon,
 } from "@/components/studio/icons";
 import { Tooltip } from "@/components/studio/Tooltip";
 import type { DashboardCard } from "@/lib/site/dashboard";
@@ -214,7 +220,19 @@ function Collage({ card, label, large = false }: { card: DashCard; label: string
 }
 
 /** What the Inspector and the phone sheet show for one canvas: Open first, then a quiet list. */
-function Details({ card, t, withTitle, bodyRef }: { card: DashCard; t: Labels; withTitle: boolean; bodyRef?: Ref<HTMLDivElement> }) {
+function Details({
+  card,
+  t,
+  withTitle,
+  bodyRef,
+  onDelete,
+}: {
+  card: DashCard;
+  t: Labels;
+  withTitle: boolean;
+  bodyRef?: Ref<HTMLDivElement>;
+  onDelete: (card: DashCard) => void;
+}) {
   return (
     <div className="lab-details-body" ref={bodyRef} tabIndex={bodyRef ? -1 : undefined}>
       <Link className="st-btn lab-open" data-variant="primary" data-size="md" href={`/c/${encodeURIComponent(card.id)}`}>
@@ -270,7 +288,23 @@ function Details({ card, t, withTitle, bodyRef }: { card: DashCard; t: Labels; w
           </ul>
         </div>
       ) : null}
+      <button type="button" className="st-btn lab-delete" data-variant="destructive" data-size="sm" onClick={() => onDelete(card)}>
+        <TrashIcon size={16} />
+        {t.deleteCanvas}
+      </button>
     </div>
+  );
+}
+
+/** "Delete {title}?" with the canvas title isolated for mixed-direction text. */
+function DeleteTitle({ template, title }: { template: string; title: string }) {
+  const [before = "", after = ""] = template.split("{title}");
+  return (
+    <>
+      {before}
+      <bdi>{title}</bdi>
+      {after}
+    </>
   );
 }
 
@@ -290,6 +324,50 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
   const newId = useId();
   const searchId = useId();
   const canvasHref = (id: string) => `/c/${encodeURIComponent(id)}`;
+  // Delete: the confirm dialog's canvas, the ids taken out optimistically, and the outcome line.
+  const [confirming, setConfirming] = useState<DashCard | null>(null);
+  const [removed, setRemoved] = useState<ReadonlySet<string>>(() => new Set());
+  const [deleteNote, setDeleteNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const live = cards.filter((c) => !removed.has(c.id));
+  // Cards still in the server's list but deleted here; zero again once router.refresh() lands.
+  const gone = cards.filter((c) => removed.has(c.id));
+  const liveTotal = Math.max(0, total - gone.length);
+  const liveShared = Math.max(0, sharedCount - gone.filter((c) => c.shared).length);
+
+  const askDelete = (card: DashCard) => {
+    setDeleteNote(null);
+    setConfirming(card);
+  };
+
+  const confirmDelete = async () => {
+    const card = confirming;
+    if (!card) return;
+    setConfirming(null);
+    setSheetOpen(false);
+    setRemoved((prev) => new Set(prev).add(card.id));
+    const next = live.find((c) => c.id !== card.id) ?? null;
+    if (selected === card.id) setSelected(next?.id ?? null);
+    setArmed(null);
+    // The Delete button that opened the dialog now belongs to another card: move focus to the heading.
+    window.setTimeout(() => headingRef.current?.focus(), 0);
+    try {
+      const res = await fetch(`/api/canvas/${encodeURIComponent(card.id)}`, { method: "DELETE", credentials: "same-origin" });
+      // 404: already gone, which is what the user asked for.
+      if (!res.ok && res.status !== 404) throw new Error(String(res.status));
+      setDeleteNote({ ok: true, text: t.deleteDone.replace("{title}", card.title) });
+      router.refresh();
+    } catch {
+      setRemoved((prev) => {
+        const n = new Set(prev);
+        n.delete(card.id);
+        return n;
+      });
+      setSelected(card.id);
+      setDeleteNote({ ok: false, text: t.deleteFailed.replace("{title}", card.title) });
+    }
+  };
 
   const pickCard = (id: string) => {
     // On a phone the details open in a sheet, which has its own Open button.
@@ -308,9 +386,9 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
 
   const q = query.trim().toLocaleLowerCase(locale);
   const shown = q
-    ? cards.filter((c) => c.title.toLocaleLowerCase(locale).includes(q) || (c.brief ?? "").toLocaleLowerCase(locale).includes(q))
-    : cards;
-  const current = cards.find((c) => c.id === selected) ?? null;
+    ? live.filter((c) => c.title.toLocaleLowerCase(locale).includes(q) || (c.brief ?? "").toLocaleLowerCase(locale).includes(q))
+    : live;
+  const current = live.find((c) => c.id === selected) ?? null;
   const title = view === "shared" ? t.sharedTitle : t.title;
   const collapseLabel = collapsed ? t.expand : t.collapse;
   const setupLabel = fmt(t.newCta, { app: appName });
@@ -344,11 +422,11 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
             </p>
             <ul>
               <li>
-                <NavRow collapsed={collapsed} label={t.canvases} icon={<CanvasesIcon size={16} />} href={links.all} current={view === "all"} count={total} />
+                <NavRow collapsed={collapsed} label={t.canvases} icon={<CanvasesIcon size={16} />} href={links.all} current={view === "all"} count={liveTotal} />
               </li>
-              {sharedCount > 0 ? (
+              {liveShared > 0 ? (
                 <li>
-                  <NavRow collapsed={collapsed} label={t.shared} icon={<ShareIcon size={16} />} href={links.shared} current={view === "shared"} count={sharedCount} />
+                  <NavRow collapsed={collapsed} label={t.shared} icon={<ShareIcon size={16} />} href={links.shared} current={view === "shared"} count={liveShared} />
                 </li>
               ) : null}
             </ul>
@@ -408,7 +486,9 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
 
           <header className="lab-head dash-toolbar">
             <div className="dash-titles">
-              <h1 id="lab-title">{title}</h1>
+              <h1 id="lab-title" ref={headingRef} tabIndex={-1}>
+                {title}
+              </h1>
               {/* The live count stays for screen readers only. */}
               {!failed ? (
                 <p className="st-visually-hidden" role="status">
@@ -417,7 +497,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
               ) : null}
             </div>
             <div className="dash-tools">
-              {!failed && cards.length > 0 ? (
+              {!failed && live.length > 0 ? (
                 <div className="dash-search">
                   <label className="st-visually-hidden" htmlFor={searchId}>
                     {t.searchLabel}
@@ -474,14 +554,14 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
             <Link className="dash-seg-item" href={links.all} aria-current={view === "all" ? "page" : undefined}>
               {t.canvases}
               <span className="dash-seg-count" dir="ltr">
-                {total}
+                {liveTotal}
               </span>
             </Link>
-            {sharedCount > 0 ? (
+            {liveShared > 0 ? (
               <Link className="dash-seg-item" href={links.shared} aria-current={view === "shared" ? "page" : undefined}>
                 {t.shared}
                 <span className="dash-seg-count" dir="ltr">
-                  {sharedCount}
+                  {liveShared}
                 </span>
               </Link>
             ) : (
@@ -493,6 +573,18 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
               </span>
             )}
           </nav>
+
+          {/* Delete outcome. Always rendered, so the live region exists before it fills. */}
+          <div role="status" className="dash-delete-note">
+            {deleteNote ? (
+              <p className="st-alert" data-tone={deleteNote.ok ? "success" : "danger"}>
+                <span className="st-alert-icon">{deleteNote.ok ? <CheckIcon size={16} /> : <ErrorIcon size={16} />}</span>
+                <span className="st-alert-content">
+                  <bdi>{deleteNote.text}</bdi>
+                </span>
+              </p>
+            ) : null}
+          </div>
 
           <div id={newId} className="lab-new st-alert" data-tone="info" hidden={!showNew}>
             <span className="st-alert-icon">
@@ -516,7 +608,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
                 </a>
               </div>
             </div>
-          ) : cards.length === 0 ? (
+          ) : live.length === 0 ? (
             <div className="st-empty lab-empty dash-empty" data-variant="centered">
               <span className="dash-empty-tile" aria-hidden="true">
                 <BrandMark />
@@ -591,7 +683,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
           </h2>
           {current ? (
             <div aria-live="polite">
-              <Details card={current} t={t} withTitle />
+              <Details card={current} t={t} withTitle onDelete={askDelete} />
             </div>
           ) : (
             <p className="lab-details-none">{t.detailsNone}</p>
@@ -609,7 +701,32 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
         className="dash-sheet"
         initialFocus={sheetBody}
       >
-        {sheetOpen && current ? <Details card={current} t={t} withTitle={false} bodyRef={sheetBody} /> : null}
+        {sheetOpen && current ? <Details card={current} t={t} withTitle={false} bodyRef={sheetBody} onDelete={askDelete} /> : null}
+      </Dialog>
+
+      {/* Delete confirm: danger tone (role="alertdialog"), Cancel first and focused, Escape closes. */}
+      <Dialog
+        open={confirming !== null}
+        onClose={() => setConfirming(null)}
+        tone="danger"
+        size="sm"
+        eyebrow={t.deleteCanvas}
+        title={confirming ? <DeleteTitle template={t.deleteTitle} title={confirming.title} /> : t.deleteCanvas}
+        closeLabel={t.close}
+        initialFocus={cancelDeleteRef}
+        footer={
+          <>
+            <button ref={cancelDeleteRef} type="button" className="st-btn" data-variant="secondary" data-size="lg" onClick={() => setConfirming(null)}>
+              {t.deleteCancel}
+            </button>
+            <button type="button" className="st-btn" data-variant="destructive" data-size="lg" onClick={confirmDelete}>
+              {t.deleteCanvas}
+            </button>
+          </>
+        }
+      >
+        <p>{t.deleteBody}</p>
+        <p>{t.deleteUploads}</p>
       </Dialog>
     </div>
   );

@@ -1,0 +1,21 @@
+{
+  "tools": [
+    {
+      "name": "search_screens",
+      "description": "Search real app screens on Mobbin by text. Returns app, screen and a Mobbin link.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string" },
+          "platform": { "type": "string", "enum": ["ios", "android", "web"] }
+        }
+      }
+    },
+    {
+      "name": "search_flows",
+      "description": "Search real app flows on Mobbin by text.",
+      "inputSchema": { "type": "object", "required": ["query"], "properties": { "query": { "type": "string" }, "platform": { "type": "string" } } }
+    }
+  ]
+}

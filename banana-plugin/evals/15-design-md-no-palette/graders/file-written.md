@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: 'DESIGN.md'
+path: 'design/explorations/*/DESIGN.md'
 ---

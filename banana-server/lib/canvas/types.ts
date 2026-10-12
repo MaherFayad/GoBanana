@@ -6,6 +6,9 @@
  * Coordinates: every `x`, `y`, `w`, `h` is in canvas pixels and absolute
  * (React Flow child positions must be converted from parent-relative first).
  */
+import type { DirectionDetail, Zone } from "@/lib/direction-detail";
+
+export type { DirectionDetail, Zone } from "@/lib/direction-detail";
 
 /** `ship` passed WCAG 2.2 contrast and may go to production. `explore` is concept only. */
 export type Tag = "ship" | "explore";
@@ -19,6 +22,12 @@ export interface CanvasDirection {
   move: BendMove;
   title: string;
   searchQuery: string;
+  /**
+   * Wild directions v2 detail as saved by bend_brief (`directions.detail`): platform, pages, spec,
+   * artQueries, twist, prompt, wildness and verdict ("keep" or "drop" from rate_directions; missing
+   * means not rated). Null or missing on directions saved before v2.
+   */
+  detail?: DirectionDetail | null;
 }
 
 export interface CanvasSection {
@@ -51,8 +60,11 @@ export interface ImageItem extends ItemBase {
   /** Site the reference came from, for example "pinterest" or "dribbble". */
   sourceSite: string;
   title?: string | null;
+  /** The user's or agent's note; for agent placed references, what to steal from it. URLs in it are links. */
   note?: string | null;
   tag?: Tag | null;
+  /** Board zone: "art" (art direction, the wild idea as images) or "ui". Missing means "ui". */
+  zone?: Zone;
 }
 
 /** The user's own image (stored in R2). `sourceUrl` points at the upload or its origin. */

@@ -1,6 +1,6 @@
 # GoBanana plugin
 
-Claude plugin for the GoBanana MCP server: 6 skills that drive the server's 10 tools for wild design exploration, moodboards and design exports. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
+Claude plugin for the GoBanana MCP server: 8 skills that drive the server's 12 tools for one wild page or two: exploration, moodboards, scoped exports, hand-off and critique. Design spec for the current behavior: `docs/wild-directions-v2-spec.md` in the monorepo. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
 
 This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is not loaded for plugin users, and `claude plugin validate --strict` fails on it.
 
@@ -10,6 +10,10 @@ This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is no
 - Every reference shows its source link, in every skill reply and every export.
 - No scraping instructions of any kind. References come only from `search_references`.
 - The server returns text; the agent writes files to disk.
+- Page scope by default: exports apply only to the named pages and never replace the project's DESIGN.md, AGENTS.md or CLAUDE.md (merge a marked section).
+- Two zones: art direction and UI references are never mixed on a board.
+- Mobbin is used only through the user's own connector, links only, never images, never sent to the server.
+- Never delete a canvas without the user's explicit yes.
 - Ship vs explore: only `ship` colors (WCAG 2.2 SC 1.4.3 at 4.5:1 for text, SC 1.4.11 at 3:1 for UI parts) become tokens.
 - Quota and plan messages are relayed once, as is. Never retry in a loop.
 - Writing: plain words, no em dashes. Check with `grep -rn $'\xe2\x80\x94' .` before committing.

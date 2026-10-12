@@ -7,6 +7,7 @@ import type { CanvasItem } from "../canvas/types";
 import { isReference } from "../canvas/types";
 import type { KitModel, Reference } from "./model";
 import { defaultPairing, findPairing } from "./model";
+import { scopeSentence } from "./scope";
 import { escapeHtml as e, finite, normalizeHex, oneLine, plainBlock, safeUrl, wildnessLabel } from "./util";
 
 const PAD = 24;
@@ -136,6 +137,7 @@ export function htmlBoard(m: KitModel): string {
 <body>
 <header>
 <h1 dir="auto">${e(m.title)}</h1>
+${m.scope === "page" ? `<p><strong>${e(scopeSentence(m))}</strong></p>` : ""}
 ${m.brief ? `<p dir="auto">${e(m.brief)}</p>` : ""}
 <p class="muted">Wildness: ${e(wildnessLabel(m.wildness))}${m.lens ? `. Lens: ${e(m.lens)}` : ""}${directions.length ? `. Directions kept: ${e(directions.join("; "))}` : ""}.</p>
 <p class="muted">Every tile links to its source. Images load from the source sites and belong to their owners.</p>

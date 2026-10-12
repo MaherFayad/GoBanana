@@ -5,30 +5,93 @@
 import type { CanvasSnapshot } from "../canvas/types";
 import { agentsMd } from "./agents-md";
 import { briefMd } from "./brief";
+import { buildPromptMd } from "./build-prompt";
 import { designMd } from "./design-md";
+import { directionMd } from "./direction-md";
 import { figjamSpecJson } from "./figjam-spec";
+import { claudeMdSection, copilotInstructions, cursorRule } from "./harness";
 import { htmlBoard } from "./html-board";
-import { buildKitModel, type KitModel } from "./model";
+import { buildKitModel, type KitModel, type KitOptions } from "./model";
+import { reviewMd } from "./review";
+import { appSlug } from "./scope";
 import { tailwindCss } from "./tailwind";
 import { tokensJson } from "./tokens";
 
-export const EXPORT_FORMATS = ["design_md", "agents_md", "tokens", "tailwind", "figjam_spec", "html_board", "brief"] as const;
+export const EXPORT_FORMATS = [
+  "design_md",
+  "agents_md",
+  "tokens",
+  "tailwind",
+  "figjam_spec",
+  "html_board",
+  "brief",
+  "direction_md",
+  "build_prompt",
+  "review",
+  "cursor_rules",
+  "copilot",
+  "claude_md",
+] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export interface ExportFile {
   name: string;
   mime: string;
   content: string;
+  /** Suggested path in the user's repo, relative to its root. */
+  path: string;
+  /**
+   * True when the content is a marked section of an existing root file (AGENTS.md, CLAUDE.md):
+   * replace the block between the same markers if it is there, else append it.
+   */
+  append?: boolean;
 }
 
-const GENERATORS: Record<ExportFormat, { name: string; mime: string; build: (m: KitModel) => string }> = {
-  design_md: { name: "DESIGN.md", mime: "text/markdown", build: designMd },
-  agents_md: { name: "AGENTS.md", mime: "text/markdown", build: agentsMd },
-  tokens: { name: "tokens.json", mime: "application/json", build: tokensJson },
-  tailwind: { name: "theme.css", mime: "text/css", build: tailwindCss },
-  figjam_spec: { name: "figjam-spec.json", mime: "application/json", build: figjamSpecJson },
-  html_board: { name: "board.html", mime: "text/html", build: htmlBoard },
-  brief: { name: "BRIEF.md", mime: "text/markdown", build: briefMd },
+interface Generator {
+  name: (m: KitModel) => string;
+  mime: string;
+  build: (m: KitModel) => string;
+  path: (m: KitModel) => string;
+  append?: (m: KitModel) => boolean;
+}
+
+const inDir = (file: string) => (m: KitModel) => `${m.dir}/${file}`;
+const fixed = (file: string) => () => file;
+
+/**
+ * Root AGENTS.md and CLAUDE.md content goes between `<!-- app:slug -->` markers, so agents can
+ * replace the block on the next export instead of appending a second copy.
+ */
+export function markerName(m: KitModel): string {
+  return `${appSlug()}:${m.slug}`;
+}
+const marked = (build: (m: KitModel) => string) => (m: KitModel) =>
+  `<!-- ${markerName(m)} -->\n${build(m).trimEnd()}\n<!-- /${markerName(m)} -->\n`;
+
+const GENERATORS: Record<ExportFormat, Generator> = {
+  design_md: { name: fixed("DESIGN.md"), mime: "text/markdown", build: designMd, path: (m) => (m.scope === "system" ? "DESIGN.md" : `${m.dir}/DESIGN.md`) },
+  agents_md: { name: fixed("AGENTS.md"), mime: "text/markdown", build: marked(agentsMd), path: fixed("AGENTS.md"), append: () => true },
+  tokens: { name: fixed("tokens.json"), mime: "application/json", build: tokensJson, path: inDir("kit/tokens.json") },
+  tailwind: { name: fixed("theme.css"), mime: "text/css", build: tailwindCss, path: inDir("kit/theme.css") },
+  figjam_spec: { name: fixed("figjam-spec.json"), mime: "application/json", build: figjamSpecJson, path: inDir("figjam-spec.json") },
+  html_board: { name: fixed("board.html"), mime: "text/html", build: htmlBoard, path: inDir("board.html") },
+  brief: { name: fixed("BRIEF.md"), mime: "text/markdown", build: briefMd, path: inDir("BRIEF.md") },
+  direction_md: { name: fixed("DIRECTION.md"), mime: "text/markdown", build: directionMd, path: inDir("DIRECTION.md") },
+  build_prompt: { name: fixed("BUILD-PROMPT.md"), mime: "text/markdown", build: buildPromptMd, path: inDir("BUILD-PROMPT.md") },
+  review: { name: fixed("REVIEW.md"), mime: "text/markdown", build: reviewMd, path: inDir("REVIEW.md") },
+  cursor_rules: {
+    name: (m) => `${appSlug()}-${m.slug}.mdc`,
+    mime: "text/markdown",
+    build: cursorRule,
+    path: (m) => `.cursor/rules/${appSlug()}-${m.slug}.mdc`,
+  },
+  copilot: {
+    name: (m) => `${appSlug()}-${m.slug}.instructions.md`,
+    mime: "text/markdown",
+    build: copilotInstructions,
+    path: (m) => `.github/instructions/${appSlug()}-${m.slug}.instructions.md`,
+  },
+  claude_md: { name: fixed("CLAUDE.md"), mime: "text/markdown", build: marked(claudeMdSection), path: fixed("CLAUDE.md"), append: () => true },
 };
 
 export function isExportFormat(value: unknown): value is ExportFormat {
@@ -36,16 +99,24 @@ export function isExportFormat(value: unknown): value is ExportFormat {
 }
 
 /** Build the requested files, in the order asked, once each. Unknown formats are skipped. */
-export function exportKit(snapshot: CanvasSnapshot, formats: readonly ExportFormat[]): ExportFile[] {
+export function exportKit(snapshot: CanvasSnapshot, formats: readonly ExportFormat[], opts: KitOptions = {}): ExportFile[] {
   const wanted = [...new Set(formats)].filter(isExportFormat);
   if (wanted.length === 0) return [];
-  const model = buildKitModel(snapshot);
+  const model = buildKitModel(snapshot, opts);
   return wanted.map((f) => {
     const g = GENERATORS[f];
-    // Last guard for the plain-words rule: no em dashes in any output.
-    return { name: g.name, mime: g.mime, content: g.build(model).replace(/\u2014/g, "-") };
+    const file: ExportFile = {
+      name: g.name(model),
+      mime: g.mime,
+      // Last guard for the plain-words rule: no em dashes in any output.
+      content: g.build(model).replace(/—/g, "-"),
+      path: g.path(model),
+    };
+    if (g.append?.(model)) file.append = true;
+    return file;
   });
 }
 
 export { buildKitModel } from "./model";
-export type { KitModel } from "./model";
+export type { KitModel, KitOptions } from "./model";
+export { SCOPES, MAX_PAGES, appSlug, type Scope } from "./scope";

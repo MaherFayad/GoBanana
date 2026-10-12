@@ -8,7 +8,7 @@
  * - Other layouts on the whole canvas: each section's contents are arranged inside it,
  *   sections sit in a row, loose items are arranged below them.
  */
-import { arrange, byDirection, COLUMN_WIDTH, GAP, type LayoutItem, type LayoutKind, type Rect } from "@/lib/layout";
+import { arrange, arrangeZoned, byDirection, COLUMN_WIDTH, GAP, type LayoutItem, type LayoutKind, type Rect } from "@/lib/layout";
 import { nodeSize } from "./geometry";
 import { estimateNoteHeight } from "./note-layout";
 import { SECTION_HEADER_HEIGHT } from "./state";
@@ -41,6 +41,7 @@ function toLayoutItem(n: CanvasFlowNode): LayoutItem {
     item.aspectRatio = COLUMN_WIDTH / estimateNoteHeight(n.data.text, COLUMN_WIDTH);
   }
   if (n.parentId) item.sectionId = n.parentId;
+  if (n.type === "image" && n.data.zone === "art") item.zone = "art";
   return item;
 }
 
@@ -83,7 +84,8 @@ function arrangeInside(
   if (children.length === 0) return { patches, size: current };
   const kind = layout === "by_direction" ? "masonry" : layout;
   const columns = layout === "by_direction" ? 1 : undefined;
-  const result = arrange(kind, children.map(toLayoutItem), {
+  // Art direction items get their own labelled block above the UI references.
+  const result = arrangeZoned(kind, children.map(toLayoutItem), {
     origin: { x: SECTION_PAD, y: SECTION_HEADER_HEIGHT },
     ...(columns ? { columns } : {}),
   });
@@ -125,6 +127,7 @@ export function arrangeNodes(
       sections: sections.map((s) => ({ id: s.id })),
       origin: { x: SECTION_PAD, y: 0 },
       gap: GAP + SECTION_PAD * 2,
+      rowGap: GAP,
     });
     const frames = new Map<string, Rect>(
       result.sections.map((f) => [f.id, { id: f.id, x: f.x - SECTION_PAD, y: f.y, w: f.w + SECTION_PAD * 2, h: f.h }]),
@@ -138,23 +141,13 @@ export function arrangeNodes(
       patches.set(s.id, { x: f.x, y: f.y, w: f.w, h: hp.h });
       out = withExpandedHeight(out, s.id, hp.expandedHeight);
     }
-    // byDirection uses vertical gaps of `gap` too; tighten them back to GAP inside columns.
-    const byColumn = new Map<number, Rect[]>();
-    for (const r of result.items) byColumn.set(r.x, [...(byColumn.get(r.x) ?? []), r]);
-    for (const col of byColumn.values()) {
-      let y: number | null = null;
-      for (const r of col) {
-        if (y !== null) r.y = y;
-        y = r.y + r.h + GAP;
-      }
-    }
     for (const r of result.items) {
       const node = nodes.find((n) => n.id === r.id);
       const frame = node?.parentId ? frames.get(node.parentId) : undefined;
       if (frame) patches.set(r.id, { x: r.x - frame.x, y: r.y - frame.y, w: r.w, h: r.h });
       else patches.set(r.id, { x: r.x, y: r.y, w: r.w, h: r.h, parentId: null });
     }
-    // Recompute frame heights after tightening the column gaps.
+    // Frame heights from the children's final positions.
     for (const s of sections) {
       const p = patches.get(s.id);
       if (!p) continue;

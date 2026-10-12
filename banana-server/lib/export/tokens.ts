@@ -7,6 +7,7 @@
  * The only addition is `$extensions.sources`, so the source links travel with the tokens.
  */
 import type { Dim, KitModel } from "./model";
+import { scopeSentence } from "./scope";
 import { hexToRgb } from "./util";
 
 export const DTCG_SCHEMA_URL = "https://www.designtokens.org/schemas/2025.10/format.json";
@@ -50,6 +51,15 @@ export function dtcgCore(model: KitModel): Record<string, unknown> {
 export function tokensJson(model: KitModel): string {
   const file = dtcgCore(model);
   file.$extensions = {
+    scope: {
+      scope: model.scope,
+      note: scopeSentence(model),
+      pages: model.pages,
+      appliesTo: model.globs,
+      wrapper: model.scope === "page" ? `[data-wild-page="${model.slug}"]` : null,
+      platform: model.platform.id,
+      ...(model.platform.fluid ? { fluidType: model.platform.fluid } : {}),
+    },
     sources: model.references.map((r) => ({ n: r.n, title: r.title, site: r.site, url: r.url })),
   };
   return `${JSON.stringify(file, null, 2)}\n`;

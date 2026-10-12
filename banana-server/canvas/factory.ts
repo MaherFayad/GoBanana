@@ -51,6 +51,8 @@ export function referenceNode(ref: TrayReference, center: Point, id = newNodeId(
       title: ref.title ?? null,
       note: null,
       tag: null,
+      // Art direction results keep their zone on the board (Art badge, art row on arrange).
+      ...(ref.zone === "art" ? { zone: "art" as const } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },

@@ -2,14 +2,14 @@
   "name": "gobanana",
   "displayName": "GoBanana",
   "version": "0.1.0",
-  "description": "Wild design exploration for your agent. Bend a brief into unexpected directions, pull linked references into a moodboard canvas, extract a palette, and export DESIGN.md, AGENTS.md, tokens and a FigJam board. Mobbin shows what works. GoBanana shows what's next.",
+  "description": "One wild idea for a page or two, not your whole product. Bend a page into unexpected directions with a full visual spec, pull art direction and platform-correct UI references into a moodboard canvas, and hand the direction to Claude Code, Cursor, Copilot, v0 or Lovable as scoped files. Mobbin shows what works. GoBanana shows what's next.",
   "author": {
     "name": "Maher Fayad",
     "url": "https://gobanana-server.maherfayad55.workers.dev"
   },
   "homepage": "https://gobanana-server.maherfayad55.workers.dev",
   "license": "MIT",
-  "keywords": ["design", "moodboard", "inspiration", "design-system", "design-md", "palette", "figma", "mcp"],
+  "keywords": ["design", "moodboard", "inspiration", "art-direction", "design-md", "agents-md", "cursor-rules", "palette", "figma", "mcp"],
   "icon": "./assets/icon.png",
   "documentationUrl": "https://gobanana-server.maherfayad55.workers.dev/en",
   "supportUrl": "https://gobanana-server.maherfayad55.workers.dev/en/takedown",

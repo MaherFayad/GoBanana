@@ -17,6 +17,7 @@ import {
   type PlacedNode,
 } from "@/lib/canvas/store";
 import type { ReferenceRecord } from "@/lib/db/types";
+import type { Zone } from "@/lib/direction-detail";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
 import { canAddItems } from "@/lib/quota";
 import {
@@ -33,14 +34,20 @@ import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type To
 
 export const TOOL_NAME = "add_to_canvas";
 export const MAX_ITEMS_PER_CALL = 50;
+/** Longest "what to steal" note on a placed reference. */
+export const MAX_NOTE = 280;
 
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), notes, color swatches and sections. " +
-  "Pass sectionId to put items in that section; references found for a saved direction go to that direction's section. " +
-  "New items go below what is already there.";
+  "Pass sectionId to put items in that section; direction results go to that direction's section, art direction above UI. " +
+  `A reference can carry a note (up to ${MAX_NOTE} characters) on what to steal from it.`;
 
 const item = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("reference"), referenceId: z.string().min(1).max(100) }),
+  z.object({
+    type: z.literal("reference"),
+    referenceId: z.string().min(1).max(100),
+    note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+  }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
   z.object({
     type: z.literal("swatch"),
@@ -62,7 +69,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId }, { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -83,7 +90,7 @@ function referenceNode(ref: {
   title?: string | null;
   width?: number | null;
   height?: number | null;
-}): NewNode {
+}, extra: { note?: string; zone: Zone }): NewNode {
   const size = referenceSize(ref.width, ref.height);
   return {
     type: "image",
@@ -95,8 +102,9 @@ function referenceNode(ref: {
       sourceUrl: ref.sourceUrl,
       sourceSite: ref.sourceSite || siteFromUrl(ref.sourceUrl),
       title: ref.title ?? null,
-      note: null,
+      note: extra.note ?? null,
       tag: null,
+      ...(extra.zone === "art" ? { zone: "art" as const } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },
@@ -144,7 +152,12 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const ref = row ?? fromTray;
               if (!ref) return { skip: `reference ${it.referenceId} was not found for this canvas. Search with this canvasId first.` };
               if (matcher.isReferenceBlocked(ref)) return { skip: `reference ${it.referenceId} was removed after a takedown request.` };
-              return { node: referenceNode(ref), ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}) };
+              // Zone: the tray's tag from the search, else the saved row's lane ("art" lane is art direction).
+              const zone = fromTray?.zone ?? (row?.lane === "art" ? "art" : "ui");
+              return {
+                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}) }),
+                ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
+              };
             }
             case "note":
               return { node: { type: "note", data: { text: it.text, color: "yellow" } } };

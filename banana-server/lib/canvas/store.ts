@@ -34,9 +34,14 @@ import type {
   PaletteColor,
 } from "@/lib/canvas/types";
 import type { CanvasRecord, DirectionRecord, PaletteRecord, Repos } from "@/lib/db/types";
-import { GAP, type LayoutKind } from "@/lib/layout";
+import { GAP, ZONE_LABEL_SPACE, type LayoutKind } from "@/lib/layout";
 import type { TakedownMatcher } from "@/lib/takedown";
 import type { Reference } from "@/lib/sources/types";
+import { ZONES, type Zone } from "@/lib/direction-detail";
+
+function isZone(v: unknown): v is Zone {
+  return typeof v === "string" && (ZONES as readonly string[]).includes(v);
+}
 
 export type { CanvasState, StoredNode, TrayReference } from "@/canvas/types";
 export { emptyState, parseState } from "@/canvas/state";
@@ -252,6 +257,7 @@ export function toSnapshot(input: {
     move: d.move,
     title: d.title,
     searchQuery: d.searchQuery,
+    detail: d.detail ?? null,
   }));
   const palettes: CanvasPalette[] = (input.palettes ?? []).map((p) => ({
     id: p.id,
@@ -288,7 +294,9 @@ export function canvasSourceUrls(state: CanvasState): string[] {
 }
 
 export function addToTray(state: CanvasState, refs: readonly Reference[], directionId?: string): CanvasState {
-  const incoming: TrayReference[] = refs.map((r) => ({
+  const incoming: TrayReference[] = refs.map((r) => {
+    const zone: unknown = (r as { zone?: unknown }).zone;
+    return {
     id: r.id,
     thumbUrl: r.thumbUrl,
     imageUrl: r.imageUrl,
@@ -298,7 +306,10 @@ export function addToTray(state: CanvasState, refs: readonly Reference[], direct
     ...(r.width ? { width: r.width } : {}),
     ...(r.height ? { height: r.height } : {}),
     ...(directionId ? { directionId } : {}),
-  }));
+    // The search tags each result with its zone (art direction or UI); the tray keeps it.
+    ...(isZone(zone) ? { zone } : {}),
+    };
+  });
   const ids = new Set(incoming.map((r) => r.id));
   const tray = [...incoming, ...state.tray.filter((r) => !ids.has(r.id))].slice(0, MAX_TRAY);
   // Round-trip through the UI parser so the tray holds exactly what the canvas accepts.
@@ -338,6 +349,11 @@ export function referenceSize(width?: number | null, height?: number | null): { 
 
 function bottomOf(nodes: readonly StoredNode[]): number {
   return nodes.reduce((m, n) => Math.max(m, n.y + n.h), -Infinity);
+}
+
+/** An art direction reference (zone "art"): placed in its own block on top of a section. */
+function isArtNode(n: { type: CanvasNodeType; data: unknown }): boolean {
+  return n.type === "image" && (n.data as { zone?: unknown }).zone === "art";
 }
 
 /** Lay `sizes` out in rows of up to ROW_ITEMS, starting at (x0, y0). Returns top-left points. */
@@ -410,18 +426,34 @@ export function appendNodes(
     if (sectionId) {
       const section = sections.get(sectionId)!;
       const kids = nodes.filter((n) => n.parentId === sectionId);
-      const y0 = kids.length > 0 ? bottomOf(kids) + GAP : SECTION_HEADER;
-      const points = rows(idxs.map((i) => sized[i]!), SECTION_PAD, y0);
       let maxRight = section.w - SECTION_PAD;
-      let maxBottom = 0;
-      idxs.forEach((i, k) => {
-        const s = sized[i]!;
-        const p = points[k]!;
-        nodes.push({ id: s.id, type: s.node.type, x: p.x, y: p.y, w: s.w, h: s.h, parentId: sectionId, data: s.node.data } as StoredNode);
-        maxRight = Math.max(maxRight, p.x + s.w);
-        maxBottom = Math.max(maxBottom, p.y + s.h);
-        placed[i] = { id: s.id, type: s.node.type, x: section.x + p.x, y: section.y + p.y, w: s.w, h: s.h, sectionId };
-      });
+      const put = (list: readonly number[], y0: number) => {
+        const points = rows(list.map((i) => sized[i]!), SECTION_PAD, y0);
+        list.forEach((i, k) => {
+          const s = sized[i]!;
+          const p = points[k]!;
+          nodes.push({ id: s.id, type: s.node.type, x: p.x, y: p.y, w: s.w, h: s.h, parentId: sectionId, data: s.node.data } as StoredNode);
+          maxRight = Math.max(maxRight, p.x + s.w);
+          placed[i] = { id: s.id, type: s.node.type, x: section.x + p.x, y: section.y + p.y, w: s.w, h: s.h, sectionId };
+        });
+      };
+      const newArt = idxs.filter((i) => isArtNode(sized[i]!.node));
+      const artKids = kids.filter(isArtNode);
+      if (newArt.length + artKids.length === 0) {
+        put(idxs, kids.length > 0 ? bottomOf(kids) + GAP : SECTION_HEADER);
+      } else {
+        // Zones: art direction items in a labelled block on top, UI references below their own label.
+        // Existing UI items keep their arrangement and only move down when the art block grows into them.
+        const uiKids = kids.filter((n) => !isArtNode(n));
+        const newUi = idxs.filter((i) => !isArtNode(sized[i]!.node));
+        put(newArt, artKids.length > 0 ? bottomOf(artKids) + GAP : SECTION_HEADER + ZONE_LABEL_SPACE);
+        const artBottom = bottomOf(nodes.filter((n) => n.parentId === sectionId && isArtNode(n)));
+        const uiTop = artBottom + GAP + ZONE_LABEL_SPACE;
+        const uiMin = uiKids.reduce((m, n) => Math.min(m, n.y), Infinity);
+        if (Number.isFinite(uiMin) && uiMin < uiTop) for (const n of uiKids) n.y += uiTop - uiMin;
+        put(newUi, uiKids.length > 0 ? bottomOf(uiKids) + GAP : uiTop);
+      }
+      const maxBottom = bottomOf(nodes.filter((n) => n.parentId === sectionId));
       section.w = Math.max(section.w, maxRight + SECTION_PAD);
       const frameH = maxBottom + SECTION_PAD;
       if (section.type === "section" && section.data.collapsed) {

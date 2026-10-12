@@ -2120,3 +2120,103 @@ a.bn-light::before {
     border: 1px solid CanvasText;
   }
 }
+
+/* ------------------------------------------------------------------ zones (wild directions v2) */
+
+/* Tray tabs: "UI" and "Art direction", with counts. A segmented row under the panel header. */
+.bn-tray-tabs {
+  flex: none;
+  display: flex;
+  gap: var(--st-space-3xs);
+  margin-block: var(--st-space-s) 0;
+  margin-inline: var(--st-space-s);
+  padding: var(--st-space-4xs);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-bg-surface-2);
+}
+
+.bn-tray-tab {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--st-space-2xs);
+  min-block-size: var(--st-target-min);
+  padding-inline: var(--st-space-s);
+  border: 0;
+  border-radius: var(--st-radius-pill);
+  background: transparent;
+  color: var(--st-text-muted);
+  font: inherit;
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-medium);
+  cursor: pointer;
+}
+
+.bn-tray-tab:hover {
+  color: var(--st-text);
+}
+
+.bn-tray-tab[aria-selected="true"] {
+  background: var(--st-bg-surface-4);
+  color: var(--st-text);
+}
+
+.bn-tray-tab-count {
+  color: var(--st-text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.bn-tray-tab[aria-selected="true"] .bn-tray-tab-count {
+  color: var(--st-text-muted);
+}
+
+.bn-tray-zone {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+/* Row labels inside a section: "Art direction" over the art block, "UI references" over the rest. */
+.bn-section .bn-zone-label {
+  position: absolute;
+  inset-inline-start: var(--st-space-l);
+  margin: 0;
+  color: var(--st-text-muted);
+  font-size: var(--st-text-xs);
+  font-weight: var(--st-weight-semibold);
+  letter-spacing: var(--st-tracking-caps);
+  line-height: 28px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.bn-section:lang(ar) .bn-zone-label {
+  font-size: var(--st-text-s);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Links inside notes and "what to steal" notes. Underlined, so they read as links without color. */
+.bn-text-link {
+  color: var(--st-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.bn-text-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.bn-preview-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-xs);
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--st-text);
+  font-size: var(--st-text-s);
+}

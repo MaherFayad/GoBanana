@@ -3,6 +3,9 @@ import { findPairing } from "./fonts";
 import { siteFromUrl } from "./state";
 import type { CanvasFlowNode, Tag } from "./types";
 
+/** Row labels inside a section with art direction items (lib/layout zones). */
+export const ZONE_LABELS = { art: "Art direction", ui: "UI references" } as const;
+
 export function tagLabel(tag: Tag): string {
   return tag === "ship" ? "Ship" : "Explore";
 }
@@ -25,7 +28,7 @@ function baseLabel(n: CanvasFlowNode): string {
   switch (n.type) {
     case "image":
     case "upload": {
-      const what = n.type === "upload" ? "Your image" : "Image";
+      const what = n.type === "upload" ? "Your image" : n.data.zone === "art" ? "Art direction image" : "Image";
       const site = n.type === "upload" ? "your uploads" : siteName(n.data.sourceSite, n.data.sourceUrl);
       const tag = n.data.tag ? `, ${tagLabel(n.data.tag)}` : "";
       return `${what}: ${n.data.title || "Untitled"}, from ${site}${tag}`;

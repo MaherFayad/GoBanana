@@ -1,5 +1,17 @@
 {
   "default": "space-grotesk-inter",
+  "voices": {
+    "grotesk": "space-grotesk-inter",
+    "neo-grotesk": "inter-tight-inter",
+    "serif-editorial": "instrument-serif-inter-tight",
+    "serif-classic": "playfair-source-sans",
+    "mono": "space-mono-space-grotesk",
+    "condensed": "anton-work-sans",
+    "rounded": "fredoka-nunito",
+    "display-retro": "shrikhand-dm-sans",
+    "script-hand": "caveat-nunito-sans",
+    "slab": "zilla-slab-plex-sans"
+  },
   "pairings": [
     {
       "id": "space-grotesk-inter",
@@ -121,6 +133,61 @@
       "mood": ["retro", "terminal", "developer"],
       "sample": "Monospace headings, calm body",
       "url": "https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&family=Space+Grotesk:wght@400;700&display=swap"
+    },
+    {
+      "id": "inter-tight-inter",
+      "name": "Inter Tight and Inter",
+      "display": { "family": "Inter Tight", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Inter", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["neutral", "swiss", "precise"],
+      "sample": "Plain shapes, tight spacing",
+      "url": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700&family=Inter:wght@400;700&display=swap"
+    },
+    {
+      "id": "fredoka-nunito",
+      "name": "Fredoka and Nunito",
+      "display": { "family": "Fredoka", "weight": 600, "fallback": "sans-serif" },
+      "body": { "family": "Nunito", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["rounded", "soft", "friendly"],
+      "sample": "Soft corners, warm welcome",
+      "url": "https://fonts.googleapis.com/css2?family=Fredoka:wght@600&family=Nunito:wght@400;700&display=swap"
+    },
+    {
+      "id": "shrikhand-dm-sans",
+      "name": "Shrikhand and DM Sans",
+      "display": { "family": "Shrikhand", "weight": 400, "fallback": "serif" },
+      "body": { "family": "DM Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["retro", "seventies", "groovy"],
+      "sample": "Big curves from another decade",
+      "url": "https://fonts.googleapis.com/css2?family=Shrikhand&family=DM+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "caveat-nunito-sans",
+      "name": "Caveat and Nunito Sans",
+      "display": { "family": "Caveat", "weight": 700, "fallback": "cursive" },
+      "body": { "family": "Nunito Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["handwritten", "personal", "sketchy"],
+      "sample": "Written by hand, read with ease",
+      "url": "https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "zilla-slab-plex-sans",
+      "name": "Zilla Slab and IBM Plex Sans",
+      "display": { "family": "Zilla Slab", "weight": 700, "fallback": "serif" },
+      "body": { "family": "IBM Plex Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["slab", "sturdy", "newsprint"],
+      "sample": "Square serifs that stand firm",
+      "url": "https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@700&family=IBM+Plex+Sans:wght@400;700&display=swap"
     },
     {
       "id": "ibm-plex-arabic-plex-sans",

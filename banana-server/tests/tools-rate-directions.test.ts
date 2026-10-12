@@ -56,6 +56,15 @@ describe("rate_directions tool", () => {
     expect((await s.rate({ canvasId: s.canvasId, ratings: [{ directionId: s.a.id, verdict: "drop" }] }, undefined)).isError).toBe(true);
   });
 
+  it("keep records the verdict on the direction; unrated ones stay without a verdict", async () => {
+    const s = await setup();
+    const res = await s.rate({ canvasId: s.canvasId, ratings: [{ directionId: s.a.id, verdict: "keep" }] }, ALICE);
+    expect(res.isError).toBeFalsy();
+    const list = await s.repos.directions.listForCanvas(s.canvasId);
+    expect(list.find((d) => d.bendId === s.a.id)!.detail?.verdict).toBe("keep");
+    expect(list.find((d) => d.bendId === s.b.id)!.detail?.verdict).toBeUndefined();
+  });
+
   it("drop removes the direction, its section, the items in it and its tray results", async () => {
     const s = await setup();
     const res = await s.rate(

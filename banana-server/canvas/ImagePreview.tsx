@@ -29,7 +29,10 @@ import { Dialog } from "@/components/studio/Dialog";
 import { ChevronEndIcon, ChevronStartIcon, CopyIcon, ExternalIcon, FitIcon, LinkIcon, MinusIcon, PlusIcon } from "@/components/studio/icons";
 import { Tooltip } from "@/components/studio/Tooltip";
 import { pushToast } from "@/components/studio/toastBus";
+import type { Zone } from "@/lib/direction-detail";
 import { absoluteUrl, copyImage, copyText } from "./clipboard";
+import { LinkedText } from "./linkify";
+import { ArtChip } from "./nodes/chips";
 import {
   canPan,
   fitScale,
@@ -54,6 +57,10 @@ export interface PreviewItem {
   sourceUrl: string;
   site: string;
   upload: boolean;
+  /** The reference's note (what to steal). URLs in it are links. */
+  note?: string | null;
+  /** "art" shows the Art badge. */
+  zone?: Zone;
 }
 
 export interface ImagePreviewProps {
@@ -110,6 +117,12 @@ function PreviewActions({ item }: { item: PreviewItem }) {
   };
   return (
     <div className="bn-preview-actions">
+      {(item.note || item.zone === "art") && (
+        <p className="bn-preview-note">
+          {item.zone === "art" && <ArtChip />}
+          {item.note && <LinkedText text={item.note} />}
+        </p>
+      )}
       <a className="bn-preview-source" href={item.sourceUrl} target="_blank" rel="noopener noreferrer nofollow">
         <span>Source: {item.site}</span>
         <span className="st-visually-hidden"> (opens in a new tab)</span>

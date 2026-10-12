@@ -2,9 +2,11 @@
 
 **Mobbin shows what works. GoBanana shows what's next.**
 
-GoBanana is a Claude plugin for wild design exploration. Ask your agent to "go wild" on a screen, and GoBanana bends the brief into unexpected directions, pulls linked UI references (app screens, web pages, dashboards, components) from Pinterest, Dribbble, Behance and Awwwards into a moodboard canvas, extracts a palette with WCAG checks, and exports a DESIGN.md, an AGENTS.md, design tokens and a FigJam board.
+GoBanana is a Claude plugin for one crazy idea over a page or two: a launch page, onboarding, an empty state, a 404, a paywall, a year in review. It is not for your product's main design direction. Your product keeps its design system; the wild page inherits it and overrides only what the idea needs.
 
-The plugin connects your agent to the GoBanana MCP server and adds 6 skills that tell the agent which tools to call, in which order, and how to present the results.
+Ask your agent to "go wild" on a page. GoBanana bends the brief into unexpected directions, each with a full visual spec, fills a moodboard canvas with two zones of linked references (the wild idea as images, and real UI for your platform), and hands the direction you keep to Claude Code, Cursor, Copilot, Codex, v0 or Lovable as scoped files. Then it can screenshot what you built and grade it against the direction.
+
+The plugin connects your agent to the GoBanana MCP server and adds 8 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, beta. The server runs at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen. See [Placeholders](#placeholders).
 
@@ -24,22 +26,43 @@ Or load this folder directly while developing:
 claude --plugin-dir ./banana-plugin
 ```
 
-Then run `/mcp`, pick `plugin:banana:banana`, and log in. GoBanana uses OAuth, so there is no API key to paste.
+Then run `/mcp`, pick `plugin:gobanana:gobanana`, and log in. GoBanana uses OAuth, so there is no API key to paste.
 
 ### claude.ai and Cowork
 
 Add the plugin from your organization's plugin settings or from Anthropic's directory once it is listed. The GoBanana server shows up as a connector; connect it and log in.
 
-## What it does
+## The flow
+
+1. **Pin the platform and the page.** Mobile, tablet, website or web app, from your words or one question. If you name the whole product, the agent asks "Where should the weirdness go?" and offers the spots where it pays off on that platform ([docs/WHERE-WEIRDNESS-PAYS.md](docs/WHERE-WEIRDNESS-PAYS.md)).
+2. **Bend.** 8 ideas, each with a spec: pattern, signature component, type, color, layout, motion, texture, icons, density, what to steal, what to avoid, why it fits. The agent drops the ones that cannot become UI for your page and keeps 3 or 4.
+3. **Search two zones.** Art direction: the wild idea as images (the weave, the receipt, the riso print). UI: screens and components for your platform only, never web dashboards on a phone brief. The agent rates every result and drops shops, listings and off idea pins.
+4. **Shipped vs next.** If you have a Mobbin connector, the agent adds a "Shipped today" note with links to real shipped screens for the same page. Links only, never images.
+5. **Board.** Per direction: an "Art direction" row (2 to 4) above a "UI references" grid (6 to 8), each tile with a short "steal:" note and its source link.
+6. **Hand off.** Scoped files for your coding tools, under `design/explorations/<slug>/` ([docs/HARNESS.md](docs/HARNESS.md)).
+7. **Build then critique.** Screenshots at your platform's sizes, a pass or fix grade per checklist item, the top 3 fixes, applied inside the page only.
+
+## Skills
 
 | Skill | Say something like | What happens |
 | --- | --- | --- |
-| `gobanana-explore` | "go wild on our checkout", "push this design", "crazy ideas for a coffee site" | Shapes your ask into a brief, opens a canvas, bends it into 8 ideas, drops the ones that cannot become UI for your screen (`rate_directions`), searches UI references for the shortlist into the tray (the wild idea goes into notes, never images), audits the results (`rate_references`, re-searching a weak lane with better words), then shows only the kept ideas |
-| `gobanana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, short notes, a clean layout; optionally a FigJam board through the Figma MCP, or an HTML board |
-| `gobanana-palette` | "palette", "colors from these" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
-| `gobanana-design-md` | "DESIGN.md", "design system file" | Exports DESIGN.md, writes it, runs `npx @google/design.md lint`, fixes what it flags |
-| `gobanana-agents-md` | "AGENTS.md", "rules for coding agents" | Writes an AGENTS.md that points coding agents at DESIGN.md |
-| `gobanana-asset-kit` | "asset kit", "starter kit" | Tokens, Tailwind theme, safe CSS gradients, one open-licence font pairing and a Lucide or Phosphor pick, in numbered files |
+| `gobanana-explore` | "go wild on our launch page", "crazy ideas for onboarding", "where can our app be weird" | Pins platform and pages, bends 8 ideas, keeps 3 or 4, searches art and UI zones, audits, adds Mobbin "shipped today" links when connected, places both zones with steal notes, shows compact spec cards |
+| `gobanana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, art row above UI grid, steal notes, clean layout; optionally FigJam or an HTML board |
+| `gobanana-palette` | "palette", "colors from the art direction" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
+| `gobanana-design-md` | "DESIGN.md for this page" | Scoped DESIGN.md under `design/explorations/<slug>/`, linted with `@google/design.md` |
+| `gobanana-agents-md` | "AGENTS.md", "rules for coding agents" | A scoped section merged into AGENTS.md or CLAUDE.md, never overwriting |
+| `gobanana-asset-kit` | "asset kit", "tokens for this page" | Override tokens, Tailwind theme, safe gradients, one font pairing, one icon set, for the page only |
+| `gobanana-handoff` | "hand this off", "Cursor rules for this", "prompt for v0" | Detects your tools, exports the harness pack, writes each file at its path, merges into AGENTS.md or CLAUDE.md |
+| `gobanana-critique` | "critique the build", "does this match the direction" | Screenshots at platform sizes, grades the REVIEW.md checklist with evidence, top 3 fixes inside page scope |
+
+### Platforms
+
+| Platform | UI references | Export defaults | Critique sizes |
+| --- | --- | --- | --- |
+| `mobile` | App screens and mobile galleries; web titles dropped | 4 columns, 16px margins, 44pt targets, tab bar and bottom sheet | 390x844 |
+| `tablet` | Tablet and app screens | Split views, larger targets | 834x1194 |
+| `website` | Landing pages, heroes, sites; website galleries | 12 columns, fluid type with clamp | 1440x900 and 390x844 |
+| `webapp` | Dashboards and web apps; mobile only titles dropped | 12 columns or sidebar shell, dense 8px rhythm, tables, keyboard | 1440x900 |
 
 ### Wildness
 
@@ -53,25 +76,54 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `export_kit`. The server does no AI work: bend moves are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
+`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `delete_canvas`, `export_kit`.
+
+- `bend_brief` takes `platform` and up to 3 `pages`, and returns `wildSpots` when no pages are given.
+- `search_references` returns two zones, `ui` and `art`. Sources: UI galleries by platform, plus Pinterest, Dribbble, Behance and Awwwards. At most 2 results per studio, newer work first, UI kits dropped.
+<!-- TODO(owner): list the final gallery sources once the search agent's live tests settle. -->
+- `add_to_canvas` reference items take a `note` (what to steal, up to 280 characters).
+- `delete_canvas` deletes a canvas for good (sections, items, tray, share link) and frees a slot. It needs `confirm: true`, and the skills call it only after you say yes to a named board. You can also delete boards from the web dashboard.
+
+The server does no AI work: bend moves and specs are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
 
 If your client cannot show the canvas inline, every skill gives you the web link to open it full screen.
+
+## Exports and plans
+
+`export_kit` takes `directionId`, `pages` (routes or globs like `app/pricing/**`) and `scope`. The default scope is `page`: every file applies only to the named pages, inherits your design system and does not change it. `scope: "system"` is for when you want the direction to become your product's system.
+
+| Format | File | Plan |
+| --- | --- | --- |
+| `design_md` | `design/explorations/<slug>/DESIGN.md` | Free |
+| `brief` | `BRIEF.md` | Free |
+| `direction_md` | `design/explorations/<slug>/DIRECTION.md` | Free |
+| `build_prompt` | `design/explorations/<slug>/BUILD-PROMPT.md` | Free |
+| `review` | `design/explorations/<slug>/REVIEW.md` | Pro |
+| `cursor_rules` | `.cursor/rules/<slug>.mdc` | Pro |
+| `copilot` | `.github/instructions/<slug>.instructions.md` | Pro |
+| `agents_md` | Section in `AGENTS.md` | Pro |
+| `claude_md` | Section in `CLAUDE.md` | Pro |
+| `tokens`, `tailwind` | Override tokens and theme for the pages | Pro |
+| `figjam_spec`, `html_board` | Board as FigJam spec or HTML | Pro |
+
+Free also covers `bend_brief` (unlimited), 30 searches a month and 3 canvases. When you hit a limit, the skills show the plain upgrade message once and stop; they never retry in a loop. At the canvas limit they offer to add to an existing board or delete an old one, and delete only after you say yes.
+
+## Harness pack
+
+`gobanana-handoff` writes the pack for the tools it finds in your repo: `CLAUDE.md` or `.claude/` for Claude Code, `.cursor/` for Cursor, `.github/` instructions for Copilot, `AGENTS.md` for Codex, and a paste-ready BUILD-PROMPT.md for v0 and Lovable. It merges a marked section into AGENTS.md and CLAUDE.md and never overwrites them. See [docs/HARNESS.md](docs/HARNESS.md), [docs/AGENTS.example.md](docs/AGENTS.example.md) and [docs/CLAUDE.example.md](docs/CLAUDE.example.md).
 
 ## Hard rules on images and sources
 
 - **GoBanana never downloads, stores or re-hosts reference images.** It keeps URLs and metadata only. Images load in your browser from their source.
 - **Every reference shows its source link**: on the canvas, in share links, in every export, and in every skill reply.
-- **Never copy reference images into your repo.** The skills will not do it, and the AGENTS.md they write tells coding agents not to either. Reference images belong to their owners.
+- **Never copy reference images into your repo.** The skills will not do it, and the files they write tell coding agents not to either.
+- **Mobbin stays on your side.** The agent uses your own Mobbin connector, adds links only, and never sends Mobbin to the GoBanana server.
 - **No scraping.** References come from web search results only.
 - Palette extraction reads thumbnails in memory on the server to compute colors, then drops them.
 
-## Plans
-
-Free covers `bend_brief` (unlimited), 30 searches a month, 3 canvases, and the `design_md` and `brief` exports. Pro unlocks the other exports (AGENTS.md, tokens, Tailwind, FigJam, HTML board) and higher limits. When you hit a limit, the skills show the plain upgrade message once and stop; they never retry in a loop.
-
 ## Evals
 
-`evals/` holds 27 test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/gobanana/` answers the GoBanana tools with fixed replies, so runs never touch the real server. Graders check that the right skill fired, the tools ran in a sensible order, source links and the canvas link appear, and files were written.
+`evals/` holds test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/gobanana/` answers the GoBanana tools with fixed replies, and a case can override one tool in `<case>/mocks/gobanana/`. Runs never touch the real server.
 
 ```bash
 cd banana-plugin
@@ -88,7 +140,7 @@ claude plugin eval . \
   --scaffold --threshold 0.8 --no-publish
 ```
 
-Results go to `evals/results/`, which is git-ignored. Skill evals are tracked, not blocking (spec section 13).
+Results go to `evals/results/`, which is git-ignored. Skill evals are tracked, not blocking.
 
 ## Validate
 
@@ -98,13 +150,13 @@ claude plugin validate --strict ./banana-plugin
 
 ## Placeholders
 
-- `https://gobanana-server.maherfayad55.workers.dev` stands in for the real domain in `.mcp.json`, `.claude-plugin/plugin.json` (homepage, documentation, support, privacy and terms links) and the eval mocks. Replace them all together once the domain is chosen.
-- The product is called "GoBanana". The plugin id is `gobanana`, the skills are `gobanana-*` and the `.mcp.json` server key is `gobanana` (renamed from `banana` on 2026-10-11; reinstall the plugin). MCP tool names are unchanged.
+- `https://gobanana-server.maherfayad55.workers.dev` stands in for the real domain in `.mcp.json`, `.claude-plugin/plugin.json` and the eval mocks. Replace them all together once the domain is chosen.
+- The plugin id is `gobanana`, the skills are `gobanana-*` and the `.mcp.json` server key is `gobanana`. MCP tool names are unchanged.
 - `assets/icon.png` is a placeholder icon.
 
 ## Contributing
 
-Contributor notes for Claude Code live in `.claude/CLAUDE.md`, not at the root, because a root `CLAUDE.md` is not loaded for plugin users and fails strict validation. Spec deviations are logged in `DECISIONS.md`.
+Contributor notes for Claude Code live in `.claude/CLAUDE.md`, not at the root, because a root `CLAUDE.md` is not loaded for plugin users and fails strict validation. Decisions are logged in `DECISIONS.md`.
 
 ## License
 

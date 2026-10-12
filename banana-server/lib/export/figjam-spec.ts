@@ -6,6 +6,7 @@ import type { CanvasItem, Tag } from "../canvas/types";
 import { isReference } from "../canvas/types";
 import type { KitModel, Reference } from "./model";
 import { findPairing, defaultPairing } from "./model";
+import { scopeSentence } from "./scope";
 import { finite, normalizeHex, oneLine, plainBlock, safeUrl } from "./util";
 
 export interface FigjamItem {
@@ -39,6 +40,8 @@ export interface FigjamSection {
 
 export interface FigjamSpec {
   title: string;
+  /** Plain scope note: page level exploration or product design system. */
+  scope: string;
   coordinates: "items are relative to their section";
   sections: FigjamSection[];
 }
@@ -108,7 +111,7 @@ export function figjamSpec(m: KitModel): FigjamSpec {
     });
   }
 
-  return { title: m.title, coordinates: "items are relative to their section", sections };
+  return { title: m.title, scope: scopeSentence(m), coordinates: "items are relative to their section", sections };
 }
 
 export function figjamSpecJson(m: KitModel): string {

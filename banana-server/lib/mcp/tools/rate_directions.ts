@@ -4,7 +4,8 @@
  *
  * - drop: the direction leaves the canvas: its row, its section with everything inside, and the
  *   tray results found for it. Nothing else references a direction row.
- * - keep: nothing changes on the canvas; a positive signal.
+ * - keep: nothing changes on the canvas; the row's `detail.verdict` becomes "keep" (get_canvas,
+ *   exports), and it is a positive signal. Unrated directions have no verdict.
  * Every rating is one search_feedback row (no new table): lane "direction", item key the bend id,
  * source site "bend", term key `direction|{ingredient}`, arm the move, keep as great and drop as
  * bad, plus reasons. bend_brief weights ingredients by these ratings (lib/learning/directions.ts).
@@ -187,6 +188,10 @@ export function createRateDirectionsTool(deps: CanvasToolDeps) {
           drops.map((d) => d.id),
         );
       }
+
+      // Kept directions record the verdict on the row (directions.detail.verdict), for get_canvas and exports.
+      const keeps = rated.filter((r) => r.verdict === "keep").map((r) => r.direction.id);
+      if (keeps.length > 0) await repos.directions.setVerdict(input.canvasId, keeps, "keep");
 
       const rows: NewFeedback[] = rated.map(({ direction, verdict, reasons }) => {
         const ingredient = queryWords(inspirationFromQuery(direction.searchQuery));

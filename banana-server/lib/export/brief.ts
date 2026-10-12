@@ -1,10 +1,13 @@
 import type { KitModel } from "./model";
 import { sourcesMarkdown } from "./design-md";
+import { scopeBlock } from "./scope";
 import { mdAutolink, mdText, wildnessLabel } from "./util";
 
 /** Markdown record of the brief, the bend directions tried, what was kept and the notes. */
 export function briefMd(m: KitModel): string {
   const out: string[] = [`# ${mdText(m.title)}: brief`, ""];
+  const scope = scopeBlock(m);
+  if (scope.length > 0) out.push(...scope, "");
 
   out.push("## Brief", "");
   out.push(m.brief ? `> ${mdText(m.brief, 500)}` : "No brief was written for this board.", "");
@@ -15,11 +18,17 @@ export function briefMd(m: KitModel): string {
   out.push("## Directions tried", "");
   if (m.directions.length === 0) out.push("No bend directions were run for this board.");
   m.directions.forEach((d, i) => {
-    const status = d.kept
-      ? `Kept: ${d.referenceCount} reference${d.referenceCount === 1 ? "" : "s"} in "${mdText(d.sectionTitle)}".`
-      : d.sectionTitle
-        ? `Not kept: its section "${mdText(d.sectionTitle)}" has no references.`
-        : "Not kept.";
+    const refs = `${d.referenceCount} reference${d.referenceCount === 1 ? "" : "s"}`;
+    const status =
+      d.status === "kept"
+        ? d.sectionTitle
+          ? `Kept: ${refs} in "${mdText(d.sectionTitle)}".`
+          : "Kept."
+        : d.status === "dropped"
+          ? "Dropped."
+          : d.sectionTitle
+            ? `Not rated yet: its section "${mdText(d.sectionTitle)}" has no references.`
+            : "Not rated yet.";
     out.push(`${i + 1}. **${mdText(d.direction.title)}** (${mdText(d.direction.move)}). Search: "${mdText(d.direction.searchQuery)}". ${status}`);
   });
   out.push("");
@@ -44,7 +53,8 @@ export function briefMd(m: KitModel): string {
   out.push(
     `- Colors tagged ship: ${m.ship.length > 0 ? m.ship.map((c) => `${c.name} ${c.hex}`).join(", ") : "none"}.`,
     `- Colors to explore (concept only): ${m.explore.length > 0 ? m.explore.map((c) => c.hex).join(", ") : "none"}.`,
-    `- Type: ${m.pairing.name} (${m.pairing.licence})${m.pairingFromCanvas ? "" : ", default pairing"}.`,
+    `- Type: ${m.pairing.name} (${m.pairing.licence})${m.pairingFrom === "canvas" ? "" : m.pairingFrom === "voice" ? ", picked for the direction's type voice" : ", default pairing"}.`,
+    `- Platform: ${m.platform.label}.`,
     "",
   );
 

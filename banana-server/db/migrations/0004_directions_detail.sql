@@ -1,0 +1,1 @@
+ALTER TABLE "directions" ADD COLUMN "detail" jsonb;

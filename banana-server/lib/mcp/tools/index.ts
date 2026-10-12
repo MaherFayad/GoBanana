@@ -11,6 +11,7 @@ import { register as arrangeCanvas } from "./arrange_canvas";
 import { register as getCanvas } from "./get_canvas";
 import { register as extractPalette } from "./extract_palette";
 import { register as exportKit } from "./export_kit";
+import { register as deleteCanvas } from "./delete_canvas";
 import { register as saveCanvasState } from "./save_canvas_state";
 import { register as loadCanvasState } from "./load_canvas_state";
 
@@ -28,6 +29,7 @@ export const tools: RegisterTool[] = [
   getCanvas,
   extractPalette,
   exportKit,
+  deleteCanvas,
   // App-only (MCP Apps visibility ["app"]): the inline canvas saves and reloads through them.
   saveCanvasState,
   loadCanvasState,

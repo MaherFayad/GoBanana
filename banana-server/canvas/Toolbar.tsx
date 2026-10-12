@@ -2,8 +2,8 @@
 
 /**
  * Top bar above the canvas (spec section 3): 36px on the shell background. Title and
- * "on {appName}", the zoom group, the save status (dot plus words), Upload and Share on the
- * web, and the shortcut sheet button. It sits outside the board, so it never covers a
+ * "on {appName}", the zoom group, the save status (dot plus words), Upload, Share and Delete
+ * canvas on the web (owner only), and the shortcut sheet button. It sits outside the board, so it never covers a
  * focused item (SC 2.4.11). Insert tools live in the notch on the board (canvas/Notch.tsx).
  *
  * On the web and shared canvas (`windowChrome`) the bar is the title bar of an app window:
@@ -12,7 +12,7 @@
  *
  * Narrow screens (720px and under) keep one row: lights, the board name, the save dot (its words
  * stay for screen readers), Results, then "More", a disclosure that drops the zoom group,
- * Upload, Share and the shortcut button into a small glass panel. The controls are the same
+ * Upload, Share, Delete canvas and the shortcut button into a small glass panel. The controls are the same
  * elements in both layouts (the panel is `display: contents` on wide screens), so every
  * shortcut, dialog and test hook keeps working. The panel stays open while a dialog it opened is
  * up, so focus can return to its button.
@@ -23,6 +23,7 @@ import { ShortcutKeys } from "@/components/studio/Kbd";
 import { Tooltip } from "@/components/studio/Tooltip";
 import type { SaveStatus } from "./autosave";
 import { HelpIcon, MoreIcon, SearchIcon, WarningIcon } from "./icons";
+import { DeleteCanvasButton } from "./DeleteCanvasButton";
 import { ShareButton } from "./ShareButton";
 import { UploadButton } from "./UploadButton";
 import { WindowLights, type WindowLightsProps } from "./WindowLights";
@@ -53,6 +54,8 @@ export interface ToolbarProps {
   shareToken?: string | null;
   /** Link for upgrade notes, for example "/en/pricing". */
   pricingHref?: string;
+  /** Web canvas only: the canvases dashboard. Shows "Delete canvas", which goes there when done. */
+  dashboardHref?: string;
   /** Web and shared canvas: draw the bar as a window title bar with traffic lights. */
   windowChrome?: WindowLightsProps;
   /** Page extras at the bar's end, always visible (the shared canvas's "Add to Claude"). */
@@ -165,6 +168,7 @@ export function Toolbar(p: ToolbarProps) {
               <UploadButton plan={p.plan} pricingHref={p.pricingHref} />
               <ShareButton canvasId={p.canvasId} initialToken={p.shareToken ?? null} plan={p.plan} pricingHref={p.pricingHref} />
             </div>
+            {p.dashboardHref && <DeleteCanvasButton canvasId={p.canvasId} title={p.title} dashboardHref={p.dashboardHref} />}
           </>
         )}
 

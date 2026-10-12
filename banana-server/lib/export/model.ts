@@ -12,8 +12,27 @@ import type {
   Tag,
 } from "../canvas/types";
 import { isReference } from "../canvas/types";
+import {
+  isPlatform,
+  isTypeVoice,
+  zoneOf,
+  type DirectionDetail,
+  type Platform,
+  type TypeVoice,
+  type VisualSpec,
+  type Zone,
+} from "../direction-detail";
 import fontsData from "../kit/fonts.json";
+import { EXPORT_PLATFORMS, platformOf, type ExportPlatform } from "./platform";
+import { cleanPages, explorationDir, globsFor, inferPages, kitSlug, type Scope } from "./scope";
 import { contrastRatio, finite, normalizeHex, oneLine, plainBlock, safeUrl, tokenName } from "./util";
+
+/**
+ * Type-only shim: the canvas agent adds `detail` on CanvasDirection and `zone` on image items
+ * (wild directions v2). Reading through these keeps exports compiling before and after.
+ */
+type DirectionWithDetail = CanvasDirection & { detail?: DirectionDetail | null };
+type WithZone = { zone?: unknown };
 
 // ---------- fonts ----------
 
@@ -37,6 +56,8 @@ export interface FontPairing {
 
 interface FontsFile {
   default: string;
+  /** Type voice (lib/direction-detail.ts TYPE_VOICES) to pairing id. */
+  voices: Record<string, string>;
   pairings: FontPairing[];
 }
 
@@ -46,6 +67,11 @@ export const FONT_PAIRINGS: readonly FontPairing[] = FONTS.pairings;
 
 export function findPairing(id: string | null | undefined): FontPairing | undefined {
   return FONTS.pairings.find((p) => p.id === id);
+}
+
+/** Open licence pairing for a direction's type voice, or undefined when unknown. */
+export function pairingForVoice(voice: TypeVoice | string | null | undefined): FontPairing | undefined {
+  return voice ? findPairing(FONTS.voices[voice]) : undefined;
 }
 
 export function defaultPairing(): FontPairing {
@@ -112,6 +138,9 @@ export interface Reference {
   note: string;
   tag: Tag | null;
   sectionId: string | null;
+  /** Direction of the section the reference sits in, if any. */
+  directionId: string | null;
+  zone: Zone;
 }
 
 export interface ResolvedSection {
@@ -125,11 +154,25 @@ export interface ResolvedSection {
   items: CanvasItem[];
 }
 
+/** kept: rated keep (or has references when never rated). dropped: rated drop. unrated: neither. */
+export type DirectionStatus = "kept" | "dropped" | "unrated";
+
 export interface DirectionSummary {
   direction: CanvasDirection;
   sectionTitle: string | null;
   referenceCount: number;
   kept: boolean;
+  status: DirectionStatus;
+  /** Cleaned saved detail (platform, pages, spec...), or null for old rows. */
+  detail: DirectionDetail | null;
+}
+
+export interface KitOptions {
+  scope?: Scope;
+  /** One direction to export. Default: kept ones, or all when none is kept. */
+  directionId?: string | null;
+  /** Pages or globs the kit applies to (up to 5). Default: the directions' pages, else the brief's screen. */
+  pages?: readonly string[] | null;
 }
 
 export interface KitNote {
@@ -156,6 +199,20 @@ export interface KitModel {
   contrast: ContrastResult[];
   pairing: FontPairing;
   pairingFromCanvas: boolean;
+  /** Where the pairing came from: a type sample on the canvas, the direction's type voice, or the default. */
+  pairingFrom: "canvas" | "voice" | "default";
+  scope: Scope;
+  /** Directions this kit is about (see KitOptions.directionId). */
+  focus: DirectionSummary[];
+  /** References in the focus directions' sections plus references outside any direction. */
+  focusRefs: Reference[];
+  platform: ExportPlatform;
+  platformFrom: "direction" | "brief" | "default";
+  pages: string[];
+  globs: string[];
+  slug: string;
+  /** Suggested folder for the spike files, for example design/explorations/<slug>. */
+  dir: string;
   arabic: boolean;
   typography: TypographyToken[];
   rounded: [string, Dim][];
@@ -204,7 +261,13 @@ function resolveSections(snapshot: CanvasSnapshot): { sections: ResolvedSection[
 
 function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): Reference[] {
   const sectionOf = new Map<string, string>();
-  for (const s of sections) for (const i of s.items) sectionOf.set(i.id, s.id);
+  const directionOf = new Map<string, string>();
+  for (const s of sections) {
+    for (const i of s.items) {
+      sectionOf.set(i.id, s.id);
+      if (s.directionId) directionOf.set(i.id, s.directionId);
+    }
+  }
   const all = readingOrder([...sections.flatMap((s) => s.items), ...unsorted].filter(isReference));
   const seen = new Set<string>();
   const out: Reference[] = [];
@@ -225,6 +288,8 @@ function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): R
       note: plainBlock(item.note, 600),
       tag: item.tag ?? null,
       sectionId: sectionOf.get(item.id) ?? null,
+      directionId: directionOf.get(item.id) ?? null,
+      zone: zoneOf((item as WithZone).zone),
     });
   }
   return out;
@@ -324,14 +389,57 @@ function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
   return { ship, explore, contrast };
 }
 
-function buildTypography(pairing: FontPairing, arabic: boolean): TypographyToken[] {
+function buildTypography(pairing: FontPairing, arabic: boolean, platform: ExportPlatform): TypographyToken[] {
   const tight = arabic ? null : { value: -0.02, unit: "em" };
+  const t = platform.type;
+  const fluid = platform.fluid;
   return [
-    { name: "display", fontFamily: pairing.display.family, fontSize: { value: 48, unit: "px" }, fontWeight: pairing.display.weight, lineHeight: arabic ? 1.3 : 1.1, letterSpacing: tight, use: "Hero lines and big numbers" },
-    { name: "headline", fontFamily: pairing.display.family, fontSize: { value: 32, unit: "px" }, fontWeight: pairing.display.weight, lineHeight: arabic ? 1.4 : 1.2, letterSpacing: tight, use: "Section titles" },
-    { name: "body", fontFamily: pairing.body.family, fontSize: { value: 16, unit: "px" }, fontWeight: pairing.body.weight, lineHeight: arabic ? 1.7 : 1.5, letterSpacing: null, use: "Running text and form fields" },
-    { name: "label", fontFamily: pairing.body.family, fontSize: { value: 14, unit: "px" }, fontWeight: 700, lineHeight: arabic ? 1.5 : 1.4, letterSpacing: arabic ? null : { value: 0.02, unit: "em" }, use: "Buttons, chips and captions" },
+    { name: "display", fontFamily: pairing.display.family, fontSize: { value: t.display, unit: "px" }, fontWeight: pairing.display.weight, lineHeight: arabic ? 1.3 : 1.1, letterSpacing: tight, use: fluid ? `Hero lines and big numbers (fluid: ${fluid.display})` : "Hero lines and big numbers" },
+    { name: "headline", fontFamily: pairing.display.family, fontSize: { value: t.headline, unit: "px" }, fontWeight: pairing.display.weight, lineHeight: arabic ? 1.4 : 1.2, letterSpacing: tight, use: fluid ? `Section and screen titles (fluid: ${fluid.headline})` : "Section and screen titles" },
+    { name: "body", fontFamily: pairing.body.family, fontSize: { value: t.body, unit: "px" }, fontWeight: pairing.body.weight, lineHeight: arabic ? 1.7 : 1.5, letterSpacing: null, use: "Running text and form fields" },
+    { name: "label", fontFamily: pairing.body.family, fontSize: { value: t.label, unit: "px" }, fontWeight: 700, lineHeight: arabic ? 1.5 : 1.4, letterSpacing: arabic ? null : { value: 0.02, unit: "em" }, use: "Buttons, chips and captions" },
   ];
+}
+
+// ---------- direction detail ----------
+
+const SPEC_LINES = ["typography", "color", "layout", "imagery", "motion", "texture", "iconography", "density", "signature", "pattern", "whyItFits"] as const;
+
+function lines(value: unknown, max: number, count: number): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((v) => (typeof v === "string" ? oneLine(v, max) : "")).filter(Boolean).slice(0, count);
+}
+
+function cleanSpec(raw: unknown): VisualSpec | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const k of SPEC_LINES) out[k] = typeof r[k] === "string" ? oneLine(r[k] as string, 300) : "";
+  out.typeVoice = isTypeVoice(r.typeVoice) ? r.typeVoice : "grotesk";
+  out.steal = lines(r.steal, 200, 6);
+  out.avoid = lines(r.avoid, 200, 6);
+  out.styleWords = lines(r.styleWords, 40, 6);
+  const spec = out as unknown as VisualSpec;
+  return SPEC_LINES.some((k) => spec[k]) ? spec : undefined;
+}
+
+/** Saved detail is jsonb: trust nothing, keep what has the right shape. */
+export function cleanDetail(raw: unknown): DirectionDetail | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const d: DirectionDetail = {};
+  if (isPlatform(r.platform)) d.platform = r.platform;
+  const pages = lines(r.pages, 80, 5);
+  if (pages.length) d.pages = pages;
+  const spec = cleanSpec(r.spec);
+  if (spec) d.spec = spec;
+  const art = lines(r.artQueries, 200, 3);
+  if (art.length) d.artQueries = art;
+  if (typeof r.twist === "string" && oneLine(r.twist)) d.twist = oneLine(r.twist, 300);
+  if (typeof r.prompt === "string" && oneLine(r.prompt)) d.prompt = oneLine(r.prompt, 600);
+  if (typeof r.wildness === "number" && Number.isFinite(r.wildness)) d.wildness = Math.min(5, Math.max(1, Math.round(r.wildness)));
+  if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
+  return d;
 }
 
 
@@ -398,7 +506,8 @@ function buildComponents(ship: ColorToken[]): ComponentToken[] {
   return comps;
 }
 
-export function buildKitModel(snapshot: CanvasSnapshot): KitModel {
+export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): KitModel {
+  const scope: Scope = opts.scope === "system" ? "system" : "page";
   const { sections, unsorted } = resolveSections(snapshot);
   const references = buildReferences(sections, unsorted);
   const refByItem = new Map(references.map((r) => [r.id, r]));
@@ -420,27 +529,58 @@ export function buildKitModel(snapshot: CanvasSnapshot): KitModel {
   const directions: DirectionSummary[] = (snapshot.directions ?? []).map((d) => {
     const section = sections.find((s) => s.directionId === d.id);
     const referenceCount = section ? section.items.filter(isReference).length : 0;
+    const detail = cleanDetail((d as DirectionWithDetail).detail);
+    const status: DirectionStatus =
+      detail?.verdict === "keep" ? "kept" : detail?.verdict === "drop" ? "dropped" : referenceCount > 0 ? "kept" : "unrated";
     return {
       direction: { id: d.id, move: oneLine(d.move, 60), title: oneLine(d.title, 160), searchQuery: oneLine(d.searchQuery, 200) },
       sectionTitle: section?.title ?? null,
       referenceCount,
-      kept: referenceCount > 0,
+      kept: status === "kept",
+      status,
+      detail,
     };
   });
 
+  const chosen = opts.directionId ? directions.filter((d) => d.direction.id === opts.directionId) : [];
+  const keptDirs = directions.filter((d) => d.kept);
+  const focus = chosen.length > 0 ? chosen : keptDirs.length > 0 ? keptDirs : directions.filter((d) => d.status !== "dropped");
+  const focusIds = new Set(focus.map((d) => d.direction.id));
+  const knownIds = new Set(directions.map((d) => d.direction.id));
+  const focusRefs = references.filter((r) => !r.directionId || !knownIds.has(r.directionId) || focusIds.has(r.directionId));
+  const lead = focus.find((d) => d.detail?.spec) ?? focus[0];
+
   const { ship, explore, contrast } = buildColors(snapshot, allItems);
 
+  // A type sample placed on the canvas is the user's own pick and wins; then the direction's
+  // type voice; then the default.
   const sample = allItems.find((i) => i.type === "typeSample" && findPairing(i.pairingId));
-  const pairing = (sample?.type === "typeSample" ? findPairing(sample.pairingId) : undefined) ?? defaultPairing();
+  const fromSample = sample?.type === "typeSample" ? findPairing(sample.pairingId) : undefined;
+  const fromVoice = fromSample ? undefined : pairingForVoice(lead?.detail?.spec?.typeVoice);
+  const pairing = fromSample ?? fromVoice ?? defaultPairing();
+  const pairingFrom = fromSample ? "canvas" : fromVoice ? "voice" : "default";
   const arabic = pairing.scripts.includes("arabic");
 
   const title = oneLine(snapshot.title, 80) || "Untitled canvas";
   const brief = oneLine(snapshot.brief, 500);
-  const kept = directions.filter((d) => d.kept).map((d) => d.direction.title);
-  const description = oneLine(
-    kept.length > 0 ? `${brief ? `${brief}: ` : ""}${kept.join(", ")}` : brief || `Moodboard ${title}`,
-    200,
-  );
+
+  const found = platformOf(lead?.detail?.platform as Platform | undefined, brief);
+  const platform = EXPORT_PLATFORMS[found.platform];
+  const asked = cleanPages(opts.pages);
+  const saved = cleanPages(focus.flatMap((d) => d.detail?.pages ?? []));
+  const pages = asked.length > 0 ? asked : saved.length > 0 ? saved : inferPages(brief);
+  const globs = globsFor(pages);
+  const slug = kitSlug(focus.length === 1 && focus[0] ? focus[0].direction.title : title);
+
+  const kept = keptDirs.map((d) => d.direction.title);
+  const focusTitles = focus.map((d) => d.direction.title);
+  const description =
+    scope === "page"
+      ? oneLine(
+          `Page level exploration for ${pages.length > 0 ? pages.join(", ") : "the screen in the brief"}${focusTitles.length > 0 ? `: ${focusTitles.join(", ")}` : ""}. Does not change the product design system.`,
+          200,
+        )
+      : oneLine(kept.length > 0 ? `${brief ? `${brief}: ` : ""}${kept.join(", ")}` : brief || `Moodboard ${title}`, 200);
 
   return {
     title,
@@ -459,8 +599,18 @@ export function buildKitModel(snapshot: CanvasSnapshot): KitModel {
     contrast,
     pairing,
     pairingFromCanvas: !!sample,
+    pairingFrom,
+    scope,
+    focus,
+    focusRefs,
+    platform,
+    platformFrom: found.from,
+    pages,
+    globs,
+    slug,
+    dir: explorationDir(slug),
     arabic,
-    typography: buildTypography(pairing, arabic),
+    typography: buildTypography(pairing, arabic, platform),
     rounded: [
       ["none", { value: 0, unit: "px" }],
       ["sm", { value: 4, unit: "px" }],
@@ -468,15 +618,15 @@ export function buildKitModel(snapshot: CanvasSnapshot): KitModel {
       ["lg", { value: 16, unit: "px" }],
       ["full", { value: 9999, unit: "px" }],
     ],
-    spacing: [
-      ["xs", { value: 4, unit: "px" }],
-      ["sm", { value: 8, unit: "px" }],
-      ["md", { value: 16, unit: "px" }],
-      ["lg", { value: 32, unit: "px" }],
-      ["xl", { value: 64, unit: "px" }],
-    ],
+    spacing: platform.spacing.map(([k, d]): [string, Dim] => [k, { ...d }]),
     components: buildComponents(ship),
   };
+}
+
+/** References in one direction's section(s), split into art direction and UI. */
+export function directionRefs(model: KitModel, directionId: string): { art: Reference[]; ui: Reference[] } {
+  const refs = model.references.filter((r) => r.directionId === directionId);
+  return { art: refs.filter((r) => r.zone === "art"), ui: refs.filter((r) => r.zone !== "art") };
 }
 
 export function dimText(d: Dim): string {

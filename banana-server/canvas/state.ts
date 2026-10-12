@@ -10,6 +10,7 @@
  * - Load runs a takedown predicate and hides blocked items and tray results (rule 5).
  */
 import type { CanvasItem } from "@/lib/canvas/types";
+import type { Zone } from "@/lib/direction-detail";
 import { cleanTaste } from "@/lib/taste";
 import {
   type CanvasFlowNode,
@@ -78,6 +79,10 @@ export function safeUrl(v: unknown): string | undefined {
   }
 }
 
+function isZone(v: unknown): v is Zone {
+  return v === "ui" || v === "art";
+}
+
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 function hex(v: unknown): string | undefined {
@@ -108,6 +113,7 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
     title: str(d.title, 300) ?? null,
     note: str(d.note, 2000) ?? null,
     tag: isTag(d.tag) ? d.tag : null,
+    zone: isZone(d.zone) ? d.zone : undefined,
     width: positiveNum(d.width) ?? null,
     height: positiveNum(d.height) ?? null,
   });
@@ -217,6 +223,7 @@ export function parseTrayReference(v: unknown): TrayReference | null {
     width: positiveNum(v.width),
     height: positiveNum(v.height),
     directionId: str(v.directionId, 80),
+    zone: isZone(v.zone) ? v.zone : undefined,
   });
 }
 

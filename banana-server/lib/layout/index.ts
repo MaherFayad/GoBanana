@@ -8,6 +8,10 @@
  *
  * All coordinates are absolute canvas pixels from `origin` (default 0,0). Items keep input
  * order inside each column or row.
+ *
+ * Zones (wild directions v2): inside a section, art direction items (`zone: "art"`) sit in their
+ * own block on top and UI items below, each block under a ZONE_LABEL_SPACE strip where the canvas
+ * draws its label ("Art direction", "UI references"). Sections without art items look as before.
  */
 
 export type LayoutKind = "by_direction" | "masonry" | "grid" | "hero";
@@ -20,6 +24,8 @@ export interface LayoutItem {
   /** Width divided by height. Wins over w and h when both are given. */
   aspectRatio?: number;
   sectionId?: string;
+  /** "art" for art direction items. Missing means a UI item. */
+  zone?: "ui" | "art";
 }
 
 export interface LayoutSection {
@@ -46,6 +52,8 @@ export interface LayoutOptions {
   /** Column width (by_direction, masonry) or cell size (grid, hero). Default 280. */
   columnWidth?: number;
   gap?: number;
+  /** by_direction: vertical gap between items in a column. Default `gap`. */
+  rowGap?: number;
   /** masonry columns (default 4), grid and hero row length (default up to 4). */
   columns?: number;
 }
@@ -58,6 +66,13 @@ export const GRID_MAX_COLUMNS = 4;
 export const SECTION_HEADER = 48;
 /** Space below the last item inside a section frame. */
 export const SECTION_PADDING = 16;
+/** Room above a zone block for its label, when a section has art direction items. */
+export const ZONE_LABEL_SPACE = 28;
+
+/** Art items first, then UI items, each keeping input order. */
+export function splitZones<T extends { zone?: "ui" | "art" }>(items: readonly T[]): { art: T[]; ui: T[] } {
+  return { art: items.filter((it) => it.zone === "art"), ui: items.filter((it) => it.zone !== "art") };
+}
 
 function positive(n: number | undefined): n is number {
   return typeof n === "number" && Number.isFinite(n) && n > 0;
@@ -104,11 +119,18 @@ export function byDirection(items: readonly LayoutItem[], opts: LayoutOptions = 
 
   const outItems: Rect[] = [];
   const outSections: Rect[] = [];
+  const rowGap = typeof opts.rowGap === "number" && Number.isFinite(opts.rowGap) && opts.rowGap >= 0 ? Math.round(opts.rowGap) : gap;
   columns.forEach((column, i) => {
     const x = ox + i * (col + gap);
     let y = oy + (column.sectionId ? SECTION_HEADER : 0);
-    column.items.forEach((it, j) => {
-      if (j > 0) y += gap;
+    // In a section with art direction items: the art block on top, the UI block below, each labelled.
+    const { art, ui } = splitZones(column.items);
+    const zoned = column.sectionId !== null && art.length > 0;
+    const ordered = zoned ? [...art, ...ui] : column.items;
+    if (zoned) y += ZONE_LABEL_SPACE;
+    ordered.forEach((it, j) => {
+      if (j > 0) y += rowGap;
+      if (zoned && j === art.length) y += ZONE_LABEL_SPACE;
       const h = heightFor(it, col);
       outItems.push({ id: it.id, x, y, w: col, h });
       y += h;
@@ -201,6 +223,21 @@ export function arrange(layout: LayoutKind, items: readonly LayoutItem[], opts: 
     case "hero":
       return hero(items, opts);
   }
+}
+
+/**
+ * Arrange the contents of one section with zones: when any item is art direction, the art items
+ * are laid out first under a label strip, and the UI items below them under a second strip.
+ * Without art items this is `arrange` unchanged.
+ */
+export function arrangeZoned(layout: LayoutKind, items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
+  const { art, ui } = splitZones(items);
+  if (art.length === 0) return arrange(layout, items, opts);
+  const { ox, oy, gap } = settings(opts);
+  const top = arrange(layout, art, { ...opts, origin: { x: ox, y: oy + ZONE_LABEL_SPACE } });
+  const artBottom = top.items.reduce((m, r) => Math.max(m, r.y + r.h), oy + ZONE_LABEL_SPACE);
+  const below = ui.length > 0 ? arrange(layout, ui, { ...opts, origin: { x: ox, y: artBottom + gap + ZONE_LABEL_SPACE } }) : { items: [] };
+  return { items: [...top.items, ...below.items], sections: [] };
 }
 
 /** True when any two rectangles overlap (touching edges do not count). */

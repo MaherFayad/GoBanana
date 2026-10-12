@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: 'design-kit/03-gradients.css'
+path: 'design/explorations/*/kit/03-gradients.css'
 ---

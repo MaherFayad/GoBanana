@@ -3,7 +3,7 @@
     {
       "name": "bend_brief",
       "title": "Bend a brief",
-      "description": "Turn a design brief into unexpected directions (bend moves). Rule-based, free and unlimited. Use first when the user wants wild or fresh design ideas.",
+      "description": "Turn a brief into unexpected directions for one page or two, each with a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -57,6 +57,26 @@
           "canvasId": {
             "type": "string",
             "description": "Canvas from open_canvas. Saves the directions there so search_references can take a directionId."
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "mobile",
+              "tablet",
+              "website",
+              "webapp",
+              "any"
+            ],
+            "description": "mobile, tablet, website, webapp or any. Detected from the brief when left out."
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "maxItems": 3,
+            "description": "Up to 3 pages or screens the wild idea is for, such as onboarding, pricing page, /launch."
           }
         }
       }
@@ -64,7 +84,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find UI references (app screens, web pages, dashboards, components) on Dribbble, Pinterest and Behance. Every result links to its source: always show the source link next to the image. Results are always UI, whatever the words: a wild idea belongs in the direction notes, not in the images. Pass a directionId from bend_brief (best: real screens and components for the brief, in the user's taste), or a query. Pass canvasId to add the results to that canvas tray. Pass taste with a few style words that describe the user's references, such as minimal, glassmorphism, dark mode, big typography, editorial; it is saved on the canvas. To redo one lane of a direction with better words, pass directionId, lane and query. Rate results with rate_references so later searches improve. mix is ignored (always UI). Results are links to the source pages only.",
+      "description": "Find references for a direction in two zones: ui (screens and components for the direction's platform, from UI galleries by platform plus Pinterest, Dribbble, Behance and Awwwards) and art (the wild idea as images: raw ingredient on Pinterest and Behance; shops and listings dropped). Every result has a zone and links to its source: always show the source link. Pass a directionId from bend_brief (zone defaults to both) or a query (zone ui). Pass canvasId to add results to that canvas tray. Without taste, the direction's own style words are used. At most 2 results per studio, newer first, UI kits dropped. To redo one lane, pass directionId, lane and query; lane art re-searches the art zone. Rate results with rate_references.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -113,9 +133,10 @@
               "component",
               "hero",
               "bridge",
-              "locale"
+              "locale",
+              "art"
             ],
-            "description": "With directionId and query: search only this lane of the direction, with the query as its words (\"app ui\" is added when they name no UI)."
+            "description": "With directionId and query: search only this lane. UI lanes get \"app ui\" or the platform's words added when the query names no UI; lane art searches raw images with no UI words."
           },
           "mix": {
             "type": "string",
@@ -124,7 +145,16 @@
               "balanced",
               "wild"
             ],
-            "description": "Ignored: results are always UI. Kept so older calls still work."
+            "description": "Ignored. Use zone instead."
+          },
+          "zone": {
+            "type": "string",
+            "enum": [
+              "ui",
+              "art",
+              "both"
+            ],
+            "description": "Which zone to search. Default both for a directionId, ui for a plain query."
           }
         }
       }
@@ -191,7 +221,7 @@
     {
       "name": "rate_directions",
       "title": "Rate directions",
-      "description": "Keep or drop bend_brief directions on a canvas after you judge them, so the board shows only usable ideas. Free. Pass the canvasId and one rating per directionId: \"drop\" (with reasons) for an idea with no UI path for this screen, too few usable references, off brief or a near duplicate; \"keep\" for the ones you show. A dropped direction leaves the canvas with its section, the items in it and its tray results. Later bends suggest often dropped ideas less.",
+      "description": "Keep or drop bend_brief directions on a canvas after you judge them, so the board shows only usable ideas. Free. Pass the canvasId and one rating per directionId: \"drop\" (with reasons) for an idea with no UI path for this screen, too few usable references, off brief or a near duplicate; \"keep\" for the ones you show. A dropped direction leaves the canvas with its section, the items in it and its tray results. Keeps are recorded too. Later bends suggest often dropped ideas less and often kept ideas more.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -337,7 +367,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, notes, swatches or sections to a canvas.",
+      "description": "Add references, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A reference can carry a note (what to steal, up to 280 characters). Links in notes are clickable.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -382,6 +412,11 @@
                 },
                 "title": {
                   "type": "string"
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 280,
+                  "description": "For reference items: what to steal from it, for example steal: the stamped date as a section divider."
                 }
               }
             }
@@ -432,9 +467,31 @@
       }
     },
     {
+      "name": "delete_canvas",
+      "title": "Delete canvas",
+      "description": "Delete a canvas for good: its sections, items, tray and share link. Frees a canvas slot on the free plan. Needs confirm: true. Only call it after the user has said yes to deleting this named canvas.",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "canvasId",
+          "confirm"
+        ],
+        "properties": {
+          "canvasId": {
+            "type": "string"
+          },
+          "confirm": {
+            "type": "boolean",
+            "const": true,
+            "description": "Must be true. Ask the user first."
+          }
+        }
+      }
+    },
+    {
       "name": "export_kit",
       "title": "Export kit",
-      "description": "Export a canvas as text files: design_md, agents_md, tokens, tailwind, figjam_spec, html_board, brief. Free plan: design_md and brief. You write the files.",
+      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief. Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt. You write the files.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -456,9 +513,37 @@
                 "tailwind",
                 "figjam_spec",
                 "html_board",
-                "brief"
+                "brief",
+                "direction_md",
+                "build_prompt",
+                "review",
+                "cursor_rules",
+                "copilot",
+                "claude_md"
               ]
             }
+          },
+          "directionId": {
+            "type": "string",
+            "description": "One kept direction. Default: all kept directions."
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "maxItems": 10,
+            "description": "Routes or globs the files apply to, such as app/pricing/** or /launch."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "page",
+              "system"
+            ],
+            "default": "page",
+            "description": "page (default): only the named pages, inherits the project's design system. system: the direction becomes the product's design system."
           }
         }
       }

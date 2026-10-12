@@ -4,6 +4,8 @@ import fonts from "../lib/kit/fonts.json";
 import { EXPORT_FORMATS, buildKitModel, exportKit, type ExportFile } from "../lib/export";
 import { escapeHtml, safeUrl } from "../lib/export/util";
 import type { FigjamSpec } from "../lib/export/figjam-spec";
+import { EXPORT_FORMATS as QUOTA_FORMATS } from "../lib/quota";
+import { TYPE_VOICES } from "../lib/direction-detail";
 import { FIXTURES, checkoutCanvas, hostileCanvas, qahwaCanvas } from "./export-fixtures";
 
 const fixtures = Object.entries(FIXTURES);
@@ -22,9 +24,9 @@ function frontMatter(md: string): Record<string, unknown> {
 
 describe("fonts.json", () => {
   const { pairings } = fonts;
-  it("has 12 to 20 open licence pairings with unique ids", () => {
+  it("has 12 to 30 open licence pairings with unique ids", () => {
     expect(pairings.length).toBeGreaterThanOrEqual(12);
-    expect(pairings.length).toBeLessThanOrEqual(20);
+    expect(pairings.length).toBeLessThanOrEqual(30);
     expect(new Set(pairings.map((p) => p.id)).size).toBe(pairings.length);
     for (const p of pairings) {
       expect(["OFL-1.1", "Apache-2.0"]).toContain(p.licence);
@@ -37,6 +39,15 @@ describe("fonts.json", () => {
     expect(pairings.filter((p) => p.scripts.includes("arabic")).length).toBeGreaterThanOrEqual(3);
     expect(pairings.some((p) => p.id === fonts.default)).toBe(true);
   });
+  it("maps every type voice to a Latin pairing", () => {
+    for (const v of TYPE_VOICES) {
+      const id = (fonts.voices as Record<string, string>)[v];
+      const p = pairings.find((x) => x.id === id);
+      expect(p, v).toBeDefined();
+      expect(p!.scripts).toContain("latin");
+    }
+    expect(new Set(Object.values(fonts.voices)).size).toBe(TYPE_VOICES.length);
+  });
 });
 
 describe("exportKit", () => {
@@ -46,18 +57,29 @@ describe("exportKit", () => {
     expect(exportKit(checkoutCanvas, [])).toEqual([]);
   });
 
-  it("builds all seven formats with names and mime types", () => {
+  it("builds every format with names, mime types and suggested paths", () => {
     const files = exportKit(checkoutCanvas, EXPORT_FORMATS);
-    expect(files.map((f) => [f.name, f.mime])).toEqual([
-      ["DESIGN.md", "text/markdown"],
-      ["AGENTS.md", "text/markdown"],
-      ["tokens.json", "application/json"],
-      ["theme.css", "text/css"],
-      ["figjam-spec.json", "application/json"],
-      ["board.html", "text/html"],
-      ["BRIEF.md", "text/markdown"],
+    const dir = "design/explorations/frosted-checkout";
+    expect(files.map((f) => [f.name, f.mime, f.path, f.append ?? false])).toEqual([
+      ["DESIGN.md", "text/markdown", `${dir}/DESIGN.md`, false],
+      ["AGENTS.md", "text/markdown", "AGENTS.md", true],
+      ["tokens.json", "application/json", `${dir}/kit/tokens.json`, false],
+      ["theme.css", "text/css", `${dir}/kit/theme.css`, false],
+      ["figjam-spec.json", "application/json", `${dir}/figjam-spec.json`, false],
+      ["board.html", "text/html", `${dir}/board.html`, false],
+      ["BRIEF.md", "text/markdown", `${dir}/BRIEF.md`, false],
+      ["DIRECTION.md", "text/markdown", `${dir}/DIRECTION.md`, false],
+      ["BUILD-PROMPT.md", "text/markdown", `${dir}/BUILD-PROMPT.md`, false],
+      ["REVIEW.md", "text/markdown", `${dir}/REVIEW.md`, false],
+      ["gobanana-frosted-checkout.mdc", "text/markdown", ".cursor/rules/gobanana-frosted-checkout.mdc", false],
+      ["gobanana-frosted-checkout.instructions.md", "text/markdown", ".github/instructions/gobanana-frosted-checkout.instructions.md", false],
+      ["CLAUDE.md", "text/markdown", "CLAUDE.md", true],
     ]);
     for (const f of files) expect(f.content.length).toBeGreaterThan(100);
+  });
+
+  it("keeps the export format list in step with the plan list", () => {
+    expect([...EXPORT_FORMATS]).toEqual([...QUOTA_FORMATS]);
   });
 });
 
@@ -168,14 +190,43 @@ describe.each(fixtures)("fixture %s", (_name, snapshot) => {
     expect(refCount).toBe(snapshot.items.filter((i) => i.type === "image" || i.type === "upload").length);
   });
 
-  it("writes AGENTS.md from the section 10 template with ship, explore and sources", () => {
+  it("writes AGENTS.md as a scoped wild page section with ship, explore and sources", () => {
     const md = file(files, "AGENTS.md");
-    expect(md.startsWith("# Design rules for coding agents\n\nRead DESIGN.md before writing any UI. Use only its tokens.")).toBe(true);
-    const order = ["## Ship", "## Explore only", "## Sources"].map((h) => md.indexOf(h));
+    expect(md).toMatch(/^<!-- gobanana:[a-z0-9-]+ -->\n## Wild page: /);
+    expect(md).toMatch(/<!-- \/gobanana:[a-z0-9-]+ -->\n$/);
+    expect(md).not.toContain("Use only its tokens");
+    expect(md).toContain("Applies to: ");
+    const order = ["### Rules", "### Ship", "### Explore only", "### Sources"].map((h) => md.indexOf(h));
     expect(order.every((i) => i > 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     for (const c of model.ship) expect(md).toContain(c.hex);
-    for (const c of model.explore) expect(md.slice(md.indexOf("## Explore only"))).toContain(c.hex);
+    for (const c of model.explore) expect(md.slice(md.indexOf("### Explore only"))).toContain(c.hex);
+  });
+
+  it("writes the system AGENTS.md from the section 10 template", () => {
+    const md = file(exportKit(snapshot, ["agents_md"], { scope: "system" }), "AGENTS.md");
+    expect(md.replace(/^<!-- gobanana:[a-z0-9-]+ -->\n/, "").startsWith("# Design rules for coding agents\n\nRead DESIGN.md before writing any UI. Use only its tokens.")).toBe(true);
+    const order = ["## Ship", "## Explore only", "## Sources"].map((h) => md.indexOf(h));
+    expect(order.every((i) => i > 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it("opens every page scope file with the scope block", () => {
+    for (const f of files) {
+      if (f.name.endsWith(".json")) {
+        expect(f.content, f.name).toContain("Scope: one wild page, not the product design system.");
+        continue;
+      }
+      if (f.name === "theme.css" || f.name === "board.html") {
+        expect(f.content, f.name).toContain("Scope: one wild page, not the product design system.");
+        continue;
+      }
+      // Markdown: after any front matter and the first heading, the block comes first.
+      const body = f.content.replace(/^<!-- gobanana:[a-z0-9-]+ -->\n/, "").replace(/^---\n[\s\S]*?\n---\n\n/, "").replace(/^#+ .*\n\n/, "");
+      expect(body.startsWith("> **Scope: one wild page, not the product design system.**"), f.name).toBe(true);
+      expect(body, f.name).toContain("inherits the project's own design system and its existing DESIGN.md, and does not change them");
+      expect(body, f.name).toContain("page level overrides");
+    }
   });
 
   it("writes a brief with the brief, directions, what was kept and notes", () => {
