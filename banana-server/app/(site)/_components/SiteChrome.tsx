@@ -119,7 +119,7 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
       title: f.help,
       links: [
         { href: docsHref(locale), label: f.docs },
-        { href: docsHref(locale, "start/install/"), label: f.setup },
+        { href: docsHref(locale, "setup/overview/"), label: f.setup },
         { href: href(locale, "account"), label: f.account },
         { href: href(locale, "takedown"), label: f.takedown },
       ],

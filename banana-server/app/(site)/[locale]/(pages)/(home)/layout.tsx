@@ -141,7 +141,7 @@ function AddBody({ t, locale, url, level }: AddProps) {
         <Lines as={level} className="is-window" lines={[bt(s.dim), bidi(s.bright)]} reveal={false} />
         <p className="add-lead">{bidi(s.lead)}</p>
         <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
-        <a className="add-guide" href={docsHref(locale, "start/install/")}>
+        <a className="add-guide" href={docsHref(locale, "setup/overview/")}>
           {s.guide}
           <ArrowEndIcon size={16} />
         </a>
@@ -252,7 +252,7 @@ function AddBody({ t, locale, url, level }: AddProps) {
         title: f.help,
         links: [
           { href: docsHref(locale), label: f.docs },
-          { href: docsHref(locale, "start/install/"), label: f.setup },
+          { href: docsHref(locale, "setup/overview/"), label: f.setup },
           { href: href(locale, "account"), label: f.account },
           { href: href(locale, "takedown"), label: f.takedown },
         ],

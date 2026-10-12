@@ -73,7 +73,7 @@ export async function CanvasesWindow({ locale, mode }: { locale: Locale; mode: "
           home: href(locale),
           all: self,
           shared: `${self}?view=shared`,
-          docs: docsHref(locale, "start/install/"),
+          docs: docsHref(locale, "setup/overview/"),
           account: href(locale, "account"),
           signOut: SIGN_OUT_PATH,
           feedback: feedbackAddress(),

@@ -71,7 +71,7 @@ test.describe("canvases dashboard (Finder window)", () => {
     await expect(page.locator(".dash-win")).toBeVisible();
 
     const sidebar = page.getByRole("complementary", { name: "Workspace navigation" });
-    await expect(sidebar.getByRole("link", { name: "Setup guide" })).toHaveAttribute("href", "/docs/start/install/");
+    await expect(sidebar.getByRole("link", { name: "Setup guide" })).toHaveAttribute("href", "/docs/setup/overview/");
     await expect(sidebar.getByRole("link", { name: "Account" })).toHaveAttribute("href", "/en/account");
     await expect(sidebar.getByRole("button", { name: "Sign out" })).toBeVisible();
     await axe(page, ".wl", "dashboard");
@@ -128,7 +128,7 @@ test.describe("canvases dashboard (Finder window)", () => {
     await button.click();
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator(".lab-new")).toBeVisible();
-    await expect(page.locator(".lab-new a")).toHaveAttribute("href", "/docs/start/install/");
+    await expect(page.locator(".lab-new a")).toHaveAttribute("href", "/docs/setup/overview/");
   });
 
   test("Arabic dashboard is rtl, mirrors the sidebar to the right, and is axe clean", async ({ page }) => {
@@ -139,7 +139,7 @@ test.describe("canvases dashboard (Finder window)", () => {
     const main = (await page.locator(".dash-main").boundingBox())!;
     expect(side.x).toBeGreaterThan(main.x);
     await expect(page.getByRole("searchbox", { name: "البحث في اللوحات" })).toBeVisible();
-    await expect(page.locator(".wl").getByRole("link", { name: "دليل الإعداد" })).toHaveAttribute("href", "/docs/ar/start/install/");
+    await expect(page.locator(".wl").getByRole("link", { name: "دليل الإعداد" })).toHaveAttribute("href", "/docs/ar/setup/overview/");
     await axe(page, ".wl", "dashboard ar");
   });
 

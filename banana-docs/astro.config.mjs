@@ -14,6 +14,11 @@ export default defineConfig({
 	site: 'https://gobanana-server.maherfayad55.workers.dev',
 	base: '/docs',
 	trailingSlash: 'always',
+	// Old page addresses that the site and earlier links used.
+	redirects: {
+		'/start/install/': '/docs/setup/overview/',
+		'/ar/start/install/': '/docs/ar/setup/overview/',
+	},
 	vite: {
 		build: {
 			rollupOptions: {
