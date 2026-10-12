@@ -2,3 +2,4 @@ schema_version: "1.1"
 name: 33-handoff-scoped
 context:
   scaffold_script: fixture.sh
+allowed_tools: [Write, Edit, Read, Glob, Grep]

@@ -147,7 +147,9 @@ Nothing is cut out of an image file. A part is a rectangle the browser shows ove
 
 ## Evals
 
-`evals/` holds test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/gobanana/` answers the GoBanana tools with fixed replies, and a case can override one tool in `<case>/mocks/gobanana/`. Runs never touch the real server.
+`evals/` holds test briefs in the format `claude plugin eval` reads: one folder per case with a `prompt.md` and `graders/*.md`, plus `case.yaml` and a `fixture.sh` where a case needs files in the workspace. `evals/mocks/gobanana/` answers the GoBanana tools with fixed replies, and a case can override one tool in `<case>/mocks/gobanana/`. The stateful tools (`get_canvas`, `search_references`, `add_to_canvas`, `bend_brief`, the Frankenstein tools) are agent mocks that read the run's earlier calls, so a board read after a write shows the write; their shared rules live in `evals/mocks/gobanana/_canvas-rules.txt`. Runs never touch the real server.
+
+On Windows, `--scaffold` runs `bash` from `PATH`, and `C:\Windows\System32\bash.exe` (WSL) cannot read the Windows fixture path. Put Git Bash first for the run: `$env:PATH = "C:\Program Files\Git\bin;" + $env:PATH` in PowerShell.
 
 ```bash
 cd banana-plugin

@@ -12,7 +12,8 @@ This is for ideas over one page, not the product's design system. A Frankenstein
 ## Ground rules
 
 - **Source link for every part you mention**, like `[Fintech pricing page](sourceUrl) (dribbble.com)`. No link, no mention. The board and every export keep the links too.
-- **Never download, save, crop or copy reference images.** A part is only a rectangle (fractions of the image) that the browser applies over the hotlinked image. Never fetch an image to disk, never cut it with a tool, never write it into the repo, not even "just to look". If the user asks for the cut images as files, say no in one line and offer FRANKENSTEIN.md, the wireframe and the links instead.
+- **Never download, save, crop or copy reference images.** A part is only a rectangle (fractions of the image) that the browser applies over the hotlinked image. Never fetch an image to disk, never cut it with a tool, never write it into the repo, not even "just to look". If the user asks for the cut images as files, say no in one or two lines, in these terms: "A part is only a crop rectangle the browser shows over the original image at its source; nothing is downloaded or cut, so there are no PNGs to save, and the images belong to their owners." Then offer FRANKENSTEIN.md, the wireframe, the board link, or building the sections with the project's own content.
+- **Trust write results.** The `cut_parts`, `stitch_page`, `update_stitch` and `remix_stitch` answers are the record: read the parts and pages from them. Do not call `get_canvas` after each write to check it; read the board once at the start, and again only if you truly need something the answers did not give.
 - **Do not describe pixels you did not see.** Say what you saw, what the user told you, or what the title says, and say which.
 - **Right platform.** Mobile pages take mobile parts, websites take website parts, web apps take web app parts. Skip references for another platform.
 - **UI zone only.** Cut from UI references (placed board items or tray references in zone `ui`). Art direction images are mood, not page parts. Never cut a reference rated `bad`.
@@ -71,7 +72,7 @@ Pass `directionId` when the page serves one kept direction on the board, and a o
 
 ### 5. Review each variant like a designer
 
-Read each variant from the reply (or `get_canvas`): its rows, slots, parts and sources. Then judge it:
+Read each variant from the `stitch_page` answer: its rows, slots, parts and sources. Then judge it:
 
 - **Rhythm:** dense and airy bands alternate; no three busy bands in a row.
 - **Hierarchy:** one clear hero; no second hero fighting it from a `features` band.
@@ -97,7 +98,7 @@ Stop after two rounds of fixes. Ideas, not polish.
 
 Call `open_canvas` with the `canvasId`. Always give the web link: "Open the board here: <webUrl>".
 
-Per variant, a numbered skeleton, one line per slot: role, what it steals, the source link. Mark guessed crops.
+Per variant, a numbered skeleton, one line per slot: role, what it steals, the source link. Mark guessed crops. Write every slot of every variant in full, each with its own link; never collapse slots into "same as variant 1" or "slots 5 to 8 as above".
 
 > **Variant 2: Editorial nav over a dashboard hero** (st-2)
 > 1. Nav: the split nav with the search pill. [Dev tool landing page](sourceUrl) (lapa.ninja)
@@ -106,7 +107,11 @@ Per variant, a numbered skeleton, one line per slot: role, what it steals, the s
 > 4. Footer: the giant wordmark. [Agency footer](sourceUrl) (lapa.ninja) (guessed crop)
 > Idea: an editorial shell around a product that shows its work.
 
-Then one line on what you fixed ("Swapped the logos strip in variant 3, it repeated the hero's site"), and nothing about pixels you did not see.
+Then one line on what you fixed ("Swapped the logos strip in variant 3, it repeated the hero's site"), and nothing about pixels you did not see. Every part or reference you name anywhere in the reply, in that line, in crop caveats and in next steps too, gets its markdown source link; simplest is to refer to slots by number ("slot 2 of variant 1") instead of naming the part or reference again. Do not list the parts library in prose.
+
+If you could not see the images, say so in the first lines of the reply: the crops were guessed by role, each guessed slot is marked "(guessed crop)", and the user can check them on the board or tell you where things sit.
+
+**After a remix:** say which slots were kept (for example "Kept the nav and hero from Landing 2"), then one skeleton per new take with its slots, the locked ones marked "(kept)", and one line on what changed versus the original. Every part keeps its link.
 
 ### 7. Offer next steps
 

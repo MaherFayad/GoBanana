@@ -20,6 +20,8 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never show a dropped idea.
 - **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build.
 - **Right platform.** Never show web dashboards or landing pages on a phone brief, and never phone screens on a website or web app brief. Rate them `bad` with `off_topic`.
+- **One question at most per turn.** When you must ask, fold everything you need (subject, platform, where the weirdness goes) into one short question. Never a list of questions.
+- **Trust write results.** `add_to_canvas`, `rate_directions`, `rate_references` and `arrange_canvas` answers are the record. Do not call `get_canvas` after each write to check it. Read the board at most once, at the end, and only if you need something from it.
 
 ## Steps
 
@@ -32,7 +34,11 @@ Write a one-line brief (max 500 characters). A good brief names:
 - **The default to escape**, if they named one ("looks like every fintech app").
 - **Must keep**, if any (brand color, Arabic and English).
 
-If the ask is too vague to name a subject ("make it cool"), ask one short question that also covers wildness: "What are we designing, and how far should I push it: 1 (fresh) to 5 (bananas)?" Ask once. If the user said "just go", do not ask; guess and say what you assumed.
+If the ask is too vague to name a subject ("make it cool"), ask ONE short question that folds in the platform and states the wildness default, then stop and wait:
+
+> What should I make cool, and is it for a phone app, a website or a web app? I'll go at 3 of 5 unless you say otherwise.
+
+Do not ask about wildness, taste or anything else separately. Ask once. If the user said "just go", do not ask; guess and say what you assumed.
 
 ### 2. Pin the platform
 
@@ -45,14 +51,14 @@ One of `mobile`, `tablet`, `website`, `webapp` (or `any` when it truly does not 
 | landing page, launch page, marketing site, homepage, campaign page, 404 on the site | `website` |
 | dashboard, admin, SaaS, web app, settings in the browser, table, CRM | `webapp` |
 
-If the words are clear, pin it and say it in your reply ("Platform: mobile"). If not, add it to your one question ("Is this for the phone app, the website or the web app?"). With "just go", guess and say so. Always pass `platform` to `bend_brief`; the server would detect it from the brief, but your read is better.
+If the words are clear, pin it and say it in your reply ("Platform: mobile"). If not, fold it into your one question (step 1). With "just go", guess and say so. Always pass `platform` to `bend_brief`; the server would detect it from the brief, but your read is better.
 
 ### 3. Pin the pages: where should the weirdness go?
 
 Pass 1 to 3 `pages` to `bend_brief` (each up to 60 characters): the page or screen the idea is for ("checkout", "first run onboarding", "/launch").
 
 - **The user named a page or screen:** use it.
-- **The user named the whole product** ("go wild on our banking app", "make our site weird"): do not bend the whole product. Call `bend_brief` once with the brief, `platform` and no `pages` and no `canvasId` (free, nothing is saved). Its `wildSpots` lists places where weirdness pays off for that platform, each with a reason. Ask one question: "Where should the weirdness go?" and show 4 to 6 spots as a numbered list, one line each: the page and the why. The user picks 1 to 3. If they said "just go", take the top spot and say so. Then go on with those `pages`.
+- **The user named the whole product** ("go wild on our banking app", "make our site weird") and no page: this step is required. Do not pick pages yourself and do not bend the whole product. Call `bend_brief` once with the brief, `platform` and no `pages` and no `canvasId` (free, nothing is saved). Its `wildSpots` lists places where weirdness pays off for that platform, each with a reason. Then reply with one line saying GoBanana works best on one page or two, not the whole app, and ask exactly one question: **"Where should the weirdness go?"** Show 4 to 6 spots as a numbered list, one line each: the page and the why. Say they can pick 1 to 3. Stop there and wait: no `new_canvas`, no search, no directions, and no other question (no taste, no style words). Only if the user said "just go" (or "don't ask"): take the top spot, say so, and go on with it as `pages`.
 
 If the server returns no `wildSpots`, offer these:
 
@@ -79,7 +85,7 @@ Keep the daily task screens (sign in, checkout steps, forms, tables, navigation)
 
 - **Lens** (`lens`): a culture preset when the user mentions Saudi, Gulf, Arabic or regional heritage. Ids: `sadu`, `najdi`, `kufic`, `mashrabiya`, `desert-modern`. Never ask for or use sacred text or religious verses.
 - **Moves** (`moves`): only when the user asks for a kind of bend: `transplant`, `material`, `era`, `constraint`, `scale`, `lens`.
-- **Taste:** ask once, unless the user said "just go": "Any 2 to 5 style words for the look you like, or a board I can look at?" Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
+- **Taste:** use the style words the user gave, if any. Do not ask for taste; the user can add style words later. Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
 
 ### 6. Pick the canvas: extend one, or create one (do not show it yet)
 
@@ -102,13 +108,13 @@ Keep an idea only if all three hold:
 - **(b) Usable UI references.** After search and audit it has at least 6 on-topic UI references for the platform. Art references do not count here.
 - **(c) Not a near duplicate** of a kept idea.
 
-1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the best 3 (up to 4, or the number the user asked for). Each costs one search.
+1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the number the user asked for, or 3 when they gave no number. Never more than 4. Each shortlisted direction costs one search (step 9). If a shortlisted idea fails (b), you may search one backup idea, still within 4.
 2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 6: drop it.
-3. **Rate:** call `rate_directions` once with every idea: `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
+3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every one of the 8 ideas: `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
 
 ### 9. Search both zones for the shortlist
 
-For each shortlisted direction call `search_references` with `directionId`, `canvasId` and `count: 12`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search.
+For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 12`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: one search per shortlisted direction (at most 4), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
 
 - **UI lanes** (`zone: "ui"`): `fidelity` (real screens for the page), `taste` (the style words on the page), `hero`, `component`, `bridge` (the idea already applied to UI; often empty), `locale` (Arabic UI). The server words them for the platform and picks sources to match: website briefs pull from website galleries (hero sections, landing pages, bento layouts), mobile briefs from mobile app and motion galleries, web apps from dashboard galleries, plus Pinterest, Dribbble, Behance and Awwwards.
 - **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
@@ -121,12 +127,12 @@ Each result line shows `[referenceId, lane]` and its zone. Do not pass a directi
 The server does not look at images. You do.
 
 1. **Judge every result** from its title, site and URL, and the image when you can see it.
-2. **Call `rate_references`** with the `canvasId` and one rating per judged result. Always rate the junk so it leaves the tray:
+2. **Call `rate_references`** with the `canvasId`, once per search. Rate only two kinds of result: the junk (`bad`) and the 1 to 3 standouts (`great`). Leave ordinary good results unrated; there is no "ok" verdict, so never mark every usable result `great`. Always rate the junk so it leaves the tray:
    - **UI zone, `bad`:** wrong platform (a web dashboard on a phone brief), shops, stock, UI kit sales, cluttered sheets, duplicates, near empty mockups, apps for another product, anything not UI.
    - **Art zone, `bad`:** shops and product listings, prices, fashion and clothing listings, Etsy or Amazon pages, logo sheets, stock, and anything off the idea (a car air freshener on a weaving direction). Art does not have to be UI; it has to be the idea.
    - Reasons: `off_topic`, `stock_or_shop`, `not_ui` (UI zone only), `cluttered`, `duplicate`, `low_craft`, `wrong_style`.
-   - **`great`** for standouts only, about the top 10 to 20%: `great_craft`, `on_style`, `on_brief`.
-3. **Retry a weak lane.** If more than 40% of one lane is bad, search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: name the screen or component ("cinema seat picker ui"). Art lane: `lane: "art"` with words for the raw thing, no UI words ("sadu weaving close up", "risograph two ink print"). At most 2 retries per lane; each counts toward the quota.
+   - **`great`** for standouts only, 1 to 3 per search: `great_craft`, `on_style`, `on_brief`.
+3. **Retry a weak lane, only then.** If more than 40% of one lane's results are bad, you must search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: keep the idea's main word and name the screen or component ("film frame seat picker ui", not "oversized film frames"). Art lane: `lane: "art"` with words for the raw thing, no UI words ("sadu weaving close up", "risograph two ink print"). Rate the retry's results too. At most 2 retries per lane; each counts toward the quota. If the lane is still bad after 2 retries, stop and say so in one line. When no lane is over 40% bad, do not retry anything: clean results need no second search.
 4. **Count** usable UI references per direction for test (b), and usable art references separately.
 
 ### 11. Shipped vs next (only when Mobbin is connected)
@@ -135,7 +141,7 @@ Look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__searc
 
 If connected, search once per page (not per direction) for the same page on the same platform, for example "checkout" on iOS. Use the tool's own inputs. Pick 3 to 6 real shipped screens. Then:
 
-- Add them to the board as **one** note, no images: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`.
+- Add them to the board as **one** note, no images, in step 12: one `add_to_canvas` item `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Place it even if the wild directions end up thin.
 - Mention them in your reply in one line, as the "what works" baseline next to the wild directions.
 - Never place Mobbin screens as references, never pass Mobbin links to `search_references` or `add_to_canvas` as references, never download them.
 
@@ -148,30 +154,33 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
 - The Mobbin note from step 11, once per board, if any.
 
-Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section.
+Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+
+If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its full 4 items and keep the UI grid UI only.
 
 ### 13. Show the board and present the kept directions
 
 Call `open_canvas` with the `canvasId`. If the client shows it inline, say it is open above. **Always** give the web link too: "Open the board here: <webUrl>".
 
-Present each kept direction as a compact spec card, from its `spec`. One short line per field:
+Keep the reply short and in this order: the board link, one line with platform, page and wildness, the direction cards, the one-liners below, then next steps (step 14). No prose paragraphs.
+
+Present each kept direction as a compact card, from its `spec`, five short lines at most, and always end it with its highlights: 2 to 3 UI references and 1 or 2 art references, each written exactly as `[title](sourceUrl) (site)`:
 
 > **1. Checkout as a frosted vinyl sleeve** (transplant + material)
-> Platform: mobile. Page: checkout.
-> Pattern: fare summary slides out of a sleeve.
-> Signature: the sleeve card with a half-moon cutout for the total.
-> Type: condensed grotesk, big tabular numerals.
-> Color: frosted off-white, one ink blue accent, 1 in 10.
-> Layout: one column, 16px margins, sticky pay button in thumb reach.
-> Motion: the sleeve slides 200ms on confirm; nothing moves with reduced motion.
+> Pattern: fare summary slides out of a sleeve. Signature: a half-moon cutout shows the total.
+> Look: condensed grotesk, frosted off-white with one ink blue accent; the sleeve slides 200ms, still with reduced motion.
 > Why it fits: travel tickets are objects people keep.
 > Art direction: [Frosted record sleeve](sourceUrl) (pinterest.com), [Clear vinyl packaging](sourceUrl) (behance.net)
 > UI: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com)
 
+The full spec is on the board and in the hand-off files; do not repeat every field here.
+
+If the user asked for raw inspiration, add one line: "The raw stuff (textures, objects, posters) lives in each direction's Art direction row; the UI references stay in their own grid."
+
 Then:
 
-- **One line** on dropped ideas: "Dropped 5 of 8 ideas: 3 had no clear screen idea, 1 found too few UI references, 1 repeated another." Never list them one by one.
-- **One line** on removed results: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea)."
+- **One line** on dropped ideas, counts and reasons only: "Dropped 5 of 8 ideas: 3 had no clear screen idea, 1 found too few UI references, 1 repeated another." Never name the dropped ideas or list them one by one, not even in brackets.
+- **One line** on removed results, and any lane you retried: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea); retried the bridge lane once as 'film strip seat picker ui'."
 - **One line** on shipped screens, if Mobbin ran: "Shipped today: [Airbnb, checkout](link), [Revolut, payment](link)."
 
 ### 14. Offer next steps

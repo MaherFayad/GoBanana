@@ -37,7 +37,7 @@ Export a kept direction as a DESIGN.md (Google Labs DESIGN.md format, alpha) sco
    - `missing-primary`, `missing-typography`: add the token from a `ship` swatch or the export's font pairing. If none passes contrast, tell the user instead of inventing one.
    - `contrast-ratio`: pick another `ship` color for that component, or say which pair fails and by how much.
    - `unknown-key`, `orphaned-tokens`: remove the stray key, or use the token in a component.
-8. **Report** in a few lines: where the file is, the scope in one line ("Applies only to /pricing; inherits your design system, does not change it."), lint status, and how many colors are `ship` vs `explore`.
+8. **Report** in a few lines: where the file is, the scope in one line ("Applies only to /pricing; inherits your design system, does not change it."), lint status, and how many colors are `ship` vs `explore`. When the project has its own root `DESIGN.md`, say so in those words first: "Your own DESIGN.md is left as it is. The new file at design/explorations/<slug>/DESIGN.md applies only to <pages> and inherits your design system."
 9. **Offer next steps:** the full hand-off pack for the user's coding tools (gobanana-handoff), or build the page and grade it (gobanana-critique).
 
 ## Scope "system" (only when asked)

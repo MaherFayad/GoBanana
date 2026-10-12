@@ -1,6 +1,6 @@
 ---
 description: "No wildness signal, so the default applies."
-expected_outcome: "bend_brief with wildness 3, at most 3 searches."
+expected_outcome: "bend_brief with wildness 3, one search per shortlisted direction (at most 4)."
 tags: [explore]
 max_turns: 25
 timeout_seconds: 600

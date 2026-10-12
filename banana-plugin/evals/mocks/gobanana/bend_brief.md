@@ -11,6 +11,9 @@ Rules:
 - Platform: use the input `platform` if given. Otherwise detect it from the brief: iPhone, iOS, Android, app, mobile, onboarding, paywall means mobile; iPad or tablet means tablet; dashboard, admin, SaaS, web app, CRM means webapp; landing page, launch page, website, site, homepage, 404 means website; else any.
 - Pages: the input `pages` joined with ", ". If no pages were given, write "none" and add the Wild spots block at the end. If pages were given, leave the Wild spots block out entirely.
 - Layout lines: for mobile write "one column, 16px margins, 44pt targets, sticky action in thumb reach"; for tablet "two panes, 24px margins, large targets"; for website "12 columns, fluid type with clamp, generous whitespace"; for webapp "sidebar shell, 12 columns, dense 8px rhythm"; for any "single column that grows to 12 columns".
+- Subject: the template is worded for a checkout. In directions 1, 2, 3, 5 and 6, rewrite only the words that name parts of the screen (summary, total, fare, price, confirm, receipt lines) so each Pattern, Signature and Steal names a real part of the brief's page ("the episode card slides out of a sleeve" for a podcast player). In titles, "Your screen" becomes "Your <first page, or the brief's subject>". Keep ids, moves, types, colors, textures, art queries and everything else as written.
+- Lens: if a lens is given, direction 4 becomes a full direction with move material + lens, titled "Built from <lens> <craft>" (for sadu: "Built from Sadu weaving"), with every spec line like direction 1, built from that craft's motifs, colors and texture, and art queries naming the craft close up. Never use sacred text or religious verses. Without a lens, direction 4 stays as written.
+- Directions 7 and 8 always stay as written: weak ideas with no clear pattern.
 - If a canvasId was given, end with "Saved to canvas <canvasId>." Otherwise "Not saved: no canvasId."
 - Plain text only, no commentary, no em dashes.
 

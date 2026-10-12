@@ -20,7 +20,7 @@ Extract a palette from the references the user likes, add the swatches to the ca
    - the references the user named or liked;
    - else the items in the direction they mean. The art direction row is a fine source: it carries the idea's color (the weave, the riso inks). Mixing art and UI items from the same direction is fine too;
    - else all references on the board (say so).
-2. **Extract.** Call `extract_palette` with `canvasId`, `itemIds`, `size` (default 6; 5 for a tight set, up to 9 for a rich board) and `addSwatches: true`.
+2. **Extract, always.** Call `extract_palette` with `canvasId`, `itemIds`, `size` (default 6; 5 for a tight set, up to 9 for a rich board) and `addSwatches: true`. Do this even when `get_canvas` already shows a palette, and even for a plain "do these colors pass contrast?": the saved palette may come from other items or be stale, and the extract returns the current contrast list. When the board already has swatches, pass `addSwatches: false` so they are not added twice.
 3. **Show the palette** as a small table: hex, OKLCH, role (primary, secondary, neutral, surface, on-surface, accent).
 4. **Show contrast** from the `contrast` list, worst failures last:
 

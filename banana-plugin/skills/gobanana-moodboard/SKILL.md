@@ -13,6 +13,8 @@ Turn the tray into a board people can read: one section per direction, the wild 
 - **Never download, save or copy reference images** to the repo or to disk. Boards point at the source URLs.
 - **Two zones, never mixed.** Tray references carry a `zone`: `art` (the idea as raw images) or `ui` (screens and components). Art goes in the section's "Art direction" row; UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
 - **The server only returns text.** When a file is needed (HTML board), you write it.
+- **Trust write results.** The `add_to_canvas` and `arrange_canvas` answers are the record. Read the board once in step 1; do not call `get_canvas` again to check each write.
+- **Always arrange.** Every run that places or moves items ends with one `arrange_canvas` call, after the last `add_to_canvas`.
 - Plain words, no em dashes.
 
 ## Steps
@@ -38,9 +40,9 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message and stop adding.
 
-### 3. Arrange
+### 3. Arrange (always)
 
-Call `arrange_canvas` with a `layout`:
+Right after the last `add_to_canvas`, call `arrange_canvas` once with a `layout`. Do not skip it, and do not read the board in between:
 
 | Layout | Use when |
 | --- | --- |
@@ -51,9 +53,11 @@ Call `arrange_canvas` with a `layout`:
 
 Pass `sectionId` to arrange one section only.
 
+**Making one reference the hero:** with `hero`, the first item placed in a section leads. So when the user names a reference for the hero: if it is still in the tray, place it first in its direction's section with `add_to_canvas` (create the section first if needed); then call `arrange_canvas` with `layout: "hero"` and that `sectionId`. If it is already placed, call `arrange_canvas` with `layout: "hero"` straight away. Say which reference leads.
+
 ### 4. Show it
 
-Say the board is ready. If the client shows the canvas inline, point to it. **Always** give the web link (`webUrl`) too.
+Say the board is ready. If the client shows the canvas inline, point to it. **Always** give the web link (`webUrl`) too. End with 2 to 3 highlights per direction on the board, each written exactly as `[title](sourceUrl) (site)`, with its steal note in a few words.
 
 ### 5. Offer next steps
 

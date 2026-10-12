@@ -1,6 +1,6 @@
 ---
 description: "User picks the source sites."
-expected_outcome: "Two searches with sources behance and awwwards."
+expected_outcome: "One search per picked direction (2, plus at most one backup) with sources behance and awwwards."
 tags: [explore, sources]
 max_turns: 25
 timeout_seconds: 600

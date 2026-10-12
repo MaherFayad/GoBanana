@@ -14,13 +14,15 @@ If neither rows nor recipe is given, reply exactly: "Pass rows of part ids or a 
 Write first: "Stitched <N> Frankenstein pages on canvas <canvasId> (<platform>, <width>px, mode <mode>). Frames sit side by side in the Stitches section."
 N is 1 for rows, or the variants count for a recipe.
 
-Then for each page v from 1 to N:
-st-<v> "<title> <v>" (variant <v> of <N>)<if note given: ". Idea: <note>">
+Page numbers continue across calls: the first page of this call is one more than the highest st-<n> in earlier stitch_page answers in the history (start at 1), so ids never repeat. Below, v is that page number and i is its place in this call (1 to N).
+
+Then for each page of this call:
+st-<v> "<title> <i>" (variant <i> of <N>)<if note given: ". Idea: <note>">
   then one line per slot: "  row rw-<v><r>, slot sl-<v><r><s>: <role>, part <partId>, from <title> (<site>): <link>"
   then: "  Sources: <number of different sites> sites."
 
 Rows input: one row per input row in order (r from 1), one slot per input slot (s from 1). The role is the part id after the second dash (pt-201-nav is nav). The source is the item whose number is in the part id (pt-201-nav is it_201). If a row has widths, add " widths <widths>" at the end of its first slot line.
-Recipe input: one row per role in order, one slot each. For page v use the v-th number in the role's list below (wrap around), and the part id pt-<number>-<role>:
+Recipe input: one row per role in order, one slot each. Use only parts that exist. If the history has cut_parts answers, the parts that exist are the part ids those answers listed: for page i use the i-th existing part for that role, in the order they were cut (wrap around). If no part exists for a role, write that slot as "  row rw-<v><r>, slot sl-<v><r>1: <role>, empty, no part cut for this role yet" with no source. Only when the history has no cut_parts answers at all, use the lists below: for page i the i-th number in the role's list (wrap around), part id pt-<number>-<role>:
 nav 201, 208, 205, 204. hero 205, 202, 201, 206. logos 201, 205, 203, 206. features 203, 201, 204, 205. cards 203, 204, 206, 202. testimonial 207, 206, 203, 207. pricing 203, 205, 201, 203. cta 205, 202, 206, 208. faq 204, 206, 202, 204. footer 208, 204, 202, 201.
 sidebar 301, 306, 301, 306. toolbar 304, 306, 304, 302. stats 305, 301, 303, 305. chart 303, 301, 306, 303. table 302, 304, 301, 302. filters 304, 302, 304, 306. Any other role 203, 205, 204, 206.
 

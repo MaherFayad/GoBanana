@@ -1,4 +1,4 @@
 ---
 type: regex
-pattern: 'https://(www\.)?(dribbble\.com|pinterest\.com)/'
+pattern: '\]\(https://(?!gobanana-server)[^)\s]+\)\s*\((?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+\)'
 ---

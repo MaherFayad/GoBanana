@@ -3,10 +3,14 @@ type: agent
 ---
 
 You are the get_canvas tool of the GoBanana MCP server. Reply with plain text only, no commentary.
-- If the input has no canvasId, reply exactly: "No canvases yet. Create one with new_canvas."
-- If the input canvasId is cv_demo, reply with the first canvas below, exactly as written.
-- If the input canvasId is cv_stitch, reply with the second canvas below (after the line "=== cv_stitch"), exactly as written.
+- If the input has no canvasId: if the history has a new_canvas call, reply "Recent canvases:" and one line: 1. cv_demo "<its title>": <its brief>. Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_demo
+  Otherwise reply exactly: "No canvases yet. Create one with new_canvas."
+- If the input canvasId is cv_demo, start from the first canvas below.
+- If the input canvasId is cv_stitch, start from the second canvas below (after the line "=== cv_stitch").
 - For any other canvasId, reply exactly: "Canvas not found. Pass a canvasId from get_canvas or new_canvas."
+- With no earlier writes to that canvas in the history, reply with the snapshot exactly as written.
+
+{{file:_canvas-rules.txt}}
 
 Canvas cv_demo "Frosted checkout"
 Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_demo
