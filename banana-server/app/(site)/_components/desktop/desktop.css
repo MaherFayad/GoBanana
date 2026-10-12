@@ -52,6 +52,11 @@ html[data-gpu="software"] ::backdrop {
   backdrop-filter: none !important;
 }
 
+/* Without the blur, a window's glass is darker so the page behind it does not show through. */
+html[data-gpu="software"] .site :is(.dwin, .desk-page .table-scroll) {
+  background: var(--st-desk-glass-flat);
+}
+
 html:has(.site .menubar) {
   scroll-padding-block: calc(var(--desk-bar) + 1rem) 6rem;
 }
@@ -396,8 +401,8 @@ html:has(.site .menubar) {
   min-inline-size: 0;
   border: var(--st-border-width) solid var(--st-desk-hairline);
   border-radius: var(--st-desk-radius);
-  /* Flat glass, no live blur (studio-tokens.css, --st-desk-glass-flat). */
-  background: var(--st-desk-glass-flat);
+  background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
   box-shadow: var(--st-desk-shadow-glass);
   color: var(--st-text);
   overflow: clip;
@@ -794,6 +799,7 @@ button.dwin-light {
   border: var(--st-border-width) solid var(--st-desk-glass-border);
   border-radius: var(--st-desk-radius);
   background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur));
   box-shadow: var(--st-desk-shadow-soft);
   color: var(--st-desk-heading);
   text-decoration: none;
@@ -1019,6 +1025,7 @@ button.dwin-light {
 .site .desk .install-url .server-address {
   border-color: var(--st-desk-glass-border);
   background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur));
 }
 
 /* Plans as windows. */
@@ -1092,6 +1099,7 @@ button.dwin-light {
   padding: var(--st-space-3xs) var(--st-space-l);
   border-radius: var(--st-radius-pill);
   background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur));
   color: var(--st-desk-heading);
   font-size: 0.8125rem;
 }
@@ -1397,7 +1405,8 @@ button.dwin-light {
 .site .desk-page .table-scroll {
   border: var(--st-border-width) solid var(--st-desk-glass-border);
   border-radius: var(--st-desk-radius);
-  background: var(--st-desk-glass-flat);
+  background: var(--st-desk-glass);
+  backdrop-filter: blur(var(--st-desk-blur));
 }
 
 .site .compare-cards {

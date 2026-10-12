@@ -18,11 +18,9 @@
   backdrop-filter: blur(var(--st-window-backdrop-blur)) saturate(1.1);
 }
 
-/* The canvas and the Finder windows (a board, the dashboard) cover all but a thin margin, and
-   they repaint on every pan, zoom and scroll inside them: a live blur behind them redraws with
-   each of those frames (with software compositing nearly all of a frame's time, measured on a
-   board window) for a strip nobody reads. Dim only. */
-.wl:is([data-kind="canvas"], [data-kind="finder"]) .wl-backdrop {
+/* The canvas covers all but a thin margin and repaints on every pan and zoom: a live blur behind
+   it is redrawn with those frames for a strip nobody reads. Dim only. */
+.wl[data-kind="canvas"] .wl-backdrop {
   backdrop-filter: none;
 }
 
