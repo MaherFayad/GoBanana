@@ -1,0 +1,30 @@
+---
+title: Check it works
+description: Four quick checks, from "is it connected" to "can I make a board", with what a good answer looks like.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. **Connected and signed in.** Ask: "Check my GoBanana connection." The agent calls [`ping`](/docs/reference/tools/ping/). A good answer:
+
+   ```text
+   Connected to GoBanana as you@example.com.
+   ```
+
+   "You are not signed in. Reconnect to sign in again." means the sign in never finished or expired. See [Troubleshooting](/docs/setup/troubleshooting/#login-loop-or-not-signed-in).
+
+2. **Tools listed.** Ask: "Which GoBanana tools can you see?" You should get 17: `ping`, `bend_brief`, `search_references`, `rate_references`, `rate_directions`, `new_canvas`, `open_canvas`, `get_canvas`, `add_to_canvas`, `arrange_canvas`, `delete_canvas`, `cut_parts`, `frankenstein_page`, `remix_frankenstein`, `update_frankenstein`, `extract_palette`, `export_kit`. Some clients also list `save_canvas_state` and `load_canvas_state`; those belong to the canvas view.
+
+3. **A free bend.** Ask: "Bend 'pricing page for a ceramics studio' at wildness 3 for a website, 2 directions, don't save it." The agent calls [`bend_brief`](/docs/reference/tools/bend-brief/) with no canvas. Nothing is saved and no search is used. You should see 2 directions with a spec each.
+
+4. **Your boards.** Ask: "List my GoBanana canvases." The agent calls [`get_canvas`](/docs/reference/tools/get-canvas/) with no id. A new account answers that you have no canvases yet. Then open `https://gobanana-server.maherfayad55.workers.dev/en/canvases` in a browser with the same account: the same list should show.
+
+</Steps>
+
+If all four pass, make [your first board](/docs/start/first-board/).
+
+## Check the skills (Claude only)
+
+In Claude Code, type `/` and look for `gobanana-explore` and the other `gobanana-*` skills, or run `/plugin` and check that **gobanana** is enabled. In Claude.ai, the skills come with the plugin from your organization's settings.

@@ -1,45 +1,69 @@
 ---
 title: export_kit
-description: "Export a canvas as files for your project."
+description: Export a board as files for your repo - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md, DESIGN.md, Cursor rules, Copilot instructions, AGENTS.md and CLAUDE.md sections, tokens and more. Page scoped by default.
 ---
 
-Export a canvas as files for your project. Returns each file as text. Your agent writes them where you want.
-
-**Title in clients:** Export kit
-
-## Parameters
-
-<div class="gb-table">
-
-| Parameter | Type | Required | What it does |
+| Plan | Quota | Changes data | Hints |
 | --- | --- | --- | --- |
-| `canvasId` | string | Yes | The canvas id. |
-| `formats` | list | Yes | One or more of `design_md` (DESIGN.md), `agents_md` (AGENTS.md), `tokens` (tokens.json), `tailwind` (theme.css), `figjam_spec` (figjam-spec.json), `html_board` (board.html), `brief` (BRIEF.md). |
+| Free: 5 formats. Pro: all 15 | None | No. Returns text; your agent writes the files | |
 
-</div>
+## Inputs
 
-## Example
+| Name | Type | Required | Limits and default | What it does |
+| --- | --- | --- | --- | --- |
+| `canvasId` | string | Yes | 1 to 100 characters | The board |
+| `formats` | enum[] | Yes | 1 to 15, see below | Which files |
+| `directionId` | string | No | 1 to 100 characters | One kept direction. Default: all kept directions |
+| `pages` | string[] | No | 1 to 5, each up to 80 characters | Route names or globs: `"pricing page"`, `"/launch"`, `"app/pricing/**"` |
+| `scope` | enum | No | `page` (default), `system` | `page`: applies only to the pages, inherits your system. `system`: the direction becomes your system |
+
+**Formats:** `design_md`, `brief`, `direction_md`, `build_prompt`, `stitch_md` (Free) · `review`, `cursor_rules`, `copilot`, `agents_md`, `claude_md`, `tokens`, `tailwind`, `figjam_spec`, `html_board`, `wireframe_html` (Pro). Paths and contents: [Export formats](/docs/reference/exports/).
+
+## Example call
 
 ```json
 {
-  "canvasId": "<canvasId>",
-  "formats": [
-    "design_md",
-    "agents_md",
-    "tokens"
-  ]
+  "name": "export_kit",
+  "arguments": {
+    "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f",
+    "directionId": "bd-mob5pq35",
+    "pages": ["/launch"],
+    "scope": "page",
+    "formats": ["direction_md", "build_prompt", "review", "cursor_rules", "agents_md"]
+  }
 }
 ```
 
-## What it returns
+## Example output
 
-Files, each with a `name`, `mime` and `content`. Formats your plan does not include are listed in `blocked`, with a short note.
+The first text block is a summary; then one text block per file with its name, type and path:
 
-## Plan
+```text
+Exported 5 files from "Coffee launch page": DIRECTION.md, BUILD-PROMPT.md, REVIEW.md, gobanana-spa-like-cereal-box.mdc, AGENTS.md.
+Scope: one wild page. These files sit on top of the project's own design system and do not replace it or its DESIGN.md.
+Write each file below to its path in the user's project. AGENTS.md and CLAUDE.md are sections between gobanana:<slug> markers: replace the marked block if it exists, else append it. Keep the source links.
+```
 
-Free: `design_md` and `brief`. Pro: every format.
+```text
+File: DIRECTION.md (text/markdown)
+path: design/explorations/spa-like-cereal-box/DIRECTION.md
 
-## Related
+# Wild direction: Coffee launch page
+> **Scope: one wild page, not the product design system.** Applies only to: /launch.
+…
+```
 
-- [Export a kit](/docs/guides/export/)
-- [All MCP tools](/docs/reference/tools/)
+On Free, the free formats export and the rest are listed with the upgrade message in the same answer: "These formats need Pro: review, cursor_rules, agents_md. Upgrade: …". If every requested format is Pro, the answer is the message alone.
+
+`structuredContent`: `{ canvasId, scope, files: [{ name, mime, path, content, append? }], blocked, note? }`. `append: true` marks AGENTS.md and CLAUDE.md: merge by markers, never overwrite.
+
+## Messages
+
+| Message | Fix |
+| --- | --- |
+| "These formats need Pro: …" | Upgrade, or use the free formats |
+| "This canvas has no direction with that id. Call get_canvas to see the direction ids." | Use a kept direction's id |
+| "pages takes 1 to 5 route names or globs, each up to 80 characters…" | Fewer, shorter pages |
+| "scope must be "page" (one wild page, the default) or "system" (the whole design system)." | Pick one |
+
+Guide: [Hand off to your coding agent](/docs/guides/handoff/).

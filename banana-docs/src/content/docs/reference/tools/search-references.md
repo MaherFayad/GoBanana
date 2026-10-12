@@ -1,48 +1,110 @@
 ---
 title: search_references
-description: "Find UI references (app screens, web pages, dashboards, components) on Dribbble, Pinterest, Behance and Awwwards."
+description: Find design references for a bend direction or a query, in two zones - UI references and art direction - each with its source link. One call is one search.
 ---
 
-Find UI references (app screens, web pages, dashboards, components) on Dribbble, Pinterest, Behance and Awwwards. Every result links to its source. Results are always UI, whatever the words. Pass a `directionId` from `bend_brief`, or a `query`. Pass `canvasId` to add the results to that canvas tray.
-
-**Title in clients:** Search references
-
-## Parameters
-
-<div class="gb-table">
-
-| Parameter | Type | Required | What it does |
+| Plan | Quota | Changes data | Hints |
 | --- | --- | --- | --- |
-| `directionId` | string | No | A direction id from `bend_brief`. Gives the best results. Pass this or `query`. |
-| `query` | string | No | Search words, 1 to 300 characters. Pass this or `directionId`. |
-| `sources` | list | No | 1 to 4 of `pinterest`, `dribbble`, `behance`, `awwwards`. Default: `pinterest` and `dribbble`. |
-| `count` | integer | No | How many results, 4 to 24. Default 12. |
-| `canvasId` | string | No | Adds the results to this canvas tray. |
-| `taste` | list | No | Up to 5 short style words, each up to 40 characters, for example `["glassmorphism", "big typography", "dark mode"]`. Saved on the canvas for later searches. |
-| `lane` | string | No | With `directionId` and `query`: search only this lane of the direction, with the query as its words. One of `fidelity`, `taste`, `component`, `hero`, `bridge`, `locale`. |
-| `mix` | string | No | Ignored. Results are always UI. Kept so older calls still work. |
+| All | **1 search per call** (Free 30 a month, Pro 300) | With `canvasId`: fills the tray, saves taste | open world |
 
-</div>
+Results are links and titles only. GoBanana never downloads or stores the images. A failed search does not count.
 
-## Example
+## Inputs
+
+| Name | Type | Required | Limits and default | What it does |
+| --- | --- | --- | --- | --- |
+| `directionId` | string | One of these two | 1 to 100 characters | A direction from `bend_brief` saved on a canvas. Searches all its lanes |
+| `query` | string | One of these two | 1 to 300 characters | Plain words. With `directionId` and `lane`: the new words for that lane |
+| `canvasId` | string | No | 1 to 100 characters | Adds results to that board's tray, skips results already on it |
+| `count` | integer | No | 4 to 24, default 12 | How many results |
+| `zone` | enum | No | `ui`, `art`, `both` | Default `both` for a direction (about a third art, at least 3), `ui` for a query |
+| `lane` | enum | No | `fidelity`, `taste`, `component`, `hero`, `bridge`, `locale`, `gallery`, `art` | With `directionId` and `query`: redo one lane |
+| `taste` | string[] | No | 1 to 5 words | Style words, saved on the canvas |
+| `sources` | enum[] | No | 1 to 4 source ids | Force sources. Leave out: the server picks galleries by platform and style. [Source ids](/docs/reference/sources/) |
+| `mix` | enum | No | `ui`, `balanced`, `wild` | Ignored. Kept so older calls still work |
+
+## Lanes
+
+A direction search runs several lanes at once, each with its own wording:
+
+| Lane | Zone | Searches for |
+| --- | --- | --- |
+| `fidelity` | UI | Real screens for the page on the platform |
+| `taste` | UI | The style words on the page (yours, or the direction's) |
+| `hero` | UI | Hero sections (websites) |
+| `component` | UI | The components the brief and spec name (bottom sheet, pricing table...) |
+| `bridge` | UI | The wild idea already applied to UI. Often empty |
+| `locale` | UI | Arabic UI, when the brief is Arabic |
+| `gallery` | UI | Curated UI galleries picked by platform and style |
+| `art` | Art | The direction's `artQueries` as raw images on Pinterest, Behance and art galleries |
+
+## What the server filters
+
+- Only item pages on the chosen sites (one shot, pin, site or screen); list, tag and search pages are dropped.
+- UI kits, templates and "for Adobe XD" or "Figma kit" titles are dropped.
+- At most 2 results per studio or creator, newer work first on Dribbble and Behance.
+- Wrong platform titles (web dashboards on a phone brief, phone screens on a web app brief).
+- Art zone junk: shops, product listings, prices, fashion, Etsy or Amazon, logo sheets, stock.
+- Anything you rated `bad` before, and anything already on the same board.
+- Taken down links and domains.
+
+Your agent still judges every result and rates the rest with [`rate_references`](/docs/reference/tools/rate-references/).
+
+## Example call
 
 ```json
 {
-  "directionId": "bd-3kq9x1ma",
-  "canvasId": "<canvasId>",
-  "count": 12
+  "name": "search_references",
+  "arguments": {
+    "directionId": "bd-mob5pq35",
+    "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f",
+    "count": 12
+  }
 }
 ```
 
-## What it returns
+Redo one lane with better words:
 
-References, each with an `id`, `thumbUrl`, `imageUrl`, `sourceUrl`, `sourceSite`, `title`, `width` and `height`. Links only. No image is copied.
+```json
+{
+  "name": "search_references",
+  "arguments": {
+    "directionId": "bd-mob5pq35",
+    "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f",
+    "lane": "bridge",
+    "query": "cereal box hero section website"
+  }
+}
+```
 
-## Plan
+## Example output
 
-Each call counts as one search toward your monthly limit: 30 on Free, 300 on Pro, 200 on Founding.
+The shape, with example titles and ids:
 
-## Related
+```text
+Found 8 UI references and 4 art direction references for "cereal box". Show each source link with its image.
+UI references:
+1. [ref_8k2..., fidelity] Coffee brand landing page (lapa.ninja, ui): https://www.lapa.ninja/post/...
+2. [ref_9x1..., hero] Bold packaging hero (dribbble.com, ui): https://dribbble.com/shots/...
+...
+Art direction (place these in the art row, not with the UI references):
+9. [ref_3m7..., art] Vintage cereal box back panel (pinterest.com, art): https://www.pinterest.com/pin/...
+...
+Added to the tray of canvas c3f1a0d2-....
+Rate standouts and misses with rate_references (ids in brackets).
+```
 
-- [Find and rate references](/docs/guides/references/)
-- [All MCP tools](/docs/reference/tools/)
+`structuredContent` carries `references[]` (each with `id`, `title`, `sourceUrl`, `sourceSite`, `imageUrl`, `thumbUrl`, `zone`, `lane`), `zones` (counts), `queries`, `lanes`, `sources`, `dropped` and `addedToTray`.
+
+## Messages
+
+| Message | Fix |
+| --- | --- |
+| "You have used your 30 free searches this month. Upgrade: …" | See [Plans](/docs/reference/plans/) |
+| "Pass a directionId from bend_brief or a query." | Give one of them |
+| "That direction was not found. Directions are saved only when bend_brief gets a canvasId…" | Bend with `canvasId`, or search by `query` |
+| "To redo one lane, pass directionId, lane and query (the new words for that lane)." | Add the missing field |
+| "That direction has no hero lane. Its lanes: fidelity, taste, …" | Pick a listed lane |
+| "Search failed. Try again in a minute." | Retry once. Not counted |
+
+Related: [Sources](/docs/reference/sources/), [FAQ: few results](/docs/faq/#why-did-search-find-so-few-results).

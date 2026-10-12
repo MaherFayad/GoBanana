@@ -1,57 +1,75 @@
 ---
 title: Keyboard shortcuts
-description: Every canvas shortcut, from the same list the canvas uses.
+description: Every canvas shortcut, from the same registry the canvas uses (canvas/shortcuts.ts). Press ? on the board to see them there.
 ---
 
-Press <kbd>?</kbd> on the canvas to open this list there. <kbd>Mod</kbd> means <kbd>Cmd</kbd> on a Mac and <kbd>Ctrl</kbd> elsewhere.
-
-Every drag on the canvas has a keyboard route too.
+**Mod** is Command on a Mac and Control on Windows and Linux. Every pointer gesture has a keyboard route (WCAG 2.2 SC 2.5.7).
 
 ## Anywhere on the canvas
 
-| Keys | Action |
+| Keys | Does |
 | --- | --- |
-| <kbd>?</kbd> | Show keyboard shortcuts |
-| <kbd>Shift</kbd> <kbd>1</kbd> | Zoom to fit |
-| <kbd>Shift</kbd> <kbd>2</kbd> | Zoom to selection |
-| <kbd>Mod</kbd> <kbd>A</kbd> | Select all items |
-| <kbd>Esc</kbd> | Clear the selection (closes a menu first) |
-| <kbd>Mod</kbd> <kbd>D</kbd> | Duplicate the selection |
-| <kbd>H</kbd> | Hand tool: drag to pan |
-| <kbd>V</kbd> | Select tool: drag to select |
+| `?` | Show keyboard shortcuts |
+| `Shift` `1` | Zoom to fit |
+| `Shift` `2` | Zoom to selection |
+| `Mod` `A` | Select all items |
+| `Escape` | Clear the selection (closes a menu first) |
+| `Mod` `D` | Duplicate the selection |
+| `H` | Hand tool: drag to pan |
+| `V` | Select tool: drag to select |
 
-## On the board
+## On the board (board focused)
 
-| Keys | Action |
+| Keys | Does |
 | --- | --- |
-| <kbd>+</kbd> | Zoom in |
-| <kbd>-</kbd> | Zoom out |
-| <kbd>Mod</kbd> <kbd>0</kbd> | Zoom to 100% |
+| `+` | Zoom in |
+| `-` | Zoom out |
+| `Mod` `0` | Zoom to 100% |
 | Arrow keys | Move the view |
-| <kbd>Shift</kbd> and arrow keys | Move the view further |
-| Hold <kbd>Space</kbd> and drag | Pan while held |
-| Wheel | Pan (<kbd>Shift</kbd> for sideways) |
-| <kbd>Mod</kbd> and wheel | Zoom toward the pointer |
+| `Shift` + Arrow keys | Move the view further |
+| `Space` + drag | Pan while held |
+| Wheel | Pan (`Shift` for sideways) |
+| `Mod` + wheel | Zoom toward the pointer |
 | Drag on empty board | Select an area |
 
 ## On a focused item
 
-| Keys | Action |
+| Keys | Does |
 | --- | --- |
-| Arrow keys | Move the item 8 px |
-| <kbd>Shift</kbd> and arrow keys | Move the item 32 px |
-| <kbd>+</kbd> | Make the item bigger |
-| <kbd>-</kbd> | Make the item smaller |
-| <kbd>M</kbd> or <kbd>Shift</kbd> <kbd>F10</kbd> | Open the item menu (move to section, bring forward, remove) |
-| <kbd>F2</kbd> | Edit a note, title or role |
-| <kbd>Space</kbd> | Preview an image |
-| <kbd>Delete</kbd> or <kbd>Backspace</kbd> | Remove the item |
-| <kbd>Shift</kbd> and click | Add to or take out of the selection |
-| <kbd>Alt</kbd> and drag | Drag a copy |
-| <kbd>Mod</kbd> and drag | Move without snapping |
+| Arrow keys | Move the item 8px |
+| `Shift` + Arrow keys | Move the item 32px |
+| `+` | Make the item bigger (32px) |
+| `-` | Make the item smaller (32px) |
+| `M` or `Shift` `F10` | Open the item menu: preview, note, Ship or Explore mark, cut part, open source, move to section, duplicate, bring forward, remove |
+| `F2` | Edit a note, title or role |
+| `Space` | Preview an image |
+| `Delete` or `Backspace` | Remove the item |
+| `Shift` + click | Add to or take out of the selection |
+| `Alt` + drag | Drag a copy |
+| `Mod` + drag | Move without snapping |
 
-## In search results
+## In search results (the tray)
 
-| Keys | Action |
+| Keys | Does |
 | --- | --- |
-| <kbd>Enter</kbd> | Add the result to the canvas |
+| `Enter` | Add the focused result to the canvas |
+| Arrow keys on the tabs | Switch between UI, Art direction and Parts |
+| `Space` in the Parts tab | Pick a part for a new Frankenstein page |
+
+## In a Frankenstein page
+
+| Keys | Does |
+| --- | --- |
+| Arrow keys | Move focus between slots |
+| `Alt` + Arrow keys | Move the focused slot |
+| `Home`, `End` | First or last slot |
+| `Enter` | Recrop the slot |
+| `M` or `Shift` `F10` | Slot menu: recrop, swap with part, note, move, join row, own row, open source, remove |
+| `F2` | Edit the slot note (on the frame: rename) |
+| `Delete` or `Backspace` | Remove the slot from the page |
+| `Escape` | Back to the frame |
+| Arrow keys on the view switch | Collage, Wireframe, Even |
+
+## Windows and dialogs
+
+`Escape` closes menus, the preview and the crop editor. Focus returns to the item you started from.

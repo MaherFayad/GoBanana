@@ -1,0 +1,162 @@
+---
+// The docs landing hero, drawn like the GoBanana desktop: a two-tone heading set tight, a lead,
+// a yellow pill action, and an "Add to your agent" window with the server address.
+// hero.title takes " | " to split the dim first line from the bright second line.
+import { LinkButton } from '@astrojs/starlight/components';
+import Window from './Window.astro';
+import ServerUrl from './ServerUrl.astro';
+
+const { data } = Astro.locals.starlightRoute.entry;
+const ar = Astro.locals.starlightRoute.lang === 'ar';
+const { title = data.title, tagline, actions = [] } = data.hero || {};
+const [dim, bright] = title.includes(' | ') ? title.split(' | ') : ['', title];
+const t = ar
+	? {
+			eyebrow: 'دليل GoBanana',
+			window: 'إضافة إلى وكيلك',
+			steps: [
+				'ثبّت الإضافة، أو أضف العنوان كموصل MCP.',
+				'سجّل الدخول عبر OAuth. لا يوجد مفتاح API.',
+				'اطلب من وكيلك فكرة جامحة لصفحة واحدة.',
+			],
+		}
+	: {
+			eyebrow: 'GoBanana docs · v0.1 beta',
+			window: 'add-to-your-agent.app',
+			steps: [
+				'Install the plugin, or add the address as an MCP connector.',
+				'Sign in with OAuth. There is no API key.',
+				'Ask: "go wild on our launch page".',
+			],
+		};
+---
+
+<div class="gb-hero">
+	<div class="gb-hero-copy">
+		<p class="gb-eyebrow"><span class="gb-dot" aria-hidden="true"></span>{t.eyebrow}</p>
+		<h1 id="_top" class="gb-tt">
+			{dim && <span class="gb-tt-dim">{dim}</span>}
+			<span class="gb-tt-bright">{bright}</span>
+		</h1>
+		{tagline && <p class="gb-hero-lead" set:html={tagline} />}
+		{
+			actions.length > 0 && (
+				<div class="gb-hero-actions">
+					{actions.map(({ attrs: { class: className, ...attrs } = {}, icon, link: href, text, variant }) => (
+						<LinkButton {href} {variant} icon={icon?.name} class:list={[className]} {...attrs}>
+							{text}
+						</LinkButton>
+					))}
+				</div>
+			)
+		}
+	</div>
+	<Window title={t.window} class="gb-hero-window">
+		<ServerUrl />
+		<ol class="gb-hero-steps">
+			{t.steps.map((s) => <li>{s}</li>)}
+		</ol>
+	</Window>
+</div>
+
+<style>
+	.gb-hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+		align-items: center;
+		gap: clamp(1.5rem, 4vw, 3.5rem);
+		padding-block: clamp(1.5rem, 5vmin, 4rem) clamp(1.5rem, 4vmin, 3rem);
+	}
+	.gb-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0 0 1.1rem;
+		padding: 0.3rem 0.75rem;
+		border: 1px solid var(--gb-glass-border);
+		border-radius: 999px;
+		background: var(--gb-glass);
+		color: var(--sl-color-gray-1);
+		font-size: 0.78rem;
+		font-weight: 500;
+	}
+	.gb-dot {
+		inline-size: 0.45rem;
+		block-size: 0.45rem;
+		border-radius: 50%;
+		background: var(--gb-yellow);
+		box-shadow: 0 0 0 3px #ffd84d33;
+	}
+	.gb-tt {
+		margin: 0;
+		font-size: clamp(2.4rem, 1.5rem + 3.2vw, 4.2rem);
+		font-weight: 600;
+		line-height: 0.92;
+		letter-spacing: var(--gb-tracking);
+		text-wrap: balance;
+	}
+	:global(:root[lang='ar']) .gb-tt {
+		line-height: 1.25;
+	}
+	.gb-tt > span {
+		display: block;
+	}
+	.gb-tt-dim {
+		color: var(--gb-heading-dim);
+	}
+	.gb-tt-bright {
+		color: var(--gb-heading);
+	}
+	.gb-hero-lead {
+		max-inline-size: 36rem;
+		margin: 1.25rem 0 0;
+		color: var(--gb-body);
+		font-size: 1.05rem;
+		line-height: 1.55;
+	}
+	.gb-hero-lead :global(strong) {
+		color: var(--gb-heading);
+		font-weight: 600;
+	}
+	.gb-hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1rem;
+		margin-top: 1.75rem;
+	}
+	.gb-hero-steps {
+		display: grid;
+		gap: 0.6rem;
+		margin: 1rem 0 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: s;
+		font-size: 0.875rem;
+		color: var(--sl-color-gray-1);
+	}
+	.gb-hero-steps li {
+		counter-increment: s;
+		display: grid;
+		grid-template-columns: 1.5rem 1fr;
+		gap: 0.6rem;
+		align-items: start;
+		margin: 0;
+	}
+	.gb-hero-steps li::before {
+		content: counter(s);
+		display: grid;
+		place-items: center;
+		inline-size: 1.5rem;
+		block-size: 1.5rem;
+		border-radius: 50%;
+		background: #ffffff14;
+		color: var(--gb-heading);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+	@media (max-width: 62rem) {
+		.gb-hero {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+</style>

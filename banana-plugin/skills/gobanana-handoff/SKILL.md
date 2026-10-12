@@ -12,7 +12,7 @@ Turn one kept direction into the files a coding tool needs to build its page or 
 - **Page scope, always** (`scope: "page"`), unless the user asks in so many words for the direction to become the product's system (`scope: "system"`).
 - **Write each file at its returned `path`.** Create folders as needed.
 - **Never overwrite `AGENTS.md` or `CLAUDE.md`.** Merge one section between `<!-- gobanana:<slug> -->` and `<!-- /gobanana:<slug> -->` markers. Text outside the markers stays byte for byte. Never touch `.github/copilot-instructions.md`, global Cursor rules, the project's own `DESIGN.md`, tokens or theme.
-- **Files that GoBanana owns** (`design/explorations/<slug>/*`, `.cursor/rules/<slug>.mdc`, `.github/instructions/<slug>.instructions.md`): if one already exists from an earlier export, show what changes and ask before replacing it.
+- **Files that GoBanana owns** (`design/explorations/<slug>/*`, `.cursor/rules/gobanana-<slug>.mdc`, `.github/instructions/gobanana-<slug>.instructions.md`): if one already exists from an earlier export, show what changes and ask before replacing it.
 - **No reference images in the repo.** The files link to sources; never download or save images.
 - Plain words, no em dashes.
 
@@ -47,8 +47,8 @@ Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and t
 | `build_prompt` | `design/explorations/<slug>/BUILD-PROMPT.md`: paste into Claude Code, Cursor, v0 or Lovable | Free |
 | `design_md` | `design/explorations/<slug>/DESIGN.md`: scoped tokens as overrides | Free |
 | `review` | `design/explorations/<slug>/REVIEW.md`: checklist for build then critique | Pro |
-| `cursor_rules` | `.cursor/rules/<slug>.mdc`, with `globs` for the pages | Pro |
-| `copilot` | `.github/instructions/<slug>.instructions.md`, with `applyTo` for the pages | Pro |
+| `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc`, with `globs` for the pages | Pro |
+| `copilot` | `.github/instructions/gobanana-<slug>.instructions.md`, with `applyTo` for the pages | Pro |
 | `agents_md` | a section for `AGENTS.md` | Pro |
 | `claude_md` | a section for `CLAUDE.md` | Pro |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md`: a skeleton per Frankenstein page with source links | Free |

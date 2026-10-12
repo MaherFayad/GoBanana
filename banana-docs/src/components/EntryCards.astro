@@ -1,0 +1,160 @@
+---
+// Big entry cards for the docs landing page: number, kicker, title, one line, and an arrow.
+interface Entry {
+	title: string;
+	body: string;
+	href: string;
+	kicker: string;
+}
+interface Props {
+	items: Entry[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="gb-entries not-content">
+	{
+		items.map((it, i) => (
+			<li>
+				<a class="gb-entry" href={it.href}>
+					<span class="gb-entry-top">
+						<span class="gb-entry-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+						<span class="gb-entry-kicker">{it.kicker}</span>
+					</span>
+					<span class="gb-entry-title">{it.title}</span>
+					<span class="gb-entry-body">{it.body}</span>
+					<span class="gb-entry-go" aria-hidden="true">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M5 12h14M13 6l6 6-6 6" />
+						</svg>
+					</span>
+				</a>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.gb-entries {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+		margin: 1.5rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.gb-entries li {
+		margin: 0;
+	}
+	.gb-entry {
+		position: relative;
+		display: grid;
+		align-content: start;
+		gap: 0.5rem;
+		block-size: 100%;
+		padding: 1.35rem 1.35rem 1.4rem;
+		border: 1px solid var(--gb-glass-border);
+		border-radius: var(--gb-radius);
+		background: var(--gb-glass);
+		backdrop-filter: blur(var(--gb-blur));
+		-webkit-backdrop-filter: blur(var(--gb-blur));
+		color: inherit;
+		text-decoration: none;
+		overflow: clip;
+		transition:
+			border-color var(--gb-roll) var(--gb-ease),
+			background-color var(--gb-roll) var(--gb-ease),
+			translate var(--gb-roll) var(--gb-ease);
+	}
+	.gb-entry::after {
+		content: '';
+		position: absolute;
+		inset-block-start: -40%;
+		inset-inline-end: -20%;
+		inline-size: 60%;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(closest-side, #ffd84d1f, transparent);
+		opacity: 0;
+		transition: opacity var(--gb-roll) var(--gb-ease);
+		pointer-events: none;
+	}
+	.gb-entry:hover {
+		border-color: #ffffff40;
+		background: #262626a6;
+		translate: 0 -2px;
+	}
+	.gb-entry:hover::after {
+		opacity: 1;
+	}
+	.gb-entry-top {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.gb-entry-num {
+		display: grid;
+		place-items: center;
+		inline-size: 2rem;
+		block-size: 2rem;
+		border-radius: 0.6rem;
+		background: var(--gb-yellow);
+		color: var(--gb-ink);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+	.gb-entry-kicker {
+		color: var(--gb-meta);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	:global(:root[lang='ar']) .gb-entry-kicker {
+		letter-spacing: normal;
+		text-transform: none;
+		font-size: 0.8rem;
+	}
+	.gb-entry-title {
+		margin-top: 0.4rem;
+		color: var(--gb-heading);
+		font-size: 1.35rem;
+		font-weight: 600;
+		letter-spacing: var(--gb-tracking);
+		line-height: 1.1;
+	}
+	.gb-entry-body {
+		color: var(--gb-body);
+		font-size: 0.9rem;
+		line-height: 1.5;
+		padding-inline-end: 1.75rem;
+	}
+	.gb-entry-go {
+		position: absolute;
+		inset-block-end: 1.1rem;
+		inset-inline-end: 1.1rem;
+		color: var(--gb-yellow);
+		transition: translate var(--gb-roll) var(--gb-ease);
+	}
+	:global(:root[dir='rtl']) .gb-entry-go svg {
+		transform: scaleX(-1);
+	}
+	.gb-entry:hover .gb-entry-go {
+		translate: 3px 0;
+	}
+	@media (max-width: 40rem) {
+		.gb-entries {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.gb-entry,
+		.gb-entry-go {
+			transition: none;
+		}
+		.gb-entry:hover,
+		.gb-entry:hover .gb-entry-go {
+			translate: none;
+		}
+	}
+</style>

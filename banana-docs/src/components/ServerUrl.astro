@@ -1,0 +1,121 @@
+---
+// The MCP server address with a copy button. Works without JS (the URL is selectable text).
+import { MCP_URL } from '../consts';
+interface Props {
+	url?: string;
+	label?: string;
+}
+const ar = Astro.locals.starlightRoute.lang === 'ar';
+const { url = MCP_URL, label = ar ? 'عنوان خادم MCP' : 'MCP server address' } = Astro.props;
+const copy = ar ? 'نسخ' : 'Copy';
+const copied = ar ? 'تم النسخ' : 'Copied';
+---
+
+<div class="gb-url not-content" data-copied={copied}>
+	<span class="gb-url-label">{label}</span>
+	<div class="gb-url-row">
+		<code dir="ltr">{url}</code>
+		<button type="button" class="gb-url-copy" data-url={url} aria-label={`${copy}: ${label}`}>
+			<span class="gb-url-copy-text">{copy}</span>
+		</button>
+	</div>
+	<span class="gb-url-status" role="status" aria-live="polite"></span>
+</div>
+
+<script>
+	for (const btn of document.querySelectorAll<HTMLButtonElement>('.gb-url-copy')) {
+		btn.addEventListener('click', async () => {
+			const root = btn.closest<HTMLElement>('.gb-url');
+			const status = root?.querySelector<HTMLElement>('.gb-url-status');
+			const text = btn.querySelector<HTMLElement>('.gb-url-copy-text');
+			const original = text?.textContent ?? '';
+			try {
+				await navigator.clipboard.writeText(btn.dataset.url ?? '');
+				if (text) text.textContent = root?.dataset.copied ?? 'Copied';
+				if (status) status.textContent = root?.dataset.copied ?? 'Copied';
+				setTimeout(() => {
+					if (text) text.textContent = original;
+					if (status) status.textContent = '';
+				}, 1800);
+			} catch {
+				const code = root?.querySelector('code');
+				if (code) window.getSelection()?.selectAllChildren(code);
+			}
+		});
+	}
+</script>
+
+<style>
+	.gb-url {
+		display: grid;
+		gap: 0.4rem;
+		margin-block: 1rem;
+	}
+	.gb-url-label {
+		color: var(--gb-meta);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	:global(:root[lang='ar']) .gb-url-label {
+		letter-spacing: normal;
+		text-transform: none;
+		font-size: 0.8rem;
+	}
+	.gb-url-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.35rem 0.35rem 0.35rem 0.85rem;
+		border: 1px solid var(--gb-glass-border);
+		border-radius: 1.25rem;
+		background: #0d0d0dcc;
+		min-inline-size: 0;
+	}
+	:global(:root[dir='rtl']) .gb-url-row {
+		padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+	}
+	.gb-url-row code {
+		flex: 1;
+		min-inline-size: 0;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		line-height: 1.4;
+		color: var(--gb-brand);
+		font-family: var(--sl-font-mono);
+		font-size: 0.8rem;
+		background: none;
+		border: 0;
+		padding: 0;
+		scrollbar-width: none;
+	}
+	.gb-url-copy {
+		flex: none;
+		min-block-size: 2rem;
+		padding-inline: 0.9rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--gb-yellow);
+		color: var(--gb-ink);
+		font: inherit;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background-color var(--gb-roll) var(--gb-ease);
+	}
+	.gb-url-copy:hover {
+		background: var(--gb-yellow-hover);
+	}
+	.gb-url-copy:focus-visible {
+		outline: 2px solid #ffffff;
+		outline-offset: 2px;
+	}
+	.gb-url-status {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+</style>

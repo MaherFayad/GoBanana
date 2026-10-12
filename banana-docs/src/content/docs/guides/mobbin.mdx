@@ -1,0 +1,36 @@
+---
+title: Using Mobbin alongside
+description: Mobbin shows what works, GoBanana shows what's next. How the agent pairs your wild directions with real shipped screens, links only, through your own Mobbin connector.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+[Mobbin](https://mobbin.com) is a library of real, shipped app and web screens. It answers "how do the best apps do checkout today?". GoBanana answers "what could checkout look like that nobody has shipped?". Seeing both side by side keeps a wild idea honest.
+
+## How it works
+
+If you have **your own Mobbin connector** in your client, `gobanana-explore` uses it automatically. GoBanana's server is never involved.
+
+<Steps>
+
+1. The agent looks for tools named like `search_screens`, `search_flows` or `search_sections` from a Mobbin connector. None found: it skips this step silently.
+2. It searches **once per page**, not per direction: the same page on the same platform ("checkout" on iOS).
+3. It picks 3 to 6 real shipped screens.
+4. It adds **one note** to the board: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`
+5. It adds one line to its reply, as the "what works" baseline next to the wild directions.
+
+</Steps>
+
+## The rules
+
+- **Links only.** Mobbin screens are never placed as images, never downloaded, never saved.
+- **Never sent to GoBanana.** Mobbin links are not passed to `search_references` or placed as references. The only trace on GoBanana's side is the text of your board note.
+- **Your account, your terms.** The agent uses your Mobbin connector under your Mobbin plan and terms.
+
+<Aside type="note" title="Connecting Mobbin">
+How to add a Mobbin connector depends on Mobbin and your client; GoBanana does not set it up. In Claude, look for Mobbin under Settings, Connectors.
+</Aside>
+
+## Without a connector
+
+Open Mobbin in a browser next to your GoBanana board. Copy links to the shipped screens you want as a baseline and ask the agent to "add a Shipped today note with these links".

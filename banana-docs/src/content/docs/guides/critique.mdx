@@ -1,0 +1,62 @@
+---
+title: Build then critique
+description: Build the wild page, screenshot it at your platform's sizes, grade every checklist item with evidence, and fix the top 3 inside the page only.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Say **"critique the build"**, "does this match the direction" or "grade my page". The `gobanana-critique` skill checks a built page against the direction it came from, honestly and with evidence.
+
+## What it needs
+
+- **The page:** a URL, a local dev server (`http://localhost:3000/pricing`) or screenshots. For a local project with no server running, the agent offers to start your dev script and asks first.
+- **The direction:** from the chat, `design/explorations/<slug>/` in your repo, or the board.
+- **A browser tool**, any of: the Playwright MCP, Chrome tools (Claude in Chrome or similar), or the Playwright CLI through `npx`. With none, it asks you for screenshots.
+
+## The steps
+
+<Steps>
+
+1. **Get the checklist.** `design/explorations/<slug>/REVIEW.md` if it exists. Otherwise `export_kit` with `review` (Pro). On Free, the agent builds the checklist from DIRECTION.md: one item each for signature, pattern, typography, color, layout, motion, texture, iconography, density, every avoid line, plus contrast and target size.
+
+2. **Screenshot your page** at the platform's sizes:
+
+   | Platform | Sizes |
+   | --- | --- |
+   | `mobile` | 390x844 |
+   | `tablet` | 834x1194 |
+   | `website` | 1440x900 and 390x844 |
+   | `webapp` | 1440x900 |
+   | `any` | 1440x900 and 390x844 |
+
+   Motion items are also checked with reduced motion on (Playwright `reducedMotion: "reduce"`) and by reading the CSS.
+
+   Without the MCP, the CLI does it:
+
+   ```bash
+   npx --yes playwright screenshot --viewport-size=390,844 --full-page http://localhost:3000/pricing /tmp/mobile.png
+   ```
+
+3. **Grade every item** `pass`, `fix`, or `not checked` with a reason, each with evidence (a screenshot at a named size, or a file and line):
+
+   | Item | Grade | Evidence |
+   | --- | --- | --- |
+   | Signature: balance shown as a stamped ticket | pass | 390x844: ticket card with perforated edge above the fold |
+   | Contrast: body text 4.5:1 | fix | 1440x900: #8A8F98 on #F4F1EA is 2.9:1 (`app/pricing/page.tsx` line 42) |
+   | Motion respects reduced motion | not checked | no browser tool; CSS has no `prefers-reduced-motion` block |
+
+   Accessibility is graded strictly: WCAG 2.2 AA text 4.5:1 (SC 1.4.3), UI parts 3:1 (SC 1.4.11), target size (SC 2.5.8), visible focus, reduced motion. So is the platform: no 12 column grid on a phone, 44pt targets on mobile.
+
+4. **Top 3 fixes**, one line each: what, where, why. Then how close it is: "7 of 11 pass; the signature is there, the type voice is not."
+
+5. **Apply, if you say yes.** "Apply these 3 fixes? I'll only touch files for /pricing." It edits only files in the page scope, screenshots again at the same sizes and re-grades what it touched.
+
+</Steps>
+
+## Page scope, always
+
+Fixes stay in the files for the scoped pages and their page-local components and styles. The skill never edits shared components, global CSS, your tokens or theme, layouts used by other pages, or other routes. If a fix needs a shared file, it lists it and leaves it to you.
+
+<Aside type="note" title="Your page only">
+Screenshots are of your own page, saved to a temp folder (or `design/explorations/<slug>/critique/` if you want them kept). The skill never screenshots or saves third party reference images.
+</Aside>

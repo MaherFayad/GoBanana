@@ -1,0 +1,60 @@
+---
+title: VS Code and GitHub Copilot
+description: Add GoBanana to VS Code's mcp.json for Copilot agent mode, sign in, and get scoped Copilot instructions for your wild page.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+GitHub Copilot in VS Code uses MCP servers in **agent mode**.
+
+<Steps>
+
+1. Open the config. Pick where:
+
+   <Tabs syncKey="scope">
+   <TabItem label="For this project">
+
+   Create `.vscode/mcp.json` in the workspace. Commit it to share the server with the team.
+
+   </TabItem>
+   <TabItem label="For you (all projects)">
+
+   Run **MCP: Open User Configuration** from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
+
+   </TabItem>
+   </Tabs>
+
+2. Add GoBanana and save:
+
+   ```json title=".vscode/mcp.json"
+   {
+     "servers": {
+       "gobanana": {
+         "type": "http",
+         "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+       }
+     }
+   }
+   ```
+
+   Or run **MCP: Add Server**, choose **HTTP**, paste the URL and name it `gobanana`.
+
+3. A **Start** code lens appears above the entry. Click it. VS Code asks to sign in with GoBanana; allow it, sign in in the browser, and come back.
+
+4. Open the Copilot Chat view, switch to **Agent** mode, open the **tools** picker and make sure the GoBanana tools are checked.
+
+5. Ask: **"Use the GoBanana ping tool."**
+
+</Steps>
+
+## Without skills
+
+Copilot does not load Claude plugins. Save the playbook as a prompt file or paste it at the start of a chat. The text is in [No plugin?](/docs/start/first-board/#no-plugin).
+
+## Hand off for Copilot
+
+`export_kit` with the `copilot` format (Pro) returns `.github/instructions/gobanana-<slug>.instructions.md` with `applyTo` set to your page's files. Copilot applies it only when it works on those files. GoBanana never edits your global `.github/copilot-instructions.md`. See [Hand off](/docs/guides/handoff/).
+
+<Aside type="note" title="Organization policy">
+On Copilot Business and Enterprise, an admin can turn MCP servers off for the organization. If GoBanana's tools never show, check the "MCP servers in Copilot" policy.
+</Aside>

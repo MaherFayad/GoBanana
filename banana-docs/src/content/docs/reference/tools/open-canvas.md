@@ -1,43 +1,49 @@
 ---
 title: open_canvas
-description: "Show a canvas inline, or create and show one when you leave out canvasId, and get its web link."
+description: Show a board inline in clients with MCP Apps and get its web link. Without a canvasId it creates a new board and shows it.
 ---
 
-Show a canvas inline, or create and show one when you leave out `canvasId`, and get its web link. Clients that support MCP Apps show the canvas in the chat. Every client gets the web link.
-
-**Title in clients:** Open canvas
-
-## Parameters
-
-<div class="gb-table">
-
-| Parameter | Type | Required | What it does |
+| Plan | Quota | Changes data | Hints |
 | --- | --- | --- | --- |
-| `canvasId` | string | No | Canvas to open. Leave out to create a new canvas. |
-| `title` | string | No | Canvas title, up to 80 characters. |
-| `brief` | string | No | The design brief, up to 500 characters. |
-| `taste` | list | No | Up to 5 short style words, each up to 40 characters, for example `["glassmorphism", "big typography", "dark mode"]`. Saved on the canvas for later searches. |
+| All | Without `canvasId`: counts toward the canvas limit | Only when it creates a board | |
 
-</div>
+`open_canvas` is linked to the MCP Apps resource `ui://banana/canvas`. Clients that support MCP Apps (Claude.ai, Claude Desktop) render the board in the chat. Every client gets the web link in the text.
 
-## Example
+## Inputs
+
+| Name | Type | Required | Limits | What it does |
+| --- | --- | --- | --- | --- |
+| `canvasId` | string | No | 1 to 100 characters | The board to show. Leave out to create a new one |
+| `title` | string | No | 1 to 80 characters | Title for a new board |
+| `brief` | string | No | 1 to 500 characters | Brief for a new board |
+| `taste` | string[] | No | 1 to 5 words | Style words for searches on this board |
+
+## Example call
 
 ```json
-{
-  "canvasId": "<canvasId>"
-}
+{ "name": "open_canvas", "arguments": { "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f" } }
 ```
 
-## What it returns
+## Example output
 
-The canvas `id`, `title`, `webUrl` and `brief`, with counts of items, sections and tray results.
+```text
+Opened canvas "Coffee launch page" (id c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f).
+Web link: https://gobanana-server.maherfayad55.workers.dev/c/c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f
+It has 31 items and 9 results in its tray.
+```
 
-## Plan
+`structuredContent.canvas` is small on purpose (`id`, `title`, `webUrl`, `brief`, `items`, `sections`, `tray` counts) because some hosts show it to the model. The full board goes to the view only, in the result's `_meta`.
 
-Free to open. Creating a canvas counts toward your canvas limit: 3 on Free, unlimited on Pro.
+## The inline view
 
-## Related
+- Pan, zoom, move, edit notes, use [keyboard shortcuts](/docs/reference/shortcuts/). Changes save to the same board as the web.
+- It refreshes on its own while visible: about every 4 seconds with focus, 15 seconds without, never while hidden.
+- **Upload** and **Share** are web only; uploads show as link cards inline.
 
-- [Your first board](/docs/start/first-board/)
-- [Canvases and the dashboard](/docs/guides/canvases/)
-- [All MCP tools](/docs/reference/tools/)
+## Messages
+
+| Message | Fix |
+| --- | --- |
+| "canvasId must be an id from open_canvas." | Use an id from `get_canvas` |
+| "That canvas was not found…" | Wrong id or another account |
+| "You have used your 3 free canvases…" | Only when creating |

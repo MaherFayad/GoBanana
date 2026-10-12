@@ -1,0 +1,83 @@
+---
+title: How it works
+description: Pin, bend, search two zones, board, Frankenstein it, hand off. Which part the server does and which part your agent does.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+## Two halves
+
+GoBanana splits the work in two on purpose.
+
+| The GoBanana server | Your agent (Claude, Cursor, Codex...) |
+| --- | --- |
+| Bends a brief with fixed word lists and templates. Same input, same output. | Shapes the brief, pins the platform and the pages. |
+| Runs web image searches on chosen galleries and filters list pages, shops, UI kits and repeats. | Looks at every result and rates the junk and the standouts. |
+| Saves boards, sections, notes, parts and palettes. Lays them out. | Decides which ideas to keep and writes the "steal:" notes. |
+| Computes colors and WCAG contrast. | Explains them and picks what ships. |
+| Returns file text for exports. | Writes the files in your repo, merging, never overwriting. |
+
+The server makes no AI calls. The plugin's skills tell your agent which tools to call, in which order, and how to show the results.
+
+## The flow
+
+<Steps>
+
+1. **Pin the platform and the page.**
+
+   The platform is one of `mobile`, `tablet`, `website`, `webapp` or `any`. The agent reads it from your words ("iPhone onboarding" is mobile, "launch page" is website, "dashboard" is web app) or asks one question. The page is 1 to 3 pages, like "pricing page" or "first run onboarding".
+
+   If you name the whole product, the agent calls `bend_brief` without pages. It returns `wildSpots`, places where weirdness pays off, and the agent asks "Where should the weirdness go?". See [Where weirdness pays off](/docs/guides/where-weirdness-pays/).
+
+2. **Bend the brief into 8 ideas.**
+
+   `bend_brief` combines moves (transplant, material, era, constraint, scale, lens) at the wildness you pick, from 1 Fresh to 5 Bananas. Each direction has a title, a twist, a visual spec for the platform, art queries and a ready prompt. Bending is free and unlimited.
+
+3. **Triage.**
+
+   The agent keeps an idea only if it has a clear UI path for your page, is not a near duplicate, and later finds at least 6 usable UI references. It shortlists 3 (at most 4), and drops the rest with `rate_directions`. Dropped ideas leave the canvas and are never shown.
+
+4. **Search two zones.**
+
+   One `search_references` call per kept direction. About a third of the results are **art direction**: the wild idea as raw images (the weave, the receipt, the riso print) from Pinterest, Behance and art galleries. The rest are **UI references**: real screens and components for your platform from UI galleries, Dribbble, Behance, Pinterest and Awwwards. See [Sources](/docs/reference/sources/).
+
+5. **Audit.**
+
+   The agent judges every result and calls `rate_references`: `bad` for shops, stock, wrong platform, clutter or off idea, `great` for the 1 to 3 standouts. Bad results leave the tray and never come back for you. If more than 40% of a lane is bad, it searches that lane again with better words, at most twice.
+
+6. **Board.**
+
+   `add_to_canvas` places, per direction, 2 to 4 art items in an **Art direction** row above 6 to 8 items in a **UI references** grid. Each tile gets a note that starts with `steal:`. `arrange_canvas` tidies it. Only then does `open_canvas` show the board, finished, inline or as a web link. See [Reading a board](/docs/guides/reading-a-board/).
+
+7. **Frankenstein it (optional).**
+
+   `cut_parts` slices parts out of the UI references (a nav, a hero, cards) as crop rectangles. `frankenstein_page` stacks them into 3 or 4 new page variants. `update_frankenstein` and `remix_frankenstein` fix and remix them. See [Frankenstein it](/docs/guides/frankenstein/).
+
+8. **Hand off.**
+
+   `export_kit` returns DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and rules for Cursor, Copilot, Claude Code and Codex, all scoped to your pages. The agent writes them into your repo. See [Hand off to your coding agent](/docs/guides/handoff/).
+
+9. **Build then critique.**
+
+   Your coding agent builds the page. The critique skill screenshots it at your platform's sizes and grades it against REVIEW.md, then offers the top 3 fixes inside the page only. See [Build then critique](/docs/guides/critique/).
+
+</Steps>
+
+## Hard rules
+
+These hold in every tool, skill and export.
+
+- **Links, never copies.** GoBanana keeps image URLs and titles only. Images load from their source in your browser.
+- **Source link everywhere**: on the canvas, in share links, in every export and in every skill reply.
+- **Parts are crops, not files.** A Frankenstein part is a rectangle the browser shows over the original image.
+- **No scraping.** Web image search results only.
+- **Takedowns apply everywhere**, including shared boards, on the next load.
+- **WCAG 2.2 AA.** Palettes tag each color pair `ship` or `explore` by contrast, and exports say only `ship` colors carry text.
+
+## Plans in one paragraph
+
+Free gives you 30 searches a month, 3 canvases, 40 items per canvas and the files that make one page buildable (DESIGN.md, BRIEF.md, DIRECTION.md, BUILD-PROMPT.md, FRANKENSTEIN.md). Pro is $5 a month or $39 a year: 300 searches, unlimited canvases, 300 items per canvas, share links, uploads and every export. Bending, rating and Frankenstein tools are free.
+
+<Aside type="note" title="Beta">
+While checkout is closed, every signed in account gets Pro limits and nothing is charged. See [Plans](/docs/start/plans/).
+</Aside>

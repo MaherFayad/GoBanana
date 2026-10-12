@@ -1,31 +1,78 @@
 ---
-title: GoBanana
-description: Docs for GoBanana, the Claude plugin and MCP server that bends a design brief into wild directions and finds references for them.
+title: GoBanana docs
+description: GoBanana bends one page into wild directions, fills a moodboard with linked references, Frankensteins new pages from them, and hands the result to your coding agent.
 template: splash
+tableOfContents: false
 hero:
-  title: GoBanana
-  tagline: Bend a brief into directions nobody else has. GoBanana finds linked references for each one and exports a kit your agent can build from.
+  title: One wild idea. | For a page or two.
+  tagline: GoBanana is an MCP server and a Claude plugin. Ask your agent to <strong>go wild</strong> on a launch page, an onboarding or a 404. You get sharp directions with a full visual spec, a board of linked references, new pages stitched from the best parts, and scoped files your coding agent can build from.
   actions:
-    - text: Add to Claude
-      link: /docs/start/install/
+    - text: Set up in 2 minutes
+      link: /docs/setup/overview/
       icon: right-arrow
       variant: primary
-    - text: Introduction
-      link: /docs/start/introduction/
+    - text: What is GoBanana?
+      link: /docs/start/what-is-gobanana/
       variant: minimal
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import EntryCards from '../../components/EntryCards.astro';
+import Flow from '../../components/Flow.astro';
+import { CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
 
-## Explore the docs
+<EntryCards
+	items={[
+		{
+			kicker: 'Set up',
+			title: 'Connect your agent',
+			body: 'Claude Code, Claude.ai, Claude Desktop, ChatGPT, Cursor, VS Code, Windsurf, Codex or any MCP client. One address, OAuth sign in.',
+			href: '/docs/setup/overview/',
+		},
+		{
+			kicker: 'First board',
+			title: 'Go wild on one page',
+			body: 'Ask once. Watch the agent bend 8 ideas, keep the best 3, search two zones of references and open a finished board.',
+			href: '/docs/start/first-board/',
+		},
+		{
+			kicker: 'Frankenstein it',
+			title: 'Stitch new pages from parts',
+			body: 'The nav from one reference, the hero from another, the cards from a third. Several variants at once, every part linked.',
+			href: '/docs/guides/frankenstein/',
+		},
+		{
+			kicker: 'Tool reference',
+			title: 'Every MCP tool, in full',
+			body: '17 tools with inputs, limits, defaults, example calls, example output and the plan each one needs.',
+			href: '/docs/reference/tools/',
+		},
+	]}
+/>
+
+## How a run goes
+
+<Flow
+	steps={[
+		{ title: 'Pin', body: 'Platform and one to three pages. Ask the whole product, and the agent asks where the weirdness should go.' },
+		{ title: 'Bend', body: '8 ideas, each with a visual spec. The agent drops the ones that cannot become UI and keeps 3 or 4.' },
+		{ title: 'Search', body: 'Two zones per direction: art direction images and real UI for your platform. Junk is rated out.' },
+		{ title: 'Board', body: 'Art row above a UI grid, a "steal:" note on every tile, the source link on every image.' },
+		{ title: 'Frankenstein', body: 'Cut parts from the UI references and stack new page variants. Optional.' },
+		{ title: 'Hand off', body: 'DIRECTION.md, BUILD-PROMPT.md, rules for Cursor, Copilot, Claude Code and Codex. Then build and critique.' },
+	]}
+/>
+
+<Aside type="tip" title="Not your design system">
+GoBanana is for one crazy idea over a page or two: a launch page, onboarding, an empty state, a 404, a paywall, a year in review. Your product keeps its own design system. Every exported file applies only to the pages you name and inherits your system.
+</Aside>
+
+## Popular pages
 
 <CardGrid>
-	<LinkCard title="Your first board" description="Ask for a wild take on a screen and watch the canvas fill up." href="/docs/start/first-board/" />
-	<LinkCard title="Connect the MCP server" description="Claude apps, Claude Code, ChatGPT and Cursor, with one server address." href="/docs/start/connect/" />
-	<LinkCard title="Bend a brief into directions" description="Moves, wildness levels and culture lenses." href="/docs/guides/bend/" />
-	<LinkCard title="Find and rate references" description="Search Pinterest, Dribbble, Behance and Awwwards, then keep the good ones." href="/docs/guides/references/" />
-	<LinkCard title="Export a kit" description="DESIGN.md, AGENTS.md, tokens, Tailwind and FigJam." href="/docs/guides/export/" />
-	<LinkCard title="Plans and limits" description="What Free and Pro include, and what happens at a limit." href="/docs/reference/plans/" />
-	<LinkCard title="MCP tools" description="Every tool, with its parameters." href="/docs/reference/tools/" />
-	<LinkCard title="Troubleshooting" description="Sign-in, missing canvases, limits and images that do not load." href="/docs/guides/troubleshooting/" />
+	<LinkCard title="How it works" description="Bend, search two zones, board, Frankenstein it, export. What the server does and what your agent does." href="/docs/start/how-it-works/" />
+	<LinkCard title="Go wild on a screen" description="Wildness levels, platforms, pages, taste words and culture lenses." href="/docs/guides/go-wild/" />
+	<LinkCard title="Hand off to your coding agent" description="The scoped harness pack and how each tool picks it up." href="/docs/guides/handoff/" />
+	<LinkCard title="Plans and limits" description="Free, Pro and Founding. What each one includes and what happens at a limit." href="/docs/reference/plans/" />
+	<LinkCard title="Troubleshooting" description="Login loops, missing tools, a canvas that does not show inline, quota messages, proxies." href="/docs/setup/troubleshooting/" />
+	<LinkCard title="FAQ" description="Is it AI? Do you store images? Can I use the references? 30 straight answers." href="/docs/faq/" />
 </CardGrid>

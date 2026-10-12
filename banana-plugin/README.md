@@ -105,8 +105,8 @@ If your client cannot show the canvas inline, every skill gives you the web link
 | `direction_md` | `design/explorations/<slug>/DIRECTION.md` | Free |
 | `build_prompt` | `design/explorations/<slug>/BUILD-PROMPT.md` | Free |
 | `review` | `design/explorations/<slug>/REVIEW.md` | Pro |
-| `cursor_rules` | `.cursor/rules/<slug>.mdc` | Pro |
-| `copilot` | `.github/instructions/<slug>.instructions.md` | Pro |
+| `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc` | Pro |
+| `copilot` | `.github/instructions/gobanana-<slug>.instructions.md` | Pro |
 | `agents_md` | Section in `AGENTS.md` | Pro |
 | `claude_md` | Section in `CLAUDE.md` | Pro |
 | `tokens`, `tailwind` | Override tokens and theme for the pages | Pro |

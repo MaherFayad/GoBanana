@@ -1,31 +1,53 @@
 ---
-title: GoBanana
-description: توثيق GoBanana، إضافة Claude وخادم MCP الذي يحول وصف التصميم إلى اتجاهات جريئة ويجد لها المراجع.
+title: توثيق GoBanana
+description: فكرة جامحة واحدة لصفحة أو صفحتين، لا لنظام التصميم الكامل لمنتجك. اربط وكيلك، واحصل على اتجاهات بمواصفات بصرية ولوحة مراجع مرتبطة بمصادرها.
 template: splash
+tableOfContents: false
 hero:
-  title: GoBanana
-  tagline: حول فكرتك إلى اتجاهات لم يسبقك إليها أحد. يجد GoBanana مراجع مرتبطة بمصادرها لكل اتجاه، ويصدر حزمة يبني منها وكيلك.
+  title: فكرة جامحة واحدة. | لصفحة أو صفحتين.
+  tagline: GoBanana خادم MCP وإضافة لـ Claude. اطلب من وكيلك فكرة جامحة لصفحة إطلاق أو شاشة ترحيب أو صفحة 404، فتحصل على اتجاهات بمواصفات بصرية كاملة، ولوحة مراجع مرتبطة بمصادرها، وصفحات جديدة مركّبة من أفضل أجزائها، وملفات يبني منها وكيل البرمجة لديك.
   actions:
-    - text: إضافة إلى Claude
-      link: /docs/ar/start/install/
+    - text: الإعداد
+      link: /docs/setup/overview/
       icon: right-arrow
       variant: primary
-    - text: مقدمة
-      link: /docs/ar/start/introduction/
+    - text: ما هو GoBanana؟
+      link: /docs/start/what-is-gobanana/
       variant: minimal
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import EntryCards from '../../../components/EntryCards.astro';
+import { Aside } from '@astrojs/starlight/components';
 
-## تصفح التوثيق
+<Aside type="note" title="الصفحات الإنجليزية أحدث">
+هذه الصفحة الرئيسية بالعربية. بقية صفحات التوثيق تظهر بالإنجليزية حاليًا إلى أن تكتمل ترجمتها.
+</Aside>
 
-<CardGrid>
-	<LinkCard title="لوحتك الأولى" description="اطلب فكرة جريئة لشاشة وشاهد اللوحة تمتلئ." href="/docs/ar/start/first-board/" />
-	<LinkCard title="ربط خادم MCP" description="تطبيقات Claude وClaude Code وChatGPT وCursor، بعنوان خادم واحد." href="/docs/ar/start/connect/" />
-	<LinkCard title="تحويل الوصف إلى اتجاهات" description="الحركات ومستويات الجرأة والعدسات الثقافية." href="/docs/ar/guides/bend/" />
-	<LinkCard title="البحث عن المراجع وتقييمها" description="ابحث في Pinterest وDribbble وBehance وAwwwards، واحتفظ بالجيد منها." href="/docs/ar/guides/references/" />
-	<LinkCard title="تصدير الحزمة" description="DESIGN.md وAGENTS.md ورموز التصميم وTailwind وFigJam." href="/docs/ar/guides/export/" />
-	<LinkCard title="الخطط والحدود" description="ما تشمله الخطة المجانية وPro، وما يحدث عند بلوغ الحد." href="/docs/ar/reference/plans/" />
-	<LinkCard title="أدوات MCP" description="كل الأدوات مع معاملاتها." href="/docs/ar/reference/tools/" />
-	<LinkCard title="حل المشكلات" description="تسجيل الدخول، واللوحات المفقودة، والحدود، والصور التي لا تظهر." href="/docs/ar/guides/troubleshooting/" />
-</CardGrid>
+<EntryCards
+	items={[
+		{
+			kicker: 'الإعداد',
+			title: 'اربط وكيلك',
+			body: 'Claude Code وClaude.ai وClaude Desktop وChatGPT وCursor وVS Code وWindsurf وCodex. عنوان واحد وتسجيل دخول عبر OAuth.',
+			href: '/docs/setup/overview/',
+		},
+		{
+			kicker: 'اللوحة الأولى',
+			title: 'فكرة جامحة لصفحة واحدة',
+			body: 'اطلب مرة واحدة: يولّد الوكيل 8 أفكار ويحتفظ بأفضل 3، ويبحث في منطقتين من المراجع، ثم يفتح لوحة مكتملة.',
+			href: '/docs/start/first-board/',
+		},
+		{
+			kicker: 'Frankenstein it',
+			title: 'صفحات جديدة من أجزاء المراجع',
+			body: 'شريط التنقل من مرجع، والواجهة الرئيسية من آخر، والبطاقات من ثالث. كل جزء يبقى مرتبطًا بمصدره.',
+			href: '/docs/guides/frankenstein/',
+		},
+		{
+			kicker: 'مرجع الأدوات',
+			title: 'كل أدوات MCP',
+			body: '17 أداة مع مدخلاتها وحدودها وأمثلة الاستدعاء والخطة المطلوبة لكل منها.',
+			href: '/docs/reference/tools/',
+		},
+	]}
+/>

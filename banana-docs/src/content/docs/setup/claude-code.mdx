@@ -1,0 +1,132 @@
+---
+title: Claude Code
+description: Install the GoBanana plugin for the 9 skills, sign in with /mcp, or add the server alone. Plus --plugin-dir for local development.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Claude Code gets the most out of GoBanana: the plugin's skills run the whole flow, and Claude Code can write the hand-off files straight into your repo.
+
+## Option A: the plugin (recommended)
+
+The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `gobanana-frankenstein`, `gobanana-handoff` and the rest). See [Skills](/docs/reference/skills/).
+
+<Steps>
+
+1. **Install the plugin** from the marketplace that lists GoBanana:
+
+   ```text
+   /plugin install gobanana --marketplace <owner>/<repo>
+   ```
+
+   <Aside type="caution" title="Marketplace not public yet">
+   The marketplace owner and repo are set at launch. Until then, use Option B, or load the plugin folder from a clone of the GoBanana repo with `--plugin-dir` (below).
+   </Aside>
+
+2. **Restart Claude Code** if it asks, so the plugin loads.
+
+3. **Sign in.** Run:
+
+   ```text
+   /mcp
+   ```
+
+   Pick **plugin:gobanana:gobanana** from the list and choose **Authenticate** (or **Log in**). A browser window opens on the GoBanana sign in page. Sign in with email or a provider. When the browser says you can close it, go back to the terminal. The server shows as connected.
+
+4. **Check it.** Ask:
+
+   ```text
+   Check my GoBanana connection.
+   ```
+
+   Claude calls `ping` and answers "Connected to GoBanana as you@example.com."
+
+</Steps>
+
+## Option B: the server only
+
+No skills, just the tools. Useful in a repo where you only want to export, or when the marketplace is not reachable.
+
+<Tabs syncKey="scope">
+<TabItem label="For you (all projects)">
+
+```bash
+claude mcp add --transport http --scope user gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="For this project">
+
+```bash
+claude mcp add --transport http --scope project gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+This writes a `.mcp.json` at the project root that you can commit, so your team gets the server too. Each person still signs in with their own account.
+
+</TabItem>
+</Tabs>
+
+Then start Claude Code, run `/mcp`, pick **gobanana** and sign in.
+
+Without the plugin, give Claude the playbook once per chat. See [No plugin?](/docs/start/first-board/#no-plugin).
+
+## Option C: local development with --plugin-dir
+
+To try a local copy of the plugin (for example after editing a skill), point Claude Code at the folder:
+
+```bash
+git clone <gobanana-repo-url>
+cd your-project
+claude --plugin-dir /path/to/Gobanana/banana-plugin
+```
+
+`--plugin-dir` loads the plugin for that session only. Edit a `SKILL.md`, restart Claude Code, and the change is live. The folder's `.mcp.json` points at the same server:
+
+```json title="banana-plugin/.mcp.json"
+{
+  "mcpServers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+To check the plugin is valid:
+
+```bash
+claude plugin validate --strict ./banana-plugin
+```
+
+## Tool names in Claude Code
+
+With the plugin, tools show up as `mcp__plugin_gobanana_gobanana__<tool>`, for example `mcp__plugin_gobanana_gobanana__bend_brief`. With Option B they are `mcp__gobanana__<tool>`. Use these names if you add them to `permissions.allow` in `.claude/settings.json` so Claude does not ask each time:
+
+```json title=".claude/settings.json"
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_gobanana_gobanana__ping",
+      "mcp__plugin_gobanana_gobanana__bend_brief",
+      "mcp__plugin_gobanana_gobanana__get_canvas",
+      "mcp__plugin_gobanana_gobanana__rate_references",
+      "mcp__plugin_gobanana_gobanana__rate_directions"
+    ]
+  }
+}
+```
+
+Leave `delete_canvas` out of the allow list, so Claude always asks before deleting.
+
+## The canvas in Claude Code
+
+Claude Code runs in a terminal, so it cannot show the board inline. Every skill reply ends with the web link: "Open the board here: https://gobanana-server.maherfayad55.workers.dev/c/...". Open it in a browser signed in with the same account.
+
+## Upgrading from an older install
+
+The plugin's server key was renamed from `banana` to `gobanana`, and the skills from `banana-*` to `gobanana-*`. If you see an old `banana` server in `/mcp`, uninstall the old plugin, install `gobanana`, and sign in again.
+
+## Next
+
+[Your first board](/docs/start/first-board/), or [Hand off to your coding agent](/docs/guides/handoff/) if you already have a board.

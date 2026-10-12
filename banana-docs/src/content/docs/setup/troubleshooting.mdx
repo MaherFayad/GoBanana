@@ -1,0 +1,106 @@
+---
+title: Troubleshooting
+description: Login loops, missing tools, a canvas that does not show inline, quota messages, corporate proxies, and every plain message GoBanana sends back.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+GoBanana never throws raw errors at your agent. Every problem comes back as one short sentence. Find yours below.
+
+## Login loop or "not signed in"
+
+**Message:** "You are not signed in. Reconnect to sign in again."
+
+The token is missing, expired or for another server. Fix it per client:
+
+| Client | Do this |
+| --- | --- |
+| Claude Code | Run `/mcp`, pick the GoBanana server, choose **Clear authentication** if shown, then **Authenticate** again |
+| Claude.ai, Desktop | Settings, Connectors, GoBanana, **Disconnect**, then **Connect** |
+| Cursor | Settings, Tools and MCP, toggle GoBanana off and on, then **Connect** |
+| VS Code | Run **MCP: List Servers**, pick gobanana, **Restart**; or the Accounts menu, sign out of GoBanana |
+| Codex | `codex mcp logout gobanana`, then `codex mcp login gobanana` |
+| mcp-remote | Delete `~/.mcp-auth` and restart the client |
+
+**The browser keeps bouncing back to sign in.** Usually one of:
+
+- **Third party cookies or a blocker** in the browser that opens for sign in. Allow cookies for the GoBanana domain and for `authkit.app`, or sign in from a normal (not private) window.
+- **A stale callback.** Close every GoBanana sign in tab, then start the sign in again from the client.
+- **The wrong URL.** The address must end in `/api/mcp`. The bare domain or `/mcp` will not work.
+- **Clock skew.** Tokens are time based. If your computer's clock is minutes off, set it to update automatically.
+
+**"You are signed in, but GoBanana could not load your email yet. Try again in a minute."** Your first sign in worked; the email lookup did not finish. Wait a minute and run `ping` again.
+
+## Tools are missing
+
+<Steps>
+
+1. Check the server is **connected** in your client's MCP list, not just added. A server that needs sign in shows no tools.
+2. Check the URL is exactly `https://gobanana-server.maherfayad55.workers.dev/api/mcp`.
+3. Check the tools are **turned on** for the chat: the tools menu in Claude, the tools picker in VS Code agent mode, the per tool toggles in Cursor and Windsurf.
+4. **Claude Code plugin:** run `/plugin` and check **gobanana** is enabled. An old install may still use the server key `banana`; reinstall the plugin.
+5. **Too many tools:** some clients cap the total number of tools across servers. Turn off tools from other servers.
+6. Restart the client. Some clients only read the config at start.
+
+</Steps>
+
+## The canvas does not show inline
+
+Only clients with **MCP Apps** support render the board in the chat (Claude.ai and Claude Desktop do). Claude Code, which runs in a terminal, never shows it inline. Every reply that touches a board includes its web link: `https://gobanana-server.maherfayad55.workers.dev/c/<id>`. Open it in a browser signed in with the **same account**.
+
+If the link says the canvas was not found, you are signed in on the web with another account. Sign out at `/en/account` and sign in with the email `ping` shows.
+
+If the inline board shows but looks out of date, it refreshes on its own every few seconds while it has focus. Click into it, or reopen it with "open the board".
+
+## Quota and plan messages
+
+| Message starts with | What it means | What to do |
+| --- | --- | --- |
+| "You have used your 30 free searches this month." | Free search quota used | Upgrade, or wait for the 1st of the month (UTC). Bending, rating and Frankenstein still work |
+| "You have used your 3 free canvases." | Free canvas limit | Add to an existing board, or delete one ("delete my oldest GoBanana board"; the agent asks you to confirm by name) |
+| "This canvas has reached the 40 item limit" | Board full on Free | Remove tiles, start a new board, or upgrade |
+| "These formats need Pro:" | Pro export formats on Free | The free files in the same call still export. Use BUILD-PROMPT.md and DIRECTION.md |
+| "The parts library holds up to 80 parts." | Frankenstein library full | Remove parts in the tray's Parts tab, or reuse parts |
+
+The skills show the message once and stop. If an agent without skills keeps retrying, tell it to stop: the retries will get the same answer. During the beta, Pro limits apply to everyone.
+
+## Corporate networks and proxies
+
+GoBanana needs three things to reach the internet from your machine:
+
+| Host | Why |
+| --- | --- |
+| `gobanana-server.maherfayad55.workers.dev` | The MCP endpoint, the canvas and the docs |
+| `*.authkit.app` and `api.workos.com` | Sign in |
+| The reference image hosts | Images load from their source: `i.pinimg.com`, `cdn.dribbble.com`, `mir-s3-cdn-cf.behance.net`, `assets.awwwards.com` and the [gallery hosts](/docs/reference/sources/#image-hosts) |
+
+- **TLS inspection:** if your proxy re-signs HTTPS, Node based clients (Claude Code, Codex, mcp-remote) need your company's root certificate. Set `NODE_EXTRA_CA_CERTS=/path/to/company-ca.pem` before starting the client.
+- **HTTP proxy:** set `HTTPS_PROXY` (and `NO_PROXY` for local hosts) in the client's environment. Claude Code and most Node tools respect it.
+- **Blocked image hosts:** the board shows a link card (title, site, link) instead of the image. Everything else works.
+- **workers.dev blocked:** some networks block the whole `workers.dev` domain. Ask IT to allow `gobanana-server.maherfayad55.workers.dev`. There is no other address yet.
+
+## Other messages
+
+| Message | Fix |
+| --- | --- |
+| "That canvas was not found. Call open_canvas to create one, or check the canvasId." | Wrong id or another account's board. "List my GoBanana canvases" shows yours |
+| "The canvas changed while saving. Try again." | Two changes landed at once. Run the same request again |
+| "Something went wrong on our side. Try again in a minute." | A short outage. Wait and retry once |
+| "Search failed. Try again in a minute." | The search provider did not answer. Retry once; it does not count against the quota |
+| "That direction was not found. Directions are saved only when bend_brief gets a canvasId." | The bend was not saved. Bend again with the `canvasId`, or search with the direction's text as `query` |
+| "That section was not found on this canvas. Call get_canvas to see section ids." | Stale `sectionId`. Read the board once and use a current id |
+| "Nothing was deleted. Ask the user to confirm, then call again with confirm: true." | `delete_canvas` needs your explicit yes |
+
+## Images and palettes
+
+- **A reference image does not load.** It loads from its source. If the source removed it, blocks hotlinking, or your network blocks the host, the tile shows a link card. Open the source link.
+- **A reference disappeared.** It was probably taken down at the owner's request. See [Privacy, takedown and sources](/docs/privacy-and-sources/).
+- **A palette skipped images.** `extract_palette` lists each skipped item with a reason: host not on the allowlist, image too large, a format it cannot read yet (for example WebP), or a timeout. Pick other items and run it again.
+
+## Search found few results
+
+See [FAQ: Why did search find so few results?](/docs/faq/#why-did-search-find-so-few-results).
+
+## Still stuck
+
+Run `ping` and note the exact message, your client and its version, and the time. Send them through the contact on the [privacy page](https://gobanana-server.maherfayad55.workers.dev/en/privacy).

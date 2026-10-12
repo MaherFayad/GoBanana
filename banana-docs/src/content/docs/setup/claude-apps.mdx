@@ -1,0 +1,61 @@
+---
+title: Claude.ai and Claude Desktop
+description: Add GoBanana as a custom connector, sign in with OAuth, and see the board inline in the chat.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import ServerUrl from '../../../components/ServerUrl.astro';
+
+Claude.ai (web), Claude Desktop (Mac and Windows) and the Claude mobile apps share one list of connectors. Add GoBanana once on any of them and it works on all of them.
+
+This is the best place to **explore**: Claude shows the GoBanana canvas inline in the chat (MCP Apps), so you see the board without leaving the conversation.
+
+<ServerUrl />
+
+## Add the connector
+
+<Steps>
+
+1. Open **Settings**, then **Connectors**. In Claude Desktop it is the same page: click your name, then **Settings**, then **Connectors**.
+
+2. Choose **Add custom connector**.
+
+3. Fill in:
+   - **Name:** `GoBanana`
+   - **Remote MCP server URL:** `https://gobanana-server.maherfayad55.workers.dev/api/mcp`
+   - Leave **Advanced settings** (OAuth client ID and secret) empty. GoBanana has no client secret to hand out; sign in happens in the next step.
+
+4. Choose **Add**. Claude shows GoBanana in the list with a **Connect** button.
+
+5. Choose **Connect**. A window opens on the GoBanana sign in page. Sign in. The window closes and the connector shows as connected.
+
+6. In a new chat, open the **tools menu** (the sliders or plus icon under the message box) and make sure **GoBanana** is turned on.
+
+7. Ask: **"Check my GoBanana connection."** Claude calls `ping` and replies with your email.
+
+</Steps>
+
+<Aside type="note" title="Plans and organizations">
+Custom connectors depend on your Claude plan. On Team and Enterprise plans an owner may need to add GoBanana for the organization first; then members connect it with their own sign in. If you do not see **Add custom connector**, ask your organization owner.
+</Aside>
+
+## Add the skills
+
+The connector gives Claude the tools. The skills give it the playbook (pin the page, bend 8, keep 3, audit, two zones, steal notes). To get them:
+
+- **Cowork and organizations with plugins:** add the GoBanana plugin from your organization's plugin settings, or from Anthropic's directory once it is listed. The GoBanana server then shows up as the plugin's connector.
+- **Without the plugin:** paste the short playbook from [No plugin?](/docs/start/first-board/#no-plugin) at the start of a chat, or save it in a Claude Project's instructions so every chat in that project has it.
+
+## The inline canvas
+
+When the agent calls `open_canvas`, Claude renders the GoBanana board inside the chat. You can pan, zoom, move tiles, edit notes and use the keyboard shortcuts there; your changes save to the same board you see on the web. While it is open, the inline board refreshes on its own when the agent adds to it (about every 4 seconds while it has focus).
+
+Some things stay on the web only: **Upload** and **Share** need a web session, so they show on the full screen board at `/c/<id>`. Uploaded images show as link cards inline.
+
+## Allow tool calls
+
+Claude asks before each tool call the first time. Choose **Allow always** for GoBanana's read and rate tools to save clicks. Keep asking for `delete_canvas`.
+
+## Limits of the apps
+
+Claude.ai and Claude Desktop cannot write files into your repo. When you ask for a hand-off, Claude shows each file with its path; copy them, or run the hand-off from [Claude Code](/docs/setup/claude-code/), [Cursor](/docs/setup/cursor/) or [Codex](/docs/setup/codex/) with the same account and the board's id.

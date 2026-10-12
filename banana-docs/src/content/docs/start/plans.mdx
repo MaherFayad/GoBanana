@@ -1,0 +1,47 @@
+---
+title: Plans
+description: Free to start. Pro when you need more searches, canvases, share links and every export. Free for everyone during the beta.
+---
+
+import { Aside, CardGrid, Card } from '@astrojs/starlight/components';
+
+<Aside type="tip" title="Beta: Pro for everyone">
+Checkout is not open yet. While GoBanana is in beta, every signed in account gets Pro limits and nothing is charged. Your stored plan stays Free; the Pro limits switch off when billing goes live.
+</Aside>
+
+<CardGrid>
+	<Card title="Free · $0" icon="star">
+		30 searches a month, 3 canvases, 40 items per canvas. Exports: DESIGN.md, BRIEF.md, DIRECTION.md, BUILD-PROMPT.md and FRANKENSTEIN.md.
+	</Card>
+	<Card title="Pro · $5 a month or $39 a year" icon="rocket">
+		300 searches a month, unlimited canvases, 300 items per canvas, share links, 1 GB of uploads, every export format.
+	</Card>
+	<Card title="Founding · $29 once" icon="heart">
+		Pro features with 200 searches a month, for as long as GoBanana is offered. First 100 buyers. Not a subscription.
+	</Card>
+</CardGrid>
+
+## Always free
+
+On every plan, with no quota:
+
+- `bend_brief`: bending a brief into directions, as often as you like
+- `rate_references` and `rate_directions`: teaching search what to keep
+- `get_canvas`, `add_to_canvas`, `arrange_canvas`, `open_canvas`, `new_canvas` (within the canvas and item limits)
+- Frankenstein it: `cut_parts`, `frankenstein_page`, `remix_frankenstein`, `update_frankenstein`
+- `extract_palette` with WCAG contrast
+- `delete_canvas`
+
+Only `search_references` counts against the monthly search quota: one call is one search, whatever it returns.
+
+## What happens at a limit
+
+The tool answers with one plain message and an upgrade link, for example:
+
+```text
+You have used your 30 free searches this month. Upgrade: https://gobanana-server.maherfayad55.workers.dev/en/pricing
+```
+
+The skills show that message once and stop. They never retry in a loop. At the canvas limit they offer two ways out: add to one of your boards, or delete an old one (only after you say yes to a named board).
+
+Full numbers, every message and the reset rules: [Plans and limits reference](/docs/reference/plans/).

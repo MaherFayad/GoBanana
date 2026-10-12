@@ -1,0 +1,152 @@
+---
+title: Hand off to your coding agent
+description: The scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md, DESIGN.md, Cursor rules, Copilot instructions, CLAUDE.md and AGENTS.md sections - and how each tool picks it up.
+---
+
+import { Aside, FileTree, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Say **"hand this off"** (or "Cursor rules for this", "prompt for v0"). The `gobanana-handoff` skill exports the kept direction as files your coding tools read on their own, and writes them into your repo.
+
+## Scope: one page, not your system
+
+Every file is **page scoped** by default (`scope: "page"`). It applies only to the pages you name, inherits your project's design system, and does not change it. Each file opens with the same block:
+
+> **Scope: one wild page, not the product design system.** Applies only to: pricing page, /launch.
+> Files: `**/pricing/**`, `**/pricing.*`, `**/launch/**`, `**/launch.*`.
+> This inherits the project's own design system and its existing DESIGN.md, and does not change them.
+> Tokens here are page level overrides: use them only inside these pages.
+
+Pass `pages` as route names, routes or globs, up to 5: `"pricing page"`, `"/launch"`, `"app/pricing/**"`. Names become globs like `**/pricing/**`; paths and globs are kept as you wrote them.
+
+`scope: "system"` exists for when you really want the direction to become your product's system. The skills only use it when you say so in so many words ("make this our design system"). Then DESIGN.md goes to the project root and the rules are global.
+
+## The pack
+
+<FileTree>
+- design/explorations/frosted-sleeve/
+  - DIRECTION.md the full visual spec (Free)
+  - BUILD-PROMPT.md one prompt for any tool (Free)
+  - DESIGN.md scoped tokens as overrides (Free)
+  - REVIEW.md checklist for build then critique (Pro)
+  - FRANKENSTEIN.md skeletons of Frankenstein pages (Free)
+  - frankenstein-wireframe.html grey box wireframe (Pro)
+  - kit/
+    - tokens.json override tokens, W3C DTCG (Pro)
+    - theme.css Tailwind theme for the page (Pro)
+- .cursor/rules/gobanana-frosted-sleeve.mdc Cursor rule with globs (Pro)
+- .github/instructions/gobanana-frosted-sleeve.instructions.md Copilot, with applyTo (Pro)
+- AGENTS.md one marked section, merged (Pro)
+- CLAUDE.md one marked section, merged (Pro)
+</FileTree>
+
+`frosted-sleeve` is the direction's slug, made from its title.
+
+| File | What it holds |
+| --- | --- |
+| **DIRECTION.md** | Pattern, signature component, typography, color, layout, imagery, motion, texture, icons, density, what to steal, what to avoid, why it fits, and every source link |
+| **BUILD-PROMPT.md** | One prompt to paste anywhere: the pages, the platform, the spec, the constraints, and "done when". Lists Frankenstein pages when the board has them |
+| **DESIGN.md** | Google Labs DESIGN.md format. Colors in the front matter are `ship` only. Lints with `npx --yes @google/design.md@0.4.0 lint` |
+| **REVIEW.md** | A pass or fix checklist: one item per spec line, every avoid line, plus WCAG 2.2 AA contrast and target size |
+| **Cursor rule** | The rules, with `globs` set to your pages, so the rule attaches when you edit those files |
+| **Copilot instructions** | The rules, with `applyTo` set to your pages |
+| **AGENTS.md / CLAUDE.md section** | Which pages, where the files are, ship vs explore, never copy reference images, done when REVIEW.md passes |
+
+## How each tool picks it up
+
+<Tabs syncKey="client">
+<TabItem label="Claude Code">
+
+Claude Code reads `CLAUDE.md` at the root and in folders it works in. The GoBanana section points to `@design/explorations/<slug>/DIRECTION.md`. If your CLAUDE.md already imports `@AGENTS.md`, the AGENTS.md section is enough.
+
+```markdown title="CLAUDE.md"
+<!-- gobanana:frosted-sleeve -->
+## Wild page: Frosted sleeve (GoBanana)
+
+Applies only to `app/checkout/**`. Inherits our design system. Does not change it.
+
+When you work on these files:
+- Read @design/explorations/frosted-sleeve/DIRECTION.md first.
+- Use the token overrides in design/explorations/frosted-sleeve/DESIGN.md for these pages only.
+- Only `ship` colors carry text. `explore` colors are concept only.
+- Do not edit shared components, global CSS or tokens for this page. Make page-local variants.
+- Never copy reference images into the repo.
+- When done, grade the page against design/explorations/frosted-sleeve/REVIEW.md (gobanana-critique).
+<!-- /gobanana:frosted-sleeve -->
+```
+
+</TabItem>
+<TabItem label="Cursor">
+
+Nothing to do. `.cursor/rules/gobanana-<slug>.mdc` has `globs` for your pages; edit a matching file and the rule is in context.
+
+</TabItem>
+<TabItem label="Copilot">
+
+Nothing to do. `.github/instructions/gobanana-<slug>.instructions.md` has `applyTo` globs. GoBanana never edits `.github/copilot-instructions.md`.
+
+</TabItem>
+<TabItem label="Codex">
+
+Codex and other AGENTS.md readers use the closest `AGENTS.md`. The GoBanana section points to DIRECTION.md.
+
+```markdown title="AGENTS.md"
+<!-- gobanana:frosted-sleeve -->
+## Wild page: Frosted sleeve (GoBanana)
+
+Applies only to: `app/checkout/**`. Inherits the project's design system. Does not change it.
+
+- Read `design/explorations/frosted-sleeve/DIRECTION.md` before editing these files.
+- Token overrides for these pages: `design/explorations/frosted-sleeve/DESIGN.md`. Do not move them into the global tokens.
+- Colors tagged `ship` passed WCAG 2.2 contrast. Colors tagged `explore` are concept only: never put text on them.
+- Keep shared components unchanged. Make page-local variants inside `app/checkout/`.
+- Respect `prefers-reduced-motion`.
+- Reference images belong to their owners. Never copy them into the repo; link to the source.
+- Done when every item in `design/explorations/frosted-sleeve/REVIEW.md` passes.
+<!-- /gobanana:frosted-sleeve -->
+```
+
+</TabItem>
+<TabItem label="v0, Lovable">
+
+Paste BUILD-PROMPT.md into a new chat. In Lovable you can also paste it into project knowledge.
+
+</TabItem>
+</Tabs>
+
+## What the skill does
+
+<Steps>
+
+1. **Picks the direction and pages.** From the chat or `get_canvas`. It maps page names to your real routes when it can see the code (`app/pricing/page.tsx`).
+2. **Detects your tools** from repo signs and says which it found: `CLAUDE.md` or `.claude/` (Claude Code), `.cursor/` (Cursor), `.github/instructions/` or `copilot-instructions.md` (Copilot), `AGENTS.md` (Codex), `lovable-tagger` in package.json (Lovable).
+3. **Exports** with `export_kit`: always `direction_md`, `build_prompt` and `review`, plus the format for each tool it found.
+4. **Writes** each file at its returned path, creating folders.
+5. **Merges** into AGENTS.md and CLAUDE.md between `<!-- gobanana:<slug> -->` and `<!-- /gobanana:<slug> -->`. Text outside the markers stays byte for byte. It shows you the diff.
+6. **Reports** the file list and one line on scope.
+
+</Steps>
+
+## Merging rules
+
+- `AGENTS.md` and `CLAUDE.md` are **never overwritten**. Only the marked section is added or replaced.
+- `.github/copilot-instructions.md`, your root `DESIGN.md`, tokens, theme and global CSS are **never touched** in page scope.
+- Files under `design/explorations/<slug>/` and the per slug Cursor and Copilot files belong to GoBanana. On a second export the agent shows the diff and asks before replacing them.
+- **No reference images in the repo.** The files link to sources.
+
+## On the Free plan
+
+`review`, `cursor_rules`, `copilot`, `agents_md`, `claude_md`, `tokens`, `tailwind` and `wireframe_html` are Pro. On Free, one `export_kit` call returns the free files and a plan message for the rest. The skill writes DIRECTION.md and BUILD-PROMPT.md (and DESIGN.md if asked), shows the message once, and reminds you that **BUILD-PROMPT.md works in any tool by pasting it**. If you ask, it adds a two line pointer to your AGENTS.md or CLAUDE.md by hand, inside the markers.
+
+<Aside type="tip" title="From Claude.ai to your repo">
+Explored in Claude.ai? The board is saved to your account. In Claude Code, Cursor or Codex, say "hand off my frosted sleeve board" and the agent finds it with `get_canvas` and exports there, where it can write files.
+</Aside>
+
+## Related skills
+
+| Skill | Say | Writes |
+| --- | --- | --- |
+| `gobanana-design-md` | "DESIGN.md for this page" | Scoped DESIGN.md, then lints it (3 rounds of fixes at most) |
+| `gobanana-agents-md` | "AGENTS.md", "rules for coding agents" | The AGENTS.md section, and CLAUDE.md if you have one |
+| `gobanana-asset-kit` | "asset kit", "tokens for this page" | `kit/00-readme.md` to `kit/06-sources.md`: tokens, Tailwind theme, safe gradients, one open licence font pairing, one icon set (Lucide or Phosphor) |
+
+Next: [Build then critique](/docs/guides/critique/).

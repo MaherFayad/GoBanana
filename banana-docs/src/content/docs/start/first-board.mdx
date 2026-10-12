@@ -1,0 +1,124 @@
+---
+title: Your first board
+description: One prompt, about two minutes, and a finished board with three directions and linked references. What to type, what happens, what you get.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Before you start, connect GoBanana to your agent. See [Set up](/docs/setup/overview/). Check it with "check my GoBanana connection": the agent runs `ping` and replies with your email.
+
+## 1. Ask
+
+Name **one page** and, if you can, the **platform**. Good first prompts:
+
+<Tabs syncKey="platform">
+<TabItem label="Website">
+
+```text
+Go wild on the launch page for our specialty coffee roaster. Website.
+```
+
+</TabItem>
+<TabItem label="Mobile">
+
+```text
+Crazy ideas for the onboarding of our budgeting app on iPhone.
+```
+
+</TabItem>
+<TabItem label="Web app">
+
+```text
+Make the empty dashboard of our analytics tool weird. Web app, wildness 4.
+```
+
+</TabItem>
+<TabItem label="Whole product">
+
+```text
+Go wild on our banking app.
+```
+
+The agent will not bend the whole product. It asks "Where should the weirdness go?" and offers spots like onboarding, empty state, paywall and year in review. Pick 1 to 3.
+
+</TabItem>
+</Tabs>
+
+Useful extras you can add in the same sentence:
+
+- **Wildness:** "a bit fresher" is 1 or 2, "go wild" is 4, "bananas" is 5. The default is 3, Weird.
+- **Taste words:** "minimal, big typography, dark mode". Without them, each direction uses its own style words.
+- **A culture lens:** "with a Sadu weaving lens". See [Wildness, moves and lenses](/docs/reference/wildness/).
+- **A count:** "give me 2 directions". The agent never shows more than 4.
+- **"Just go":** the agent will not ask anything. It guesses and tells you what it assumed.
+
+## 2. Watch
+
+With the plugin installed, the `gobanana-explore` skill runs this sequence. You see the tool calls in your client.
+
+<Steps>
+
+1. `get_canvas` lists your recent boards. If one is for the same product, the agent adds to it. Otherwise `new_canvas` makes a new one, hidden for now.
+2. `bend_brief` with your brief, platform, pages and `count: 8`. Eight ideas come back, each with a spec.
+3. The agent drops ideas with no UI path or that repeat another, and shortlists 3.
+4. `search_references` once per shortlisted direction, with `count: 12`. Each search costs 1 of your monthly searches.
+5. `rate_references` after each search. Junk leaves the tray. A weak lane gets one or two retries with better words.
+6. `rate_directions` keeps the shown directions and drops the rest, with reasons.
+7. `add_to_canvas` places 2 to 4 art items and 6 to 8 UI items per direction, each with a `steal:` note, plus one idea note. `arrange_canvas` tidies the board.
+8. `open_canvas` shows the finished board.
+
+</Steps>
+
+<Aside type="tip" title="Searches used">
+A first board usually uses 3 searches (one per direction), plus 1 or 2 if a lane needed a retry. The Free plan has 30 a month.
+</Aside>
+
+## 3. Read the reply
+
+The reply is short and in a fixed order:
+
+1. **The board link.** "Open the board here: https://gobanana-server.maherfayad55.workers.dev/c/...". If your client shows MCP Apps, the board is also open inline above.
+2. **One line** with platform, page and wildness.
+3. **A card per direction**, for example:
+
+   > **1. Checkout as a frosted vinyl sleeve** (transplant + material)
+   > Pattern: fare summary slides out of a sleeve. Signature: a half-moon cutout shows the total.
+   > Look: condensed grotesk, frosted off-white with one ink blue accent; the sleeve slides 200ms, still with reduced motion.
+   > Why it fits: travel tickets are objects people keep.
+   > Art direction: Frosted record sleeve (pinterest.com), Clear vinyl packaging (behance.net)
+   > UI: Glass payment sheet (dribbble.com), Fare breakdown card (dribbble.com)
+
+   Every reference in the reply is a link to its source.
+
+4. **One line on dropped ideas**: "Dropped 5 of 8 ideas: 3 had no clear screen idea, 1 found too few UI references, 1 repeated another."
+5. **One line on removed results**: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea)."
+6. **Next steps.**
+
+## 4. Look at the board
+
+Open the link. Each kept direction has its own section: the idea note, the **Art direction** row, and the **UI references** grid below it. Hover or focus a tile to see its steal note and source. See [Reading a board](/docs/guides/reading-a-board/).
+
+## 5. Go further
+
+| Say | What happens |
+| --- | --- |
+| "Wilder" or "turn it down" | A new bend at wildness N+1 or N-1, added to the same board |
+| "Palette from direction 2" | Colors with WCAG contrast tags, as swatches on the board. [Guide](/docs/guides/palette/) |
+| "Frankenstein it" | 3 or 4 new page variants stacked from parts of the UI references. [Guide](/docs/guides/frankenstein/) |
+| "Hand this off" | Scoped files for your coding tools. [Guide](/docs/guides/handoff/) |
+| "Build it, then critique it" | Build, screenshot, grade, top 3 fixes. [Guide](/docs/guides/critique/) |
+| "Put it in FigJam" | The board rebuilt in FigJam through the Figma MCP (Pro). [Guide](/docs/guides/reading-a-board/#figjam-and-html-boards) |
+
+## No plugin?
+
+Without the plugin (for example in ChatGPT or Windsurf) the tools still work, but your agent has no playbook. Paste this once at the start of the chat:
+
+```text
+Use the GoBanana tools. Pin the platform and one page. Call new_canvas, then bend_brief
+with count 8 and the canvasId. Keep the 3 ideas with a clear UI path. For each, call
+search_references with the directionId and canvasId, rate junk with rate_references,
+then call rate_directions for all 8. Place 2 to 4 art items and 6 to 8 UI items per
+direction with add_to_canvas, each with a "steal:" note, call arrange_canvas with
+by_direction, then open_canvas. Show every reference with its source link.
+Never download or copy images.
+```

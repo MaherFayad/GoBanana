@@ -1,0 +1,53 @@
+---
+title: ChatGPT
+description: Add GoBanana as a custom connector in ChatGPT developer mode and sign in with OAuth.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import ServerUrl from '../../../components/ServerUrl.astro';
+
+ChatGPT can use GoBanana's tools through a custom MCP connector. There is no ChatGPT plugin with skills, so give it the short playbook below.
+
+<ServerUrl />
+
+<Steps>
+
+1. Open **Settings**, then **Apps and connectors** (the name may read **Connectors** on some plans).
+
+2. Under **Advanced settings**, turn on **Developer mode**. On Business and Enterprise workspaces an admin may need to allow it first.
+
+3. Choose **Create** (or **Add connector**). Fill in:
+   - **Name:** `GoBanana`
+   - **MCP server URL:** `https://gobanana-server.maherfayad55.workers.dev/api/mcp`
+   - **Authentication:** OAuth
+
+4. Save. ChatGPT opens the GoBanana sign in page. Sign in.
+
+5. In a new chat, pick **Developer mode** in the tools menu and turn on **GoBanana**.
+
+6. Ask: **"Use the GoBanana ping tool."** It should reply "Connected to GoBanana as you@example.com."
+
+</Steps>
+
+## Give it the playbook
+
+Paste this once at the start of a chat, or save it in a project's instructions:
+
+```text
+Use the GoBanana tools. Pin the platform and one page. Call new_canvas, then bend_brief
+with count 8 and the canvasId. Keep the 3 ideas with a clear UI path. For each, call
+search_references with the directionId and canvasId, rate junk with rate_references,
+then call rate_directions for all 8. Place 2 to 4 art items and 6 to 8 UI items per
+direction with add_to_canvas, each with a "steal:" note, call arrange_canvas with
+by_direction, then open_canvas. Show every reference with its source link.
+Never download or copy images.
+```
+
+## Notes
+
+- ChatGPT asks to confirm tool calls that change data (create, add, delete). Read the confirm for `delete_canvas` carefully: it cannot be undone.
+- ChatGPT may show tool results (`structuredContent`) to the model, so opening a large board adds tokens to the chat. GoBanana keeps that part small and sends the full board to the canvas view only.
+
+<Aside type="caution" title="Not verified here">
+ChatGPT's menus change often, and whether the GoBanana canvas shows inline depends on MCP Apps support in your ChatGPT workspace. These steps were not run end to end for these docs. If the board does not show, open the web link in the reply.
+</Aside>

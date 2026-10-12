@@ -1,0 +1,131 @@
+---
+title: Set up GoBanana
+description: One server address, OAuth sign in, no API key. Pick your client for exact steps.
+---
+
+import { Aside, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import ServerUrl from '../../../components/ServerUrl.astro';
+
+GoBanana is a remote MCP server. Every client connects to the same address:
+
+<ServerUrl />
+
+- **Transport:** Streamable HTTP. There is no local process to install and nothing to run.
+- **Sign in:** OAuth 2.1 through WorkOS AuthKit. Your client opens a browser window the first time. There is no API key to paste.
+- **Account:** your first sign in creates your GoBanana account. Use the same email on the web to see your boards at `/en/canvases`.
+- **Plugin (Claude only):** the Claude plugin adds 9 skills on top of the server. Other clients get the tools without the skills.
+
+## Pick your client
+
+<CardGrid>
+	<LinkCard title="Claude Code" description="Plugin with skills, /mcp login, --plugin-dir for local dev." href="/docs/setup/claude-code/" />
+	<LinkCard title="Claude.ai and Claude Desktop" description="Custom connector with OAuth. Inline canvas." href="/docs/setup/claude-apps/" />
+	<LinkCard title="ChatGPT" description="Developer mode connector." href="/docs/setup/chatgpt/" />
+	<LinkCard title="Cursor" description="mcp.json, one click sign in." href="/docs/setup/cursor/" />
+	<LinkCard title="VS Code and GitHub Copilot" description="mcp.json in the workspace or user settings." href="/docs/setup/vs-code/" />
+	<LinkCard title="Windsurf" description="mcp_config.json with serverUrl." href="/docs/setup/windsurf/" />
+	<LinkCard title="Codex" description="codex mcp add, then login." href="/docs/setup/codex/" />
+	<LinkCard title="Any other MCP client" description="What your client must support, and a bridge for stdio only clients." href="/docs/setup/other-clients/" />
+</CardGrid>
+
+## The config, side by side
+
+<Tabs syncKey="client">
+<TabItem label="Claude Code">
+
+```bash
+# With the skills (recommended): install the plugin, then run /mcp and log in
+/plugin install gobanana --marketplace <owner>/<repo>
+
+# Server only, no skills
+claude mcp add --transport http gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="Claude apps">
+
+Settings, then **Connectors**, then **Add custom connector**. Name: `GoBanana`. URL:
+
+```text
+https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="Cursor">
+
+```json title="~/.cursor/mcp.json"
+{
+  "mcpServers": {
+    "gobanana": {
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="VS Code">
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Windsurf">
+
+```json title="~/.codeium/windsurf/mcp_config.json"
+{
+  "mcpServers": {
+    "gobanana": {
+      "serverUrl": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Codex">
+
+```bash
+codex mcp add gobanana --url https://gobanana-server.maherfayad55.workers.dev/api/mcp
+codex mcp login gobanana
+```
+
+</TabItem>
+</Tabs>
+
+<Aside type="note" title="Field names move">
+Client config formats change from time to time. The steps here follow each client's own docs as of October 2026; not every client was tested end to end. If a field was renamed, the only part that matters is the URL above and "HTTP" or "streamable HTTP" as the transport.
+</Aside>
+
+## Then check it
+
+Ask your agent: **"Check my GoBanana connection."** It calls `ping` and should answer:
+
+```text
+Connected to GoBanana as you@example.com.
+```
+
+More checks: [Check it works](/docs/setup/check/). Something off: [Troubleshooting](/docs/setup/troubleshooting/).
+
+## Which client should I use?
+
+| Client | Skills | Inline canvas | Writes files to your repo |
+| --- | --- | --- | --- |
+| Claude Code | Yes, with the plugin | No, web link | Yes |
+| Claude.ai, Claude Desktop | Yes, with the plugin (Cowork and organization plugins) | Yes (MCP Apps) | No, copy from the reply |
+| ChatGPT | No | Depends on MCP Apps support in your workspace | No |
+| Cursor, VS Code, Windsurf, Codex | No | Not checked, use the web link | Yes |
+
+The best pairing today: explore and Frankenstein in Claude.ai or Claude Desktop where the board shows inline, then hand off from Claude Code, Cursor or Codex in your repo, using the same account.
+
+<Aside type="caution" title="What we could not verify">
+Inline canvas support in ChatGPT, Cursor, VS Code, Windsurf and Codex was not tested for these docs. The board always has a web link, so every client can open it.
+</Aside>

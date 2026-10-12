@@ -1,26 +1,37 @@
 ---
 title: ping
-description: "Check that GoBanana is connected and see which account you are signed in with.."
+description: Check that GoBanana is connected and see which account you are signed in with.
 ---
 
-Check that GoBanana is connected and see which account you are signed in with.
+| Plan | Quota | Changes data | Hints |
+| --- | --- | --- | --- |
+| All | None | No | read only, idempotent |
 
-**Title in clients:** Check connection
+## Inputs
 
-## Parameters
+None.
 
-This tool takes no parameters.
+## Example call
 
-## What it returns
+```json
+{ "name": "ping", "arguments": {} }
+```
 
-A line like `Connected to GoBanana as you@example.com.`, plus `{ ok, app, email }` for the client.
+## Example output
 
-## Plan
+```text
+Connected to GoBanana as you@example.com.
+```
 
-Free. Read only.
+```json title="structuredContent"
+{ "ok": true, "app": "GoBanana", "email": "you@example.com" }
+```
 
-## Related
+## Messages
 
-- [Connect the MCP server](/docs/start/connect/)
-- [Troubleshooting](/docs/guides/troubleshooting/)
-- [All MCP tools](/docs/reference/tools/)
+| Message | Meaning |
+| --- | --- |
+| "You are not signed in. Reconnect to sign in again." | No valid token. Sign in again in your client |
+| "You are signed in, but GoBanana could not load your email yet. Try again in a minute." | First sign in worked; the email lookup did not finish |
+
+See [Check it works](/docs/setup/check/).

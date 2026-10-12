@@ -1,49 +1,54 @@
 ---
 title: rate_directions
-description: "Keep or drop bend_brief directions on a canvas after the agent judges them, so the board shows only usable ideas."
+description: Keep or drop bend_brief directions on a board after judging them. Dropped ones leave the board with their section, items and tray results. Free.
 ---
 
-Keep or drop `bend_brief` directions on a canvas after the agent judges them, so the board shows only usable ideas. A dropped direction leaves the canvas with its section, the items in it and its tray results. Later bends suggest often dropped ideas less.
-
-**Title in clients:** Rate directions
-
-## Parameters
-
-<div class="gb-table">
-
-| Parameter | Type | Required | What it does |
+| Plan | Quota | Changes data | Hints |
 | --- | --- | --- | --- |
-| `canvasId` | string | Yes | Canvas the directions were saved to (`bend_brief` with `canvasId`). |
-| `ratings` | list | Yes | 1 to 20 ratings. Each is `{ directionId, verdict, reasons? }`. `verdict` is `keep` or `drop`. `reasons` can list `no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`, `strong_salvage`, `great_refs`. |
+| All | None | Yes | |
 
-</div>
+The skill calls it once per run, after searching and before placing anything, with a rating for **every** idea it bent (usually 8): `drop` for the ones it will not show, `keep` for the ones it shows. Keeps are recorded too, so later bends learn what works. Often dropped ideas are suggested less in your later bends.
 
-## Example
+## Inputs
+
+| Name | Type | Required | Limits | What it does |
+| --- | --- | --- | --- | --- |
+| `canvasId` | string | Yes | 1 to 100 characters | The board the directions were saved to |
+| `ratings` | object[] | Yes | 1 to 20 | One per direction |
+| `ratings[].directionId` | string | Yes | 1 to 100 characters | `bd-...` id from `bend_brief` |
+| `ratings[].verdict` | enum | Yes | `keep`, `drop` | |
+| `ratings[].reasons` | enum[] | No | see below | Why |
+
+**Reasons to drop:** `no_ui_path` (no concrete UI move for this page), `no_usable_refs` (fewer than 6 usable UI references), `off_brief`, `duplicate_idea`, `too_literal`. **Reasons to keep:** `strong_salvage`, `great_refs`.
+
+## Example call
 
 ```json
 {
-  "canvasId": "<canvasId>",
-  "ratings": [
-    {
-      "directionId": "bd-3kq9x1ma",
-      "verdict": "drop",
-      "reasons": [
-        "no_ui_path"
-      ]
-    }
-  ]
+  "name": "rate_directions",
+  "arguments": {
+    "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f",
+    "ratings": [
+      { "directionId": "bd-mob5pq35", "verdict": "keep", "reasons": ["strong_salvage"] },
+      { "directionId": "bd-z0y2y96z", "verdict": "drop", "reasons": ["no_ui_path"] },
+      { "directionId": "bd-s2heqeev", "verdict": "drop", "reasons": ["duplicate_idea"] }
+    ]
+  }
 }
 ```
 
-## What it returns
+## Example output
 
-What was kept and what was dropped.
+```text
+Rated 3 directions: kept 1, dropped 2.
+Dropped bd-z0y2y96z, bd-s2heqeev: removed 0 sections, 0 items and 7 tray results.
+```
 
-## Plan
+Unrated directions read "not rated" in `get_canvas` and exports, never "not kept".
 
-Free.
+## Messages
 
-## Related
-
-- [Bend a brief into directions](/docs/guides/bend/)
-- [All MCP tools](/docs/reference/tools/)
+| Message | Meaning |
+| --- | --- |
+| "No ratings saved: those directions are not on this canvas. Save them with bend_brief and this canvasId first." | The bend was not saved to this board |
+| "Not directions of this canvas: bd-…" | Some ids belong elsewhere |

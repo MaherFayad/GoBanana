@@ -1,0 +1,38 @@
+---
+title: Windsurf
+description: Add GoBanana to Windsurf's mcp_config.json as a remote server and sign in.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. In Windsurf, open **Settings**, then **Cascade**, then **MCP servers**, and choose **View raw config** (or open `~/.codeium/windsurf/mcp_config.json`; on Windows `%USERPROFILE%\.codeium\windsurf\mcp_config.json`).
+
+2. Add GoBanana and save:
+
+   ```json title="mcp_config.json"
+   {
+     "mcpServers": {
+       "gobanana": {
+         "serverUrl": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+       }
+     }
+   }
+   ```
+
+3. Choose **Refresh** in the MCP panel. Windsurf asks you to sign in; a browser window opens on the GoBanana sign in page.
+
+4. In Cascade, ask: **"Use the GoBanana ping tool."**
+
+</Steps>
+
+<Aside type="note" title="Tool limit">
+Cascade caps how many tools it keeps on at once across all servers. GoBanana has 17 tools for the agent. If some are missing, switch off tools you do not need in other servers.
+</Aside>
+
+Windsurf does not load Claude plugins. Paste the playbook from [No plugin?](/docs/start/first-board/#no-plugin), or save it in `.windsurf/rules/`. For hand-off, BUILD-PROMPT.md and the AGENTS.md section work in Windsurf. See [Hand off](/docs/guides/handoff/).
+
+<Aside type="caution" title="Not verified here">
+These steps follow Windsurf's docs; they were not run end to end for these docs. If your Windsurf build has no browser sign in for remote servers, use the bridge in [Other MCP clients](/docs/setup/other-clients/#stdio-only-clients).
+</Aside>

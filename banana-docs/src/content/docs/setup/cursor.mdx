@@ -1,0 +1,74 @@
+---
+title: Cursor
+description: Add GoBanana to Cursor's mcp.json, sign in once, and let Cursor rules from GoBanana attach to your wild page.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Cursor is a great place to **hand off**: GoBanana's Cursor rule attaches on its own when you edit the wild page's files.
+
+<Steps>
+
+1. Open the MCP config. Pick where:
+
+   <Tabs syncKey="scope">
+   <TabItem label="For you (all projects)">
+
+   `~/.cursor/mcp.json` (on Windows `%USERPROFILE%\.cursor\mcp.json`). Or in Cursor: **Settings**, then **Tools and MCP** (older builds: **MCP**), then **Add custom MCP**.
+
+   </TabItem>
+   <TabItem label="For this project">
+
+   `.cursor/mcp.json` at the project root. Commit it so the team gets the server. Each person signs in with their own account.
+
+   </TabItem>
+   </Tabs>
+
+2. Add GoBanana and save:
+
+   ```json title="mcp.json"
+   {
+     "mcpServers": {
+       "gobanana": {
+         "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+       }
+     }
+   }
+   ```
+
+   If the file already has other servers, add the `gobanana` entry inside the existing `mcpServers` object.
+
+3. In **Settings**, **Tools and MCP**, GoBanana shows **Needs login** (or a **Connect** button). Click it. A browser window opens; sign in. Back in Cursor, the server turns green and lists its tools.
+
+4. In the Agent chat, ask: **"Check my GoBanana connection."** Cursor calls `ping`.
+
+</Steps>
+
+<Aside type="tip" title="Turn tools on">
+Cursor lets you switch single tools off. Keep `bend_brief`, `search_references`, `rate_references`, `rate_directions`, `new_canvas`, `get_canvas`, `add_to_canvas`, `arrange_canvas`, `open_canvas` and `export_kit` on for the full flow.
+</Aside>
+
+## Without skills
+
+Cursor does not load Claude plugins, so paste the playbook from [No plugin?](/docs/start/first-board/#no-plugin) once, or save it as a project rule in `.cursor/rules/gobanana-flow.mdc`:
+
+```markdown title=".cursor/rules/gobanana-flow.mdc"
+---
+description: How to use the GoBanana MCP tools for one wild page
+alwaysApply: false
+---
+When the user asks to go wild on a page: pin the platform and one page, call
+new_canvas, then bend_brief with count 8 and the canvasId. Keep the 3 ideas with a
+clear UI path. Search each with search_references (directionId, canvasId), rate junk
+with rate_references, rate all 8 with rate_directions, place 2 to 4 art and 6 to 8 UI
+items per direction with "steal:" notes, arrange_canvas by_direction, open_canvas.
+Always show source links. Never download or copy reference images.
+```
+
+## Hand off in Cursor
+
+Ask "hand this off for Cursor". Cursor calls `export_kit` with `cursor_rules` (Pro), writes `.cursor/rules/gobanana-<slug>.mdc` with `globs` set to your page's files, and the rule attaches whenever you edit them. On Free, use BUILD-PROMPT.md. See [Hand off](/docs/guides/handoff/).
+
+## The canvas
+
+Open the web link from the reply in your browser, signed in with the same account. Inline display in Cursor was not tested for these docs.

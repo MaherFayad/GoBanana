@@ -1,0 +1,56 @@
+---
+title: Other MCP clients
+description: What any MCP client needs to use GoBanana, the endpoint facts, and a bridge for clients that only run local stdio servers.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ServerUrl from '../../../components/ServerUrl.astro';
+
+Any client that speaks the Model Context Protocol over HTTP with OAuth can use GoBanana.
+
+<ServerUrl />
+
+## Endpoint facts
+
+| | |
+| --- | --- |
+| URL | `https://gobanana-server.maherfayad55.workers.dev/api/mcp` |
+| Transport | Streamable HTTP, stateless. `GET`, `POST` and `DELETE` on the same path |
+| Auth | OAuth 2.1 bearer token, required on every request. Sign in runs through WorkOS AuthKit |
+| Discovery | A request without a token gets `401` with `WWW-Authenticate: Bearer ... resource_metadata="https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource"` (RFC 9728). The metadata is also served at `/.well-known/oauth-protected-resource/api/mcp` |
+| Resource | `https://gobanana-server.maherfayad55.workers.dev/api/mcp`. Tokens must carry it as their audience |
+| Tools | 17 for the agent, plus 2 app-only tools the canvas view uses (`save_canvas_state`, `load_canvas_state`). Do not call those two from an agent |
+| UI | One MCP Apps resource, `ui://banana/canvas` (mime `text/html;profile=mcp-app`), opened by `open_canvas` |
+
+Only `/api/mcp` is the MCP endpoint. Other `/api/...` paths answer 404 to MCP clients.
+
+## What your client must support
+
+- **Remote HTTP servers** (streamable HTTP). Old SSE-only clients will not connect.
+- **OAuth for MCP**: reading the `401` challenge, protected resource metadata, and a browser sign in. If your client only takes a fixed header or API key, it cannot sign in; there are no GoBanana API keys.
+- **Optional, MCP Apps**: to show the board inline. Without it, the reply carries a web link.
+
+## Stdio only clients
+
+Some clients can only start local servers over stdio. Bridge them with `mcp-remote`, which runs locally, handles the OAuth sign in in your browser and forwards to GoBanana. You need Node.js 18 or newer.
+
+```json title="Your client's MCP config"
+{
+  "mcpServers": {
+    "gobanana": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://gobanana-server.maherfayad55.workers.dev/api/mcp"]
+    }
+  }
+}
+```
+
+The first start opens a browser to sign in. `mcp-remote` keeps the token in `~/.mcp-auth`. Delete that folder to sign out.
+
+<Aside type="note" title="Third party">
+`mcp-remote` is an open source community tool, not part of GoBanana. In team setups, pin a version you have checked (`mcp-remote@<version>`) instead of the latest.
+</Aside>
+
+## Writing your own client
+
+Use an MCP SDK (TypeScript, Python and others) with its OAuth helper, point it at the URL, and list tools. Each tool's JSON schema is strict. Bad input never throws: it returns a plain message such as "brief must be 1 to 500 characters." Read `content[0].text`. See the [tool reference](/docs/reference/tools/).

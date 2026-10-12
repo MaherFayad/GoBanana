@@ -1,0 +1,71 @@
+---
+title: What is GoBanana?
+description: One wild idea for a page or two, not your product's main design. Mobbin shows what works. GoBanana shows what's next.
+---
+
+import { Aside, CardGrid, Card } from '@astrojs/starlight/components';
+
+GoBanana helps you design **one crazy page** with your AI agent. It is an MCP server your agent connects to, a moodboard canvas on the web, and a Claude plugin with 9 skills that tell the agent how to use it.
+
+You ask for something like "go wild on our launch page". Your agent comes back with 3 or 4 sharp directions, each with a full visual spec, a board of linked references for each one, and files your coding tool can build from.
+
+## What it is for
+
+GoBanana works on the pages where a strong idea pays off and nobody needs to finish a task fast:
+
+- a **launch page**, a campaign page, a homepage hero
+- **onboarding**, a splash screen, first run
+- an **empty state**, a 404, an error page
+- a **paywall** or an upgrade moment
+- a **year in review**, a recap, a milestone
+- a **settings easter egg**
+
+See [Where weirdness pays off](/docs/guides/where-weirdness-pays/) for the full list per platform.
+
+## What it is not for
+
+<Aside type="caution" title="Not your product's design system">
+GoBanana is not for redesigning your whole product. Your product keeps its own design system. The wild page inherits it and overrides only what the idea needs. Every file GoBanana exports says so at the top, and only applies to the pages you name.
+</Aside>
+
+If you ask for the whole product ("make our banking app weird"), the agent stops and asks one question: **"Where should the weirdness go?"** It offers the 4 to 6 spots where weirdness pays off on your platform, and you pick 1 to 3.
+
+## What you get
+
+<CardGrid>
+	<Card title="Directions with a spec" icon="star">
+		Each direction has a title, a twist and a visual spec: pattern, signature component, type, color, layout, imagery, motion, texture, icons, density, what to steal, what to avoid and why it fits.
+	</Card>
+	<Card title="A board in two zones" icon="window">
+		Per direction, an **Art direction** row (the wild idea as images) above a **UI references** grid (real screens for your platform). Every tile has a source link and a "steal:" note.
+	</Card>
+	<Card title="Frankenstein pages" icon="puzzle">
+		New page variants stacked from parts of the references: the nav from one, the hero from another. Every part keeps its link.
+	</Card>
+	<Card title="Files for your coding agent" icon="document">
+		DIRECTION.md, BUILD-PROMPT.md, REVIEW.md, DESIGN.md, Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections, all scoped to your pages.
+	</Card>
+</CardGrid>
+
+## What GoBanana does not do
+
+- **It makes no AI calls and generates no images.** The server bends briefs with fixed word lists and templates and runs web image searches. All judgment happens in your own agent.
+- **It never copies, stores or hosts reference images.** It keeps links and titles. Images load in your browser from the site that hosts them.
+- **It never scrapes.** References come from web image search results only.
+- **It never touches Mobbin.** If you have your own Mobbin connector, your agent can add a note with links to shipped screens. GoBanana's server never sees it.
+
+## Mobbin and GoBanana
+
+Mobbin shows what works: real, shipped screens. GoBanana shows what's next: ideas nobody shipped yet, with references for how to get there. They pair well. See [Using Mobbin alongside](/docs/guides/mobbin/).
+
+## Who it is for
+
+- **Designers** who want a fast, wide first pass on a page that should stand out, with references they can open and credit.
+- **Developers** who need a buildable direction for a launch or onboarding page, as files their coding agent reads on its own.
+- **Founders and small teams** with no time for a moodboard week.
+
+## Status
+
+GoBanana is in beta, version 0.1. During the beta every signed in account gets Pro limits and nothing is charged. The server runs at `gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen.
+
+Next: [How it works](/docs/start/how-it-works/).

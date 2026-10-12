@@ -1,0 +1,66 @@
+---
+// The GoBanana flow as a strip of numbered glass chips.
+interface Step {
+	title: string;
+	body: string;
+}
+interface Props {
+	steps: Step[];
+}
+const { steps } = Astro.props;
+---
+
+<ol class="gb-flow not-content">
+	{
+		steps.map((s, i) => (
+			<li>
+				<span class="gb-flow-n" aria-hidden="true">{i + 1}</span>
+				<span class="gb-flow-title">{s.title}</span>
+				<span class="gb-flow-body">{s.body}</span>
+			</li>
+		))
+	}
+</ol>
+
+<style>
+	.gb-flow {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+		gap: 0.75rem;
+		margin: 1.25rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.gb-flow li {
+		display: grid;
+		align-content: start;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 1rem;
+		border: 1px solid var(--gb-glass-border);
+		border-radius: var(--gb-radius);
+		background: var(--gb-glass);
+	}
+	.gb-flow-n {
+		display: grid;
+		place-items: center;
+		inline-size: 1.6rem;
+		block-size: 1.6rem;
+		border-radius: 50%;
+		background: #ffffff14;
+		color: var(--gb-yellow);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+	.gb-flow-title {
+		margin-top: 0.3rem;
+		color: var(--gb-heading);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.gb-flow-body {
+		color: var(--gb-body);
+		font-size: 0.85rem;
+		line-height: 1.45;
+	}
+</style>

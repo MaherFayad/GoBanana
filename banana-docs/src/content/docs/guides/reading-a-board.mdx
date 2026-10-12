@@ -1,0 +1,113 @@
+---
+title: Reading a board
+description: Sections per direction, the Art direction row above the UI references grid, steal notes, the tray and its tabs, Ship and Explore marks, and FigJam or HTML copies.
+---
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+A GoBanana board is a moodboard canvas with one **section** per kept direction. Every image on it is a link to its source.
+
+## Anatomy of a direction section
+
+```text
+┌ Section: Checkout as a frosted vinyl sleeve ───────────────────────────────┐
+│ [note] WILD: the total peeks through a cutout. PATTERN: fare summary       │
+│        slides out of a sleeve. SIGNATURE: a half-moon cutout.              │
+│                                                                            │
+│ Art direction   [img] [img] [img]            ← 2 to 4, the idea as images  │
+│                                                                            │
+│ UI references   [img] [img] [img] [img]      ← 6 to 8, real screens        │
+│                 [img] [img] [img] [img]        for your platform           │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### The idea note
+
+One yellow note per section, in a fixed shape: `WILD: <twist>. PATTERN: <pattern>. SIGNATURE: <signature>.` The labels show as small chips. It is the direction in one breath. Links in notes are clickable.
+
+### Art direction row (zone `art`)
+
+The wild idea as **raw images**: the weave, the receipt, the riso print, the cereal box. They come from Pinterest, Behance and art galleries such as Fonts In Use, typo/graphic posters, Cosmos and Are.na. Art tiles carry a small **Art** badge.
+
+Use them for mood, texture, color and form. **Never build them as screens.** Art never counts toward a direction's usable references, and it never goes in the UI grid.
+
+### UI references grid (zone `ui`)
+
+**Real UI** for your platform: screens, pages and components from UI galleries (Lapa Ninja, Refero, ScreensDesign and others), Dribbble, Behance, Pinterest and Awwwards. A phone brief only gets app screens; a website brief only gets sites and sections.
+
+These are what you actually build from, and the only references Frankenstein it cuts parts from.
+
+### Steal notes
+
+Every placed reference carries a short note, up to 280 characters, that starts with `steal:` and names **one concrete thing to take** for your page:
+
+- `steal: the bottom sheet that holds the fare breakdown`
+- `steal: the misregistered second ink as the price highlight`
+- `steal: the tab bar that hides on scroll`
+
+Hover or focus a tile to read it. Edit it with **F2**. The notes travel into every export.
+
+### The source link
+
+Every tile shows its site and links to the original page. Use **M** (or right click) on a tile, then **Open source**. In exports and replies every reference is written as `[title](link) (site)`.
+
+## The tray
+
+The tray is the dock-like panel with search results that are **not on the board yet**. It has tabs:
+
+| Tab | What is in it |
+| --- | --- |
+| **UI** | UI zone results from every search on this board |
+| **Art direction** | Art zone results |
+| **Parts** | The Frankenstein parts library, grouped by role (nav, hero, cards...) |
+
+Each tab shows a count. Drag a result onto the board, or focus it and press **Enter** to add it. Results rated `bad` leave the tray and never come back for you. Per the privacy notice, references found by search but never placed on a canvas are deleted from GoBanana's records after 30 days.
+
+Share links never show the tray, only the board.
+
+## Ship and Explore marks
+
+Images and swatches can carry a mark:
+
+- **Ship**: passes WCAG 2.2 contrast for its use, or you decided it is buildable.
+- **Explore**: concept only. Keep it for mood; do not put text on it.
+
+Palette swatches get their mark from the contrast check. On images, set it yourself from the tile menu: **Mark as Ship**, **Mark as Explore**, **Clear Ship or Explore mark**.
+
+## The Frankenstein pages section
+
+If you used Frankenstein it, a section called **Frankenstein pages** sits to the right, with one frame per page variant. See [Frankenstein it](/docs/guides/frankenstein/).
+
+## Layouts
+
+Ask the agent to "tidy the board" or pick a layout. `arrange_canvas` has four:
+
+| Layout | Use when |
+| --- | --- |
+| `by_direction` | Default. One column per section; the art row stays above the UI grid |
+| `masonry` | One mixed pile; 4 columns that keep image shapes |
+| `grid` | Comparing like with like, equal cells |
+| `hero` | One standout leads large, the rest below |
+
+"Make the Lapa Ninja one the hero of direction 2" places it first in that section and arranges it with `hero`.
+
+## Keyboard
+
+Press **?** on the board for the full sheet. The basics: arrows nudge a tile 8px (Shift for 32px), **+** and **-** resize, **M** opens the tile menu, **Space** previews, **F2** edits a note, **Delete** removes, **Shift+1** zooms to fit. All shortcuts: [Keyboard shortcuts](/docs/reference/shortcuts/).
+
+## FigJam and HTML boards
+
+Two Pro exports copy the board out of GoBanana:
+
+- **FigJam** (`figjam_spec`): say "put this board in FigJam". The agent exports a JSON layout and rebuilds it in FigJam through your own Figma MCP connector: sections, an Art direction row above a UI references grid, stickies for notes, color rectangles for swatches, a label with the site and link under each image, and a final **Sources** section. Images load from their source URL; if Figma cannot load one, the agent makes a link card. Nothing is saved to disk.
+- **HTML board** (`html_board`): a single `board.html` file that hotlinks every image from its source and lists sources at the bottom. Open it in a browser.
+
+<FileTree>
+- design/explorations/frosted-sleeve/
+  - figjam-spec.json
+  - board.html
+</FileTree>
+
+<Aside type="caution" title="For private reference">
+Reference images belong to their owners. Boards, FigJam copies and HTML boards are for your own reference, not for publishing.
+</Aside>

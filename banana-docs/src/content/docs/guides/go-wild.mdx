@@ -1,0 +1,126 @@
+---
+title: Go wild on a screen
+description: How to ask, and the five dials that shape the result - platform, pages, wildness, taste words and culture lenses.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `gobanana-explore` skill turns "make it cooler" into 3 or 4 sharp, buildable directions for one page. You steer it with five dials. You can set all of them in one sentence, or none.
+
+```text
+Go wild on the paywall of our meditation app on iPhone, wildness 4,
+taste: grainy, big typography. Japanese ma lens.
+```
+
+## Dial 1: the platform
+
+GoBanana treats a phone, a tablet, a website and a web app as different worlds. The platform decides the grid, the type sizes, the density, what to avoid, and which galleries search uses.
+
+| Say | Platform | What changes |
+| --- | --- | --- |
+| iPhone, iOS, Android, app screen, paywall | `mobile` | 4 columns, 16px margins, 44pt targets, tab bar and bottom sheet, display 34px, body 17px |
+| iPad, tablet | `tablet` | 8 columns, 24px margins, split view, 44pt targets |
+| landing page, launch page, homepage, campaign | `website` | 12 columns, fluid type up to 120px, one clear first action |
+| dashboard, admin, SaaS, CRM, web app | `webapp` | Sidebar shell, dense 8px rhythm, tables, full keyboard |
+
+If your words do not say, the agent asks once ("Is it for a phone app, a website or a web app?"). The server also detects a platform from the brief, but the agent's read wins. Full rules: [Platforms](/docs/reference/platforms/).
+
+A phone brief never gets web dashboards or 12 column grids. Off platform results are rated `bad` and never placed.
+
+## Dial 2: the pages
+
+Pass 1 to 3 pages, each up to 60 characters: "checkout", "first run onboarding", "/launch". Name **one page** for the sharpest result.
+
+If you name the whole product, the agent will not bend it. It asks "Where should the weirdness go?" and lists the spots that pay off on your platform. See [Where weirdness pays off](/docs/guides/where-weirdness-pays/).
+
+## Dial 3: wildness
+
+| Level | Label | Moves | Feels like | Say |
+| --- | --- | --- | --- | --- |
+| 1 | Fresh | 1 | Same layout, new surface | "a bit fresher", "subtle" |
+| 2 | Bold | 1 | One strong move, layout may bend | "bolder" |
+| 3 | Weird | 2 | Two ideas collide on one screen. **Default** | nothing |
+| 4 | Wild | 2 or 3 | Further than feels safe | "go wild", "push this" |
+| 5 | Bananas | 3 | Usability rules ignored on purpose | "bananas", "unhinged" |
+
+Each move borrows from one place:
+
+| Move | What it does | Example |
+| --- | --- | --- |
+| `transplant` | Borrows the format, print and wear of an object | "checkout as a boarding pass" |
+| `material` | Renders surfaces as a material with real light | "cards in frosted glass" |
+| `era` | Takes type, color and grid from a period or movement | "Fluxus 1962", "Swiss 1957" |
+| `constraint` | Obeys one hard rule | "flat color, no gradients" |
+| `scale` | Makes one thing enormous and shrinks the rest | "giant sparklines everywhere" |
+| `lens` | Pulls from a visual tradition | "Sadu weaving", "Memphis" |
+
+Ask for a kind of bend with "only material and era moves". Details: [Wildness, moves and lenses](/docs/reference/wildness/).
+
+## Dial 4: taste words
+
+Taste is 1 to 5 short style words for the look you like: `minimal`, `glassmorphism`, `liquid glass`, `dark mode`, `big typography`, `monochrome`, `luxury`, `swiss style`, `bento grid`, `editorial`, `grainy`, `skeuomorphic`. They search well because galleries tag work with them.
+
+- Taste is saved on the canvas, so later searches on that board use it.
+- Without taste, each direction uses its own style words from its spec. GoBanana has no house style and never forces one.
+- Some words also pick galleries: "bento grid" pulls Bento Grids, "dark mode" pulls Dark Design, "big typography" pulls Httpster. See [Sources](/docs/reference/sources/).
+- Share a Pinterest board or screenshots? The agent describes them in these words. It never downloads them.
+
+## Dial 5: culture lenses
+
+A lens makes every direction pull from one visual tradition.
+
+| Lens id | Tradition |
+| --- | --- |
+| `sadu` | Sadu weaving |
+| `najdi` | Najdi architecture |
+| `kufic` | Square Kufic geometry |
+| `mashrabiya` | Mashrabiya |
+| `desert-modern` | Desert modern |
+| `memphis` | Memphis design |
+| `swiss-international` | Swiss International Style |
+| `japanese-ma` | Japanese ma (negative space) |
+
+The skill suggests a lens when you mention Saudi, Gulf, Arabic or regional heritage. It never uses sacred text or religious verses.
+
+## What a direction looks like
+
+Each direction comes back with a full visual spec. A real one from the bend engine (website, launch page, wildness 3):
+
+```text
+Specialty coffee launch as a spa-like cereal box (Twist: giant sparklines everywhere) [scale + transplant]
+Spec: type rounded: A soft rounded sans for display at clamp(48px, 8vw, 120px), a plain sans
+for body at 18px | color: Eucalyptus green, stone and white; text at 4.5 to 1 contrast or more |
+layout: 12 column grid, fluid type, a scroll story that opens on a hero with one clear action |
+motion: Slow 300ms fades and eases, nothing loops, and none with reduced motion on
+Signature: The hero section built like a cereal box.
+Pattern: A loud front panel with a puzzle panel on the side, as the section divider.
+Steal: The print details and wear of a cereal box; The scale jump of giant sparklines.
+Avoid: A hero with no clear first action; Body text wider than 75 characters; Scroll jacking.
+Art queries: cereal box; oversized sparklines poster
+```
+
+The agent shows a compact card per kept direction. The full spec lives on the board and in DIRECTION.md.
+
+## Why only 3 directions?
+
+The agent bends 8 and keeps an idea only if:
+
+1. it gives your page a **concrete UI move** on this platform ("fare cards that stack like boarding passes"),
+2. it finds **at least 6 usable UI references** after search and audit (art does not count), and
+3. it is **not a near duplicate** of a kept idea.
+
+It shortlists 3 (or the number you asked for, at most 4), so you spend at most 4 searches. The rest are dropped with reasons and never shown. Later bends suggest often dropped ideas less.
+
+## Turning it up, down or sideways
+
+| Say | Result |
+| --- | --- |
+| "Wilder" / "calmer" | A new bend at wildness N+1 or N-1, as new sections on the same board |
+| "Another take on direction 2" | One more bend with the same move kinds |
+| "Try it on the 404 too" | A new page from the wild spots |
+| "Less UI, more raw inspiration" | The Art direction row gets its full 4 items; the UI grid stays UI only |
+| "Start a new board" | `new_canvas` instead of adding to the current board |
+
+<Aside type="tip" title="Boards grow, they do not multiply">
+Ask for more on the same product and the agent adds sections to the board you already have. It only makes a new board when nothing matches or you ask.
+</Aside>

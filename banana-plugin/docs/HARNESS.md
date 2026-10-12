@@ -14,8 +14,8 @@ The harness pack is the set of files `gobanana-handoff` writes so a coding tool 
 | REVIEW.md | `design/explorations/<slug>/REVIEW.md` | Checklist for build then critique (`gobanana-critique`) | Pro |
 | FRANKENSTEIN.md | `design/explorations/<slug>/FRANKENSTEIN.md` | Frankenstein pages from `gobanana-frankenstein`: a skeleton per page (role, steal note, source link per slot) and build guidance: take the structure, not the pixels, and unify to one theme | Free |
 | frankenstein-wireframe.html | `design/explorations/<slug>/frankenstein-wireframe.html` | A standalone low fi wireframe: grey boxes per slot with role labels and notes, a sources list, no reference images | Pro |
-| Cursor rule | `.cursor/rules/<slug>.mdc` | The rules, with `globs` set to the pages | Pro |
-| Copilot instructions | `.github/instructions/<slug>.instructions.md` | The rules, with `applyTo` set to the pages | Pro |
+| Cursor rule | `.cursor/rules/gobanana-<slug>.mdc` | The rules, with `globs` set to the pages | Pro |
+| Copilot instructions | `.github/instructions/gobanana-<slug>.instructions.md` | The rules, with `applyTo` set to the pages | Pro |
 | AGENTS.md section | `AGENTS.md`, between `<!-- gobanana:<slug> -->` markers | Which pages, where the files are, ship vs explore | Pro |
 | CLAUDE.md section | `CLAUDE.md`, between the same markers | Same, for Claude Code | Pro |
 

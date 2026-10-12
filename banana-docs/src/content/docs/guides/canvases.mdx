@@ -1,0 +1,68 @@
+---
+title: Managing canvases
+description: Find your boards, reuse one instead of starting over, share a view link, upload your own images, and delete a board for good.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A canvas (a board) belongs to your account. It holds sections, references, notes, swatches, the tray, the Frankenstein parts library and Frankenstein pages.
+
+## Find your boards
+
+- **On the web:** `https://gobanana-server.maherfayad55.workers.dev/en/canvases` lists every board you own, newest first, with a 2x2 collage, the brief, counts and the source sites. The details panel lists each collage image's source link.
+- **In chat:** "list my GoBanana boards". The agent calls `get_canvas` without an id and gets your 10 most recent boards with their briefs.
+- **One board:** `https://gobanana-server.maherfayad55.workers.dev/c/<id>`. Only you can open it, signed in.
+
+## Reuse, do not multiply
+
+The skills add to an existing board when your request is about the same product or project: new directions get new sections, nothing is removed. They make a new board only when nothing matches or you ask ("start a new board"). This keeps you under the Free limit of 3 boards and keeps ideas in one place.
+
+## Open it inline or on the web
+
+- `open_canvas` with an id shows the board inline in clients with MCP Apps (Claude.ai, Claude Desktop) and always returns the web link.
+- `new_canvas` creates a board without showing it, so the agent can fill it first and show it once, finished.
+- Changes you make inline and on the web save to the same board. If two windows change it at once, the second save asks: **Load the latest version** or **Keep my version**.
+
+## Share a view link
+
+<Steps>
+
+1. Open the board on the web.
+2. Choose **Share** in the toolbar.
+3. Create the link and copy it.
+
+</Steps>
+
+A share link (`/s/<token>`) is **unlisted and view only**: anyone with the link can see the board, but not edit it, and search engines are told not to index it. Viewers see the board, never the tray. Takedowns apply on shared boards too. You can **replace** the link (the old one stops working) or **turn it off** at any time, on any plan.
+
+Creating share links needs Pro (on during the beta). If your plan drops to Free, existing links stop working until you upgrade again.
+
+## Upload your own images
+
+On Pro, **Upload** in the web toolbar adds your own images to the board: PNG, JPEG, WebP or GIF, up to 10 MB each, 1 GB in total. Uploads are stored for you (unlike references, which are links). They show as link cards in the inline view, because the inline frame has no web session. Uploads count as items.
+
+## Delete a board
+
+Deleting removes the board **for good**: its sections, items, tray, directions, parts, Frankenstein pages and view link. Images you uploaded to it go too, unless another of your boards shows them. It cannot be undone. On Free it frees a canvas slot.
+
+- **On the web:** **Delete canvas** in the board's toolbar. A dialog names the board and asks you to confirm.
+- **In chat:** "delete my Frosted checkout board". The agent asks: "Delete 'Frosted checkout' for good? Its sections, references, tray and share link go too. This cannot be undone." It calls `delete_canvas` with `confirm: true` only after your explicit yes. It never picks a board to delete on its own.
+
+<Aside type="caution" title="At the canvas limit">
+When you hit 3 boards on Free, the skills show the limit message once and offer two ways out: add to an existing board, or delete one you name. They never delete to make room by themselves.
+</Aside>
+
+## Items and limits
+
+| | Free | Pro |
+| --- | --- | --- |
+| Boards | 3 | Unlimited |
+| Items per board | 40 | 300 |
+| Parts in the Frankenstein library | 80 | 80 |
+| Items per `add_to_canvas` call | 50 | 50 |
+
+A board can hold up to 1 MB of saved state. Very large boards may need splitting.
+
+## Delete your account
+
+`/en/account`, then **Delete account**. Deleted for good: your canvases, references, palettes, uploads, share links and usage records. Kept: your sign in record at WorkOS and billing records at Paddle. Cancel any subscription in Paddle first. Signing in again starts a new, empty account.

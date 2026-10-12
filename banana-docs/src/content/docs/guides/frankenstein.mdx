@@ -1,0 +1,164 @@
+---
+title: Frankenstein it
+description: Cut the best parts out of your references and stitch them into new page variants. The nav from one, the hero from another, the cards from a third. Every part keeps its link.
+---
+
+import { Aside, Steps, Tabs, TabItem, FileTree } from '@astrojs/starlight/components';
+
+Frankenstein it works the way a designer slices a swipe file. You (or your agent) cut parts out of the UI references on a board, then stack them into new pages, several variants at once. Light next to dark is fine. It is for **ideas over one page**, not a finished design.
+
+```text
+Frankenstein it: a landing page from my board. Nav from the dev tool page,
+hero from the coffee site, cards from anything.
+```
+
+<Aside type="note" title="Nothing is cut out of an image">
+A part is a role plus a crop rectangle. Your browser shows that rectangle over the original image, loaded from its source. GoBanana never downloads, crops or saves image files, and every part keeps its source link.
+</Aside>
+
+## The steps
+
+<Steps>
+
+1. **Pick the board, the platform and one page type.**
+
+   The agent uses the board from the chat, or lists yours. Page types: a landing page or pricing page for a website, a dashboard home for a web app, a home screen for mobile. You need about 6 usable UI references; with fewer, the agent offers to explore first.
+
+2. **Look and slice** with `cut_parts`.
+
+   For each reference, the agent picks the one or two parts worth stealing and cuts each with:
+   - a **role**: `nav`, `hero`, `logos`, `features`, `cards`, `gallery`, `stats`, `testimonial`, `pricing`, `cta`, `form`, `faq`, `content`, `footer` (web); `sidebar`, `toolbar`, `table`, `chart`, `filters` (web app); `status-header`, `tabbar`, `list`, `detail`, `sheet`, `empty` (mobile); or `other`
+   - a **crop** as fractions of the image: `{ "x": 0, "y": 0.04, "w": 1, "h": 0.18 }`
+   - a **theme**: `light`, `dark` or `unknown`
+   - a **note** starting with `steal:`
+
+   It aims for 2 to 4 candidates per role from at least 4 different sources, so variants really differ. Up to 24 cuts per call; the library holds 80 parts per board.
+
+3. **Stack** with `frankenstein_page`.
+
+   Either a **recipe** of roles plus 3 or 4 **variants** (the server fills each role from the library and mixes at least 3 sources per variant when it can), or explicit **rows** of part ids when you dictated the parts. Frames are sized for the platform: 390px mobile, 834px tablet, 1440px website and web app.
+
+4. **Judge and fix.**
+
+   The agent checks rhythm (no three busy bands in a row), hierarchy (one hero), contrast jumps, seams, and source spread (no two neighbors from the same site). It fixes with `update_frankenstein` and remixes with `remix_frankenstein`. Two rounds at most: ideas, not polish.
+
+5. **Present.**
+
+   A numbered skeleton per variant: role, what it steals, and the source link for every slot.
+
+6. **Hand off.**
+
+   FRANKENSTEIN.md (Free) and frankenstein-wireframe.html (Pro). See [Export](#export).
+
+</Steps>
+
+## Recipes
+
+| Platform and page | Recipe, top to bottom |
+| --- | --- |
+| Website, landing | `nav, hero, logos, features, cards, testimonial, cta, footer` |
+| Website, pricing | `nav, hero, pricing, faq, cta, footer` |
+| Web app, dashboard | `sidebar` beside a `toolbar`, then `stats, chart, table` (as explicit rows: `widths: [1, 4]`) |
+| Mobile, home | `status-header, hero` (or `detail`), `list, cards, tabbar` |
+| Tablet | The mobile recipe for app screens, the website recipe for sites |
+
+Roles with no good parts are left out, not filled with weak ones.
+
+## When the agent cannot see images
+
+Many agents cannot see images from a URL. Then the agent says so once, cuts **by role only** and the server guesses a band:
+
+| Role | Guessed band |
+| --- | --- |
+| `nav` | Top 0 to 8% (0 to 4% on tall full page shots) |
+| `hero` | The next 35% (15% on full page shots) |
+| `footer`, `tabbar` | The bottom 10% |
+| `status-header` | Top 0 to 14% |
+| `sidebar` | The left 18%, full height |
+| everything else | The middle band |
+
+Guessed parts are flagged `guessedCrop`, notes start with `guessed:`, and each guessed slot is marked "(guessed crop)" in the reply. Fix them on the board (Recrop) or tell the agent where things sit: "the pricing cards sit in the middle third".
+
+## Views
+
+Each Frankenstein page frame has three views. Switch them with the radio group on the frame, or ask "show it as a wireframe".
+
+| View | What it shows | Use it to |
+| --- | --- | --- |
+| **Collage** | The parts as they are. Default | Judge the idea |
+| **Wireframe** | Grayscale, softened, with role labels | Judge structure and rhythm |
+| **Even** | Dark parts inverted, everything a little desaturated, one theme | Judge it as one page |
+
+## Remix with a lock
+
+Love the nav and hero of variant 2? Say "keep the nav and hero, remix the rest, 3 takes". The agent calls `remix_frankenstein` with `lock: ["nav", "hero"]` and `count: 3`. New frames appear right of the original, titled "…, remix 1", "…, remix 2". `vary` limits which roles change. The same call always gives the same result.
+
+## Edit by hand on the canvas
+
+<Tabs>
+<TabItem label="Cut a part">
+
+1. Focus or select an image on the board.
+2. Press **M** (or right click) and choose **Cut part**.
+3. Drag the crop handles, or type the numbers: **From left**, **From top**, **Width**, **Height**, in percent of the image.
+4. Pick the role and the theme (**Not sure**, **Light**, **Dark**), add a steal note, save.
+
+The part lands in the tray's **Parts** tab.
+
+</TabItem>
+<TabItem label="Stack parts">
+
+1. Open the tray's **Parts** tab.
+2. Pick parts with **Space** (or click), in order, top to bottom.
+3. Choose **Frankenstein it (n)**. A new frame appears in the Frankenstein pages section.
+
+</TabItem>
+<TabItem label="Change a page">
+
+- **Swap:** drag a part from the Parts tab onto a slot, or focus the slot, press **M**, **Swap with part...**
+- **Move:** focus a slot and press **Alt+Arrow keys**, or use **Move up/down/left/right**, **Join the row above/below** and **Own row** in the slot menu.
+- **Recrop:** focus a slot and press **Enter**.
+- **Note:** **F2** on a slot.
+- **Remove:** **Delete** on a slot.
+- **Rename the page:** **F2** on the frame.
+
+</TabItem>
+<TabItem label="Keyboard in a frame">
+
+| Key | Does |
+| --- | --- |
+| Arrow keys | Move focus between slots |
+| Alt + Arrow keys | Move the focused slot |
+| Home, End | First or last slot |
+| Enter | Recrop the slot |
+| M, Shift+F10 | Slot menu |
+| F2 | Edit the slot note |
+| Delete, Backspace | Remove the slot from the page |
+| Escape | Back to the frame |
+
+</TabItem>
+</Tabs>
+
+## Export
+
+| Format | File | Plan | What it holds |
+| --- | --- | --- | --- |
+| `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | Free | A skeleton per Frankenstein page: each slot's role, steal note and source link, plus build guidance: take the structure, not the pixels, and unify to one theme |
+| `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | A standalone low fi wireframe: grey boxes per slot with role labels and notes, a sources list, no reference images |
+
+<FileTree>
+- design/explorations/editorial-landing/
+  - FRANKENSTEIN.md
+  - frankenstein-wireframe.html
+  - BUILD-PROMPT.md lists the Frankenstein pages
+</FileTree>
+
+When the board has Frankenstein pages, BUILD-PROMPT.md lists them so a coding agent can build from a skeleton.
+
+<Aside type="caution" title="No PNGs">
+Ask for "the cut images as files" and the agent says no: there are no files, only crop rectangles over images that belong to their owners. You get FRANKENSTEIN.md, the wireframe and the board link instead.
+</Aside>
+
+## Tool details
+
+[`cut_parts`](/docs/reference/tools/cut-parts/) · [`frankenstein_page`](/docs/reference/tools/frankenstein-page/) · [`update_frankenstein`](/docs/reference/tools/update-frankenstein/) · [`remix_frankenstein`](/docs/reference/tools/remix-frankenstein/)

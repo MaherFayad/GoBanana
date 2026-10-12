@@ -1,0 +1,80 @@
+---
+// A glass window from the GoBanana desktop: traffic lights, a file-name title, a body.
+// Decorative chrome only: the lights are not buttons here.
+interface Props {
+	title: string;
+	class?: string;
+	tag?: 'div' | 'section' | 'figure';
+}
+const { title, class: className, tag: Tag = 'div' } = Astro.props;
+---
+
+<Tag class:list={['gb-window not-content', className]}>
+	<div class="gb-window-bar">
+		<span class="gb-window-lights" aria-hidden="true"><i></i><i></i><i></i></span>
+		<span class="gb-window-title">{title}</span>
+		<slot name="tools" />
+	</div>
+	<div class="gb-window-body"><slot /></div>
+</Tag>
+
+<style>
+	.gb-window {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		min-inline-size: 0;
+		border: 1px solid var(--gb-hairline);
+		border-radius: var(--gb-radius);
+		background: var(--gb-glass);
+		backdrop-filter: blur(var(--gb-blur)) saturate(1.3);
+		-webkit-backdrop-filter: blur(var(--gb-blur)) saturate(1.3);
+		box-shadow: var(--gb-shadow);
+		color: var(--sl-color-gray-1);
+		overflow: clip;
+	}
+	.gb-window-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-block-size: 2.25rem;
+		padding-inline: 0.85rem;
+		background: #ffffff08;
+		border-block-end: 1px solid var(--gb-glass-edge);
+	}
+	.gb-window-lights {
+		display: inline-flex;
+		gap: 0.5rem;
+		flex: none;
+	}
+	.gb-window-lights i {
+		inline-size: 0.7rem;
+		block-size: 0.7rem;
+		border-radius: 50%;
+		background: var(--gb-light-idle);
+		opacity: 0.85;
+		transition: background-color var(--gb-roll) var(--gb-ease);
+	}
+	.gb-window:hover .gb-window-lights i:nth-child(1) {
+		background: var(--gb-light-close);
+	}
+	.gb-window:hover .gb-window-lights i:nth-child(2) {
+		background: var(--gb-light-min);
+	}
+	.gb-window:hover .gb-window-lights i:nth-child(3) {
+		background: var(--gb-light-zoom);
+	}
+	.gb-window-title {
+		overflow: hidden;
+		min-inline-size: 0;
+		color: var(--gb-heading);
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.gb-window-body {
+		padding: 1.15rem;
+		min-inline-size: 0;
+	}
+</style>
