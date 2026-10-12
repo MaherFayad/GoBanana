@@ -3,7 +3,7 @@
  * the same stitches. Variants differ in which part fills each role, and each one mixes parts from
  * at least 3 different sources when the library has them.
  */
-import { MAX_STITCH_ROWS, MAX_VARIANTS, type Part, type PartRole, type StitchData, type StitchPlatform, type StitchRow, type StitchSlot } from "./types";
+import { MAX_STITCH_ROWS, MAX_VARIANTS, slotWithPart, type Part, type PartRole, type StitchData, type StitchPlatform, type StitchRow, type StitchSlot } from "./types";
 
 /** Roles that can stand in for a role the library has no part for, best first. */
 export const RELATED_ROLES: Partial<Record<PartRole, PartRole[]>> = {
@@ -285,9 +285,9 @@ export function remix(stitch: StitchData, parts: readonly Part[], opts: RemixOpt
       const rowSlots = row.slots.map((slot) => {
         const pick = picks[i++];
         if (!pick || pick.id === slot.partId) return { ...slot };
-        // A new part brings its own crop; the per slot override was for the old one.
-        const { crop: _crop, ...rest } = slot;
-        return { ...rest, partId: pick.id };
+        // A new part brings its own crop and label; the slot's override and note were for the old
+        // one (a note the user wrote stays). The slot keeps its role: it is the page's structure.
+        return slotWithPart(slot, pick.id);
       });
       return { ...row, slots: rowSlots };
     });

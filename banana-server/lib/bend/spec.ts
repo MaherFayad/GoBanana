@@ -7,6 +7,7 @@ import type { TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { PlatformProfile } from "@/lib/platform";
 import { article, capitalize } from "./templates";
 import type { Domain } from "./tone";
+import { ARABIC_FACE } from "./market";
 import type { ListEntry, MoveId, Tone } from "./types";
 
 
@@ -160,6 +161,8 @@ export interface SpecInput {
   subject: string;
   /** The UI component the brief names, else the platform default ("onboarding", "card"). */
   component: string;
+  /** The design must work in Arabic (lib/bend/market.ts needsArabic): the type line names an Arabic face. */
+  arabic?: boolean;
 }
 
 const words = (s: string) => s.split(/\s+/).filter(Boolean);
@@ -321,14 +324,16 @@ export function buildSpec(input: SpecInput): VisualSpec {
   const layout = constraintLayout ? `${constraintLayout}, on ${profile.gridShort}.` : profile.grid;
   const motionHint = first(entries.transplant?.hints.motion, entries.material?.hints.motion, entries.era?.hints.motion);
   const motion = `${motionHint ?? TONE_MOTION[moodTone(mood)]}, and none with reduced motion on`;
-  const texture =
-    first(
-      entries.material?.hints.tex,
-      entries.transplant?.hints.tex,
-      entries.constraint?.hints.style.includes("grainy") && "Fine print grain over flat color",
-      mood.hints.tex,
-      [entries.era, mood].some((e) => e?.hints.style.includes("grainy")) && "Fine print grain over flat color",
-    ) ?? TONE_TEXTURE[moodTone(mood)];
+  const surface = first(entries.material?.hints.tex, entries.transplant?.hints.tex);
+  const texture = surface
+    ? // A material or object surface is busy: text never sits on it (field report, 2026-10-12:
+      // "text on a textured background will fail contrast").
+      `${surface.replace(/[.\s]+$/, "")}; text sits on solid panels, never on the texture`
+    : (first(
+        entries.constraint?.hints.style.includes("grainy") && "Fine print grain over flat color",
+        mood.hints.tex,
+        [entries.era, mood].some((e) => e?.hints.style.includes("grainy")) && "Fine print grain over flat color",
+      ) ?? TONE_TEXTURE[moodTone(mood)]);
   const iconBase = first(entries.constraint?.hints.icons, entries.era?.hints.icons) ?? VOICE_ICONS[voice];
   const iconography = profile.platform === "mobile" ? `${iconBase}, 24pt in the tab bar` : iconBase;
   const density = entries.constraint?.hints.density
@@ -336,7 +341,9 @@ export function buildSpec(input: SpecInput): VisualSpec {
     : profile.density;
 
   const spec: VisualSpec = {
-    typography: `${VOICE_LINE[voice]} for display at ${profile.display}, ${bodyLine(voice)} at ${profile.body}${caseNote}.`,
+    typography: `${VOICE_LINE[voice]} for display at ${profile.display}, ${bodyLine(voice)} at ${profile.body}${caseNote}${
+      input.arabic ? `; Arabic in ${ARABIC_FACE[voice]} at the same sizes, right to left` : ""
+    }.`,
     typeVoice: voice,
     color: sentence(color),
     layout: sentence(layout),

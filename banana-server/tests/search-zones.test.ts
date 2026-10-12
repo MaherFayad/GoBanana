@@ -69,11 +69,20 @@ describe("UI lanes per platform", () => {
     expect(site.platform).toBe("website");
     const plan = planRequests(site, undefined, { zone: "ui" });
     expect(plan[0]).toMatchObject({ lane: "fidelity", site: "dribbble" });
-    expect(plan[1]!.lane).toBe("gallery");
-    expect(sourceEntry(plan[1]!.site).platforms).toContain("website");
+    // Fidelity, the bridge (the direction's own idea), then the gallery in the Pinterest page's place.
+    expect(plan[1]!.lane).toBe("bridge");
+    const gallery = plan.find((r) => r.lane === "gallery")!;
+    expect(sourceEntry(gallery.site).platforms).toContain("website");
     expect(plan.some((r) => r.lane === "fidelity" && r.site === "pinterest")).toBe(false);
     const app = planRequests(laneTexts("B2B analytics web app", "x", [], "k"), undefined, { zone: "ui" });
-    expect(["refero", "saasframe", "nicelydone"]).toContain(app[1]!.site);
+    expect(["refero", "saasframe", "nicelydone"]).toContain(app.find((r) => r.lane === "gallery")!.site);
+  });
+
+  it("never routes a search to Figma Community files by platform or style (free kits, rated stock_or_shop)", () => {
+    for (const key of ["a", "b", "c", "d", "e", "f", "g", "h"]) {
+      expect(pickGalleries({ platform: "mobile", key }).ui).not.toContain("figma");
+      expect(pickGalleries({ platform: "tablet", key, styleWords: ["minimal", "dark mode"] }).ui).not.toContain("figma");
+    }
   });
 
   it("filters titles by the platform words in runPlan", async () => {
@@ -129,7 +138,7 @@ describe("art zone", () => {
     const lanes = { ...laneTexts(IPHONE, "Korean bojagi", [], "k"), art: ["korean bojagi", "bojagi patchwork"] };
     const both = planRequests(lanes);
     expect(both.length).toBeLessThanOrEqual(7);
-    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["fidelity", "art", "fidelity", "art"]);
+    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art"]);
     expect(both.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
     expect(both.find((r) => r.lane === "art")!.query).toBe("korean bojagi -etsy -amazon -aliexpress -sale -buy");
     const art = planRequests(lanes, undefined, { zone: "art" });

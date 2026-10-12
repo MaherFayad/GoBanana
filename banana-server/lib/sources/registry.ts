@@ -363,10 +363,13 @@ export const SOURCE_REGISTRY = [
     imageHosts: ["s3-alpha.figma.com", "s3-figma-hubfile-images-production-cdn-cgi.figma.com"],
     role: "gallery",
     zone: "ui",
-    platforms: ["mobile", "tablet"],
+    // Never picked by platform or style: Community files are free kits and templates, not designed
+    // screens (field report, 2026-10-12: all 7 Figma results of a flight search were rated
+    // stock_or_shop). Searched only when a call names it in `sources`.
+    platforms: [],
     tags: [],
     uiTitle: true,
-    measured: gallery(5, 50, 50, 50, "many titles are kits, icon sets or illustrations; the kit filter and the UI gate drop them"),
+    measured: gallery(5, 50, 50, 50, "many titles are kits, icon sets or illustrations; the kit filter and the UI gate drop them; off the default routing since 2026-10-12"),
   },
   // Art galleries (art zone).
   {
@@ -531,8 +534,8 @@ export type GalleryPick = { ui: RegistrySite[]; art: RegistrySite[] };
  * - UI: galleries whose style tags the direction's style words (or the brief) name come first, in
  *   registry order ("bento grid" pulls Bento Grids, "dark mode" pulls Dark Design); then the
  *   galleries for the platform (website: Awwwards, Lapa Ninja, ...; webapp: Refero, ...; mobile:
- *   ScreensDesign, Figma), rotated by the direction key so two directions on one canvas search
- *   different galleries. At most MAX_UI_GALLERIES.
+ *   ScreensDesign; never Figma Community), rotated by the direction key so two directions on one
+ *   canvas search different galleries. At most MAX_UI_GALLERIES.
  * - Art: art galleries whose tags the art queries or the idea name ("swiss poster" pulls Swissted
  *   and typo/graphic posters), rotated by the key. At most MAX_ART_GALLERIES. Style words do not
  *   pick art galleries: live, "big typography" pulled Fonts In Use pages unrelated to the idea

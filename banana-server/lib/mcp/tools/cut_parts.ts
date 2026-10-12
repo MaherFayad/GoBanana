@@ -7,9 +7,10 @@ import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, mutateCanvas, newNodeId, parseState, siteFromUrl } from "@/lib/canvas/store";
 import type { ReferenceRecord } from "@/lib/db/types";
-import { defaultCrop } from "@/lib/stitch/crop";
+import { detectPlatform } from "@/lib/platform";
+import { defaultCrop, distinctCrop } from "@/lib/stitch/crop";
 import { MAX_PART_NOTE } from "@/lib/stitch/parse";
-import { clampCrop, MAX_PARTS, type Crop, type Part } from "@/lib/stitch/types";
+import { clampCrop, MAX_PARTS, type Crop, type Part, type StitchPlatform } from "@/lib/stitch/types";
 import {
   CANVAS_NOT_FOUND,
   lazyTool,
@@ -27,7 +28,7 @@ export const MAX_CUTS = 24;
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it, step 1: cut parts (nav, hero, cards, footer and more) out of board images (itemId) or search results (referenceId) into the canvas parts library. " +
-  "Look at the image yourself and pass a crop in fractions (0 to 1). Without one the server guesses a band by role, only a fallback. Free.";
+  "Pass a crop (fractions 0 to 1) only if your client shows you the image; else the server guesses one by role and image shape, marked guessed, for the user to adjust in the canvas. Never download images. Free.";
 
 const cut = z
   .object({
@@ -67,6 +68,12 @@ type Source = {
   height?: number | null;
 };
 
+/** The board's platform from its brief, when it names one ("mobile flight checkout" gives mobile). */
+function stitchPlatform(brief: string | null | undefined): StitchPlatform | undefined {
+  const p = brief ? detectPlatform(brief) : "any";
+  return p === "any" ? undefined : p;
+}
+
 export function createCutPartsTool(deps: CanvasToolDeps) {
   return async function cutParts(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
@@ -83,6 +90,8 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
       const loadMatcher = takedownLoader(deps);
       const matcher = await loadMatcher();
       const makeId = deps.makeId ?? newNodeId;
+      // The board's platform shapes the guess: a phone shot is cut from its middle phone.
+      const platform = stitchPlatform(owned.brief);
 
       const outcome = await mutateCanvas<Part[]>(repos, userId, input.canvasId, loadMatcher, (state) => {
         const library = state.parts ?? [];
@@ -96,6 +105,8 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
         const taken = new Set(library.map((p) => p.id));
         const problems: string[] = [];
         const fresh: Part[] = [];
+        // Crops already cut per image: a guess never repeats one (two roles, one band).
+        const cropsOf = (url: string) => [...library, ...fresh].filter((p) => p.imageUrl === url).map((p) => p.crop);
         input.cuts.forEach((c, i) => {
           let src: Source | undefined;
           if (c.itemId) {
@@ -119,7 +130,9 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
           }
           const imageWidth = src.width ?? undefined;
           const imageHeight = src.height ?? undefined;
-          const crop = c.crop ? clampCrop(c.crop) : defaultCrop(c.role, { imageWidth, imageHeight });
+          const crop = c.crop
+            ? clampCrop(c.crop)
+            : distinctCrop(defaultCrop(c.role, { imageWidth, imageHeight, ...(platform ? { platform } : {}) }), cropsOf(src.imageUrl));
           fresh.push({
             id: newPartId(makeId, taken),
             role: c.role,
@@ -158,7 +171,13 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
       const lines = [`Cut ${parts.length} part${parts.length === 1 ? "" : "s"} for Frankenstein pages (library: ${out.libraryCount} of ${MAX_PARTS}).`];
       for (const p of parts) {
         lines.push(
-          `- ${p.id}: ${p.role} from ${p.sourceSite} ${p.sourceUrl}, crop x ${pct(p.crop.x)}% y ${pct(p.crop.y)}% w ${pct(p.crop.w)}% h ${pct(p.crop.h)}%${p.guessedCrop ? " (guessed, pass a crop to fix it)" : ""}`,
+          `- ${p.id}: ${p.role} from ${p.sourceSite} ${p.sourceUrl}, crop x ${pct(p.crop.x)}% y ${pct(p.crop.y)}% w ${pct(p.crop.w)}% h ${pct(p.crop.h)}%${p.guessedCrop ? " (guessed crop)" : ""}`,
+        );
+      }
+      if (parts.some((p) => p.guessedCrop)) {
+        // Honest about what nobody saw: the agent cannot see the image unless its client shows it.
+        lines.push(
+          "Guessed crops are a band picked by role and image shape; nobody looked at the image. Keep them and tell the user they can adjust each one in the canvas crop editor (Edit crop on a part). Do not download the images to check.",
         );
       }
       lines.push("Next: frankenstein_page with rows of part ids, or a recipe of roles.", `Web link: ${out.webUrl}`);

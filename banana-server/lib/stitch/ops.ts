@@ -5,6 +5,7 @@
 import { MAX_PART_NOTE, MAX_STITCH_NOTE, MAX_STITCH_TITLE } from "./parse";
 import {
   clampCrop,
+  slotWithPart,
   MAX_SLOTS_PER_ROW,
   MAX_STITCH_ROWS,
   type Crop,
@@ -87,8 +88,8 @@ export function applyOps(stitch: StitchData, ops: readonly StitchOp[], parts: re
         if (!at) return slotMissing(op.slotId);
         const part = byId.get(op.partId);
         if (!part) return fail(`part ${op.partId} is not in the parts library.`);
-        const { crop: _crop, ...rest } = at.row.slots[at.index]!;
-        at.row.slots[at.index] = { ...rest, partId: part.id, role: part.role };
+        // The old crop and the agent's note were about the old part; a note the user wrote stays.
+        at.row.slots[at.index] = slotWithPart(at.row.slots[at.index]!, part.id, part.role);
         break;
       }
       case "move": {
@@ -183,7 +184,8 @@ export function applyOps(stitch: StitchData, ops: readonly StitchOp[], parts: re
         if (op.slotId) {
           const at = findSlot(s.rows, op.slotId);
           if (!at) return slotMissing(op.slotId);
-          const { note: _note, ...rest } = at.row.slots[at.index]!;
+          // The agent's note: not marked as the user's, so a later swap replaces it.
+          const { note: _note, userNote: _user, ...rest } = at.row.slots[at.index]!;
           at.row.slots[at.index] = text ? { ...rest, note: text.slice(0, MAX_PART_NOTE) } : rest;
         } else if (text) s.note = text.slice(0, MAX_STITCH_NOTE);
         else delete s.note;

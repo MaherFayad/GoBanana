@@ -188,6 +188,12 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
       text += saved
         ? `\nSaved to canvas ${canvasId}. Pass a direction id as directionId (with this canvasId) to search_references.`
         : "\nThe directions were not saved: that canvas was not found or could not be reached. Pass a direction's search text as query to search_references instead.";
+    } else {
+      // Without a canvas nothing is kept: get_canvas shows 0 directions and search_references
+      // cannot take these ids. Say so, and point at reusing a board rather than starting another.
+      text +=
+        "\nNot saved: no canvasId was passed, so no board lists these directions and search_references cannot take their ids. " +
+        "To keep them, call bend_brief again with the same brief and a canvasId. To find a board for this brief, call get_canvas without a canvasId and reuse it instead of starting a new one.";
     }
     return {
       content: [{ type: "text" as const, text }],

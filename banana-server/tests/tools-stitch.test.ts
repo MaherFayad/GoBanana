@@ -28,7 +28,8 @@ describe("tool copy", () => {
       expect(d.length).toBeLessThan(400);
       expect(d).toContain("Frankenstein");
     }
-    expect(CUT_DESC).toContain("pass a crop in fractions");
+    expect(CUT_DESC).toContain("Pass a crop (fractions 0 to 1) only if your client shows you the image");
+    expect(CUT_DESC).toContain("Never download images");
   });
 });
 
@@ -61,7 +62,9 @@ describe("cut_parts", () => {
     expect(parts[2]!.crop).toEqual({ x: 0, y: 0.04, w: 1, h: 0.15 });
     const t = text(res);
     expect(t).toContain("Cut 3 parts for Frankenstein pages");
-    expect(t).toContain(`pt-2: hero from pinterest.com ${ref(2).sourceUrl}, crop x 0% y 8% w 100% h 35% (guessed, pass a crop to fix it)`);
+    expect(t).toContain(`pt-2: hero from pinterest.com ${ref(2).sourceUrl}, crop x 0% y 8% w 100% h 35% (guessed crop)`);
+    expect(t).toContain("adjust each one in the canvas crop editor");
+    expect(t).toContain("Do not download the images");
     expect(res.structuredContent).toMatchObject({ libraryCount: 3, webUrl: `${APP}/c/${c.id}` });
     // Free: no search quota used, no canvas items added.
     expect((await stored(repos, c.id)).nodes).toHaveLength(1);

@@ -116,7 +116,8 @@ export function parseParts(raw: unknown, cleanUrl: (u: unknown) => string | unde
 function parseSlot(v: unknown): StitchSlot | null {
   if (!isObject(v) || !isStitchId(v.id) || !isStitchId(v.partId)) return null;
   const role = isPartRole(v.role) ? v.role : "other";
-  return compact<StitchSlot>({ id: v.id, role, partId: v.partId, crop: parseCrop(v.crop), note: str(v.note, MAX_PART_NOTE) });
+  const note = str(v.note, MAX_PART_NOTE);
+  return compact<StitchSlot>({ id: v.id, role, partId: v.partId, crop: parseCrop(v.crop), note, userNote: note && v.userNote === true ? true : undefined });
 }
 
 function parseWidths(v: unknown, n: number): number[] | undefined {

@@ -35,13 +35,15 @@ These are bands of the source image, picked by role, the platform of the source,
 
 - nav: top 0 to 8% (top 0 to 4% for tall full page shots)
 - hero: the next 35% (the next 15% for full page shots)
-- footer: the bottom 10%
-- tabbar (mobile): the bottom 10%
+- footer: the bottom 10%; tabbar (mobile): the bottom 9%
 - status-header: top 0 to 14%
 - sidebar: the left 18%, full height
-- Everything else: the middle band
+- cta: low (80% down) and narrower than the screen
+- every other role has its own band (`ROLE_BANDS` in `lib/stitch/crop.ts`): stats and detail high, cards and lists in the middle, sheet, testimonial and faq low. No two roles share a band.
+- A mobile shot that is landscape or square (or has no known size, like most Dribbble shots) is a presentation of several phones: the band is cut from the middle phone, not across the image.
+- Two parts cut from one image never get the same guessed crop: a repeat moves by its own height.
 
-The agent should always pass its own crop when it can see the image. The guess is only a fallback.
+The agent passes its own crop only when its client shows it the image (most do not). Otherwise the guess stands, marked as guessed, and the user adjusts it in the canvas crop editor. The server never fetches the image to look (2026-10-12).
 
 ## Ownership
 

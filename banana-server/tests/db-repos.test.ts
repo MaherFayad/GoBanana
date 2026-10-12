@@ -7,7 +7,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 import { describe, expect, it, vi } from "vitest";
 import type { Db } from "@/db/client";
 import * as schema from "@/db/schema";
-import { countCanvases, getCanvasForOwner, saveCanvasState, updateCanvas } from "@/lib/db/canvases";
+import { countCanvases, getCanvasForOwner, listOwnedCanvases, saveCanvasState, updateCanvas } from "@/lib/db/canvases";
 import { deleteDirections, findDirectionForUser, upsertDirections } from "@/lib/db/directions";
 import { isUuid, referenceRowId, uuidFromName } from "@/lib/db/ids";
 import { createMemoryRepos } from "@/lib/db/memory";
@@ -327,3 +327,14 @@ describe("search learning repositories", () => {
   });
 });
 
+
+describe("listOwnedCanvases direction count", () => {
+  it("counts directions of each canvas with table-qualified columns", async () => {
+    // Bare "canvas_id" = "id" made Postgres compare directions.canvas_id with directions.id (always 0).
+    const { db, calls } = fakeDb([[]]);
+    await listOwnedCanvases(db, ALICE, { limit: 5 });
+    const text = calls[0]!.sql;
+    expect(text).toContain('FROM "directions" AS d WHERE d."canvas_id" = "canvases"."id"');
+    expect(text).not.toMatch(/"canvas_id" = "id"/);
+  });
+});

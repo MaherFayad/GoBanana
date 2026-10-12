@@ -112,19 +112,19 @@ describe("rewrite arms", () => {
     // Default arms: the base plan.
     expect(show({})).toEqual([
       `fidelity:dribbble:1:saudi fintech app ui ${UI_NEG} > fintech app ui ${UI_NEG}`,
-      `fidelity:pinterest:1:saudi fintech app ui ${UI_NEG} > fintech app ui ${UI_NEG}`,
       `taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`,
+      `fidelity:pinterest:1:saudi fintech app ui ${UI_NEG} > fintech app ui ${UI_NEG}`,
       "hero:dribbble:1:minimal fintech app single screen",
     ]);
     const b = show({ fidelity: "core", taste: "app" });
     expect(b[0]).toBe(`fidelity:dribbble:1:fintech app ui ${UI_NEG}`);
-    expect(b[2]).toBe(`taste:dribbble:1:big typography saudi fintech app card ui ${UI_NEG}`);
-    expect(show({ taste: "core" })[2]).toBe(`taste:dribbble:1:big typography fintech card ui design ${UI_NEG}`);
+    expect(b[1]).toBe(`taste:dribbble:1:big typography saudi fintech app card ui ${UI_NEG}`);
+    expect(show({ taste: "core" })[1]).toBe(`taste:dribbble:1:big typography fintech card ui design ${UI_NEG}`);
     expect(show({ hero: "agent:one floating phone" })).toEqual(expect.arrayContaining(["hero:dribbble:1:one floating phone"]));
     // Old inspiration arms (from earlier ratings) change nothing.
     expect(show({ ["inspiration" as never]: "raw@behance" })).toEqual(show({}));
     // Unknown arms fall back to the default wording.
-    expect(show({ taste: "nonsense" })[2]).toBe(`taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`);
+    expect(show({ taste: "nonsense" })[1]).toBe(`taste:dribbble:1:big typography saudi fintech card ui design ${UI_NEG}`);
   });
 
   it("applies the component arms: app adds 'app' before 'ui'", () => {
@@ -138,11 +138,18 @@ describe("rewrite arms", () => {
   it("applies the bridge arms and keeps the idea's title word", () => {
     const lanes = { ...LANES, bridge: "oversized film frames ui design" };
     const bridgeOf = (arms: Parameters<typeof planWithArms>[1]) => planWithArms(lanes, arms, undefined, VARIANTS).find((r) => r.lane === "bridge");
-    expect(bridgeOf({})).toEqual({ lane: "bridge", query: `oversized film frames ui design ${UI_NEG}`, site: "dribbble", titleWord: "frames" });
+    expect(bridgeOf({})).toEqual({
+      lane: "bridge",
+      query: `oversized film frames ui design ${UI_NEG}`,
+      site: "dribbble",
+      fallback: `oversized film frames app ui ${UI_NEG}`,
+      titleWord: "frames",
+    });
     expect(bridgeOf({ bridge: "app" })?.query).toBe(`oversized film frames app ui ${UI_NEG}`);
     expect(bridgeOf({ bridge: "app" })?.titleWord).toBe("frames");
     expect(bridgeOf({ bridge: "agent:film strip checkout ui" })).toMatchObject({ query: `film strip checkout ui ${UI_NEG}`, titleWord: "frames" });
-    expect(planWithArms(lanes, {}).map((r) => r.lane)).toEqual(["fidelity", "fidelity", "taste", "hero", "bridge"]);
+    // The bridge goes second: it is the one UI lane that differs between directions.
+    expect(planWithArms(lanes, {}).map((r) => r.lane)).toEqual(["fidelity", "bridge", "taste", "fidelity", "hero"]);
   });
 
   it("plans one lane with the agent's words", () => {
@@ -154,11 +161,18 @@ describe("rewrite arms", () => {
     ]);
     expect(planLane("fidelity", "fintech wallet app ui").map((r) => r.site)).toEqual(["dribbble", "pinterest"]);
     expect(planLane("fidelity", "x", ["dribbble"]).map((r) => r.site)).toEqual(["dribbble"]);
+    // A bridge re-search filters titles by its own words, never the old idea's head word.
     expect(planLane("bridge", "vending machine kiosk ui", undefined, "vending machine")).toEqual([
-      { lane: "bridge", query: `vending machine kiosk ui ${UI_NEG}`, site: "dribbble", titleWord: "machine" },
+      { lane: "bridge", query: `vending machine kiosk ui ${UI_NEG}`, site: "dribbble", titleWord: "kiosk" },
     ]);
-    // A bridge re-search without the direction's idea has nothing to filter titles by: no request.
-    expect(planLane("bridge", "vending machine kiosk ui")).toEqual([]);
+    const base = { idea: "rawashin windows", fidelity: "flight app ui", component: ["flight checkout ui"], topic: "flight" };
+    expect(planLane("bridge", "islamic pattern app", undefined, "rawashin windows", base)).toEqual([
+      { lane: "bridge", query: `islamic pattern app ${UI_NEG}`, site: "dribbble", titleWord: "islamic" },
+    ]);
+    // New words that only repeat the brief: no title filter at all (still a UI query, still gated).
+    expect(planLane("bridge", "flight checkout app ui", undefined, "rawashin windows", base)).toEqual([
+      { lane: "bridge", query: `flight checkout app ui ${UI_NEG}`, site: "dribbble" },
+    ]);
   });
 });
 

@@ -23,11 +23,11 @@ describe("defaultCrop", () => {
     ["hero", screen, { x: 0, y: 0.08, w: 1, h: 0.35 }],
     ["hero", tall, { x: 0, y: 0.04, w: 1, h: 0.15 }],
     ["footer", screen, { x: 0, y: 0.9, w: 1, h: 0.1 }],
-    ["tabbar", { imageWidth: 390, imageHeight: 844 }, { x: 0, y: 0.9, w: 1, h: 0.1 }],
+    ["tabbar", { imageWidth: 390, imageHeight: 844 }, { x: 0, y: 0.91, w: 1, h: 0.09 }],
     ["status-header", screen, { x: 0, y: 0, w: 1, h: 0.14 }],
     ["sidebar", screen, { x: 0, y: 0, w: 0.18, h: 1 }],
-    ["cards", screen, { x: 0, y: 0.4, w: 1, h: 0.3 }],
-    ["cards", tall, { x: 0, y: 0.4, w: 1, h: 0.2 }],
+    ["cards", screen, { x: 0, y: 0.3, w: 1, h: 0.25 }],
+    ["cards", tall, { x: 0, y: 0.3, w: 1, h: 0.15 }],
   ] as const)("%s on %o", (role, ctx, crop) => {
     const got = defaultCrop(role, ctx);
     for (const k of ["x", "y", "w", "h"] as const) expect(got[k]).toBeCloseTo(crop[k], 5);

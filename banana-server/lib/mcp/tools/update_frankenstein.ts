@@ -27,7 +27,7 @@ export const MAX_OPS = 30;
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it: change one Frankenstein page with ops, applied in order, all or nothing: swap, move, moveRow, remove, insert, crop, widths, mode, note, title. " +
-  "Slot and row ids come from frankenstein_page or get_canvas.";
+  "A swap drops the old part's slot note (a note the user wrote stays). Slot and row ids come from frankenstein_page or get_canvas.";
 
 const index = z.number().int().min(0).max(100);
 const widths = z.array(z.number().positive().max(12)).min(1).max(MAX_SLOTS_PER_ROW);

@@ -37,7 +37,7 @@ You need to know where things sit on each image to cut it well.
 
 - **If you can see the images** (the user attached screenshots, or your client shows you the image from its URL without saving it), look at each one.
 - **If the user described them** ("nav is the top strip, the pricing cards sit in the middle"), use their words.
-- **If you cannot see them**, say it once, plainly: "I can't see the images here, so I'm cutting by role and the server guesses each band (nav at the top, footer at the bottom). The crops are marked as guesses; check them on the board or tell me where things sit." Then cut with role only (no `crop`), set `theme` to `unknown`, and start each note with `guessed:` and what the title suggests. Never pretend you saw them.
+- **If you cannot see them** (the usual case: most clients do not show the agent an image from its URL), say it once, plainly: "I can't see the images here, so I'm cutting by role and the server guesses each band (nav at the top, the pay button low and narrow, footer at the bottom; a phone presentation shot is cut from its middle phone). The crops are marked as guesses; adjust any of them in the canvas crop editor (Edit crop on a part), or tell me where things sit." Then cut with role only (no `crop`), set `theme` to `unknown`, and start each note with `guessed:` and what the title suggests. Keep the guessed crops: do not download or fetch the images to check them, and never pretend you saw them.
 
 ### 3. Pick the strongest parts and cut them
 
@@ -83,12 +83,12 @@ Read each variant from the `frankenstein_page` answer: its rows, slots, parts an
 
 Fix what fails with `update_frankenstein` (`canvasId`, `stitchId`, `ops`), for example:
 
-- `{ "op": "swap", "slotId": "sl-...", "partId": "pt-..." }` to try another part in a slot
+- `{ "op": "swap", "slotId": "sl-...", "partId": "pt-..." }` to try another part in a slot (the slot's note goes with the old part and the new part's note shows; a note the user wrote in the canvas stays; set a new one with `note`)
 - `{ "op": "crop", "slotId": "sl-...", "crop": {...} }` to tighten a slot without a new part (only when you saw the image)
 - `{ "op": "widths", "rowId": "rw-...", "widths": [1, 4] }`, `{ "op": "moveRow", "rowId": "rw-...", "index": 2 }`, `{ "op": "remove", "slotId": "sl-..." }`
 - `{ "op": "note", "note": "Editorial nav over a dashboard hero" }` for the variant's one line idea, and `{ "op": "note", "slotId": "sl-...", "note": "steal: ..." }` for a slot
 
-When one variant has rows you love, call `remix_frankenstein` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result.
+When one variant has rows you love, call `remix_frankenstein` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result. A slot that gets a new part drops the note written for the old one, so read the new labels from the reply.
 
 To judge structure, offer mode `even` (dark parts inverted so the page reads as one theme) or `wireframe` (grey with role labels): `{ "op": "mode", "mode": "wireframe" }`. Keep `collage` as the default view.
 

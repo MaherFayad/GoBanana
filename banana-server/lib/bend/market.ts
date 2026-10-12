@@ -1,0 +1,87 @@
+/**
+ * Market and script rules for a bend (pure, word lists only, no AI). Field report, 2026-10-12: a
+ * GCC flight checkout bend got Wayuu weaving (Colombia) and Icelandic knitwear as its cultural
+ * ingredients, and a "serif type only" rule that fights Arabic. When the brief names a market,
+ * cultural ingredients come from that region; when it needs Arabic, type rules that only work in
+ * Latin script are left out and every type voice gets an Arabic face in the spec.
+ */
+import type { TypeVoice } from "@/lib/direction-detail";
+import { isArabicBrief } from "./queries";
+
+export type Market = "mena";
+
+/** Words that name the Middle East and North Africa as the market. */
+const MENA_WORDS =
+  /\b(gcc|gulf|khaleeji|saudi|ksa|riyadh|jeddah|dammam|uae|emirati|emirates|dubai|abu dhabi|sharjah|qatar|qatari|doha|kuwait|kuwaiti|oman|omani|muscat|bahrain|bahraini|manama|arab|arabic|arabian|rtl|mena|middle east|egypt|egyptian|cairo|jordan|amman|levant|lebanon|beirut|morocco|moroccan|tunisia|algeria|iraq|baghdad|yemen|hajj|umrah|makkah|mecca|madinah|medina)\b/i;
+
+/** The market a brief names, or null. */
+export function briefMarket(brief: string): Market | null {
+  return MENA_WORDS.test(brief) ? "mena" : null;
+}
+
+/** True when the design must work in Arabic: the brief says Arabic or right to left, or names a market in the region. */
+export function needsArabic(brief: string): boolean {
+  return isArabicBrief(brief) || briefMarket(brief) === "mena";
+}
+
+/**
+ * Traditions (lists/traditions.json keys) from the region, the only ones a market brief draws.
+ * The Gulf first; the rest of the Arab world, Turkey and Iran after.
+ */
+export const MARKET_TRADITIONS: Readonly<Record<Market, ReadonlySet<string>>> = {
+  mena: new Set([
+    "Sadu weaving",
+    "mashrabiya screens",
+    "Najdi painted doors",
+    "Al Qatt Al Asiri",
+    "Hejazi rawashin windows",
+    "Emirati talli braiding",
+    "Omani silver jewelry",
+    "Yemeni qamariya windows",
+    "girih tiles",
+    "Moroccan zellige",
+    "Moroccan Berber rugs",
+    "Tunisian blue doors",
+    "Egyptian khayamiya",
+    "Nubian house painting",
+    "Palestinian tatreez",
+    "Damascus brocade",
+    "Mesopotamian cylinder seals",
+    "Turkish Iznik tiles",
+    "Turkish ebru marbling",
+    "Persian rug borders",
+    "Persian miniature painting",
+    "Iranian termeh",
+    "kilim rugs",
+  ]),
+};
+
+/**
+ * Constraints (lists/constraints.json keys) that only work in Latin script: Arabic has no capitals,
+ * small caps or italics, few serif or mono faces, and is joined, never hand-lettered letter by letter.
+ */
+export const LATIN_ONLY_CONSTRAINTS: ReadonlySet<string> = new Set([
+  "serif type only",
+  "monospace type only",
+  "all caps, everywhere",
+  "lowercase letters only",
+  "labels in small caps",
+  "every heading in italics",
+  "every word hand-lettered",
+  "ASCII characters only",
+  "8-bit pixels only",
+]);
+
+/** An Arabic face (Google Fonts, open licence) that pairs with each type voice. */
+export const ARABIC_FACE: Readonly<Record<TypeVoice, string>> = {
+  grotesk: "IBM Plex Sans Arabic",
+  "neo-grotesk": "Noto Sans Arabic",
+  "serif-editorial": "Noto Naskh Arabic",
+  "serif-classic": "Amiri",
+  mono: "IBM Plex Sans Arabic with tabular numbers (Arabic has no true mono)",
+  condensed: "Noto Kufi Arabic",
+  rounded: "Tajawal",
+  "display-retro": "Lalezar for display, Noto Sans Arabic for body",
+  "script-hand": "Aref Ruqaa for display only, Noto Naskh Arabic for body",
+  slab: "Noto Kufi Arabic",
+};

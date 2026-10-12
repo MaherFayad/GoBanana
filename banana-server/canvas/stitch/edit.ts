@@ -8,6 +8,7 @@ import {
   MAX_SLOTS_PER_ROW,
   MAX_STITCH_ROWS,
   PART_ROLES,
+  slotWithPart,
   type Crop,
   type Part,
   type PartRole,
@@ -170,9 +171,12 @@ function patchSlot(data: StitchData, slotId: string, patch: (s: StitchSlot) => S
   return { ...data, rows: data.rows.map((r) => ({ ...r, slots: r.slots.map((s) => (s.id === slotId ? patch(s) : s)) })) };
 }
 
-/** Swap the part in a slot. The slot's own crop override goes (the new part has its own crop). */
+/**
+ * Swap the part in a slot. The slot's own crop override goes (the new part has its own crop), and
+ * so does a note the agent wrote for the old part; a note the user wrote stays.
+ */
 export function swapPart(data: StitchData, slotId: string, part: Part): EditResult {
-  const next = patchSlot(data, slotId, ({ crop: _c, ...s }) => ({ ...s, partId: part.id, role: part.role }));
+  const next = patchSlot(data, slotId, (s) => slotWithPart(s, part.id, part.role));
   return next
     ? { data: next, focus: slotId, message: `Swapped in ${roleLabel(part.role)} from ${part.sourceSite}` }
     : { data: null, message: "Part not found" };
@@ -185,7 +189,8 @@ export function setSlotCrop(data: StitchData, slotId: string, crop: Crop, role?:
 
 export function setSlotNote(data: StitchData, slotId: string, note: string): EditResult {
   const t = note.trim().slice(0, 280);
-  const next = patchSlot(data, slotId, ({ note: _n, ...s }) => (t ? { ...s, note: t } : s));
+  // Written here, in the canvas, by the user: marked so a later swap or remix keeps it.
+  const next = patchSlot(data, slotId, ({ note: _n, userNote: _u, ...s }) => (t ? { ...s, note: t, userNote: true } : s));
   return next ? { data: next, focus: slotId, message: t ? "Note saved" : "Note cleared" } : { data: null, message: "Part not found" };
 }
 

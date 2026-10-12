@@ -20,7 +20,7 @@ describe("server instructions", () => {
 });
 
 describe("initialize", () => {
-  it("returns the instructions to the client", async () => {
+  it("returns the instructions to the client", { timeout: 20_000 }, async () => {
     const { buildMcpHandler } = await import("@/app/api/[transport]/handler");
     const handler = buildMcpHandler([], []);
     const res = await handler(

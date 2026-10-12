@@ -256,11 +256,13 @@ export function isUiResult(title: string | undefined, url?: string): boolean {
 // Kits and templates (owner, 2026-10-12): sales sheets, never one designed screen. A 2018
 // "Fashion Editorial UI Kit for Adobe XD" passed the old filter, which only ranked "template" down.
 
+// Figma Community titles write "UI-Kit" and "UIKit", and free files say "Free App UI" or end in
+// "App Free" (field report, 2026-10-12: all 7 Figma results of one search were rated stock_or_shop).
 const KIT_TITLE = wordsRe(
-  "(?:ui|ux|app|web|website|mobile|dashboard|design|figma|sketch|xd|wireframe|starter|icon|component)s? kits?|templates?|for adobe xd|adobe xd|for figma|for sketch|freebie|free download|psd",
+  "(?:ui|ux|app|web|website|mobile|dashboard|design|design system|figma|sketch|xd|wireframe|starter|icon|component)s?[ -]?kits?|templates?|for adobe xd|adobe xd|for figma|for sketch|freebies?|free download|psd|(?<!-)free (?:app|apps|ui|ux|figma|mobile|kit|kits|resources?|files?)|(?:app|ui|kit|design) free",
 );
 
-/** True when the title sells a kit or template ("UI Kit", "Template", "for Adobe XD", "Figma kit", "Freebie"). */
+/** True when the title sells a kit or template ("UI Kit", "UI-Kit", "Template", "for Adobe XD", "Figma kit", "Freebie", "Free App UI"). */
 export function isKitTitle(title: string | undefined): boolean {
   return Boolean(title) && KIT_TITLE.test(title!);
 }
@@ -292,17 +294,27 @@ const PRODUCT_WORDS = wordsRe(
 );
 /** Logo sheets and icon sets: marks, not art direction. */
 const LOGO_SHEET_WORDS = wordsRe("logo|logos|logotype|logo set|logo collection|logo design ideas|icon set|icons set|icon pack|vector set");
-/** Stock libraries that slip past isJunk. */
-const STOCK_WORDS = wordsRe("stock|unsplash|pexels|pixabay|rawpixel|vector illustration|stock photo|royalty");
+/** Stock libraries that slip past isJunk, and asset packs sold as files ("Record Cover Mockup Pack", "Dry Ink Textures - Vector & PNG"). */
+const STOCK_WORDS = wordsRe(
+  "stock|unsplash|pexels|pixabay|rawpixel|vector illustration|stock photo|royalty|mockups?|mock-ups?|vector (?:&|and) png|png (?:&|and) vector|png|psd|brushes|brush pack|texture pack|textures pack|overlay pack|asset pack",
+);
+/**
+ * Classroom and kids' learning material ("giant calculator for my classroom", "elementary math
+ * measurement lesson", field report 2026-10-12). Exempt when the art query names it, like product words.
+ */
+const EDUCATION_WORDS = wordsRe(
+  "classroom|classrooms|teacher|teachers|teaching|lesson|lessons|lesson plan|worksheet|worksheets|homeschool|homeschooling|preschool|pre-k|kindergarten|elementary|primary school|middle school|math|maths|mathematics|calculator|calculators|arithmetic|times tables?|kids|for kids|children|toddler|toddlers|learning activity|learning activities|bulletin board|anchor chart|anchor charts|curriculum|\\d+(?:st|nd|rd|th) grade|grade \\d+|educational|education|craft ideas|kids crafts?|diy",
+);
 
 const tokensOf = (text: string) => new Set((text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).map((w) => w.replace(/s$/, "")));
 
 /**
  * The art lane's junk gate. Drops shops, prices and product codes, fashion and clothing
- * listings, product listings (stickers, mugs, pillows, air fresheners, seed packets), logo sheets
- * and stock. A product word the art query itself names is not junk ("persian rug" may show rugs,
- * "seed packet" may show seed packets), but shop and price signals always are. Untitled results
- * pass (Pinterest often has no title); the URL and host checks still apply to them.
+ * listings, product listings (stickers, mugs, pillows, air fresheners, seed packets), logo sheets,
+ * stock and asset packs, and classroom or kids' learning material. A product or classroom word the
+ * art query itself names is not junk ("persian rug" may show rugs, "seed packet" may show seed
+ * packets), but shop and price signals always are. Untitled results pass (Pinterest often has no
+ * title); the URL and host checks still apply to them.
  */
 export function isArtJunk(title: string | undefined, artQuery = ""): boolean {
   const t = (title ?? "").replace(/\s+/g, " ").trim();
@@ -315,7 +327,7 @@ export function isArtJunk(title: string | undefined, artQuery = ""): boolean {
     // Exempt only when every word of the match is in the art query ("rug" in "persian rug").
     return ![...tokensOf(m[0])].every((w) => asked.has(w));
   };
-  return named(FASHION_WORDS) || named(PRODUCT_WORDS);
+  return named(FASHION_WORDS) || named(PRODUCT_WORDS) || named(EDUCATION_WORDS);
 }
 
 // ---------------------------------------------------------------------------

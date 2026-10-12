@@ -69,8 +69,8 @@ describe("search plan", () => {
     const plan = planRequests(LANES);
     expect(plan.map((r) => buildSourceQuery(r.query, r.site))).toEqual([
       `saudi fintech app ui ${UI_NEG} site:dribbble.com/shots`,
-      `saudi fintech app ui ${UI_NEG} site:pinterest.com/pin`,
       `minimal checkout ui ${UI_NEG} site:dribbble.com/shots`,
+      `saudi fintech app ui ${UI_NEG} site:pinterest.com/pin`,
       "glassmorphism fintech app single screen site:dribbble.com/shots",
     ]);
     expect(UI_NEG).toBe("-template -kit -free -wireframe");
@@ -80,22 +80,32 @@ describe("search plan", () => {
     expect(plan.some((r) => r.query.includes("crushed velvet") || r.site === "behance")).toBe(false);
   });
 
-  it("plans a direction in priority order: fidelity x2, taste, components, hero, bridge (8th request spare)", () => {
+  it("plans a direction in priority order: fidelity, bridge, taste, component, fidelity on Pinterest, component, hero (8th request spare)", () => {
     const plan = planRequests(FULL);
     expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual([
       "fidelity:dribbble",
-      "fidelity:pinterest",
+      "bridge:dribbble",
       "taste:dribbble",
       "component:dribbble",
+      "fidelity:pinterest",
       "component:dribbble",
       "hero:dribbble",
-      "bridge:dribbble",
     ]);
     expect(plan.length).toBeLessThan(SERPER_MAX_REQUESTS);
     expect(plan[3]).toEqual({ lane: "component", query: `fintech balance ui ${UI_NEG}`, site: "dribbble" });
-    expect(plan[4]!.query).toBe(`fintech quick actions ui ${UI_NEG}`);
-    expect(plan[6]).toEqual({ lane: "bridge", query: `vending machine ui design ${UI_NEG}`, site: "dribbble", titleWord: "machine" });
-    expect(buildSourceQuery(plan[6]!.query, plan[6]!.site)).toBe(`vending machine ui design ${UI_NEG} site:dribbble.com/shots`);
+    expect(plan[5]!.query).toBe(`fintech quick actions ui ${UI_NEG}`);
+    expect(plan[1]).toEqual({
+      lane: "bridge",
+      query: `vending machine ui design ${UI_NEG}`,
+      site: "dribbble",
+      fallback: `vending machine app ui ${UI_NEG}`,
+      titleWord: "machine",
+    });
+    expect(buildSourceQuery(plan[1]!.query, plan[1]!.site)).toBe(`vending machine ui design ${UI_NEG} site:dribbble.com/shots`);
+    // Both zones: the bridge survives the cut, so each direction gets UI of its own idea
+    // (field report, 2026-10-12: placed last, it was cut and every direction got the same shots).
+    const both = planRequests({ ...FULL, art: ["vending machine"] });
+    expect(both.map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art", "taste", "component", "fidelity"]);
     // At most 2 component lanes.
     expect(planRequests({ ...FULL, component: ["a ui", "b ui", "c ui"] }).filter((r) => r.lane === "component")).toHaveLength(2);
     // No head word, no bridge request.
@@ -110,6 +120,11 @@ describe("search plan", () => {
     expect(bridgeHead("oversized numerals")).toBe("numerals");
     expect(bridgeHead("Art Nouveau 1900")).toBe("nouveau");
     expect(bridgeHead("map of the")).toBe("map");
+    // A common word is skipped when the idea has a more telling one ("windows" kept Windows 11 shots).
+    expect(bridgeHead("rawashin windows")).toBe("rawashin");
+    expect(bridgeHead("letterpress texture")).toBe("letterpress");
+    expect(bridgeHead("giant plus sign poster")).toBe("plus");
+    expect(bridgeHead("windows")).toBe("windows");
     expect(bridgeHead("3d ui")).toBeNull();
     expect(bridgeHead("")).toBeNull();
     expect(bridgeHead(undefined)).toBeNull();
@@ -136,8 +151,8 @@ describe("search plan", () => {
 
   it("puts the Arabic locale query in place of the Pinterest fidelity page", () => {
     const plan = planRequests({ ...LANES, locale: "arabic app ui" });
-    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["fidelity:dribbble", "locale:pinterest", "taste:dribbble", "hero:dribbble"]);
-    expect(plan[1]!.query).toBe(`arabic app ui ${UI_NEG}`);
+    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["fidelity:dribbble", "taste:dribbble", "locale:pinterest", "hero:dribbble"]);
+    expect(plan[2]!.query).toBe(`arabic app ui ${UI_NEG}`);
   });
 
   it("keeps every lane on the sources the caller picked; the idea alone plans nothing", () => {
@@ -325,7 +340,8 @@ describe("runPlan", () => {
     });
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
     const plan = planRequests(LANES);
-    const tasteQ = buildSourceQuery(plan[2]!.query, plan[2]!.site);
+    const taste = plan.find((r) => r.lane === "taste")!;
+    const tasteQ = buildSourceQuery(taste.query, taste.site);
     // 8 of the 10 taste shots are already on the canvas.
     const exclude = pageFor(tasteQ).images.slice(0, 8).map((i) => i.link);
     const result = await adapter.runPlan(plan, { count: 24, userId: "u", exclude });
@@ -409,7 +425,9 @@ describe("runPlan with the bridge lane and the UI gate", () => {
       return jsonResponse(q.startsWith("vending machine ui design") ? bridgePage(q, titles) : pageFor(q));
     });
     const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(BRIDGE), { count: 24, userId: "u" });
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    // 3 good bridge results is a thin answer: one retry as "vending machine app ui" (5 planned + 1).
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+    expect(fetchMock.mock.calls.map(([, init]) => bodyOf(init).q)).toContain(`vending machine app ui ${UI_NEG} site:dribbble.com/shots`);
     const bridge = result.references.filter((r) => r.lane === "bridge");
     // "Smart vending machines kiosk" and "Machines of loving grace" name the idea but no UI.
     expect(bridge.map((r) => r.title).sort()).toEqual(["Coffee machine order screen", "Snack MACHINE checkout", "Vending Machine UI by Ana on Dribbble"].sort());
@@ -424,9 +442,9 @@ describe("runPlan with the bridge lane and the UI gate", () => {
       return jsonResponse(q.startsWith("Sadu weaving ui design") ? bridgePage(q, Array.from({ length: 10 }, (_, i) => `Travel app UI ${i}`)) : pageFor(q));
     });
     const result = await createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist }).runPlan(planRequests(lanes), { count: 12, userId: "u" });
-    // No page 2 and no fallback for an empty bridge: 5 requests.
-    expect(fetchMock).toHaveBeenCalledTimes(5);
-    expect(result.report?.find((r) => r.lane === "bridge")).toMatchObject({ good: 0 });
+    // No page 2 for an empty bridge, one retry with its app ui form: 6 requests.
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+    expect(result.report?.find((r) => r.lane === "bridge")).toMatchObject({ good: 0, retried: `Sadu weaving app ui ${UI_NEG}` });
     expect(result.references).toHaveLength(12);
     expect(result.references.some((r) => r.lane === "bridge")).toBe(false);
   });

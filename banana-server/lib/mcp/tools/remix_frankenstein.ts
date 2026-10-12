@@ -27,7 +27,7 @@ export const TOOL_NAME = "remix_frankenstein";
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it: make variants of a Frankenstein page with other parts from the library in its slots, placed right of the original. " +
-  "lock keeps slots (slot ids or roles); vary names the only roles to swap. Same call, same result.";
+  "lock keeps slots (slot ids or roles); vary names the only roles to swap. A slot with a new part drops the old part's note. Same call, same result.";
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),

@@ -26,7 +26,7 @@
  */
 import { cyrb53, mulberry32, type Rng } from "../bend/prng";
 import { componentAppText } from "../bend/queries";
-import { bridgeHead, planRequests, type LaneTexts, type PlannedRequest } from "../sources/plan";
+import { bridgeHead, planRequests, retryBridgeWord, type LaneTexts, type PlannedRequest } from "../sources/plan";
 import type { LaneName, SourceSite, ZoneInput } from "../sources/types";
 import { MAX_KEY_LENGTH, queryWords } from "./terms";
 
@@ -140,8 +140,10 @@ export function planWithArms(
 
 /**
  * The requests one lane would send with `text` as its words (a lane-only re-search). A bridge
- * re-search keeps the title filter of the direction's `ingredient` (no ingredient, no request).
- * `base` gives the direction's platform filter, galleries and art galleries, so a re-search of the
+ * re-search filters titles by the head word of its new words (retryBridgeWord: "islamic pattern
+ * app" keeps titles that say "islamic"), or not at all when the new words only repeat the brief;
+ * the old idea's word dropped every result (field report, 2026-10-12). `base` gives the
+ * direction's platform filter, brief lanes, galleries and art galleries, so a re-search of the
  * gallery or art lane searches the same sites.
  */
 export function planLane(
@@ -160,6 +162,12 @@ export function planLane(
     lanes.topic = text;
     lanes.galleries = base.galleries?.length ? base.galleries : [];
   } else lanes[lane] = text;
+  if (lane === "bridge") {
+    const word = retryBridgeWord(text, base);
+    // planRequests plans a bridge only with a title word: plan it with a stand-in, then drop it.
+    const plan = planRequests(lanes, sources, { bridgeWord: word ?? "-", zone: "ui" }).filter((r) => r.lane === "bridge");
+    return word ? plan : plan.map(({ titleWord: _w, ...r }) => r);
+  }
   const plan = planRequests(lanes, sources, { bridgeWord: bridgeHead(ingredient), zone: lane === "art" ? "art" : "ui" }).filter((r) => r.lane === lane);
   return plan;
 }

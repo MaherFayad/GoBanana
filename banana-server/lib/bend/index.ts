@@ -35,6 +35,8 @@ import {
   type Wildness,
 } from "./types";
 import { WILDNESS } from "./wildness";
+import { familyOf } from "./families";
+import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, type Market } from "./market";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -134,6 +136,7 @@ function combinations<T>(items: readonly T[], k: number): T[][] {
 class EntryPicker {
   private readonly usedKeys = new Set<string>();
   private readonly usedStems = new Set<string>();
+  private readonly usedFamilies = new Set<string>();
   private readonly pools = new Map<string, ListEntry[]>();
 
   constructor(
@@ -143,6 +146,11 @@ class EntryPicker {
     private readonly order?: (poolKey: string, shuffled: ListEntry[]) => ListEntry[],
     /** Builds a pool's draw order on first use. Default: one seeded shuffle of the whole list. */
     private readonly build: (poolKey: string, entries: readonly ListEntry[], rng: Rng) => ListEntry[] = (_k, e, r) => shuffle(e, r),
+    /**
+     * Family of an entry (lib/bend/families.ts): with overlap checks on, a family already used is
+     * skipped like a shared word, so one bend never holds two takes on the same core metaphor.
+     */
+    private readonly familyOf?: (poolKey: string, key: string) => string | undefined,
   ) {
     for (const w of subjectWords) this.usedStems.add(stem(w));
   }
@@ -168,12 +176,19 @@ class EntryPicker {
     const unused = pool.filter((e) => !this.usedKeys.has(e.key.toLowerCase()));
     const allowed = allow ? unused.filter(allow) : unused;
     const fresh = allowed.length > 0 ? allowed : unused;
-    const clear = checkOverlap
-      ? fresh.find((e) => contentStems(e.key).every((s) => !this.usedStems.has(s)))
-      : undefined;
+    const stemsClear = (e: ListEntry) => contentStems(e.key).every((s) => !this.usedStems.has(s));
+    const family = (e: ListEntry) => this.familyOf?.(poolKey, e.key);
+    const familyClear = (e: ListEntry) => {
+      const f = family(e);
+      return !f || !this.usedFamilies.has(f);
+    };
+    // A family clash only moves the pick when another entry is clear of both; otherwise the old pick stands.
+    const clear = checkOverlap ? (fresh.find((e) => stemsClear(e) && familyClear(e)) ?? fresh.find(stemsClear)) : undefined;
     const chosen = clear ?? fresh[0] ?? pool[0];
     if (!chosen) throw new Error(`Empty word list: ${poolKey}`);
     this.exclude(chosen);
+    const f = family(chosen);
+    if (f) this.usedFamilies.add(f);
     return chosen;
   }
 }
@@ -304,15 +319,29 @@ export function signatureComponent(brief: string, platform: Platform): string {
   return named ?? PLATFORM_PROFILES[platform].defaultComponent;
 }
 
-/** Entry filter for a list: platform gates, weirdness by wildness, and no tone clash below wildness 4. */
-function entryFilter(list: string, platform: Platform, wildness: Wildness, domain: Domain | null) {
+/** What the brief says about its market and script (lib/bend/market.ts). */
+interface Locale {
+  market: Market | null;
+  arabic: boolean;
+}
+
+/**
+ * Entry filter for a list: platform gates, weirdness by wildness, no tone clash below wildness 4,
+ * traditions from the brief's market when it names one, and no Latin-only type rules when the
+ * design needs Arabic.
+ */
+function entryFilter(list: string, platform: Platform, wildness: Wildness, domain: Domain | null, locale: Locale) {
   if (!FILTERED_LISTS.has(list)) return undefined;
   // Briefs with no platform keep their bend-v1 picks (and ids) at wildness 3: no weirdness cap there.
   const maxWeird = platform === "any" && wildness === 3 ? 3 : MAX_WEIRD[wildness];
+  const region = list === "traditions" && locale.market ? MARKET_TRADITIONS[locale.market] : null;
+  const latinOnly = list === "constraints" && locale.arabic;
   return (e: ListEntry) =>
     allowedOn(platform, list, e.key, e.hints.notOn) &&
     e.hints.weird <= maxWeird &&
-    (wildness >= CLASH_FROM_WILDNESS || noClash(e, domain));
+    (wildness >= CLASH_FROM_WILDNESS || noClash(e, domain)) &&
+    (!region || region.has(e.key)) &&
+    (!latinOnly || !LATIN_ONLY_CONSTRAINTS.has(e.key));
 }
 
 /** Clean page names: trimmed, single spaces, at most 3, no repeats. */
@@ -366,7 +395,10 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const extra = list.slice(legacy.length);
     return [...shuffle(legacy, r), ...shuffle(extra, mulberry32(cyrb53(`${key}|more|${poolKey}`)))];
   };
-  const entries = new EntryPicker(rng, subject.words, ingredientOrder(options.ingredientWeights), buildPool);
+  // Briefs with a platform also skip a second object of the same family (lib/bend/families.ts);
+  // briefs with none keep their bend-v1 picks and ids.
+  const entries = new EntryPicker(rng, subject.words, ingredientOrder(options.ingredientWeights), buildPool, platform === "any" ? undefined : familyOf);
+  const locale: Locale = { market: briefMarket(input.brief), arabic: needsArabic(input.brief) };
 
   // Allowed moves, in canonical order. A lens preset forces the lens move into every direction.
   const allowed: MoveId[] = MOVES.filter((m) => !input.moves || input.moves.includes(m));
@@ -443,7 +475,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const picked: ListEntry[] = moves.map((m) => {
       if (m === "lens" && lens) return entries.pick(`lens:${lens.id}`, lensList, false);
       const def = MOVE_DEFS[m];
-      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain));
+      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale));
     });
     // bend-v1 drew the mood here. Briefs with no platform still make that draw (a shadow pick, not
     // shown) so later picks and ids do not move; the shown mood is matched to the subject below.
@@ -530,7 +562,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       if (garnishMove) {
         garnishUse.set(garnishMove, (garnishUse.get(garnishMove) ?? 0) + 1);
         const def = MOVE_DEFS[garnishMove];
-        twistEntry = garnish.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain));
+        twistEntry = garnish.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale));
         ingredients[def.slot] = twistEntry.label;
         vars[ROLE[garnishMove]] = twistEntry.label;
         twistSource = garnishMove;
@@ -579,6 +611,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       domain,
       subject: subject.title,
       component: signatureComponent(input.brief, platform),
+      arabic: locale.arabic,
     });
     const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords });
     const searchQueries = [

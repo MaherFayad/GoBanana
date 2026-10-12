@@ -137,11 +137,14 @@ describe("search_references tool", () => {
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
     expect(plan.length).toBeLessThanOrEqual(8);
     // Both zones: UI and art alternate at the top, then the rest of UI, cut to 7 (one spare request).
-    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art", "locale", "art", "gallery", "component", "hero"]);
+    // The bridge (the direction's own idea as UI) comes right after fidelity, so the cut keeps it.
+    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art", "component", "locale", "gallery"]);
     // No taste given and no style words stored: no taste lane (never the owner's default taste).
     expect(plan.some((r) => r.lane === "taste")).toBe(false);
-    // The raw idea only goes to the art lane (Pinterest pins, Behance galleries), never to a UI lane.
-    expect(plan.filter((r) => r.lane !== "art").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
+    // The raw idea only goes to the art lane (Pinterest pins, Behance galleries); in UI it is only
+    // the bridge lane's UI form ("crushed velvet ui design").
+    expect(plan.filter((r) => r.lane !== "art" && r.lane !== "bridge").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
+    expect(plan.find((r) => r.lane === "bridge")!.query).toMatch(/^crushed velvet ui design -template/);
     expect(plan.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
     expect(plan.find((r) => r.lane === "art")!.query).toMatch(/^crushed velvet -etsy/);
     const ui = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1", zone: "ui" }, "u1");
@@ -167,7 +170,8 @@ describe("search_references tool", () => {
     expect(out.lanes.hero).toBe("flight app single screen");
     expect(out.lanes.art).toEqual(["crushed velvet"]);
     expect(out.queries[0]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[2]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    expect(out.queries[2]).toBe("crushed velvet ui design -template -kit -free -wireframe site:dribbble.com/shots");
+    expect(out.queries[5]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain("UI references:");
     expect(text(res)).not.toContain("inspiration");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(2);

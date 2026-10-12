@@ -7,11 +7,11 @@
  *
  *   UI_NEG       -template -kit -free -wireframe
  *   fidelity     "{domain} {surface} {UI_NEG}"             dribbble.com/shots, then pinterest.com/pin
+ *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
  *   locale (ar)  "arabic {surface} {UI_NEG}"               replaces the fidelity Pinterest page
  *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
  *   component    "{core} {component} ui {UI_NEG}"          dribbble.com/shots, up to 2 from the brief
  *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
- *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
  * what the base plan leaves is spent on page 2 and fallbacks (fidelity retried with the core noun).
@@ -121,7 +121,7 @@ export type PlannedRequest = {
   fallback?: string;
   /** Serper page (default 1). A learned arm may ask for page 2 of the same query. */
   page?: number;
-  /** Keep a result only when its title has this word (bridge lane precision filter, see titleHasWord). */
+  /** Keep a result only when its title has this word (bridge and locale lane precision filter, see titleHasWord). */
   titleWord?: string;
   /** UI lanes: drop a result whose title has any of these words (platform filter). */
   avoidWords?: string[];
@@ -146,17 +146,46 @@ const HEAD_STOP = new Set([
 ]);
 
 /**
+ * Common words that alone say little about the idea: as a title filter they let anything through
+ * ("rawashin windows" filtered by "windows" kept Windows 11 desktop shots, live 2026-10-12). The
+ * head word skips them when the ingredient has a more telling word.
+ */
+const GENERIC_HEADS = new Set([
+  "window", "windows", "texture", "textures", "pattern", "patterns", "poster", "posters", "style", "styles", "art",
+  "paper", "record", "records", "light", "lights", "color", "colors", "colour", "colours", "shape", "shapes",
+  "sign", "signs", "giant", "oversized", "big", "huge", "tiny", "small", "old", "vintage", "retro", "modern",
+  "classic", "screen", "screens", "page", "pages", "card", "cards", "print", "prints", "type", "look", "mood",
+]);
+
+/**
  * The ingredient's head word for the bridge lane filter: its last token that is not a stop word,
- * has at least 3 characters and is not a bare number. "vending machine" gives "machine",
- * "Art Nouveau 1900" gives "nouveau", "oversized numerals" gives "numerals". Null when none.
+ * has at least 3 characters and is not a bare number, preferring one that is not a common word
+ * (GENERIC_HEADS). "vending machine" gives "machine", "Art Nouveau 1900" gives "nouveau",
+ * "oversized numerals" gives "numerals", "rawashin windows" gives "rawashin". Null when none.
  */
 export function bridgeHead(ingredient: string | undefined): string | null {
-  const tokens = (ingredient ?? "").toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
-  for (let i = tokens.length - 1; i >= 0; i--) {
-    const t = tokens[i]!;
-    if (t.length >= 3 && !HEAD_STOP.has(t) && /\p{L}/u.test(t)) return t;
-  }
-  return null;
+  const tokens = ((ingredient ?? "").toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter(
+    (t) => t.length >= 3 && !HEAD_STOP.has(t) && /\p{L}/u.test(t),
+  );
+  return [...tokens].reverse().find((t) => !GENERIC_HEADS.has(t)) ?? tokens.at(-1) ?? null;
+}
+
+/**
+ * The title word for a re-search of the bridge lane: the head word of the agent's new words,
+ * leaving out UI words and the brief's own words (`lanes`), so "islamic pattern app" filters by
+ * "islamic" and "velvet checkout ui" by "velvet". Null when the new words name nothing beyond the
+ * brief: then no title filter. The old idea's word is never used: it dropped every result of the
+ * new words (field report, 2026-10-12: "islamic pattern app" filtered by "windows").
+ */
+export function retryBridgeWord(text: string, lanes: Pick<LaneTexts, "fidelity" | "component" | "topic" | "locale">): string | null {
+  const brief = new Set(
+    [lanes.fidelity, ...(lanes.component ?? []), lanes.topic, lanes.locale]
+      .join(" ")
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu) ?? [],
+  );
+  const own = (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter((t) => !brief.has(t) && !hasUiWord(t));
+  return bridgeHead(own.join(" "));
 }
 
 /** Singular stem for the plural tolerance: "machines" and "glasses" lose their ending, "glass" keeps it. */
@@ -208,19 +237,27 @@ function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
     if (site) out.push({ lane: "gallery", query: galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
   };
   // Website and web app briefs: a platform gallery replaces the Pinterest fidelity page (Pinterest
-  // is weak on web pages, round 4). Every other gallery follows taste.
+  // is weak on web pages, round 4). Every other gallery follows the first component lane.
   const web = lanes.platform === "website" || lanes.platform === "webapp";
   const first = web && !lanes.locale ? galleries[0] : undefined;
+  const components = (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES);
   add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
+  // The bridge is the only UI lane that differs between the directions of one brief, so it goes
+  // second: planned last, the both-zones cut dropped it and every direction got the same generic
+  // shots (field report, 2026-10-12). A thin answer retries as "{ingredient} app ui".
+  if (head && lanes.bridge) {
+    const alt = lanes.bridge.replace(/ ui design$/, " app ui");
+    add("bridge", lanes.bridge, "dribbble", true, alt !== lanes.bridge ? alt : undefined, head);
+  }
+  add("taste", lanes.taste, "dribbble", true);
+  add("component", components[0], "dribbble", true);
   if (lanes.locale) add("locale", lanes.locale, "pinterest", true, undefined, lanes.localeWord);
   else if (first) addGallery(first);
   else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
-  add("taste", lanes.taste, "dribbble", true);
   const rest = first ? galleries.slice(1) : galleries;
   addGallery(rest[0]);
-  for (const c of (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES)) add("component", c, "dribbble", true);
+  add("component", components[1], "dribbble", true);
   add("hero", lanes.hero, "dribbble", false);
-  if (head) add("bridge", lanes.bridge, "dribbble", true, undefined, head);
   for (const site of rest.slice(1)) addGallery(site);
   return out;
 }
@@ -257,10 +294,10 @@ export function artWords(raw: string): string {
 
 /**
  * Requests in priority order (the budget cuts from the end), one page each.
- * UI: 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {core} {surface}" for
+ * UI: 1. fidelity on Dribbble, 2. bridge (only with a head word to filter its titles by), 3. taste,
+ * 4. the first component lane, 5. fidelity on Pinterest (locale "arabic {core} {surface}" for
  * Arabic briefs, its titles filtered by the subject like the bridge lane's; website briefs search
- * Awwwards with the `web` words instead), 3. taste, 4. and 5. the component lanes, 6. hero,
- * 7. bridge (only with a head word to filter its titles by).
+ * Awwwards with the `web` words instead), 6. a gallery, 7. the second component lane, 8. hero.
  * Art: each art query on Pinterest, then Behance.
  * Both zones: UI and art alternate for the first two of each (fidelity, art, fidelity, art), then
  * the rest of UI, then the rest of art, cut to BASE_MAX_REQUESTS so one request is left for page 2

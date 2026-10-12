@@ -91,6 +91,21 @@ export interface StitchSlot {
   /** Per slot crop override (the same part reused with a tighter crop). */
   crop?: Crop;
   note?: string;
+  /**
+   * True when the user wrote `note` in the canvas. A swap or remix keeps such a note; any other
+   * note described the old part, so it goes and the label falls back to the new part's note.
+   */
+  userNote?: true;
+}
+
+/**
+ * The slot after its part changes to `partId`: the crop override goes (it was for the old part),
+ * and so does the note unless the user wrote it (it described the old part: field report,
+ * 2026-10-12, a cart rows part still said "Track list fare breakdown" after a remix).
+ */
+export function slotWithPart(slot: StitchSlot, partId: string, role?: PartRole): StitchSlot {
+  const { crop: _crop, note, userNote, ...rest } = slot;
+  return { ...rest, partId, ...(role ? { role } : {}), ...(userNote && note ? { note, userNote } : {}) };
 }
 
 /** A horizontal band of the page: 1 slot (full width) or 2 to 3 side by side (sidebar + content, card rows). */

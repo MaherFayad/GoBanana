@@ -200,6 +200,9 @@ async function listRecent(deps: CanvasToolDeps, userId: string): Promise<ToolRes
       lines.push(`- ${c.id}: "${c.title}" (${c.references} references, ${c.directions} directions, updated ${c.updatedAt.slice(0, 10)})${c.brief ? ` brief: ${c.brief.replace(/\s+/g, " ").slice(0, 120)}` : ""}`);
     }
     lines.push("If the user's request continues one of these, pass its canvasId to bend_brief, search_references and add_to_canvas to add to it.");
+    lines.push(
+      "The directions count is the bend_brief directions saved on that board (kept or not rated). For the same brief, reuse its board instead of starting a new one; to start clean, bend again into it.",
+    );
     return toolResult(lines.join("\n"), { canvases });
   } catch {
     console.error("[get_canvas] list failed");

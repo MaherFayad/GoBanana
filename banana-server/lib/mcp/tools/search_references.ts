@@ -10,7 +10,7 @@ import { authExtra } from "@/lib/auth";
 import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
 import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
-import { directionTasteVariants, inspirationFromQuery, laneTexts } from "@/lib/bend/queries";
+import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts } from "@/lib/bend/queries";
 import type { DirectionDetail } from "@/lib/direction-detail";
 import {
   agentArm,
@@ -25,7 +25,7 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
-import { ART_SITES, artQuota, artWords, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
+import { ART_SITES, artQuota, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import {
   DEFAULT_SOURCES,
@@ -98,6 +98,11 @@ export type Direction = {
   bendId?: string | null;
   /** Brief of the canvas the direction is on. Feeds the taste and fidelity lanes. */
   brief?: string | null;
+  /**
+   * The canvas's own brief when `brief` is the shorter brief bend_brief was given. Its market
+   * (Arabic, right to left) still applies to the direction's lanes.
+   */
+  canvasBrief?: string | null;
   /** Style words saved on that canvas (lib/taste.ts), if any. */
   taste?: readonly string[] | null;
   /** Wild directions v2 detail (directions.detail): platform, style words, art queries. */
@@ -202,11 +207,25 @@ function resultText(out: SearchReferencesOutput): string {
         : "Place 6 to 8 UI references per direction and at most 4 art items: UI is the main grid, art is the accent row.",
     );
   }
+  // The bridge is the direction's own UI lane: say so when it found nothing, with a retry that works.
+  if (!out.lane && out.lanes?.bridge && out.zones.ui > 0 && !out.references.some((r) => r.lane === "bridge")) {
+    lines.push(
+      `No UI shot named this direction's idea (${out.lanes.idea}), so the UI above is for the brief only. ` +
+        `For UI that carries the idea, redo the bridge lane with 2 or 3 words for its pattern or material and the screen, for example lane "bridge" and query "${retryExample(out.lanes)}", or a broader word for the same pattern or material ("islamic pattern app") if that finds nothing.`,
+    );
+  }
   if (out.note) lines.push(out.note);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
   if (out.learned) lines.push("Some lanes used wording that rated better before.");
   lines.push("Rate standouts and misses with rate_references (ids in brackets).");
   return lines.join("\n");
+}
+
+/** A short bridge retry for the steering line: the idea's head word, "pattern" and the surface ("rawashin pattern app"). */
+function retryExample(lanes: LaneTexts): string {
+  const head = bridgeHead(lanes.idea) ?? lanes.idea;
+  const surface = lanes.platform === "website" ? "website" : lanes.platform === "webapp" ? "dashboard" : "app";
+  return `${head} pattern ${surface}`;
 }
 
 /**
@@ -219,7 +238,13 @@ function resultText(out: SearchReferencesOutput): string {
 export function directionLanes(direction: Direction, taste: readonly string[]): LaneTexts {
   const detail = direction.detail ?? undefined;
   const idea = inspirationFromQuery(direction.searchQuery);
-  const lanes = laneTexts(direction.brief, idea, taste, direction.bendId ?? direction.id, {
+  // A bend brief cut to the screen ("flight checkout screen for a GCC travel OTA") loses the board's
+  // "EN + AR/RTL": the locale lane follows the canvas brief too (field report, 2026-10-12).
+  const brief =
+    direction.brief && direction.canvasBrief && isArabicBrief(direction.canvasBrief) && !isArabicBrief(direction.brief)
+      ? `${direction.brief}, Arabic RTL`
+      : direction.brief;
+  const lanes = laneTexts(brief, idea, taste, direction.bendId ?? direction.id, {
     ...(detail?.platform ? { platform: detail.platform } : {}),
     ...(detail?.spec?.styleWords?.length ? { styleWords: detail.spec.styleWords } : {}),
   });
@@ -564,6 +589,7 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
         canvasId: d.canvasId,
         bendId: d.bendId,
         brief: d.detail?.brief ?? canvas?.brief ?? null,
+        canvasBrief: canvas?.brief ?? null,
         taste: canvas ? (parseState(canvas.state).taste ?? null) : null,
         detail: d.detail ?? null,
       };

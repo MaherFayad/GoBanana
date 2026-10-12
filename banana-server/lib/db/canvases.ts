@@ -1,7 +1,7 @@
 /** `canvases` table (spec section 11). Every read and write is scoped to the owner. */
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
-import { canvases, directions } from "@/db/schema";
+import { canvases } from "@/db/schema";
 import { isStateObject } from "@/lib/taste";
 import { KEEP_STORED } from "./keep";
 import { isUuid } from "./ids";
@@ -82,7 +82,10 @@ export async function listOwnedCanvases(db: Db, userId: string, opts: { limit?: 
       shareToken: canvases.shareToken,
       updatedAt: canvases.updatedAt,
       referenceCount: sql<number>`(SELECT count(*)::int FROM jsonb_array_elements(${stateNodes}) AS e(n) WHERE e.n ->> 'type' IN ('image', 'upload'))`,
-      directionCount: sql<number>`(SELECT count(*)::int FROM ${directions} WHERE ${directions.canvasId} = ${canvases.id})`,
+      // Spelled out with table names: on a single-table select Drizzle renders column references
+      // bare ("canvas_id" = "id"), which Postgres reads as directions.canvas_id = directions.id, so
+      // the count was always 0 (a field agent saw 0 directions on every board, 2026-10-12).
+      directionCount: sql<number>`(SELECT count(*)::int FROM "directions" AS d WHERE d."canvas_id" = "canvases"."id")`,
       previews: sql<unknown>`(SELECT coalesce(jsonb_agg(p.v ORDER BY p.i), '[]'::jsonb) FROM (SELECT e.i, jsonb_build_object('thumbUrl', e.n -> 'data' -> 'thumbUrl', 'imageUrl', e.n -> 'data' -> 'imageUrl', 'sourceUrl', e.n -> 'data' -> 'sourceUrl') AS v FROM jsonb_array_elements(${stateNodes}) WITH ORDINALITY AS e(n, i) WHERE e.n ->> 'type' IN ('image', 'upload') ORDER BY e.i LIMIT ${SUMMARY_PREVIEWS}) AS p)`,
     })
     .from(canvases)
