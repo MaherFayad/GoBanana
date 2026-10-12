@@ -101,6 +101,22 @@ export type PreviewFile = { format: PreviewFormat; name: string; content: string
 
 let files: PreviewFile[] | null = null;
 
+/** The five files the landing page's export fan shows, in order. */
+export const KIT_FORMATS: readonly PreviewFormat[] = ["design_md", "agents_md", "tokens", "tailwind", "figjam_spec"];
+/** Lines of each file the fan shows. */
+export const KIT_LINES = 12;
+
+/**
+ * What lib/site/kit-preview.json holds: the head of each fan file. The landing page imports the
+ * JSON instead of calling the exporters, so `yaml` and lib/export stay out of its server chunk
+ * (Worker size, docs/worker-size.md); tests/site-showcase.test.ts fails when the JSON is stale.
+ */
+export function kitPreview(): { name: string; content: string }[] {
+  return exportPreview()
+    .filter((f) => KIT_FORMATS.includes(f.format))
+    .map((f) => ({ name: f.name, content: f.content.split("\n").slice(0, KIT_LINES).join("\n") }));
+}
+
 /** The six preview files, built once per isolate. */
 export function exportPreview(): PreviewFile[] {
   files ??= exportKit(demoSnapshot(), PREVIEW_FORMATS).map((f, i) => ({ format: PREVIEW_FORMATS[i]!, name: f.name, content: f.content }));

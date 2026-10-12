@@ -13,6 +13,11 @@
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
 
+// Next replaces `typeof window` with "undefined" in the server build, so the server build drops
+// these imports and ogl and the trail never reach the Worker (docs/worker-size.md).
+const loadTrail = typeof window === "undefined" ? null : () => import("./trail");
+const loadScene = typeof window === "undefined" ? null : () => import("./stage-scene");
+
 function hasWebGL(): boolean {
   try {
     const c = document.createElement("canvas");
@@ -28,16 +33,16 @@ export function StoryStage() {
   const [live, setLive] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!loadTrail || !loadScene || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const root = glHost.current?.closest<HTMLElement>(".story");
     let cancelled = false;
     const disposers: (() => void)[] = [];
     const start = () => {
       if (trail.current && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        import("./trail").then((m) => !cancelled && trail.current && disposers.push(m.mountTrail(trail.current))).catch(() => {});
+        loadTrail().then((m) => !cancelled && trail.current && disposers.push(m.mountTrail(trail.current))).catch(() => {});
       }
       if (!glHost.current || !hasWebGL()) return;
-      import("./stage-scene")
+      loadScene()
         .then((m) => {
           if (cancelled || !glHost.current) return;
           disposers.push(

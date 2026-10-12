@@ -3,11 +3,14 @@
  * the list itself, the title parser, the takedown-filtered loader (cache, fail closed), the
  * bidi splitter for Arabic copy, and the export preview built by the real exporters.
  */
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ar } from "@/lib/site/dict/ar";
 import { en } from "@/lib/site/dict/en";
 import { hasArabic, splitLatinRuns } from "@/lib/site/bidi";
-import { exportPreview, PREVIEW_FORMATS } from "@/lib/site/export-demo";
+import { exportPreview, kitPreview, PREVIEW_FORMATS } from "@/lib/site/export-demo";
+import kitPreviewJson from "@/lib/site/kit-preview.json";
 import { GALLERY_BOARDS, HERO_TILES } from "@/lib/site/moves";
 import {
   FINAL_REFS,
@@ -180,5 +183,14 @@ describe("export preview", () => {
     }
     expect(files.find((f) => f.name === "DESIGN.md")!.content).toContain(sadu.sourceUrl);
     expect(() => JSON.parse(files.find((f) => f.name === "tokens.json")!.content)).not.toThrow();
+  });
+
+  it("matches the precomputed landing fan (lib/site/kit-preview.json)", () => {
+    // Regenerate after exporter or demo changes: UPDATE_KIT_PREVIEW=1 npx vitest run tests/site-showcase.test.ts
+    if (process.env.UPDATE_KIT_PREVIEW === "1") {
+      writeFileSync(join(process.cwd(), "lib/site/kit-preview.json"), JSON.stringify(kitPreview(), null, 2) + "\n");
+      return;
+    }
+    expect(kitPreviewJson, "lib/site/kit-preview.json is stale; see the comment above").toEqual(kitPreview());
   });
 });

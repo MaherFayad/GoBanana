@@ -21,16 +21,28 @@ const FILE = fileURLToPath(
 );
 const MARKER = "banana: no @vercel/og in middleware";
 const ANCHOR = `...(hasOpentelemetry ? {} : { "@opentelemetry/api": "next/dist/compiled/@opentelemetry/api" }),`;
+// The URL pathname is "/C:/..." on Windows, which esbuild cannot resolve (the alias was then
+// silently skipped and wrangler bundled @vercel/og with its wasm), so the drive letter's slash
+// is dropped.
+const OLD_TARGET = `decodeURIComponent(new URL("../../templates/shims/throw.js", import.meta.url).pathname),`;
+const TARGET = `decodeURIComponent(new URL("../../templates/shims/throw.js", import.meta.url).pathname).slice(process.platform === "win32" ? 1 : 0),`;
 const ADDITION = `
             // ${MARKER} (scripts/patch-opennext.mjs)
-            "next/dist/compiled/@vercel/og/index.edge.js": decodeURIComponent(new URL("../../templates/shims/throw.js", import.meta.url).pathname),`;
+            "next/dist/compiled/@vercel/og/index.edge.js": ${TARGET}`;
 
 if (!existsSync(FILE)) {
   console.warn("[patch-opennext] @opennextjs/cloudflare not installed; skipped");
   process.exit(0);
 }
 const src = readFileSync(FILE, "utf8");
-if (src.includes(MARKER)) process.exit(0);
+if (src.includes(MARKER)) {
+  // Upgrade a copy patched by an older version of this script.
+  if (src.includes(OLD_TARGET)) {
+    writeFileSync(FILE, src.replace(OLD_TARGET, TARGET));
+    console.log("[patch-opennext] middleware bundle: @vercel/og shim path fixed for Windows");
+  }
+  process.exit(0);
+}
 if (!src.includes(ANCHOR) || !existsSync(new URL("../../templates/shims/throw.js", `file://${FILE}`))) {
   console.warn("[patch-opennext] bundle-node-middleware.js changed upstream; @vercel/og patch NOT applied. Check the Worker size.");
   process.exit(0);

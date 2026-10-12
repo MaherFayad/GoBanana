@@ -8,10 +8,34 @@ in `.github/workflows/ci.yml`) and a working target of **2.7 MiB** or less.
 | --- | --- | --- |
 | Before (2026-10-11, commit d7702e4) | 4.20 MiB (wrangler: 4299 KiB) | 18.8 MiB |
 | After | **2.61 MiB** (wrangler: about 2.6 MiB) | 9.2 MiB |
+| 2026-10-12, d8c7ece, measured on Windows | 3.39 MiB | 11.4 MiB |
+| 2026-10-12, site/desktop-redesign before the fixes below (ce277b0) | 3.47 MiB | 11.4 MiB |
+| 2026-10-12, after the fixes below | **2.68 MiB** | 9.45 MiB |
 
 Headroom after the cuts: about 0.09 MiB to the 2.7 target, 0.29 MiB to the CI budget,
 0.39 MiB to the hard limit. The "after" build already includes the restyle work in
 progress on 2026-10-11 (about +0.02 MiB).
+
+### 2026-10-12: growth to 3.47 MiB and back
+
+- **@vercel/og again, Windows only (about 0.53 MiB).** `scripts/patch-opennext.mjs` aliased
+  the edge entry to `new URL(...).pathname`, which is `/C:/...` on Windows. esbuild could not
+  use it, left the `import()` in place, and wrangler then bundled `@vercel/og` with
+  `resvg.wasm` and `yoga.wasm`. Builds on Linux CI were not affected, so d8c7ece already
+  measured 3.39 MiB on Windows. The patch drops the leading slash on win32 and upgrades a
+  copy patched by the old version.
+- **Landing motion libraries in the server bundle (about 56 KiB).** `StoryMotion.tsx` and
+  `StoryStage.tsx` load `story-motion.ts` (GSAP, Lenis), `stage-scene.ts` (ogl) and
+  `trail.ts` with `import()` inside effects, but Turbopack still compiles dynamic imports of
+  client components into SSR chunks. The loaders are now
+  `typeof window === "undefined" ? null : () => import(...)`; Next folds `typeof window` to
+  `"undefined"` in the server build, so the imports are dropped there.
+- **A second copy of `yaml` and lib/export (about 50 KiB).** The landing page ran the real
+  exporters at render time for the export fan, so its chunk carried its own copy next to
+  the MCP route's. It now imports `lib/site/kit-preview.json` (the first 12 lines of the
+  five files), made by `kitPreview()` in lib/site/export-demo.ts;
+  `tests/site-showcase.test.ts` fails when the JSON is stale
+  (`UPDATE_KIT_PREVIEW=1 npx vitest run tests/site-showcase.test.ts` rewrites it).
 
 ## How to measure
 

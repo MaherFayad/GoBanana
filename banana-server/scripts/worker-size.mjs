@@ -9,7 +9,7 @@
  *
  * Usage: npm run worker:size [-- --max-mb 2.9]   (exits 1 when over --max-mb)
  */
-import { execFileSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
@@ -27,7 +27,9 @@ if (!existsSync(".open-next/worker.js")) {
 }
 
 rmSync(OUT, { recursive: true, force: true });
-execFileSync("npx", ["wrangler", "deploy", "--dry-run", "--outdir", OUT], { stdio: ["ignore", "ignore", "inherit"] });
+// A shell command string, so `npx` resolves to npx.cmd on Windows too (execFileSync("npx") fails
+// there with ENOENT).
+execSync(`npx wrangler deploy --dry-run --outdir ${OUT}`, { stdio: ["ignore", "ignore", "inherit"] });
 
 function files(dir) {
   return readdirSync(dir).flatMap((name) => {

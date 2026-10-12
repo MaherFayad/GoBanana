@@ -6,13 +6,17 @@
  */
 import { useEffect } from "react";
 
+// Next replaces `typeof window` with "undefined" in the server build, so the server build drops
+// this import and GSAP and Lenis never reach the Worker (docs/worker-size.md).
+const loadMotion = typeof window === "undefined" ? null : () => import("./story-motion");
+
 export function StoryMotion() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(".story");
-    if (!root || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!root || !loadMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let dispose: (() => void) | undefined;
     let cancelled = false;
-    import("./story-motion")
+    loadMotion()
       .then((m) => {
         if (!cancelled) dispose = m.mountMotion(root);
       })
