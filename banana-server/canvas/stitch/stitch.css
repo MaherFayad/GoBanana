@@ -57,13 +57,16 @@
 
 .bn-stitch-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--st-space-xs);
   min-inline-size: 0;
 }
 
+/* The title takes the row; on a narrow (phone) frame the view switch wraps under it instead of
+   squeezing the title into a column. */
 .bn-stitch-heading {
-  flex: 1 1 auto;
+  flex: 1 1 14rem;
   min-inline-size: 0;
 }
 

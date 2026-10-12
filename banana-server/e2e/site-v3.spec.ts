@@ -56,15 +56,14 @@ test.describe("canvases dashboard (Finder window)", () => {
     const inspector = page.getByRole("complementary", { name: "Details" });
     await expect(inspector).toContainText("Cold checkout");
     await expect(inspector.getByRole("link", { name: "Open canvas" })).toHaveAttribute("href", "/c/e2e-seed");
-    // Keyboard: Enter on a card fills the Inspector.
+    // Keyboard: focus on a card fills the Inspector.
     await cards.nth(2).getByRole("button", { name: "Transit dashboard" }).focus();
-    await page.keyboard.press("Enter");
     await expect(inspector).toContainText("Transit dashboard");
     await expect(cards.nth(2)).toHaveAttribute("data-selected", "");
     await expect(cards.nth(2).getByRole("button", { name: "Transit dashboard" })).toHaveAttribute("aria-pressed", "true");
     await expect(inspector.getByRole("link", { name: /pinterest\.com\/pin\// }).first()).toBeVisible();
     await expect(inspector.getByRole("link", { name: "Open canvas" })).toHaveAttribute("href", "/c/e2e-swiss");
-    // A second press on the same card opens it.
+    // Enter (or one click) opens it.
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\/c\/e2e-swiss$/);
     await page.goBack();

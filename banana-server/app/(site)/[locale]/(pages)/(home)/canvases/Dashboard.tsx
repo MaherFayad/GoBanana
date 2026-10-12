@@ -14,9 +14,10 @@
  *   intercepted again and stack a second window over a directly loaded one.
  * - Collapse keeps the sidebar to its icons; the choice and the Icons / List view are remembered
  *   in localStorage (wrapped in try/catch: private windows and blocked storage use the defaults).
- * - A card is one button (its title, stretched over the card): a click or Enter fills the Inspector
- *   (aria-pressed, plus a ring on the card) and a second one opens the canvas; the Inspector leads
- *   with Open canvas. Under 768px the Inspector is a bottom sheet instead (the
+ * - A card is one button (its title, stretched over the card): a click or Enter opens the canvas.
+ *   Focus (Tab) shows the card in the Inspector (aria-pressed, plus a ring on the card), which
+ *   leads with Open canvas. Pointing at or focusing a card prefetches its window, and the canvas
+ *   code loads once the dashboard is idle, so a click opens it without a wait. Under 768px the Inspector is a bottom sheet instead (the
  *   Studio Dialog: native <dialog>, focus trapped, Escape closes, focus returns to the button),
  *   the sidebar's two views become a segmented control, and cards become rows.
  * - Collage images are plain <img> tags pointing at each reference's own thumbnail (never
@@ -29,7 +30,7 @@
  */
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useId, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode, type Ref } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { Dialog } from "@/components/studio/Dialog";
 import {
@@ -330,9 +331,6 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
   const layout: Layout = usePref(layoutPref) === "list" ? "list" : "grid";
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(cards[0]?.id ?? null);
-  // The card the user last clicked. A second click on it opens the canvas; the first one only
-  // shows its details. Starts empty so the preselected first card still needs two clicks.
-  const [armed, setArmed] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const router = useRouter();
@@ -341,6 +339,18 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
   const newId = useId();
   const searchId = useId();
   const canvasHref = (id: string) => `/c/${encodeURIComponent(id)}`;
+  // Warm the canvas code while the dashboard is idle, so opening a canvas waits only for its data.
+  useEffect(() => {
+    const warm = () => void import("@/canvas/WebCanvas").catch(() => {});
+    const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(warm, { timeout: 2000 }) : window.setTimeout(warm, 600);
+    return () => (typeof window.cancelIdleCallback === "function" ? window.cancelIdleCallback(idle) : window.clearTimeout(idle));
+  }, []);
+  const prefetched = useRef(new Set<string>());
+  const prefetch = (id: string) => {
+    if (prefetched.current.has(id)) return;
+    prefetched.current.add(id);
+    router.prefetch(canvasHref(id));
+  };
   // Delete: the confirm dialog's canvas, the ids taken out optimistically, and the outcome line.
   const [confirming, setConfirming] = useState<DashCard | null>(null);
   const [removed, setRemoved] = useState<ReadonlySet<string>>(() => new Set());
@@ -366,7 +376,6 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
     setRemoved((prev) => new Set(prev).add(card.id));
     const next = live.find((c) => c.id !== card.id) ?? null;
     if (selected === card.id) setSelected(next?.id ?? null);
-    setArmed(null);
     // The Delete button that opened the dialog now belongs to another card: move focus to the heading.
     window.setTimeout(() => headingRef.current?.focus(), 0);
     try {
@@ -393,14 +402,8 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
       setSheetOpen(true);
       return;
     }
-    if (armed === id) {
-      // Back from the canvas, the card needs two clicks again.
-      setArmed(null);
-      router.push(canvasHref(id));
-      return;
-    }
     setSelected(id);
-    setArmed(id);
+    router.push(canvasHref(id));
   };
 
   const q = query.trim().toLocaleLowerCase(locale);
@@ -670,7 +673,7 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
                       : t.refCount.replace("{n}", String(card.referenceCount));
                 return (
                   // The whole card is the title button's hit area (a stretched ::after): a click or
-                  // Enter shows the canvas in the Inspector, a second one opens it.
+                  // Enter opens the canvas; focus shows it in the Inspector.
                   <li key={card.id} className="lab-card" data-selected={isSel ? "" : undefined} data-window-origin={`canvas:${card.id}`}>
                     <div className="lab-card-art">
                       <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
@@ -683,7 +686,17 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
                     </div>
                     <div className="lab-card-body">
                       <h2 className="lab-card-title">
-                        <button type="button" className="lab-card-hit" aria-pressed={isSel} onClick={() => pickCard(card.id)}>
+                        <button
+                          type="button"
+                          className="lab-card-hit"
+                          aria-pressed={isSel}
+                          onClick={() => pickCard(card.id)}
+                          onFocus={() => {
+                            setSelected(card.id);
+                            prefetch(card.id);
+                          }}
+                          onPointerEnter={() => prefetch(card.id)}
+                        >
                           <bdi>{card.title}</bdi>
                         </button>
                       </h2>

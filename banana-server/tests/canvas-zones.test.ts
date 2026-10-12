@@ -323,3 +323,17 @@ describe("links in note text", () => {
     expect(linkParts("plain")).toEqual([{ text: "plain" }]);
   });
 });
+
+describe("markdown links in notes", () => {
+  it("shows the label and links the URL; bare URLs around it still link", async () => {
+    const { linkParts } = await import("@/canvas/linkify");
+    expect(linkParts("Shipped today: [Airbnb, checkout](https://mobbin.com/screens/abc), see https://x.example/y.")).toEqual([
+      { text: "Shipped today: " },
+      { text: "Airbnb, checkout", href: "https://mobbin.com/screens/abc" },
+      { text: ", see " },
+      { text: "https://x.example/y", href: "https://x.example/y" },
+      { text: "." },
+    ]);
+    expect(linkParts("[x](javascript:alert(1))")).toEqual([{ text: "[x](javascript:alert(1))" }]);
+  });
+});

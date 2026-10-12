@@ -2233,6 +2233,14 @@ button.bn-light[data-light="min"]::before {
   text-decoration-thickness: 2px;
 }
 
+/* On a note's paper the link takes the note's ink (the theme link color is for dark surfaces and
+   all but vanishes on yellow); the underline marks it. */
+.bn-note .bn-text-link,
+.bn-note-peek .bn-text-link {
+  color: inherit;
+  text-decoration-color: currentcolor;
+}
+
 .bn-preview-note {
   display: flex;
   flex-wrap: wrap;

@@ -11,8 +11,38 @@ const TRAILING = /[.,;:!?)\]}]+$/;
 
 export type TextPart = { text: string; href?: string };
 
-/** Split text into plain and link parts. Pure, for Vitest. */
+/** A Markdown link, `[label](https://...)`, as agents write source links in notes. */
+const MD_LINK_RE = /\[([^[\]\n]{1,200})\]\((https?:\/\/[^\s()<>"'`]+)\)/g;
+
+function safeHref(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    return u.protocol === "http:" || u.protocol === "https:" ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Split text into plain and link parts. Pure, for Vitest. Markdown links show their label (the
+ * URL stays the link target); bare URLs show as themselves.
+ */
 export function linkParts(text: string): TextPart[] {
+  const parts: TextPart[] = [];
+  let last = 0;
+  for (const m of text.matchAll(MD_LINK_RE)) {
+    const href = safeHref(m[2]!);
+    if (!href) continue;
+    const start = m.index ?? 0;
+    if (start > last) parts.push(...bareLinkParts(text.slice(last, start)));
+    parts.push({ text: m[1]!.trim() || href, href });
+    last = start + m[0].length;
+  }
+  if (last < text.length) parts.push(...bareLinkParts(text.slice(last)));
+  return parts;
+}
+
+function bareLinkParts(text: string): TextPart[] {
   const parts: TextPart[] = [];
   let last = 0;
   for (const m of text.matchAll(URL_RE)) {

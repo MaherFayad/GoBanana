@@ -22,7 +22,7 @@ test.describe("canvas window over the dashboard", () => {
     await mockSeedCanvas(page);
     await page.goto("/en/canvases");
     const card = page.locator(".lab-card").first().getByRole("button", { name: "Cold checkout" });
-    await card.click();
+    // One click opens it.
     await card.click();
     const win = page.getByRole("dialog", { name: /\| GoBanana$/ });
     await expect(win).toBeVisible();
@@ -46,7 +46,7 @@ test.describe("canvas window over the dashboard", () => {
     await expect(card).toBeFocused();
 
     // Back closes it as well.
-    await card.click();
+    // One click opens it.
     await card.click();
     await expect(page.locator(".react-flow__node").first()).toBeVisible();
     await page.goBack();
@@ -115,7 +115,7 @@ test.describe("canvases dashboard as a window", () => {
     await page.goto("/en");
     await page.locator(".menubar-link", { hasText: "Your canvases" }).click();
     const card = page.locator(".wl .lab-card").first().getByRole("button", { name: "Cold checkout" });
-    await card.click();
+    // One click opens it.
     await card.click();
     await expect(page).toHaveURL(new RegExp(`/c/${SEED_CANVAS_ID}$`));
     await expect(page.locator(".react-flow__node").first()).toBeVisible();
