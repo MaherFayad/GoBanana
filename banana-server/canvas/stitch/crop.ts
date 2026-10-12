@@ -23,6 +23,31 @@ export function cropAspect(crop: Crop, imageAspect: number): number {
   return (c.w * a) / c.h;
 }
 
+/**
+ * The URL a crop shows: the source CDN's own large size instead of a giant original, same aspect.
+ * A Dribbble original can be 7000px wide and 6 MB; a page decoding several of those fails some of
+ * them ("Image not available"). Dribbble `resize=1600x` and Pinterest `/1200x/` keep the aspect,
+ * so crop fractions stay true. Any other URL comes back unchanged.
+ */
+export function displaySrc(src: string): string {
+  let u: URL;
+  try {
+    u = new URL(src);
+  } catch {
+    return src;
+  }
+  const host = u.hostname.toLowerCase();
+  if (host === "cdn.dribbble.com" && !u.searchParams.has("resize")) {
+    u.searchParams.set("resize", "1600x");
+    return u.toString();
+  }
+  if (host === "i.pinimg.com" && /^\/originals\//.test(u.pathname)) {
+    u.pathname = u.pathname.replace(/^\/originals\//, "/1200x/");
+    return u.toString();
+  }
+  return src;
+}
+
 /** Image aspect from known pixel sizes, or null. */
 export function imageAspectOf(w?: number | null, h?: number | null): number | null {
   return w && h && w > 0 && h > 0 ? w / h : null;
@@ -32,6 +57,8 @@ const pct = (n: number) => `${Math.round(n * 1e4) / 1e4}%`;
 
 export interface CropStyles {
   box: { aspectRatio: string };
+  /** The crop at its own aspect, scaled to cover the box when a row stretches it taller. */
+  fit: { aspectRatio: string; width: string };
   img: { width: string; transform: string };
 }
 
@@ -39,8 +66,10 @@ export interface CropStyles {
 export function cropStyles(crop: Crop, imageAspect: number): CropStyles {
   const c = clampCrop(crop);
   const aspect = cropAspect(c, imageAspect);
+  const ratio = `${Math.round(aspect * 1e4) / 1e4}`;
   return {
-    box: { aspectRatio: `${Math.round(aspect * 1e4) / 1e4}` },
+    box: { aspectRatio: ratio },
+    fit: { aspectRatio: ratio, width: `max(100cqw, calc(100cqh * ${ratio}))` },
     img: {
       width: pct(100 / c.w),
       transform: `translate(${pct(-c.x * 100)}, ${pct(-c.y * 100)})`,

@@ -11,6 +11,18 @@
   overflow: hidden;
   direction: ltr;
   background: var(--st-canvas-placeholder-bg);
+  /* Its own size for the fit box (cqw, cqh); the height still comes from the aspect ratio. */
+  container-type: size;
+}
+
+/* The crop at its own aspect, centred and scaled to cover the box: the same as the box when the
+   box keeps its aspect, larger when a row stretches the box next to a taller part. */
+.bn-crop-fit {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
 }
 
 .bn-crop img {
@@ -205,9 +217,10 @@
   border-radius: 20px;
 }
 
+/* Parts in a row share its height: a shorter crop covers its stretched box, no empty band. */
 .bn-stitch-row {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .bn-stitch-empty {
@@ -222,7 +235,9 @@
 
 .bn-stitch-slot {
   position: relative;
+  display: flex;
   flex: 1 1 0;
+  flex-direction: column;
   min-inline-size: 0;
   outline: none;
   cursor: grab;
@@ -344,6 +359,10 @@
 
 .bn-stitch-slot {
   container-type: inline-size;
+}
+
+.bn-stitch-slot > .bn-crop {
+  flex: 1 0 auto;
 }
 
 /* ------------------------------------------------------------------ Parts tab */

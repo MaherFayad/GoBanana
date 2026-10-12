@@ -74,7 +74,7 @@ function boardState() {
   };
 }
 
-async function open(page: Page): Promise<{ puts: Array<{ nodes: Array<{ id: string; data: { rows?: Array<{ slots: Array<{ id: string }> }> } }>; parts?: unknown[] }> }> {
+async function open(page: Page, state: ReturnType<typeof boardState> = boardState()): Promise<{ puts: Array<{ nodes: Array<{ id: string; data: { rows?: Array<{ slots: Array<{ id: string }> }> } }>; parts?: unknown[] }> }> {
   const api = { puts: [] as never[] };
   await page.route(`**/api/canvas/${CANVAS_ID}`, async (route) => {
     if (route.request().method() === "PUT") {
@@ -82,7 +82,7 @@ async function open(page: Page): Promise<{ puts: Array<{ nodes: Array<{ id: stri
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, updatedAt: new Date().toISOString() }) });
       return;
     }
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ state: boardState(), updatedAt: "2026-10-12T10:00:00.000Z" }) });
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ state, updatedAt: "2026-10-12T10:00:00.000Z" }) });
   });
   await page.route(/^https:\/\/i\.pinimg\.com\//, (route) =>
     route.fulfill({ status: 200, contentType: "image/png", body: gradientPng(60, 120, [240, 220, 180], [40, 50, 90]) }),
@@ -96,6 +96,28 @@ const slots = (page: Page) => page.locator('.react-flow__node[data-id="st1"] .bn
 const slotOrder = (page: Page) => slots(page).evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.slotId).join(","));
 
 test.describe("Frankenstein pages", () => {
+  test("parts side by side share the row height: the shorter crop covers its box, no empty band", async ({ page }) => {
+    const state = boardState();
+    const stitch = state.nodes[1] as { data: { rows: unknown[] } };
+    // A wide band (nav, aspect 10) next to a tall part (hero2, aspect about 1.7).
+    stitch.data.rows = [{ id: "r1", slots: [{ id: "sa", role: "nav", partId: "pt-nav" }, { id: "sb", role: "hero", partId: "pt-hero2" }] }];
+    await open(page, state);
+    const boxes = await slots(page).evaluateAll((els) =>
+      els.map((el) => {
+        const crop = el.querySelector(".bn-crop")!.getBoundingClientRect();
+        const img = el.querySelector("img")!;
+        const fit = img.parentElement!.getBoundingClientRect();
+        return { cropH: crop.height, cropW: crop.width, fitH: fit.height, fitW: fit.width };
+      }),
+    );
+    expect(boxes).toHaveLength(2);
+    expect(Math.abs(boxes[0]!.cropH - boxes[1]!.cropH)).toBeLessThan(2);
+    for (const b of boxes) {
+      expect(b.fitH).toBeGreaterThanOrEqual(b.cropH - 1);
+      expect(b.fitW).toBeGreaterThanOrEqual(b.cropW - 1);
+    }
+  });
+
   test("slots show CSS crops of hotlinked images with a source link each", async ({ page }) => {
     await open(page);
     await expect(slots(page)).toHaveCount(3);

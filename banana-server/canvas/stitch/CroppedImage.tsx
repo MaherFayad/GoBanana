@@ -2,12 +2,13 @@
 
 /**
  * A part's crop of its hotlinked image, with CSS only (canvas/stitch/crop.ts). The image loads
- * from its source host with no referrer; nothing is fetched in JS or stored. When the part has
- * no known size, the natural size is measured on load and kept in memory for this tab only.
+ * from its source host with no referrer; nothing is fetched in JS or stored. The natural size is
+ * measured on load (it wins over a stored size, which can belong to another variant) and kept in
+ * memory for this tab only. In a row next to a taller part, the crop covers the stretched box.
  */
 import { memo, useState } from "react";
 import type { Crop } from "@/lib/stitch/types";
-import { cropStyles, imageAspectOf } from "./crop";
+import { cropStyles, displaySrc, imageAspectOf } from "./crop";
 
 /** Natural aspect per image URL, measured in this tab. Memory only, never saved. */
 const measured = new Map<string, number>();
@@ -26,18 +27,21 @@ export interface CroppedImageProps {
 
 /** Memoized: a page re-renders on chrome changes under zoom, its crops only when their props change. */
 export const CroppedImage = memo(function CroppedImage({ src, crop, alt, width, height, fallbackAspect, filter, className }: CroppedImageProps) {
-  const [aspect, setAspect] = useState<number | null>(() => imageAspectOf(width, height) ?? measured.get(src) ?? null);
-  const [failed, setFailed] = useState(false);
-  const known = imageAspectOf(width, height) ?? aspect;
-  const s = cropStyles(crop, known ?? fallbackAspect);
+  const [aspect, setAspect] = useState<number | null>(() => measured.get(src) ?? null);
+  // The CDN's large size first; when that fails, the original as stored.
+  const sources = [displaySrc(src), src].filter((u, i, all) => all.indexOf(u) === i);
+  const [attempt, setAttempt] = useState(0);
+  const failed = attempt >= sources.length;
+  const s = cropStyles(crop, aspect ?? imageAspectOf(width, height) ?? fallbackAspect);
   return (
     <div className={`bn-crop ${className ?? ""}`} style={{ ...s.box, filter }} data-failed={failed ? "" : undefined}>
       {failed ? (
         <span className="bn-crop-missing">Image not available</span>
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element -- third-party image loaded from its source host on purpose
+        <div className="bn-crop-fit" style={s.fit}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- third-party image loaded from its source host on purpose */}
         <img
-          src={src}
+          src={sources[attempt]}
           alt={alt}
           referrerPolicy="no-referrer"
           loading="lazy"
@@ -48,10 +52,11 @@ export const CroppedImage = memo(function CroppedImage({ src, crop, alt, width, 
             const a = imageAspectOf(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight);
             if (!a) return;
             measured.set(src, a);
-            if (!imageAspectOf(width, height)) setAspect(a);
+            setAspect(a);
           }}
-          onError={() => setFailed(true)}
+          onError={() => setAttempt((n) => n + 1)}
         />
+        </div>
       )}
     </div>
   );

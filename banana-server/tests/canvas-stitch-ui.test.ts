@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import type { Part, StitchData } from "@/lib/stitch/types";
-import { cropAspect, cropStyles, dragCrop, fromPercentField, slotFilter, toPercent } from "@/canvas/stitch/crop";
+import { cropAspect, cropStyles, displaySrc, dragCrop, fromPercentField, slotFilter, toPercent } from "@/canvas/stitch/crop";
 import {
   appendPart,
   groupByRole,
@@ -62,6 +62,21 @@ describe("crop math", () => {
     const s = cropStyles({ x: 0, y: 0, w: 1, h: 1 }, 16 / 9);
     expect(s.img.width).toBe("100%");
     expect(Number(s.box.aspectRatio)).toBeCloseTo(16 / 9, 3);
+  });
+
+  it("covers a box a row stretches: the fit box keeps the crop's aspect and grows to the taller side", () => {
+    const s = cropStyles({ x: 0, y: 0, w: 1, h: 0.25 }, 1);
+    expect(s.fit.aspectRatio).toBe(s.box.aspectRatio);
+    expect(s.fit.width).toBe("max(100cqw, calc(100cqh * 4))");
+  });
+
+  it("shows the CDN's large size, not a giant original, with the same aspect", () => {
+    expect(displaySrc("https://cdn.dribbble.com/userupload/1/file/original-a.png")).toBe("https://cdn.dribbble.com/userupload/1/file/original-a.png?resize=1600x");
+    expect(displaySrc("https://cdn.dribbble.com/userupload/1/file/a.jpg?vertical=center")).toBe("https://cdn.dribbble.com/userupload/1/file/a.jpg?vertical=center&resize=1600x");
+    expect(displaySrc("https://cdn.dribbble.com/a.png?resize=400x300")).toBe("https://cdn.dribbble.com/a.png?resize=400x300");
+    expect(displaySrc("https://i.pinimg.com/originals/ab/cd/x.jpg")).toBe("https://i.pinimg.com/1200x/ab/cd/x.jpg");
+    expect(displaySrc("https://i.pinimg.com/736x/ab/cd/x.jpg")).toBe("https://i.pinimg.com/736x/ab/cd/x.jpg");
+    expect(displaySrc("https://cdn.lapa.ninja/a.webp")).toBe("https://cdn.lapa.ninja/a.webp");
   });
 
   it("clamps crops that leave the image", () => {
