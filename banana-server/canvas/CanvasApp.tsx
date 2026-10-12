@@ -255,6 +255,11 @@ export function CanvasApp(props: CanvasAppProps) {
           >
             Try again
           </button>
+          {props.web?.dashboardHref && (
+            <a className="st-btn" data-variant="ghost" href={props.web.dashboardHref}>
+              Back to canvases
+            </a>
+          )}
         </div>
       )}
     </div>
