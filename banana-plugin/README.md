@@ -14,10 +14,17 @@ The plugin connects your agent to the GoBanana MCP server and adds 9 skills that
 
 ### Claude Code
 
-From the marketplace repo that lists GoBanana (owner and repo are set at launch):
+Install from the GoBanana marketplace (Claude Code 2.1.275 or later):
 
 ```text
-/plugin install gobanana --marketplace <owner>/<repo>
+/plugin install gobanana --marketplace MaherFayad/GoBanana
+```
+
+On older versions, add the marketplace first, then install:
+
+```text
+/plugin marketplace add MaherFayad/GoBanana
+/plugin install gobanana@gobanana
 ```
 
 Or load this folder directly while developing:

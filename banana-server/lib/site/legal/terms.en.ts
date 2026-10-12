@@ -3,7 +3,7 @@ import type { LegalDoc } from "./types";
 /** DRAFT terms of service. Needs legal review before launch. */
 export const termsEn: LegalDoc = {
   title: "Terms of service",
-  updated: "2026-10-11",
+  updated: "2026-10-12",
   intro: [
     "These terms are an agreement between you and [legal entity name, commercial registration number] (\"we\") for the use of {app}. By creating an account or using {app}, you accept them.",
   ],
@@ -30,8 +30,10 @@ export const termsEn: LegalDoc = {
       list: [
         "Plans and limits are listed on the pricing page: Free, Pro monthly ($5 per month), Pro yearly ($39 per year) and Founding ($29 once, first 100 buyers).",
         "Our order process is run by Paddle.com, our online reseller and Merchant of Record. Paddle handles payments, sales tax and VAT, invoices, refunds and billing questions. Paddle's buyer terms apply to your purchase.",
+        "You can get a full refund within 14 days of your first payment. Ask Paddle through your receipt email, or ask us and we will arrange it with Paddle.",
         "Subscriptions renew automatically until you cancel. When you cancel, Pro stays active until the end of the paid period and then your account returns to Free.",
         "The Founding plan is a single payment for Pro features (with 200 searches per month) for as long as {app} is offered. It is not a subscription and is not transferable.",
+        "{app} is for individuals. Each person uses their own account; there are no team plans.",
         "If you go over a limit, the tool tells you and stops that action until the next month or an upgrade.",
         "We may change prices for new purchases. We will tell subscribers at least 30 days before a price change applies to them.",
       ],

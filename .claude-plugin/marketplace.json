@@ -1,0 +1,18 @@
+{
+  "name": "gobanana",
+  "owner": {
+    "name": "Maher Fayad",
+    "url": "https://github.com/MaherFayad"
+  },
+  "metadata": {
+    "description": "GoBanana: wild design directions, real references and Frankenstein pages for your coding agent."
+  },
+  "plugins": [
+    {
+      "name": "gobanana",
+      "source": "./banana-plugin",
+      "description": "One wild idea for a page or two. Bend a page into unexpected directions, pull art direction and platform-correct UI references into a moodboard canvas, Frankenstein new pages from the best parts, and hand it to your coding agent as scoped files.",
+      "category": "design"
+    }
+  ]
+}
