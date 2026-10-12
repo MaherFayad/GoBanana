@@ -5,6 +5,8 @@
  * split into a warm and a cool copy, like the reference's RGB shift. Mouse only; StoryStage.tsx
  * never mounts it under prefers-reduced-motion. Colors come from --st-desk-trail* tokens.
  */
+import { watchPageCover } from "@/components/window/cover";
+
 const CELL = 10;
 const LIFE = 1.0;
 const RADIUS = 2.6;
@@ -55,7 +57,7 @@ export function mountTrail(canvas: HTMLCanvasElement): () => void {
   };
 
   const onMove = (e: PointerEvent) => {
-    if (e.pointerType !== "mouse") return;
+    if (e.pointerType !== "mouse" || covered) return;
     const p = { x: e.clientX, y: e.clientY };
     if (last) {
       const dist = Math.hypot(p.x - last.x, p.y - last.y);
@@ -71,6 +73,20 @@ export function mountTrail(canvas: HTMLCanvasElement): () => void {
   };
   window.addEventListener("pointermove", onMove, { passive: true });
   document.addEventListener("pointerleave", onLeave);
+
+  // Under an app window (components/window/cover.ts) the pointer is over the window: no trail
+  // is drawn behind it, and what was there is cleared.
+  let covered = false;
+  const unwatch = watchPageCover((c) => {
+    covered = c;
+    if (!c) return;
+    cancelAnimationFrame(raf);
+    raf = 0;
+    life.fill(0);
+    last = null;
+    alive = 0;
+    ctx!.clearRect(0, 0, canvas.width, canvas.height);
+  });
 
   function frame(now: number) {
     raf = 0;
@@ -111,7 +127,7 @@ export function mountTrail(canvas: HTMLCanvasElement): () => void {
     if (alive) loop();
   }
   function loop() {
-    if (!raf && !document.hidden) {
+    if (!raf && !document.hidden && !covered) {
       prev = performance.now();
       raf = requestAnimationFrame(frame);
     }
@@ -122,5 +138,6 @@ export function mountTrail(canvas: HTMLCanvasElement): () => void {
     window.removeEventListener("resize", resize);
     window.removeEventListener("pointermove", onMove);
     document.removeEventListener("pointerleave", onLeave);
+    unwatch();
   };
 }

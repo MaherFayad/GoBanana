@@ -13,10 +13,12 @@
  *   middle of the viewport; `data-grey` marks the section whose scroll drives the wipe.
  *
  * Colors come from the --st-desk-* tokens (read once from CSS), never from literals. The loop
- * stops while the tab is hidden and draws nothing while the page is scrolled past the story.
+ * stops while the tab is hidden or an app window covers the page (components/window/cover.ts)
+ * and draws nothing while the page is scrolled past the story.
  */
 import { Mesh, Program, Renderer, Texture, Triangle } from "ogl";
 import { BRAND_MARK_PATH } from "@/components/brand/BrandMark";
+import { watchPageCover } from "@/components/window/cover";
 
 const MARK_W = 710;
 const MARK_H = 536.3;
@@ -342,7 +344,7 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
 
   function frame(now: number) {
     raf = 0;
-    if (document.hidden) return;
+    if (document.hidden || covered) return;
     const time = (now - t0) / 1000;
     const y = window.scrollY;
     const dy = y - lastY;
@@ -394,6 +396,12 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   }
   const onVis = () => !document.hidden && loop();
   document.addEventListener("visibilitychange", onVis);
+  // Under an app window the stage is blurred out of sight: hold the last frame until it closes.
+  let covered = false;
+  const unwatch = watchPageCover((c) => {
+    covered = c;
+    if (!c) loop();
+  });
   loop();
 
   return () => {
@@ -401,6 +409,7 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
     window.removeEventListener("resize", resize);
     window.removeEventListener("pointermove", onMove);
     document.removeEventListener("visibilitychange", onVis);
+    unwatch();
     gl.getExtension("WEBGL_lose_context")?.loseContext();
     canvas.remove();
   };

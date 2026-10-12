@@ -175,6 +175,7 @@ function ZoomVars({ target }: { target: RefObject<HTMLElement | null> }) {
   const store = useStoreApi();
   useEffect(() => {
     let last = -1;
+    let settle: ReturnType<typeof setTimeout> | null = null;
     const write = (zoom: number) => {
       const el = target.current;
       if (!el || zoom === last) return;
@@ -183,12 +184,36 @@ function ZoomVars({ target }: { target: RefObject<HTMLElement | null> }) {
       el.style.setProperty("--bn-chrome", String(chromeScale(zoom)));
     };
     write(store.getState().transform[2]);
-    return store.subscribe((s) => write(s.transform[2]));
+    // A new value restyles every element on the board, so a zoom gesture (pinch sends many small
+    // steps per second) writes when the zoom moved past ZOOM_VAR_STEP from the last write, and
+    // the exact value once it settles. Chrome is off by under that step mid-gesture, exact at rest.
+    const unsubscribe = store.subscribe((s) => {
+      const zoom = s.transform[2];
+      if (zoom === last) return;
+      if (last <= 0 || zoom / last > ZOOM_VAR_STEP || last / zoom > ZOOM_VAR_STEP) write(zoom);
+      if (settle !== null) clearTimeout(settle);
+      settle = setTimeout(() => {
+        settle = null;
+        write(store.getState().transform[2]);
+      }, ZOOM_VAR_SETTLE_MS);
+    });
+    return () => {
+      unsubscribe();
+      if (settle !== null) clearTimeout(settle);
+    };
   }, [store, target]);
   return null;
 }
 
+/** Zoom ratio past which ZoomVars rewrites the chrome scale mid-gesture. */
+const ZOOM_VAR_STEP = 1.1;
+/** Quiet time after the last zoom step before ZoomVars writes the exact value. */
+const ZOOM_VAR_SETTLE_MS = 120;
+
 type PlaceKind = "note" | "section";
+
+/** Quiet time after a pan or zoom before the viewport is taken for saving. */
+const VIEWPORT_SETTLE_MS = 250;
 
 /**
  * Accessible names on nodes, cached per node object so React Flow only re-renders
@@ -448,8 +473,34 @@ function CanvasEditor({
     saver.schedule(serializeState(nodes, viewport, tray, parts));
   }, [nodes, viewport, tray, parts, readOnly, saver]);
 
+  // A zoom gesture (Ctrl or Cmd + wheel, pinch) ends a move on every wheel tick. The viewport is
+  // only kept for saving, so it is taken once the board is still: one render and one save per
+  // gesture instead of one per tick. Leaving the page takes a pending one at once.
+  const pendingViewport = useRef<Viewport | null>(null);
+  const viewportTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const takeViewport = useCallback(() => {
+    if (viewportTimer.current !== null) clearTimeout(viewportTimer.current);
+    viewportTimer.current = null;
+    const vp = pendingViewport.current;
+    pendingViewport.current = null;
+    if (vp) setViewport(vp);
+    return vp;
+  }, []);
+  const onMoveEnd = useCallback(
+    (_e: unknown, vp: Viewport) => {
+      pendingViewport.current = vp;
+      if (viewportTimer.current !== null) clearTimeout(viewportTimer.current);
+      viewportTimer.current = setTimeout(takeViewport, VIEWPORT_SETTLE_MS);
+    },
+    [takeViewport],
+  );
+
   useEffect(() => {
-    const flush = () => void saver.flush();
+    const flush = () => {
+      const vp = takeViewport();
+      if (vp && !readOnly) saver.schedule(serializeState(nodesRef.current, vp, trayRef.current, partsRef.current));
+      void saver.flush();
+    };
     const onVisibility = () => document.visibilityState === "hidden" && flush();
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", onVisibility);
@@ -458,7 +509,7 @@ function CanvasEditor({
       document.removeEventListener("visibilitychange", onVisibility);
       flush();
     };
-  }, [saver]);
+  }, [saver, takeViewport, readOnly]);
 
   // ------------------------------------------------------------------ helpers
   const announce = useCallback((m: string) => {
@@ -1415,7 +1466,7 @@ function CanvasEditor({
               onNodeDrag={onNodeDrag}
               onNodeDragStop={onNodeDragStop}
               onNodeContextMenu={onNodeContextMenu}
-              onMoveEnd={(_e, vp) => setViewport(vp)}
+              onMoveEnd={onMoveEnd}
               defaultViewport={initial.viewport}
               fitView={isDefaultViewport && initial.nodes.length > 0}
               fitViewOptions={{ padding: FIT_PADDING, maxZoom: 1 }}

@@ -18,6 +18,12 @@
   backdrop-filter: blur(var(--st-window-backdrop-blur)) saturate(1.1);
 }
 
+/* The canvas covers all but a thin margin, and its board repaints on every pan and zoom: a
+   live blur behind it costs a weak GPU most of its frames for a strip nobody reads. Dim only. */
+.wl[data-kind="canvas"] .wl-backdrop {
+  backdrop-filter: none;
+}
+
 /* A direct load: the desk itself, no page behind it to blur. */
 .wl[data-mode="page"] .wl-backdrop {
   background: var(--st-desk-bg);

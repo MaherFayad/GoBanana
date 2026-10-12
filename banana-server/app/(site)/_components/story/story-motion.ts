@@ -16,6 +16,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { watchPageCover } from "@/components/window/cover";
 import { storyBus } from "./story-bus";
 
 /** Wraps each word of an element's text in a span (once), keeping bdi and other inline parents. */
@@ -55,6 +56,8 @@ export function mountMotion(root: HTMLElement): () => void {
   const tick = (t: number) => lenis.raf(t * 1000);
   gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
+  // Under an app window the landing is inert and blurred out of sight: no ticks until it closes.
+  const unwatch = watchPageCover((covered) => (covered ? gsap.ticker.sleep() : gsap.ticker.wake()));
   root.setAttribute("data-motion", "");
   // In-page links glide like the wheel; the menu bar's height comes off so headings stay visible.
   storyBus.scrollTo = (target) => {
@@ -180,6 +183,8 @@ export function mountMotion(root: HTMLElement): () => void {
     window.removeEventListener("load", refresh);
     mm.revert();
     ctx.revert();
+    unwatch();
+    gsap.ticker.wake();
     gsap.ticker.remove(tick);
     lenis.destroy();
     root.removeAttribute("data-motion");

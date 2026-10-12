@@ -5,7 +5,7 @@
  * from its source host with no referrer; nothing is fetched in JS or stored. When the part has
  * no known size, the natural size is measured on load and kept in memory for this tab only.
  */
-import { useState } from "react";
+import { memo, useState } from "react";
 import type { Crop } from "@/lib/stitch/types";
 import { cropStyles, imageAspectOf } from "./crop";
 
@@ -24,7 +24,8 @@ export interface CroppedImageProps {
   className?: string;
 }
 
-export function CroppedImage({ src, crop, alt, width, height, fallbackAspect, filter, className }: CroppedImageProps) {
+/** Memoized: a page re-renders on chrome changes under zoom, its crops only when their props change. */
+export const CroppedImage = memo(function CroppedImage({ src, crop, alt, width, height, fallbackAspect, filter, className }: CroppedImageProps) {
   const [aspect, setAspect] = useState<number | null>(() => imageAspectOf(width, height) ?? measured.get(src) ?? null);
   const [failed, setFailed] = useState(false);
   const known = imageAspectOf(width, height) ?? aspect;
@@ -54,4 +55,4 @@ export function CroppedImage({ src, crop, alt, width, height, fallbackAspect, fi
       )}
     </div>
   );
-}
+});

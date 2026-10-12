@@ -9,7 +9,8 @@ import type { CSSProperties } from "react";
 import type { SnapGuide } from "./snapping";
 
 export function SnapGuides({ guides }: { guides: readonly SnapGuide[] }) {
-  const zoom = useStore((s) => s.transform[2]);
+  // Only follows the zoom while there are guides to draw (no re-render per zoom tick otherwise).
+  const zoom = useStore((s) => (guides.length > 0 ? s.transform[2] : 1));
   if (guides.length === 0) return null;
   const px = 1 / zoom;
   return (

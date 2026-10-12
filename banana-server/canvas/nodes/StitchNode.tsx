@@ -14,7 +14,7 @@
  * to the frame. Pointer: drag a slot onto another to trade places, drop a part from the Parts tab
  * on a slot to swap it, or on the page to add a row. The shared view can switch views only.
  */
-import { useStore, type NodeProps } from "@xyflow/react";
+import { useStore, useStoreApi, type NodeProps } from "@xyflow/react";
 import {
   useCallback,
   useId,
@@ -60,6 +60,9 @@ export const MODE_LABELS: Record<StitchMode, string> = { collage: "Collage", wir
 const PLATFORM_LABELS = { mobile: "Phone", tablet: "Tablet", website: "Website", webapp: "Web app" } as const;
 
 const ARROW_DIR: Record<string, MoveDirection> = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+
+/** Quiet time after a zoom tick before a content height that changed with the zoom is taken. */
+const ZOOM_SETTLE_MS = 200;
 
 const hasType = (e: DragEvent, type: string) => Array.from(e.dataTransfer.types).includes(type);
 
@@ -165,19 +168,39 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
   const activeId = active && flat.includes(active) ? active : (flat[0] ?? null);
 
   // The frame is as tall as its rows: the node height follows the content (like notes).
+  // Wireframe notes keep their on-screen size when zoomed in, so the content height changes on
+  // every zoom tick: a change that comes with a new zoom is taken once the zoom settles, not per
+  // tick (each one re-rendered the board and its section and queued a save).
   const { setNodeHeight } = actions;
+  const store = useStoreApi();
   useLayoutEffect(() => {
     const el = measureRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const fit = () => {
+    let zoomAt = store.getState().transform[2];
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const commit = () => {
+      timer = null;
       const h = Math.ceil(el.offsetHeight);
       if (h > 0 && Math.abs(h - (height ?? 0)) > 1) setNodeHeight(id, h);
+    };
+    const fit = () => {
+      const zoom = store.getState().transform[2];
+      if (zoom !== zoomAt || timer !== null) {
+        zoomAt = zoom;
+        if (timer !== null) clearTimeout(timer);
+        timer = setTimeout(commit, ZOOM_SETTLE_MS);
+        return;
+      }
+      commit();
     };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
-    return () => ro.disconnect();
-  }, [height, id, setNodeHeight]);
+    return () => {
+      ro.disconnect();
+      if (timer !== null) clearTimeout(timer);
+    };
+  }, [height, id, setNodeHeight, store]);
 
   const focusSlot = (slotId: string) => {
     setActive(slotId);
