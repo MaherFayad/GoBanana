@@ -194,4 +194,34 @@ test.describe("Frankenstein pages", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog", { name: "Cut part" })).toBeHidden();
   });
+
+  test("chips stay readable at any zoom: tiny slots hide them until hover, notes stop growing when zoomed in", async ({ page }) => {
+    await open(page);
+    const shot = process.env.STITCH_SHOTS;
+    const emptySpot = () => page.getByRole("main", { name: "Canvas" }).focus();
+    const slot = slots(page).first();
+    // Zoom far out: the slots are tiny on screen, so their chips wait for hover or focus.
+    await emptySpot();
+    for (let i = 0; i < 8; i++) await page.keyboard.press("-");
+    await expect(slot).toHaveAttribute("data-chrome", "tiny");
+    await expect(slot.locator(".bn-stitch-slot-bar")).toBeHidden();
+    if (shot) await page.screenshot({ path: `${shot}/stitch-out.png` });
+    await slot.hover();
+    await expect(slot.locator(".bn-stitch-slot-bar")).toBeVisible();
+    // Zoom far in: chips and notes keep their on-screen size.
+    await emptySpot();
+    for (let i = 0; i < 14; i++) await page.keyboard.press("+");
+    const hero = slots(page).nth(1);
+    await hero.scrollIntoViewIfNeeded();
+    await expect(hero).toHaveAttribute("data-chrome", "full");
+    await hero.hover();
+    const note = hero.locator(".bn-stitch-note");
+    await expect(note).toBeVisible();
+    const px = await note.evaluate((el) => {
+      const zoom = Number(getComputedStyle(el).getPropertyValue("--bn-zoom")) || 1;
+      return parseFloat(getComputedStyle(el).fontSize) * zoom;
+    });
+    expect(px).toBeLessThan(16);
+    if (shot) await page.screenshot({ path: `${shot}/stitch-in.png` });
+  });
 });

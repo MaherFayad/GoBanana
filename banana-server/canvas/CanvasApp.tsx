@@ -77,7 +77,7 @@ import { nodeLabel } from "./labels";
 import { Notch, type CanvasTool } from "./Notch";
 import { nodeTypes } from "./nodes";
 import type { CanvasPersistence } from "./persistence";
-import { isConflict } from "./persistence";
+import { isConflict, saveErrorText } from "./persistence";
 import { matches } from "./shortcuts";
 import { ShortcutSheet } from "./ShortcutSheet";
 import { SnapGuides } from "./SnapGuides";
@@ -427,7 +427,7 @@ function CanvasEditor({
             toastId = pushToast({
               kind: "error",
               title: "Could not save",
-              body: "Your changes are still here. Check your connection, then try again.",
+              body: saveErrorText(error),
               dedupeKey: `canvas-save-${canvasId}`,
               action: { label: "Try again", onAction: () => void s.flush() },
             });

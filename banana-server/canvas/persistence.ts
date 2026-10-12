@@ -10,6 +10,9 @@ export interface CanvasPersistence {
   save(state: CanvasState): Promise<void>;
 }
 
+/** Browsers cap a keepalive request body at 64 KiB in total; stay under it. */
+export const KEEPALIVE_MAX_BYTES = 60_000;
+
 export class PersistenceError extends Error {
   constructor(
     message: string,
@@ -63,21 +66,32 @@ export function createFetchPersistence(canvasId: string, opts: FetchPersistenceO
     },
     async save(state) {
       if (conflicted) throw new PersistenceError(CONFLICT_MESSAGE, 409);
-      const res = await doFetch(url, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        credentials: "same-origin",
-        // keepalive lets the last save finish when the tab closes.
-        keepalive: true,
-        body: JSON.stringify(base ? { state, baseUpdatedAt: base } : { state }),
-      });
+      const body = JSON.stringify(base ? { state, baseUpdatedAt: base } : { state });
+      let res: Response;
+      try {
+        res = await doFetch(url, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          credentials: "same-origin",
+          // keepalive lets the last save finish when the tab closes, but browsers refuse a
+          // keepalive body over 64 KiB (the fetch fails outright), so big boards save without it.
+          keepalive: new Blob([body]).size < KEEPALIVE_MAX_BYTES,
+          body,
+        });
+      } catch {
+        throw new PersistenceError("Could not reach the server to save this canvas.");
+      }
       if (res.status === 409) {
         conflicted = true;
         throw new PersistenceError(CONFLICT_MESSAGE, 409);
       }
-      if (!res.ok) throw new PersistenceError("Could not save this canvas.", res.status);
-      const body: unknown = await res.json().catch(() => null);
-      base = updatedAtOf(body) ?? base;
+      if (!res.ok) {
+        const err: unknown = await res.json().catch(() => null);
+        const said = err && typeof err === "object" && typeof (err as { error?: unknown }).error === "string" ? (err as { error: string }).error : null;
+        throw new PersistenceError(said ?? "Could not save this canvas.", res.status);
+      }
+      const saved: unknown = await res.json().catch(() => null);
+      base = updatedAtOf(saved) ?? base;
     },
   };
 }
@@ -96,4 +110,17 @@ export function createMemoryPersistence(initial: unknown = null): CanvasPersiste
       current = state;
     },
   };
+}
+
+/**
+ * Toast text for a failed save: the server's own reason when it answered (too large, signed out,
+ * not valid), else the connection hint. The changes stay on the board either way.
+ */
+export function saveErrorText(error: unknown): string {
+  const kept = "Your changes are still here.";
+  if (error instanceof PersistenceError && error.status !== undefined) {
+    if (error.status === 401 || error.status === 403) return `You are signed out. Sign in again in another tab, then try again. ${kept}`;
+    return `${error.message} ${kept}`;
+  }
+  return `${kept} Check your connection, then try again.`;
 }

@@ -1,6 +1,6 @@
 /** Web canvas saves send the version they started from and stop after a 409. */
 import { describe, expect, it } from "vitest";
-import { CONFLICT_MESSAGE, createFetchPersistence, isConflict } from "@/canvas/persistence";
+import { CONFLICT_MESSAGE, createFetchPersistence, isConflict, saveErrorText } from "@/canvas/persistence";
 import { emptyState } from "@/canvas/state";
 
 type Call = { method: string; body: unknown };
@@ -60,5 +60,28 @@ describe("fetch persistence with baseUpdatedAt", () => {
     expect(CONFLICT_MESSAGE).toBe("This canvas changed in another window. Reload to see the latest.");
     await expect(p.save(emptyState())).rejects.toThrow(CONFLICT_MESSAGE);
     expect(calls).toHaveLength(1);
+  });
+});
+
+describe("fetch persistence and big boards", () => {
+  it("drops keepalive over 64 KiB (browsers fail such a fetch outright) and keeps it for small saves", async () => {
+    const seen: (boolean | undefined)[] = [];
+    const fetchImpl = (async (_u: RequestInfo | URL, init?: RequestInit) => {
+      seen.push(init?.keepalive);
+      return new Response(JSON.stringify({ ok: true, updatedAt: "2026-10-12T10:00:00.000Z" }), { status: 200 });
+    }) as typeof fetch;
+    const p = createFetchPersistence("c1", { fetch: fetchImpl });
+    await p.save(emptyState());
+    const big = { ...emptyState(), nodes: [{ id: "n", type: "note", position: { x: 0, y: 0 }, data: { text: "x".repeat(90_000) } }] };
+    await p.save(big as unknown as ReturnType<typeof emptyState>);
+    expect(seen).toEqual([true, false]);
+  });
+
+  it("a refused save carries the server's reason, and the toast text says it", async () => {
+    const fetchImpl = (async () => new Response(JSON.stringify({ error: "This canvas is too large to save." }), { status: 413 })) as typeof fetch;
+    const p = createFetchPersistence("c1", { fetch: fetchImpl });
+    const err = await p.save(emptyState()).catch((e: unknown) => e);
+    expect(saveErrorText(err)).toBe("This canvas is too large to save. Your changes are still here.");
+    expect(saveErrorText(new TypeError("Failed to fetch"))).toMatch(/Check your connection/);
   });
 });

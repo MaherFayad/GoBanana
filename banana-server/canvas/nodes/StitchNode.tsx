@@ -27,10 +27,11 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { Tooltip } from "@/components/studio/Tooltip";
-import { STITCH_MODES, type Part, type StitchMode, type StitchSlot } from "@/lib/stitch/types";
+import { STITCH_FRAME_WIDTH, STITCH_MODES, type Part, type StitchMode, type StitchSlot } from "@/lib/stitch/types";
 import { useCanvasActions } from "../context";
 import { ExternalIcon } from "../icons";
 import { siteName } from "../labels";
+import { chromeMode, type ChromeMode } from "../zoom-chrome";
 import { LinkedText } from "../linkify";
 import { FALLBACK_IMAGE_ASPECT, slotFilter } from "../stitch/crop";
 import { CroppedImage } from "../stitch/CroppedImage";
@@ -127,7 +128,7 @@ function SlotSource({ site, url, tabbable }: { site: string; url: string; tabbab
 
 type SlotMenu = { slotId: string; kind: "slot" | "swap"; point: { x: number; y: number } | null };
 
-export function StitchNode({ id, data, selected, parentId, height }: NodeProps<StitchFlowNode>) {
+export function StitchNode({ id, data, selected, parentId, height, width }: NodeProps<StitchFlowNode>) {
   const actions = useCanvasActions();
   const { partsById, parts, openCrop } = useStitch();
   const readOnly = actions.readOnly;
@@ -146,6 +147,19 @@ export function StitchNode({ id, data, selected, parentId, height }: NodeProps<S
   const editingTitle = actions.editingId === id;
   const title = data.title || "Frankenstein page";
   const zoomedOut = useStore((s) => s.transform[2] < 0.35);
+  // Chrome per slot by its width on screen, like image tiles (zoom-chrome.ts): the role and source
+  // chips keep one on-screen size, so a narrow slot shows the source as an icon, and a tiny one
+  // shows its chips on hover and focus only. One string, so zoom ticks inside a bucket never re-render.
+  const pageWidth = width ?? STITCH_FRAME_WIDTH[data.platform] ?? STITCH_FRAME_WIDTH.website;
+  const chromeKey = useStore((s) =>
+    data.rows
+      .map((row) => {
+        const sum = row.slots.reduce((n, _, c) => n + (row.widths?.[c] ?? 1), 0) || 1;
+        return row.slots.map((sl, c) => `${sl.id}=${chromeMode((pageWidth * (row.widths?.[c] ?? 1)) / sum, s.transform[2])}`).join(",");
+      })
+      .join(","),
+  );
+  const slotChrome = new Map(chromeKey.split(",").map((kv) => kv.split("=") as [string, ChromeMode]));
 
   const flat = data.rows.flatMap((r) => r.slots.map((s) => s.id));
   const activeId = active && flat.includes(active) ? active : (flat[0] ?? null);
@@ -379,6 +393,7 @@ export function StitchNode({ id, data, selected, parentId, height }: NodeProps<S
         aria-keyshortcuts={readOnly ? undefined : "Enter Delete Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight M"}
         tabIndex={isActive ? 0 : -1}
         data-slot-id={slot.id}
+        data-chrome={slotChrome.get(slot.id) ?? "full"}
         data-theme-part={part?.theme ?? "unknown"}
         data-drop={dropOn === slot.id ? "" : undefined}
         style={{ flexGrow }}
@@ -420,9 +435,12 @@ export function StitchNode({ id, data, selected, parentId, height }: NodeProps<S
           </span>
         )}
         <div className="bn-stitch-slot-bar">
-          <span className="st-chip bn-chip bn-stitch-role" data-tone="neutral">
-            {role}
-          </span>
+          {/* Wireframe draws the role as the big label already: one name per part, not two. */}
+          {mode !== "wireframe" && (
+            <span className="st-chip bn-chip bn-stitch-role" data-tone="neutral">
+              {role}
+            </span>
+          )}
           {part && <SlotSource site={site} url={part.sourceUrl} tabbable={isActive} />}
         </div>
         {noteFor === slot.id ? (

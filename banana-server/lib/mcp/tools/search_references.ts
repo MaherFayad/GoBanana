@@ -62,6 +62,7 @@ export const TOOL_DESCRIPTION =
   "Find design references for a bend direction or a query. Results come in two zones: " +
   "UI references (real screens, pages and components, worded for the platform) and art direction (the direction's wild idea as images, from Pinterest, Behance and art galleries). " +
   "Show both, but place art results in the art row of the direction, never among the UI references. " +
+  "UI is the main grid of a board: per direction place 6 to 8 UI references and only 2 to 4 art items; when fewer than 6 UI results are good, search a UI lane again with better words before placing. " +
   "Every result links to its source: always show the source link next to the image. " +
   "Pass a directionId from bend_brief, or a query. zone picks ui, art or both (default both for a directionId, ui for a query). " +
   "Pass canvasId to add the results to that canvas tray. " +
@@ -194,6 +195,13 @@ function resultText(out: SearchReferencesOutput): string {
   };
   list("ui", "UI references:");
   list("art", "Art direction (place these in the art row, not with the UI references):");
+  if (out.zones.art > 0 || out.zones.ui > 0) {
+    lines.push(
+      out.zones.ui < 6
+        ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${out.zones.ui} UI came back: search a UI lane (fidelity, component or hero) with other words first, so art does not outnumber UI.`
+        : "Place 6 to 8 UI references per direction and at most 4 art items: UI is the main grid, art is the accent row.",
+    );
+  }
   if (out.note) lines.push(out.note);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
   if (out.learned) lines.push("Some lanes used wording that rated better before.");

@@ -39,7 +39,8 @@ export const MAX_NOTE = 280;
 
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), notes, color swatches and sections. " +
-  "Pass sectionId to put items in that section; direction results go to that direction's section, art direction above UI. " +
+  "Pass sectionId to put items in that section; direction results go to that direction's section, art above UI. " +
+  "Per direction: 6 to 8 UI, 2 to 4 art. " +
   `A reference can carry a note (up to ${MAX_NOTE} characters) on what to steal from it.`;
 
 const item = z.discriminatedUnion("type", [

@@ -260,6 +260,16 @@
   transform-origin: top left;
 }
 
+/* Narrow slots on screen (data-chrome, StitchNode.tsx): the source chip is its icon, the site stays
+   its accessible name and tooltip. Tiny slots show their chips on hover and focus only. */
+.bn-stitch-slot:is([data-chrome="icon"], [data-chrome="tiny"]) .bn-stitch-source > span:not(.st-visually-hidden) {
+  display: none;
+}
+
+.bn-stitch-slot[data-chrome="tiny"]:not(:hover, :focus-within) .bn-stitch-slot-bar {
+  display: none;
+}
+
 .bn-stitch-role {
   background: var(--st-bg-surface);
   color: var(--st-text);
@@ -271,13 +281,17 @@
   inset-block-end: var(--st-space-3xs);
   z-index: 4;
   display: none;
+  /* Zoomed in, the note keeps its on-screen size instead of growing with the board (min with 1:
+     zoomed out it shrinks with the page, so it never covers a small part). */
+  --bn-note-scale: min(var(--bn-chrome, 1), 1);
+
   margin: 0;
-  padding: var(--st-space-3xs) var(--st-space-2xs);
+  padding: calc(var(--st-space-3xs) * var(--bn-note-scale)) calc(var(--st-space-2xs) * var(--bn-note-scale));
   border-radius: var(--st-radius-sm);
   background: var(--st-bg-surface);
   box-shadow: var(--st-shadow-menu);
   color: var(--st-text);
-  font-size: var(--st-text-xs);
+  font-size: calc(var(--st-text-xs) * var(--bn-note-scale));
   line-height: var(--st-leading-snug);
 }
 
@@ -289,7 +303,7 @@
 
 .bn-stitch[data-mode="wireframe"] .bn-stitch-note {
   position: static;
-  margin: var(--st-space-3xs);
+  margin: calc(var(--st-space-3xs) * var(--bn-note-scale));
   box-shadow: none;
 }
 
@@ -316,7 +330,8 @@
   z-index: 3;
   translate: 0 -50%;
   color: var(--st-text);
-  font-size: clamp(14px, 6cqi, 40px);
+  /* Zoomed in, it stops growing at its size at 100%. */
+  font-size: calc(clamp(14px, 6cqi, 40px) * min(var(--bn-chrome, 1), 1));
   font-weight: var(--st-weight-bold);
   letter-spacing: var(--st-tracking-caps);
   text-align: center;
