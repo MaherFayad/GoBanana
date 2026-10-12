@@ -360,33 +360,39 @@ export default async function LandingPage({ params }: Props) {
       ) : null}
 
       {/* ------------------------------------------------------------ 3. made with */}
-      <section className="s-made" aria-labelledby="gallery" data-mark="1 0.42 1">
+      <section className="s-made" aria-labelledby="gallery" data-mark="0.7 0.5 0.3">
         <div className="made-head">
           <p className="story-lead" data-reveal="">
             {bidi(s.made.lead)}
           </p>
           <Lines id="gallery" lines={[bidi(s.made.dim), bt(s.made.bright)]} />
         </div>
-        <BoardRow label={s.made.label} prev={s.made.prev} next={s.made.next}>
+        <BoardRow
+          label={s.made.label}
+          prev={s.made.prev}
+          next={s.made.next}
+          footer={
+            <>
+              <RollButton href={gallery} size="md" variant="secondary" icon={<ArrowEndIcon size={16} />}>
+                {x.all}
+              </RollButton>
+              <p className="made-notice">
+                {images ? fmt(x.made, { date: EXAMPLES_FILE.generatedAt, n: EXAMPLES_FILE.serperRequests }) : x.noImages}{" "}
+                {images ? (
+                  <>
+                    {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
+                  </>
+                ) : null}
+              </p>
+            </>
+          }
+        >
           {rest.map((ex) => (
             <li key={ex.key} className="row-card ex-row-card">
               <ExampleCard ex={ex} t={x} locale={locale} boardHref={`${gallery}#${ex.key}`} />
             </li>
           ))}
         </BoardRow>
-        <div className="made-foot">
-          <RollButton href={gallery} size="md" variant="secondary" icon={<ArrowEndIcon size={16} />}>
-            {x.all}
-          </RollButton>
-          <p className="made-notice">
-            {images ? fmt(x.made, { date: EXAMPLES_FILE.generatedAt, n: EXAMPLES_FILE.serperRequests }) : x.noImages}{" "}
-            {images ? (
-              <>
-                {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
-              </>
-            ) : null}
-          </p>
-        </div>
       </section>
 
       {/* ------------------------------------------------------------ 4. three statements */}

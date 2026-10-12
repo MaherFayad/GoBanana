@@ -11,9 +11,10 @@ import { useRef } from "react";
 import { ChevronEndIcon, ChevronStartIcon } from "@/components/studio/icons";
 import { storyBus } from "./story-bus";
 
-type Props = { label: string; prev: string; next: string; children: ReactNode };
+/** `footer` sits on the controls line, so links like "See all examples" stay next to the cards while the row is pinned. */
+type Props = { label: string; prev: string; next: string; children: ReactNode; footer?: ReactNode };
 
-export function BoardRow({ label, prev, next, children }: Props) {
+export function BoardRow({ label, prev, next, children, footer }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
 
   function step(delta: 1 | -1) {
@@ -39,6 +40,7 @@ export function BoardRow({ label, prev, next, children }: Props) {
           </ul>
         </div>
         <div className="row-controls">
+          {footer ? <div className="row-footer">{footer}</div> : null}
           <button type="button" className="row-btn" aria-label={prev} onClick={() => step(-1)}>
             <ChevronStartIcon size={16} />
           </button>

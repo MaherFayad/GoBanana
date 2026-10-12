@@ -394,9 +394,28 @@ html.lenis body {
 
 .story .row-controls {
   display: flex;
+  align-items: center;
   justify-content: end;
   gap: var(--st-space-s);
   padding-inline: var(--site-gutter);
+}
+
+/* "See all examples" and the source notice, on the arrows' line, right under the cards. */
+.story .row-footer {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-l) var(--st-space-4xl);
+  min-inline-size: 0;
+}
+
+.story .row-footer .made-notice {
+  margin: 0;
+  padding: 0;
+  max-inline-size: 44rem;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
 }
 
 .story .row-btn {
