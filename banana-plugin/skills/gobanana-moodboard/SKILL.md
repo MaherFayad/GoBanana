@@ -34,7 +34,7 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 3. **UI grid: 6 to 8** UI references, best first, each with a `steal:` note the same way.
 4. One idea note per section: `{ "type": "note", "text": "WILD: <twist>. PATTERN: <pattern>. SIGNATURE: <signature>." }`, from the direction's spec when you have it.
 5. If a palette exists, swatches as `{ "type": "swatch", "hex": "...", "role": "..." }`.
-6. If the user has a Mobbin connector and wants the baseline, one board note with links only: `Shipped today: [App, screen](mobbin link), ...` (see gobanana-explore step 11). Never Mobbin images.
+6. Check for a Mobbin connector first. If there is one, add one board note with links only, `Shipped today: [App, screen](mobbin link), ...`, and a `BUILD ON: [App, screen](mobbin link)` line in each direction's idea note (see gobanana-explore steps 0, 6b and 11). Never Mobbin images.
 
 **Steal notes:** up to 280 characters, start with `steal:`, name one concrete thing for the page: `steal: the stamped date as a section divider`, `steal: the tab bar that hides on scroll`. Draw them from the direction's `spec.steal` and from what the title says. Links in notes are clickable on the board.
 

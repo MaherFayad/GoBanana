@@ -1,7 +1,7 @@
 {
   "name": "gobanana",
   "displayName": "GoBanana",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One wild idea for a page or two, not your whole product. Bend a page into unexpected directions with a full visual spec, pull art direction and platform-correct UI references into a moodboard canvas, Frankenstein new pages from the best parts of them, and hand the direction to Claude Code, Cursor, Copilot, v0 or Lovable as scoped files. Mobbin shows what works. GoBanana shows what's next.",
   "author": {
     "name": "Maher Fayad",

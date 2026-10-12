@@ -25,6 +25,10 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 
 ## Steps
 
+### 0. Check for Mobbin first
+
+Before anything else, look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. Note the answer; steps 6b, 8 and 11 use it. When it is connected, the run uses both: Mobbin for what real shipped apps do on this page (the baseline and the usable patterns), GoBanana for the wild directions and references that go past it. If none exist, skip every Mobbin step silently: do not mention Mobbin.
+
 ### 1. Shape the brief
 
 Write a one-line brief (max 500 characters). A good brief names:
@@ -96,6 +100,15 @@ Keep the daily task screens (sign in, checkout steps, forms, tables, navigation)
 
 Do not call `open_canvas` yet. The user sees the board once, finished, in step 13.
 
+### 6b. Mobbin baseline (only when step 0 found Mobbin)
+
+Before you bend, search Mobbin once per page for the same page on the same platform, for example "checkout" on iOS (`search_screens`; add `search_flows` when the page is a flow, such as onboarding or checkout). Use the tool's own inputs. Pick 3 to 6 real shipped screens and write down, for yourself, in a few words each:
+
+- **The baseline:** the layout, components and order most shipped apps share on this page ("summary card, then a payment sheet, sticky pay button").
+- **The must keeps:** the patterns users rely on that a wild direction must not break (clear total, one primary action, the step indicator).
+
+Use both in the next steps: put the default to escape into the brief you pass to `bend_brief` when it helps ("not the usual summary card and payment sheet"), and keep the screens' Mobbin links for steps 11 and 12.
+
 ### 7. Bend the brief, wide
 
 Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen. Each direction comes back with a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
@@ -107,6 +120,7 @@ Keep an idea only if all three hold:
 - **(a) UI path.** Its `spec.pattern` and `spec.signature` give the named page a concrete UI move on this platform ("fare cards that stack like boarding passes"). If you cannot say it in a few words, it fails.
 - **(b) Usable UI references.** After search and audit it has at least 6 on-topic UI references for the platform. Art references do not count here.
 - **(c) Not a near duplicate** of a kept idea.
+- **With Mobbin (step 6b):** also drop an idea that lands on the baseline (it only restyles what shipped apps already do), and prefer ideas whose `spec.pattern` keeps the must keeps. Name the Mobbin pattern a kept idea builds on.
 
 1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the number the user asked for, or 3 when they gave no number. Never more than 4. Each shortlisted direction costs one search (step 9). If a shortlisted idea fails (b), you may search one backup idea, still within 4.
 2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 6: drop it.
@@ -135,13 +149,12 @@ The server does not look at images. You do.
 3. **Retry a weak lane, only then.** If more than 40% of one lane's results are bad, you must search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: keep the idea's main word and name the screen or component ("film frame seat picker ui", not "oversized film frames"). Art lane: `lane: "art"` with words for the raw thing, no UI words ("sadu weaving close up", "risograph two ink print"). Rate the retry's results too. At most 2 retries per lane; each counts toward the quota. If the lane is still bad after 2 retries, stop and say so in one line. When no lane is over 40% bad, do not retry anything: clean results need no second search.
 4. **Count** usable UI references per direction for test (b), and usable art references separately.
 
-### 11. Shipped vs next (only when Mobbin is connected)
+### 11. Shipped vs next (only when step 0 found Mobbin)
 
-Look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. If none exist, skip this step silently: do not mention Mobbin.
+Use the screens from step 6b. For each kept direction, also find 1 or 2 Mobbin screens or sections that show the real pattern it builds on (`search_sections` for a component, such as "seat picker" or "bottom sheet"), when step 6b did not already give one. Then:
 
-If connected, search once per page (not per direction) for the same page on the same platform, for example "checkout" on iOS. Use the tool's own inputs. Pick 3 to 6 real shipped screens. Then:
-
-- Add them to the board as **one** note, no images, in step 12: one `add_to_canvas` item `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Place it even if the wild directions end up thin.
+- Add the baseline to the board as **one** note, no images, in step 12: one `add_to_canvas` item `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Place it even if the wild directions end up thin.
+- In each kept direction's idea note, add its anchor: `BUILD ON: [Revolut, payment sheet](mobbin link)`. This is what keeps the wild idea usable.
 - Mention them in your reply in one line, as the "what works" baseline next to the wild directions.
 - Never place Mobbin screens as references, never pass Mobbin links to `search_references` or `add_to_canvas` as references, never download them.
 
@@ -152,7 +165,7 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 - **Art direction row: 2 to 4 art items**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
 - **UI references grid: 6 to 8 UI items**, best first, from the UI zone only. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
-- The Mobbin note from step 11, once per board, if any.
+- The Mobbin note from step 11, once per board, and the `BUILD ON:` line in each idea note, if Mobbin ran.
 
 Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
 

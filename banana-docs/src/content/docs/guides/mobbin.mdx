@@ -9,15 +9,15 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 ## How it works
 
-If you have **your own Mobbin connector** in your client, `gobanana-explore` uses it automatically. GoBanana's server is never involved.
+If you have **your own Mobbin connector** in your client, the agent checks for it **first**, before it bends anything, and uses both: Mobbin for what shipped apps do on your page, GoBanana for the directions that go past it. This works with the plugin (`gobanana-explore`) and with the GoBanana connector alone: the server's instructions tell any agent to do it. GoBanana's server never calls Mobbin.
 
 <Steps>
 
-1. The agent looks for tools named like `search_screens`, `search_flows` or `search_sections` from a Mobbin connector. None found: it skips this step silently.
-2. It searches **once per page**, not per direction: the same page on the same platform ("checkout" on iOS).
-3. It picks 3 to 6 real shipped screens.
-4. It adds **one note** to the board: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`
-5. It adds one line to its reply, as the "what works" baseline next to the wild directions.
+1. **Check.** The agent looks for tools named like `search_screens`, `search_flows` or `search_sections` from a Mobbin connector. None found: it skips every Mobbin step silently.
+2. **Baseline, before the bend.** It searches **once per page**, the same page on the same platform ("checkout" on iOS), and reads 3 to 6 shipped screens: the layout most apps share (the default to escape) and the patterns users rely on (the must keeps).
+3. **Pick better directions.** It drops ideas that only restyle the baseline and keeps ideas that change the page while keeping the must keeps.
+4. **Anchor each direction.** For each kept direction it finds 1 or 2 Mobbin screens or sections with the real pattern the idea builds on, and adds `BUILD ON: [Revolut, payment sheet](mobbin link)` to that direction's idea note.
+5. **One baseline note** on the board: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`, and one line in the reply.
 
 </Steps>
 

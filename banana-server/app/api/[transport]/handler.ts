@@ -9,6 +9,7 @@ import { APP_NAME, RESOURCE_METADATA_PATH } from "@/lib/config";
 import { tools as defaultTools } from "@/lib/mcp/tools";
 import type { RegisterTool } from "@/lib/mcp/tools/types";
 import { registerCanvasResource } from "@/lib/mcp/resources/canvas";
+import { SERVER_INSTRUCTIONS } from "@/lib/mcp/instructions";
 
 type VerifyToken = (req: Request, bearerToken?: string) => Promise<AuthInfo | undefined>;
 
@@ -38,7 +39,8 @@ export function buildMcpHandler(tools: RegisterTool[] = defaultTools, resources:
       for (const register of tools) register(server);
       for (const register of resources) register(server);
     },
-    { serverInfo },
+    // Instructions reach agents that use the connector without the plugin's skills.
+    { serverInfo, instructions: SERVER_INSTRUCTIONS },
   );
 }
 
