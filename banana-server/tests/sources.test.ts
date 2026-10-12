@@ -45,7 +45,9 @@ describe("query building", () => {
     expect(buildSourceQuery("brutalist bakery menu", "dribbble")).toBe("brutalist bakery menu site:dribbble.com/shots");
     expect(buildSourceQuery("x", "behance")).toBe("x site:behance.net/gallery");
     expect(buildSourceQuery("x", "awwwards")).toBe("x site:awwwards.com/sites");
-    expect(Object.keys(SOURCE_SCOPES).sort()).toEqual(["awwwards", "behance", "dribbble", "pinterest"]);
+    // Every registry source has a path-scoped filter (core sites plus vetted galleries).
+    expect(Object.keys(SOURCE_SCOPES)).toEqual(expect.arrayContaining(["awwwards", "behance", "dribbble", "pinterest", "lapa", "refero"]));
+    for (const scope of Object.values(SOURCE_SCOPES)) expect(scope).not.toMatch(/\s|\bOR\b/);
     for (const site of ["pinterest", "dribbble", "behance", "awwwards"] as const) {
       expect(buildSourceQuery("a OR b", site)).not.toMatch(/\bOR\b/);
     }
@@ -217,7 +219,8 @@ describe("web_search adapter", () => {
     // Only 3 results pass every filter (fewer than 4), so the short form is tried once as well.
     const firstPage = fetchMock.mock.calls.filter(([, init]) => JSON.parse(String(init?.body)).page === undefined);
     expect(firstPage).toHaveLength(3);
-    expect(JSON.parse(String(firstPage[2]![1]?.body)).q).toBe("bakery menu ui design -template -kit -free -wireframe site:pinterest.com/pin");
+    // The short retry keeps the style word ("brutalist"), then the last 2 words.
+    expect(JSON.parse(String(firstPage[2]![1]?.body)).q).toBe("brutalist bakery menu ui design -template -kit -free -wireframe site:pinterest.com/pin");
     for (const [url, init] of firstPage) {
       expect(url).toBe(SERPER_IMAGES_ENDPOINT);
       expect(url).toBe("https://google.serper.dev/images");

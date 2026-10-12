@@ -80,7 +80,10 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 - `bend_brief` takes `platform` and up to 3 `pages`, and returns `wildSpots` when no pages are given.
 - `search_references` returns two zones, `ui` and `art`. Sources: UI galleries by platform, plus Pinterest, Dribbble, Behance and Awwwards. At most 2 results per studio, newer work first, UI kits dropped.
-<!-- TODO(owner): list the final gallery sources once the search agent's live tests settle. -->
+  - Website galleries: Lapa Ninja, Siteinspire, CSS Design Awards, landing.love, Unsection, Supahero, The FWA, Httpster, Dark Design.
+  - Web app galleries: Refero, SaaSFrame, Nicelydone. Mobile galleries: ScreensDesign, 60fps, Figma Community. Style: Bento Grids.
+  - Art direction: Fonts In Use, typographic posters, Swissted, The Brand Identity, BP&O, Cosmos, Are.na, Designspiration.
+  - Reached through web image search only, never scraped. Each search picks galleries by platform and style words.
 - `add_to_canvas` reference items take a `note` (what to steal, up to 280 characters).
 - `delete_canvas` deletes a canvas for good (sections, items, tray, share link) and frees a slot. It needs `confirm: true`, and the skills call it only after you say yes to a named board. You can also delete boards from the web dashboard.
 

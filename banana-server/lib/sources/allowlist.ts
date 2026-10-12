@@ -1,7 +1,19 @@
+import { registryImageHosts } from "./registry";
 import { normalizeHost, parseHttpUrl } from "./url";
 
+/** Google image thumbnails Serper returns as thumbnailUrl (the fallback image for any source). */
+export const THUMBNAIL_HOSTS: readonly string[] = [
+  "encrypted-tbn0.gstatic.com",
+  "encrypted-tbn1.gstatic.com",
+  "encrypted-tbn2.gstatic.com",
+  "encrypted-tbn3.gstatic.com",
+];
+
 /**
- * Image hosts the canvas may load from (spec sections 9 and 15).
+ * Image hosts the canvas may load from (spec sections 9 and 15): the Google thumbnail hosts plus
+ * every source's image hosts from the source registry (lib/sources/registry.ts), each measured on
+ * live Serper results. Exact hosts only. Shared CDNs in the list, flagged in the registry:
+ * framerusercontent.com and video.gumlet.io (60fps), cdn.prod.website-files.com (SaaSFrame).
  *
  * The same list feeds `_meta.ui.csp.resourceDomains` for the inline canvas, so any
  * search result whose image would load from another host is changed or dropped
@@ -12,26 +24,8 @@ import { normalizeHost, parseHttpUrl } from "./url";
  * - `*.example.com`  any subdomain of example.com (not example.com itself).
  *   A leading dot (`.example.com`) means the same thing.
  * Matching is exact host or listed suffix, never a loose substring.
- *
- * Default hosts, checked 2026-10-11 (re-verify in M3, spec section 9):
- * - encrypted-tbn0..3.gstatic.com  Google image thumbnails returned by Serper as thumbnailUrl.
- * - i.pinimg.com                   Pinterest pin images.
- * - cdn.dribbble.com               Dribbble shot images (userupload paths).
- * - mir-s3-cdn-cf.behance.net      Behance project images (current host).
- * - mir-cdn.behance.net            Behance project images (older host, still seen in links).
- * - assets.awwwards.com            Awwwards site thumbnails. Not confirmed from a live page; verify in M3.
  */
-export const DEFAULT_IMAGE_HOSTS: readonly string[] = [
-  "encrypted-tbn0.gstatic.com",
-  "encrypted-tbn1.gstatic.com",
-  "encrypted-tbn2.gstatic.com",
-  "encrypted-tbn3.gstatic.com",
-  "i.pinimg.com",
-  "cdn.dribbble.com",
-  "mir-s3-cdn-cf.behance.net",
-  "mir-cdn.behance.net",
-  "assets.awwwards.com",
-];
+export const DEFAULT_IMAGE_HOSTS: readonly string[] = [...THUMBNAIL_HOSTS, ...registryImageHosts()];
 
 export type ImageHostAllowlist = {
   /** Exact hosts. */

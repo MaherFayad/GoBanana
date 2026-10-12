@@ -47,6 +47,7 @@ const EXPECTED = [
   "get_canvas",
   "extract_palette",
   "export_kit",
+  "delete_canvas",
   // App-only (hidden from the model by MCP Apps hosts); the inline canvas saves and reloads through them.
   "save_canvas_state",
   "load_canvas_state",
@@ -104,7 +105,8 @@ describe("MCP contract", () => {
     ]);
     const search = byName.search_references!.inputSchema.properties as Record<string, { enum?: string[] }>;
     expect(search.mix!.enum).toEqual(["ui", "balanced", "wild"]);
-    expect(search.lane!.enum).toEqual(["fidelity", "taste", "component", "hero", "bridge", "locale"]);
+    expect(search.lane!.enum).toEqual(["fidelity", "taste", "component", "hero", "bridge", "locale", "gallery", "art"]);
+    expect(search.zone!.enum).toEqual(["ui", "art", "both"]);
   });
 
   it("runs bend_brief and returns text plus structured directions", async () => {

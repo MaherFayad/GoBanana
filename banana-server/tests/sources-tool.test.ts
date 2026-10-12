@@ -4,7 +4,6 @@ import { McpServer } from "@modelcontextprotocol/server";
 import {
   register,
   TOOL_DESCRIPTION,
-  UI_ONLY_LANE_MESSAGE,
   createSearchReferencesTool,
   inputSchema,
   type SearchReferencesDeps,
@@ -66,7 +65,9 @@ describe("search_references tool", () => {
     expect(TOOL_DESCRIPTION).toContain("directionId");
     expect(TOOL_DESCRIPTION).toContain("bend_brief");
     expect(TOOL_DESCRIPTION).toContain("source link");
-    expect(TOOL_DESCRIPTION).toMatch(/^Find UI references \(app screens, web pages, dashboards, components\)/);
+    expect(TOOL_DESCRIPTION).toMatch(/^Find design references/);
+    expect(TOOL_DESCRIPTION).toContain("two zones");
+    expect(TOOL_DESCRIPTION).toContain("art row");
     expect(TOOL_DESCRIPTION).toContain("mix is ignored");
     expect(TOOL_DESCRIPTION).not.toMatch(/inspiration|wild"|balanced/);
     expect(TOOL_DESCRIPTION).not.toMatch(/[\u2014\u2013]/);
@@ -76,7 +77,7 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste", "zone"]);
   });
 
   it("validates count and sources", () => {
@@ -102,13 +103,15 @@ describe("search_references tool", () => {
     const { tool, run, runPlan, usage } = setup();
     const res = await tool({ directionId: "dir_1", sources: ["dribbble", "pinterest"] }, "u1");
     expect(runPlan).not.toHaveBeenCalled();
-    // The adapter's plain path forces the idea into UI forms and gates every result.
+    // The adapter's plain path forces the idea into UI forms and gates every result; a direction
+    // fills both zones, so the idea is also searched as is in the art zone (picked art sites only).
     expect(run).toHaveBeenCalledWith({ query: "melted chrome type", count: 12, userId: "u1", sources: ["pinterest", "dribbble"] });
+    expect(run).toHaveBeenCalledWith({ query: "melted chrome type", count: 4, userId: "u1", sources: ["pinterest"], zone: "art", maxRequests: 2 });
     expect(res.structuredContent).toMatchObject({
       query: "melted chrome type",
-      queries: ["melted chrome type"],
+      queries: ["melted chrome type", "melted chrome type (art)"],
       mix: "ui",
-      references: [ref],
+      zone: "both",
       addedToTray: false,
     });
     expect((res.structuredContent as { lanes?: unknown }).lanes).toBeUndefined();
@@ -133,9 +136,19 @@ describe("search_references tool", () => {
     const res = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1" }, "u1");
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
     expect(plan.length).toBeLessThanOrEqual(8);
-    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "locale", "taste", "component", "hero", "bridge"]);
-    expect(plan.some((r) => r.site === "behance" || r.query.startsWith("crushed velvet -") || r.query === "crushed velvet")).toBe(false);
-    expect(plan.find((r) => r.lane === "bridge")).toMatchObject({
+    // Both zones: UI and art alternate at the top, then the rest of UI, cut to 7 (one spare request).
+    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art", "locale", "art", "gallery", "component", "hero"]);
+    // No taste given and no style words stored: no taste lane (never the owner's default taste).
+    expect(plan.some((r) => r.lane === "taste")).toBe(false);
+    // The raw idea only goes to the art lane (Pinterest pins, Behance galleries), never to a UI lane.
+    expect(plan.filter((r) => r.lane !== "art").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
+    expect(plan.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
+    expect(plan.find((r) => r.lane === "art")!.query).toMatch(/^crushed velvet -etsy/);
+    const ui = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1", zone: "ui" }, "u1");
+    expect(ui.structuredContent).toMatchObject({ zone: "ui" });
+    const [uiPlan] = runPlan.mock.calls[1]! as unknown as [{ lane: string; query: string; site: string }[]];
+    expect(uiPlan.some((r) => r.lane === "art")).toBe(false);
+    expect(uiPlan.find((r) => r.lane === "bridge")).toMatchObject({
       query: "crushed velvet ui design -template -kit -free -wireframe",
       site: "dribbble",
       titleWord: "velvet",
@@ -150,14 +163,14 @@ describe("search_references tool", () => {
       bridge: "crushed velvet ui design",
       locale: "arabic flight app ui",
     });
-    expect(out.lanes.taste).toMatch(/ flight checkout ui design$/);
-    expect(out.lanes.hero).toMatch(/ flight app single screen$/);
+    expect(out.lanes.taste).toBeUndefined();
+    expect(out.lanes.hero).toBe("flight app single screen");
+    expect(out.lanes.art).toEqual(["crushed velvet"]);
     expect(out.queries[0]).toBe("flight app ui -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[1]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
-    expect(text(res)).toContain('component "flight checkout ui"');
+    expect(out.queries[2]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    expect(text(res)).toContain("UI references:");
     expect(text(res)).not.toContain("inspiration");
-    expect(text(res)).not.toContain('idea "');
-    expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(1);
+    expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(2);
   });
 
   it("accepts mix for older clients and ignores it: always UI", async () => {
@@ -177,32 +190,34 @@ describe("search_references tool", () => {
     expect(text(bad)).toContain("Check the input");
   });
 
-  it("rejects the removed inspiration lane with a plain message", async () => {
-    const { tool, run, runPlan } = setup();
+  it("maps the old inspiration lane to the art lane: the words as is on Pinterest and Behance", async () => {
+    const { tool, runPlan } = setup();
     const res = await tool({ directionId: "bd-8dti7s7c", lane: "inspiration", query: "crushed velvet" } as unknown as SearchReferencesInput, "u1");
-    expect(res.isError).toBe(true);
-    expect(text(res)).toBe(UI_ONLY_LANE_MESSAGE);
-    expect(text(res)).toContain("UI only");
-    expect(run).not.toHaveBeenCalled();
-    expect(runPlan).not.toHaveBeenCalled();
+    expect(res.isError).toBeFalsy();
+    const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
+    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["art:pinterest", "art:behance"]);
+    expect(plan[0]!.query).toBe("crushed velvet -etsy -amazon -aliexpress -sale -buy");
+    expect(res.structuredContent).toMatchObject({ lane: "art", zone: "art", arms: { art: "agent:crushed velvet" } });
   });
 
   it("forces a lane re-search's words into UI when they name none", async () => {
     const { tool, runPlan } = setup();
     const res = await tool({ directionId: "bd-8dti7s7c", lane: "taste", query: "crushed velvet" }, "u1");
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string }[]];
-    expect(plan).toEqual([{ lane: "taste", query: "crushed velvet app ui -template -kit -free -wireframe", site: "dribbble" }]);
+    expect(plan).toEqual([{ lane: "taste", query: "crushed velvet app ui -template -kit -free -wireframe", site: "dribbble", avoidWords: expect.any(Array) }]);
     expect(res.structuredContent).toMatchObject({ lane: "taste", query: "crushed velvet app ui", arms: { taste: "agent:crushed velvet app ui" } });
     await tool({ directionId: "bd-8dti7s7c", lane: "component", query: "flight seat map ui" }, "u1");
     const [plan2] = runPlan.mock.calls[1]! as unknown as [{ lane: string; query: string }[]];
-    expect(plan2).toEqual([{ lane: "component", query: "flight seat map ui -template -kit -free -wireframe", site: "dribbble" }]);
+    expect(plan2).toEqual([{ lane: "component", query: "flight seat map ui -template -kit -free -wireframe", site: "dribbble", avoidWords: expect.any(Array) }]);
   });
 
   it("re-searches the bridge lane with the agent's words and keeps the idea's title filter", async () => {
     const { tool, runPlan } = setup();
     const res = await tool({ directionId: "bd-8dti7s7c", lane: "bridge", query: "velvet checkout ui" }, "u1");
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string; titleWord?: string }[]];
-    expect(plan).toEqual([{ lane: "bridge", query: "velvet checkout ui -template -kit -free -wireframe", site: "dribbble", titleWord: "velvet" }]);
+    expect(plan).toEqual([
+      { lane: "bridge", query: "velvet checkout ui -template -kit -free -wireframe", site: "dribbble", titleWord: "velvet", avoidWords: expect.any(Array) },
+    ]);
     expect(res.structuredContent).toMatchObject({ lane: "bridge", arms: { bridge: "agent:velvet checkout ui" } });
   });
 
@@ -273,7 +288,7 @@ describe("search_references tool", () => {
     const { tool, addToTray } = setup();
     const res = await tool({ query: "x", canvasId: "c1" }, "u1");
     // Saved with the query words that found them (no lane: a plain query search).
-    expect(addToTray).toHaveBeenCalledWith("u1", "c1", [{ ...ref, query: "x" }]);
+    expect(addToTray).toHaveBeenCalledWith("u1", "c1", [{ ...ref, zone: "ui", query: "x" }]);
     expect(res.structuredContent).toMatchObject({ canvasId: "c1", addedToTray: true });
   });
 

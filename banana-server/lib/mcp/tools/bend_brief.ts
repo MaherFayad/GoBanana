@@ -4,6 +4,7 @@ import { authExtra } from "@/lib/auth";
 import { bendBrief, bendInputSchema, formatDirections, parseBendInput, type BendResult } from "@/lib/bend";
 import { mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { CanvasRecord } from "@/lib/db/types";
+import type { DirectionDetail } from "@/lib/direction-detail";
 import { globalLearningOn, K_ANON } from "@/lib/learning/arms";
 import { ingredientWeights } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
@@ -13,12 +14,12 @@ import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type Can
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
 export const BEND_BRIEF_DESCRIPTION =
-  "Turn a plain design brief into wild, unexpected design directions. " +
-  "Use it when the user wants fresh, bold or surprising ideas instead of the usual layout. " +
-  "Each direction has a short title, a twist, a search query and a prompt to riff on. " +
+  "Turn a design brief into wild directions for one wild page or two, not the product's main design. " +
+  "Each has a title, a twist, a visual spec for the platform, art queries and a prompt. " +
   "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
-  "Pass canvasId to save the directions there, then call search_references with a direction id. " +
-  "Optional taste: style words that describe the user's mood boards.";
+  "Without pages it returns wildSpots: where weirdness pays off. " +
+  "Pass canvasId to save them, then call search_references with a direction id. " +
+  "Optional taste: the user's style words.";
 
 /** Advertised input: the bend schema plus an optional canvas to save the directions to. */
 export const inputSchema = bendInputSchema.extend({
@@ -86,6 +87,19 @@ async function readWeights(
   return weights;
 }
 
+/** The detail saved with a direction (directions.detail). The verdict stays with rate_directions. */
+export function directionDetail(d: BendResult["directions"][number], wildness: number): DirectionDetail {
+  return {
+    platform: d.platform,
+    pages: d.pages,
+    spec: d.spec,
+    artQueries: d.artQueries,
+    twist: d.twist,
+    prompt: d.prompt,
+    wildness,
+  };
+}
+
 /** Save directions (and new taste words) on the user's canvas. */
 async function saveDirections(
   deps: BendBriefDeps,
@@ -97,7 +111,13 @@ async function saveDirections(
   const canvasId = canvas.id;
   await deps.repos.directions.upsertMany(
     canvasId,
-    result.directions.map((d) => ({ bendId: d.id, move: d.move, title: d.title, searchQuery: d.searchQuery })),
+    result.directions.map((d) => ({
+      bendId: d.id,
+      move: d.move,
+      title: d.title,
+      searchQuery: d.searchQuery,
+      detail: directionDetail(d, result.wildness),
+    })),
   );
   await deps.repos.canvases.update(userId, canvasId, {
     wildness: result.wildness,

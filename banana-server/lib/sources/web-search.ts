@@ -22,28 +22,36 @@
  * - neither allowed: drop.
  *
  * Quality (see item-page.ts and quality.ts): only single-item source pages, no stock or shop
- * listings, only titles that name a UI (the UI gate, isUiResult: search returns UI images only),
+ * listings, no kit or template sales sheets, then per zone: UI results need a title that names a
+ * UI (the UI gate, isUiResult; curated gallery items pass by definition); art results pass the art
+ * junk gate instead (isArtJunk: no shops, prices, fashion, product listings, logo sheets).
  * Pinterest and Dribbble image URLs upgraded to their larger files, nothing under 600 px when the
- * size is known, then ranked best first.
+ * size is known, then ranked best first (newer work and on-idea art titles score up).
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
-import { bigEnough, isJunk, isUiResult, rankReferences, sizeRuleApplies, upgradeImage } from "./quality";
+import { bigEnough, isArtJunk, isJunk, isKitTitle, isUiResult, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
 import {
+  CREATOR_CAP,
   FALLBACK_MIN_GOOD,
   PLAIN_MAX_REQUESTS,
   PLAIN_MIN_GOOD,
-  laneQuotas,
+  artQueryPlan,
+  bridgeHead,
+  byZone,
   mergeLanes,
   plainQueryPlan,
   plainRetryQuery,
+  requestZone,
   titleHasWord,
+  zoneQuotas,
   type LaneName,
   type PlannedRequest,
 } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import {
   SOURCE_DOMAINS,
+  isGallery,
   type Reference,
   type SourceAdapter,
   type SourceQuery,
@@ -52,7 +60,7 @@ import {
 } from "./types";
 import { hostMatchesDomain, parseHttpUrl } from "./url";
 import { EMPTY_TAKEDOWNS, type TakedownMatcher } from "../takedown";
-import { nudgeByCreator } from "../learning/creator";
+import { creatorKeys, nudgeByCreator } from "../learning/creator";
 import { queryWords } from "../learning/terms";
 
 export const SERPER_IMAGES_ENDPOINT = "https://google.serper.dev/images";
@@ -249,6 +257,12 @@ export type MapOptions = {
   allowlist: ImageHostAllowlist;
   takedowns: TakedownMatcher;
   count: number;
+  /** "ui" (default): the UI title gate. "art": the art junk gate instead (art zone). */
+  gate?: "ui" | "art";
+  /** Art gate: the art query, so a product word it names is not junk ("persian rug"). */
+  artQuery?: string;
+  /** Art zone ranking: titles that name the idea's head word score up. */
+  ideaWord?: string;
 };
 
 export type MapResult = {
@@ -287,6 +301,11 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     const thumbOk = thumb !== null && isAllowedImageUrl(thumb.toString(), opts.allowlist);
     if (!imageOk && !thumbOk) continue;
 
+    // Gallery item pages carry search state in the query ("?source=search"): the page is the same.
+    if (isGallery(site)) {
+      link.search = "";
+      link.hash = "";
+    }
     const sourceUrl = link.toString();
     // Check every URL Serper gave us, including one we are about to drop.
     if (
@@ -311,9 +330,14 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
       continue;
     }
 
-    // The UI gate: every result of every search names a UI in its title (untitled ones go too).
     const title = cleanTitle(raw.title);
-    if (!isUiResult(title, sourceUrl)) {
+    // Kits and templates are sales sheets, never one designed screen (both zones).
+    if (isKitTitle(title)) {
+      dropped++;
+      continue;
+    }
+    // UI zone: the title names a UI (untitled ones go too). Art zone: the junk gate instead.
+    if (opts.gate === "art" ? isArtJunk(title, opts.artQuery) : !isUiResult(title, sourceUrl)) {
       dropped++;
       continue;
     }
@@ -366,7 +390,7 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     }
     out.push(ref);
   }
-  return { references: rankReferences(out).slice(0, Math.max(0, opts.count)), dropped };
+  return { references: rankReferences(out, opts.ideaWord ? { ideaWord: opts.ideaWord } : {}).slice(0, Math.max(0, opts.count)), dropped };
 }
 
 /** Same as mapSerperImagesWithStats, references only. */
@@ -396,6 +420,20 @@ export function interleaveReferences(lists: readonly (readonly Reference[])[], c
     }
   }
   return out;
+}
+
+/**
+ * The studio cap (owner, 2026-10-12): at most `cap` results per creator or studio named in the
+ * titles (lib/learning/creator.ts creatorKeys), keeping the order. Untitled or unnamed: no cap.
+ */
+export function capByCreator<T extends Pick<Reference, "title">>(refs: readonly T[], cap = CREATOR_CAP): T[] {
+  const seen = new Map<string, number>();
+  return refs.filter((r) => {
+    const keys = creatorKeys(r.title);
+    if (keys.some((k) => (seen.get(k) ?? 0) >= cap)) return false;
+    for (const k of keys) seen.set(k, (seen.get(k) ?? 0) + 1);
+    return true;
+  });
 }
 
 /** Plain note for a search that found `found` of `count` references. */
@@ -483,7 +521,9 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const excludedKeys = new Set(q.excludeKeys ?? []);
     const prefer = q.preferCreators ?? [];
     const budget = Math.min(requestBudget(q.maxRequests), PLAIN_MAX_REQUESTS);
-    const planned = plainQueryPlan(q.query, selected).slice(0, budget);
+    const art = q.zone === "art";
+    const planned = (art ? artQueryPlan(q.query, q.sources ?? []) : plainQueryPlan(q.query, selected)).slice(0, budget);
+    const artIdea = art ? bridgeHead(q.query) ?? undefined : undefined;
     if (planned.length === 0) return failure(NOTES.noResults);
 
     type Slot = { site: SourceSite; query: string; images: unknown[]; full: boolean; page: number; refs: Reference[]; dropped: number };
@@ -515,15 +555,18 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
           allowlist,
           takedowns,
           count: excludedKeys.size > 0 ? 50 : count,
+          ...(art ? { gate: "art" as const, artQuery: q.query, ...(artIdea ? { ideaWord: artIdea } : {}) } : {}),
         });
         const kept = excludedKeys.size > 0 ? mapped.references.filter((r) => !excludedKeys.has(itemKey(r.sourceUrl))) : mapped.references;
-        slot.refs = nudgeByCreator(kept.slice(0, count), prefer);
+        slot.refs = nudgeByCreator(kept.slice(0, count), prefer).map((r) => ({ ...r, zone: art ? ("art" as const) : ("ui" as const) }));
         slot.dropped = mapped.dropped;
       });
-      references = interleaveReferences(
-        slots.map((s) => s.refs),
-        count,
-      );
+      references = capByCreator(
+        interleaveReferences(
+          slots.map((s) => s.refs),
+          count * 2,
+        ),
+      ).slice(0, count);
     };
     const addSlot = (query: string, site: SourceSite): Slot => {
       const slot: Slot = { site, query: buildSourceQuery(query, site), images: [], full: true, page: 1, refs: [], dropped: 0 };
@@ -538,7 +581,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
 
     // Too few UI results: retry once with the short form on the first planned site.
-    if (references.length < PLAIN_MIN_GOOD && requests < budget) {
+    if (!art && references.length < PLAIN_MIN_GOOD && requests < budget) {
       const retry = plainRetryQuery(q.query, planned.map((r) => r.query));
       if (retry) await fetchRound([addSlot(retry, planned[0]!.site)]);
     }
@@ -596,15 +639,24 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     // reference into another section).
     const excluded = new Set([...(opts.exclude ?? []).map(itemKey), ...(opts.excludeKeys ?? [])]);
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
-      const mapped = mapSerperImagesWithStats(images, { sources: [req.site], allowlist, takedowns, count: SERPER_PAGE_SIZE });
+      const zone = requestZone(req);
       const words = queryWords(query);
+      const mapped = mapSerperImagesWithStats(images, {
+        sources: [req.site],
+        allowlist,
+        takedowns,
+        count: SERPER_PAGE_SIZE,
+        ...(zone === "art" ? { gate: "art" as const, artQuery: words, ...(req.ideaWord ? { ideaWord: req.ideaWord } : {}) } : {}),
+      });
       // Precision filter for the bridge lane (titles name the idea; round 10: 11 of 39 did) and the
       // locale lane (titles name the subject, so Quran and calligraphy apps drop out of "arabic flight app ui").
       const word = req.titleWord;
-      const onTopic = word ? mapped.references.filter((r) => titleHasWord(r.title, word)) : mapped.references;
+      const avoid = req.avoidWords ?? [];
+      // Platform filter: an iPhone brief drops "web", "dashboard" and "landing" titles, and so on.
+      const onTopic = mapped.references.filter((r) => (!word || titleHasWord(r.title, word)) && !titleHasAny(r.title, avoid));
       const kept = excluded.size === 0 ? onTopic : onTopic.filter((r) => !excluded.has(itemKey(r.sourceUrl)));
       return {
-        references: kept.map((r) => ({ ...r, lane: req.lane, query: words })),
+        references: kept.map((r) => ({ ...r, lane: req.lane, query: words, zone })),
         dropped: mapped.dropped + (mapped.references.length - onTopic.length),
         before: onTopic.length,
       };
@@ -671,8 +723,9 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       slot.dropped += mapped.dropped;
     });
 
-    // Per lane: its requests interleaved, preferred creators nudged up, then lanes merged by quota
-    // in plan order. An empty lane's quota goes to the others.
+    // Per lane: its requests interleaved, newer work first within the lane's rank, preferred
+    // creators nudged up, then lanes merged by quota in plan order. An empty lane's quota goes to
+    // the other lanes of its zone first.
     const byLane = new Map<LaneName, Reference[]>();
     for (const slot of slots) {
       const prev = byLane.get(slot.req.lane);
@@ -681,8 +734,12 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const prefer = opts.preferCreators ?? [];
     const lists = new Map<LaneName, Reference[]>();
     for (const [lane, list] of byLane) lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
-    const quotas = laneQuotas(count, [...lists.keys()]);
-    const references = mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]);
+    // Art zone about a third (at least 3), UI lanes share the rest; at most 2 per creator or studio;
+    // UI references first, then art (the agent places them in their own rows).
+    const quotas = zoneQuotas(count, [...lists.keys()]);
+    const references = byZone(
+      mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], { groupsOf: (r) => creatorKeys(r.title) }),
+    );
 
     const result: PlanSearchResult = {
       references,

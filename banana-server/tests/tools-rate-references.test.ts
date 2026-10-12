@@ -198,10 +198,11 @@ describe("old inspiration lane rows", () => {
     expect(out.rated).toBe(1);
     expect(out.hints[0]!.lane).toBeNull();
     expect(out.hints[0]!.hint).not.toContain("inspiration");
-    // A later direction search plans UI lanes only, with default arms.
+    // A later direction search never plans the old inspiration lane; old rows never steer it
+    // (the art lane's term keys start with "art|", so they never match "inspiration|...").
     const next = (await s.search({ directionId: b.directionId, canvasId: b.canvasId }, ALICE)).structuredContent as SearchOut;
     expect(Object.keys(next.arms ?? {})).not.toContain("inspiration");
-    expect(next.queries.some((q) => q.includes("behance"))).toBe(false);
+    expect(Object.values(next.arms ?? {}).every((arm) => arm === "default")).toBe(true);
   });
 });
 
@@ -244,7 +245,9 @@ describe("lane-only re-search and learned arms", () => {
     expect(text(await s.search({ directionId: b.directionId, lane: "taste", query: "site:dribbble.com" }, ALICE))).toContain("Pass a few words");
     expect(text(await s.search({ directionId: b.directionId, lane: "locale", query: "arabic ui" }, ALICE))).toContain("has no locale lane");
     expect(text(await s.search({ directionId: b.directionId, lane: "sideways", query: "x" } as unknown as Parameters<typeof s.search>[0], ALICE))).toContain("lane as one of");
-    expect(text(await s.search({ directionId: b.directionId, lane: "inspiration", query: "x" } as unknown as Parameters<typeof s.search>[0], ALICE))).toContain("Search is UI only");
+    // The old inspiration lane is the art lane now.
+    const old = await s.search({ directionId: b.directionId, lane: "inspiration", query: "x" } as unknown as Parameters<typeof s.search>[0], ALICE);
+    expect((old.structuredContent as { lane?: string }).lane).toBe("art");
   });
 
   it("uses a rated arm for its rater, not for others below 3 raters, and for everyone at 3", async () => {

@@ -214,10 +214,12 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     expect(requests.length).toBeGreaterThanOrEqual(4);
     expect(requests.length).toBeLessThanOrEqual(8);
     const queries = (res.structuredContent as { queries: string[] }).queries;
-    expect(queries.every((q) => / site:(pinterest\.com\/pin|dribbble\.com\/shots|behance\.net\/gallery)$/.test(q))).toBe(true);
-    // The raw idea is never searched; it reaches results only through the title-filtered bridge lane.
+    // Every request is one path-scoped `site:` search on a registry source.
+    expect(queries.every((q) => / site:[a-z0-9.-]+\.[a-z]+(\/\S*)?$/.test(q))).toBe(true);
+    // The raw idea is searched only in the art zone (with shop negatives), never in a UI lane.
     expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(false);
-    expect(queries.some((q) => q.startsWith("melted chrome ui design"))).toBe(true);
+    expect(queries.some((q) => q.startsWith("melted chrome -etsy"))).toBe(true);
+    // Both zones: the art lane takes the bridge lane's place in the 7-request base plan.
     expect(queries.some((q) => q.startsWith("arabic flight app ui"))).toBe(true);
     expect((await usage.get("u1", currentPeriod())).searches).toBe(1);
     assertOnlySerper(requests);

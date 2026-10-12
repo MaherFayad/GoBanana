@@ -146,7 +146,7 @@ describe("brief lanes", () => {
 
   it("builds every lane for a direction, two styles per direction, only the idea without a brief", () => {
     const lanes = laneTexts(CANVAS_BRIEF, "crushed velvet", DEFAULT_TASTE, "bd-8dti7s7c");
-    expect(lanes).toEqual({
+    expect(lanes).toMatchObject({
       idea: "crushed velvet",
       taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} flight checkout ui design`,
       fidelity: "flight app ui",
@@ -155,10 +155,16 @@ describe("brief lanes", () => {
       hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
       locale: "arabic flight app ui",
       localeWord: "flight",
+      // The brief says mobile: UI lanes drop web titles, and mobile galleries join.
+      platform: "mobile",
+      topic: "flight",
     });
+    expect(lanes.avoid).toEqual(expect.arrayContaining(["web", "website", "dashboard", "landing", "desktop", "saas"]));
+    expect(lanes.galleries?.length).toBeGreaterThan(0);
     expect(laneTexts(null, "crushed velvet", DEFAULT_TASTE, "bd-1")).toEqual({ idea: "crushed velvet" });
     for (const brief of [CANVAS_BRIEF, "saudi fintech app", "Dashboard for a fleet management company", "pricing page for a saas tool"]) {
-      for (const q of Object.values(laneTexts(brief, "x", ["dark with one accent", "very soft studio 3d light"], "bd-2")).flat()) {
+      const lanes = laneTexts(brief, "x", ["dark with one accent", "very soft studio 3d light"], "bd-2");
+      for (const q of [lanes.taste, lanes.fidelity, lanes.fidelityCore, lanes.hero, lanes.locale, lanes.bridge, ...(lanes.component ?? [])].filter(Boolean)) {
         expect(words(q!).length, q).toBeLessThanOrEqual(MAX_FOCUSED_QUERY_WORDS);
       }
     }
@@ -223,7 +229,10 @@ describe("bend output", () => {
     expect(byId.get("bd-dwyo4stn")?.searchQuery).toBe("oversized film frames");
     for (const id of ["bd-8dti7s7c", "bd-8hfupzvw", "bd-mwz3t0yp", "bd-dwyo4stn"]) {
       const d = byId.get(id)!;
-      expect(d.searchQueries).toEqual(uiLaneWords(laneTexts("Flight checkout screen", d.searchQuery, DEFAULT_TASTE, id)));
+      // No taste given: the taste lane gets the direction's own style words, never DEFAULT_TASTE as the user's taste.
+      expect(d.searchQueries).toEqual(
+        uiLaneWords(laneTexts("Flight checkout screen", d.searchQuery, [], id, { platform: d.platform, styleWords: d.spec.styleWords })),
+      );
       expect(d.searchQueries).not.toContain(d.searchQuery);
     }
   });

@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { PLATFORMS } from "@/lib/direction-detail";
 import { LENS_IDS } from "./lists";
 import { MOVES, type BendInput, type Wildness } from "./types";
 
 export const MAX_BRIEF = 500;
 export const DEFAULT_COUNT = 6;
 export const MAX_COUNT = 8;
+export const MAX_PAGES = 3;
+export const MAX_PAGE_LENGTH = 60;
 
 /** Strict input schema. Also advertised to agents as the tool's JSON schema. */
 export const bendInputSchema = z.object({
@@ -36,6 +39,16 @@ export const bendInputSchema = z.object({
     .max(MAX_COUNT)
     .default(DEFAULT_COUNT)
     .describe("How many directions to return, 1 to 8. Default 6."),
+  platform: z
+    .enum(PLATFORMS)
+    .optional()
+    .describe("mobile, tablet, website, webapp or any. Leave out to detect it from the brief."),
+  pages: z
+    .array(z.string().trim().min(1).max(MAX_PAGE_LENGTH))
+    .min(1)
+    .max(MAX_PAGES)
+    .optional()
+    .describe('Up to 3 pages the wild idea is for, like "pricing page" or "onboarding". Leave out to get suggestions.'),
 });
 
 const MESSAGES: Record<string, string> = {
@@ -44,6 +57,8 @@ const MESSAGES: Record<string, string> = {
   moves: `moves can only include: ${MOVES.join(", ")}.`,
   lens: `lens must be one of: ${LENS_IDS.join(", ")}.`,
   count: `count must be a whole number from 1 to ${MAX_COUNT}.`,
+  platform: `platform must be one of: ${PLATFORMS.join(", ")}.`,
+  pages: `pages must be 1 to ${MAX_PAGES} page names, each up to ${MAX_PAGE_LENGTH} characters.`,
 };
 
 export type ParseResult =
@@ -60,7 +75,7 @@ export function parseBendInput(raw: unknown): ParseResult {
     const field = String(result.error.issues[0]?.path[0] ?? "");
     return { ok: false, message: MESSAGES[field] ?? "Send a brief and a wildness from 1 to 5." };
   }
-  const { brief, wildness, moves, lens, count } = result.data;
+  const { brief, wildness, moves, lens, count, platform, pages } = result.data;
   return {
     ok: true,
     input: {
@@ -69,6 +84,8 @@ export function parseBendInput(raw: unknown): ParseResult {
       count,
       ...(moves ? { moves: [...new Set(moves)] } : {}),
       ...(lens ? { lens } : {}),
+      ...(platform ? { platform } : {}),
+      ...(pages ? { pages } : {}),
     },
   };
 }

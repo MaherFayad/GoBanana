@@ -71,3 +71,23 @@ export function nudgeByCreator<T extends Pick<Reference, "title">>(refs: readonl
     .sort((a, b) => a.rank - b.rank || a.i - b.i)
     .map((x) => x.ref);
 }
+
+const STUDIO_DRIBBBLE = /\bby\s+.+?\s+for\s+(.+?)\s+on\s+dribbble\b/i;
+const STUDIO_BEHANCE = /\bby\s+.+?\s+for\s+(.+?)\s*(?:\s+on|::|\|)\s*behance\b/i;
+
+/**
+ * Creator and studio keys of a result title, for the studio cap (at most 2 results per creator
+ * or studio per search): "Finance App by Jane Doe for Orbix Studio on Dribbble" gives
+ * ["jane doe", "orbix studio"] (one namespace, so a studio counts the same whether a title names
+ * it as the creator or after "for"). No creator named, no keys.
+ */
+export function creatorKeys(title: string | null | undefined): string[] {
+  if (!title) return [];
+  const keys: string[] = [];
+  const creator = parseCreator(title);
+  if (creator) keys.push(creator);
+  const m = STUDIO_DRIBBBLE.exec(title) ?? STUDIO_BEHANCE.exec(title);
+  const studio = m?.[1] ? normalizeCreator(m[1]) : null;
+  if (studio && studio !== creator) keys.push(studio);
+  return keys;
+}

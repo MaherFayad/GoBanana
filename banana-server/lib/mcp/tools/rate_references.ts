@@ -34,6 +34,7 @@ export const TOOL_DESCRIPTION =
   "Rate search results so later searches get better. Free. " +
   'Pass referenceIds from search_references with verdict "bad" (off topic, shop or stock, cluttered, duplicate) or "great" (standouts only). ' +
   "Bad results leave the canvas tray and never come back in this user's searches. " +
+  "Rate art direction results the same way (shop or off idea is bad). " +
   "Each bad rating returns a hint for re-searching its lane.";
 
 export const MAX_RATINGS = 50;

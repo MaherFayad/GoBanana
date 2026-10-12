@@ -21,7 +21,10 @@
  *
  * Site operators and negatives are added by lib/sources/plan.ts; these are the plain words.
  */
+import type { Platform } from "@/lib/direction-detail";
+import { detectPlatform } from "@/lib/platform";
 import { bridgeHead, MAX_COMPONENT_LANES, type LaneTexts } from "@/lib/sources/plan";
+import { pickGalleries } from "@/lib/sources/registry";
 import { DEFAULT_TASTE } from "@/lib/taste";
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
 import { MOVE_DEFS } from "./moves";
@@ -174,12 +177,33 @@ export function isArabicBrief(brief: string): boolean {
   return /\p{Script=Arabic}/u.test(brief) || tokens(brief).some((t) => t.word === "arabic" || t.word === "rtl");
 }
 
-export type Surface = "app" | "web" | "dashboard";
+export type Surface = "app" | "tablet" | "web" | "dashboard";
 
 /** The surface words of the fidelity and locale lanes. */
-export const SURFACE_WORDS: Record<Surface, string> = { app: "app ui", web: "website ui", dashboard: "dashboard ui" };
+export const SURFACE_WORDS: Record<Surface, string> = { app: "app ui", tablet: "ipad app ui", web: "website ui", dashboard: "dashboard ui" };
 /** Component when the brief names none (rule 6 of the grammar). */
-const DEFAULT_COMPONENT: Record<Surface, string> = { app: "card", web: "hero section", dashboard: "dashboard" };
+const DEFAULT_COMPONENT: Record<Surface, string> = { app: "card", tablet: "card", web: "hero section", dashboard: "dashboard" };
+
+/** The surface a platform searches with; "any" (or none) keeps the surface the brief's words give. */
+const PLATFORM_SURFACE: Partial<Record<Platform, Surface>> = { mobile: "app", tablet: "tablet", website: "web", webapp: "dashboard" };
+
+/**
+ * Title words the UI lanes drop for a platform (live test 2026-10-12: an iPhone brief got
+ * "Finance web ui design", "Fintech Web App" and a SaaS dashboard). A word the brief itself uses
+ * is kept ("a mobile dashboard" keeps dashboards).
+ */
+const PLATFORM_AVOID: Partial<Record<Platform, readonly string[]>> = {
+  mobile: ["web", "website", "web app", "webapp", "dashboard", "landing", "landing page", "desktop", "saas", "admin"],
+  tablet: ["website", "landing", "landing page", "desktop"],
+  webapp: ["mobile", "ios", "android", "iphone", "smartphone", "mobile app"],
+  website: ["mobile", "mobile app", "ios", "android", "iphone", "smartphone"],
+};
+
+/** Platform title filter words for a brief (minus words the brief uses), or []. */
+export function avoidWords(brief: string, platform: Platform): string[] {
+  const text = ` ${tokens(brief).map((t) => t.word).join(" ")} `;
+  return (PLATFORM_AVOID[platform] ?? []).filter((w) => !text.includes(` ${w} `) && !text.includes(` ${w}s `));
+}
 
 type BriefParts = {
   ui: boolean;
@@ -209,7 +233,7 @@ function domainWord(t: Token): boolean {
   );
 }
 
-function briefParts(brief: string): BriefParts {
+function briefParts(brief: string, platform?: Platform): BriefParts {
   // Asides in brackets are detail ("(mobile, bilingual)"): they set the surface, never the domain.
   const main = brief.replace(/\([^)]*\)?|\[[^\]]*\]?/g, " ");
   const all = tokens(brief);
@@ -220,6 +244,7 @@ function briefParts(brief: string): BriefParts {
   if (has("dashboard", "dashboards", "admin")) surface = "dashboard";
   else if (has("mobile", "app", "apps", "ios", "android")) surface = "app";
   else if (has("website", "websites", "landing", "homepage", "web", "site", "portal", "page", "pages")) surface = "web";
+  if (platform && PLATFORM_SURFACE[platform]) surface = PLATFORM_SURFACE[platform]!;
 
   const named = COMPONENTS.find((c) => flatMain.includes(` ${c} `) || flatMain.includes(` ${c}s `));
   const component = named ?? DEFAULT_COMPONENT[surface];
@@ -331,8 +356,8 @@ function styleWords(style: string): string {
  * Fidelity lane: "{domain} {surface}" for UI briefs ("flight app ui"); "{subject} app ui" for a
  * brief that names no UI ("jazz festival app ui"), since search returns UI only.
  */
-export function fidelityQuery(brief: string): string {
-  const p = briefParts(brief);
+export function fidelityQuery(brief: string, platform?: Platform): string {
+  const p = briefParts(brief, platform);
   if (!p.ui) return capWords(`${extractSubject(p.main, 1).full} app ui`, MAX_LANE_WORDS + 1);
   return capWords(`${p.domain.join(" ")} ${SURFACE_WORDS[p.surface]}`);
 }
@@ -346,8 +371,8 @@ function coreNoun(domain: readonly string[]): string | undefined {
 }
 
 /** Fidelity with the domain cut to its core noun ("saudi fintech app ui" to "fintech app ui"), or null. */
-export function fidelityCoreQuery(brief: string): string | null {
-  const p = briefParts(brief);
+export function fidelityCoreQuery(brief: string, platform?: Platform): string | null {
+  const p = briefParts(brief, platform);
   if (!p.ui || p.domain.length < 2) return null;
   return capWords(`${coreNoun(p.domain)} ${SURFACE_WORDS[p.surface]}`);
 }
@@ -372,8 +397,8 @@ function tasteUiQuery(p: BriefParts, style: string, domain: readonly string[], t
  * 20 of 21 on topic against 1 of 24 for "{style} {component} ui", and 19 of 21 still new against
  * the fidelity lane).
  */
-export function tasteQuery(brief: string, style: string): string {
-  const p = briefParts(brief);
+export function tasteQuery(brief: string, style: string, platform?: Platform): string {
+  const p = briefParts(brief, platform);
   if (!p.ui) return capWords(`${styleWords(style)} ${extractSubject(p.main, 2).title} ui design`);
   return tasteUiQuery(p, style, p.domain);
 }
@@ -383,8 +408,8 @@ export function tasteQuery(brief: string, style: string): string {
  * `app` = "{style} {domain} app {component} ui" (app briefs only), `core` = the default template
  * with the domain cut to its core noun (compound domains only). Absent when they would not differ.
  */
-export function tasteVariants(brief: string, style: string): { app?: string; core?: string } {
-  const p = briefParts(brief);
+export function tasteVariants(brief: string, style: string, platform?: Platform): { app?: string; core?: string } {
+  const p = briefParts(brief, platform);
   if (!p.ui) return {};
   const base = tasteUiQuery(p, style, p.domain);
   const out: { app?: string; core?: string } = {};
@@ -400,8 +425,8 @@ export function tasteVariants(brief: string, style: string): { app?: string; cor
 }
 
 /** Hero lane (app surface only): "{style} {coreDomain} app single screen", or null. */
-export function heroQuery(brief: string, style: string): string | null {
-  const p = briefParts(brief);
+export function heroQuery(brief: string, style: string, platform?: Platform): string | null {
+  const p = briefParts(brief, platform);
   if (!p.ui || p.surface !== "app" || p.domain.length === 0) return null;
   return capWords(`${styleWords(style)} ${coreNoun(p.domain)} app single screen`);
 }
@@ -421,13 +446,13 @@ export function bridgeQuery(brief: string, ingredient: string): string | null {
  * differ from taste when the brief names more. A component that only repeats the surface
  * (dashboard, card, widget, landing page) gets no lane. Empty for briefs that name no UI.
  */
-export function componentQueries(brief: string): string[] {
-  const p = briefParts(brief);
+export function componentQueries(brief: string, platform?: Platform): string[] {
+  const p = briefParts(brief, platform);
   if (!p.ui) return [];
   const core = coreNoun(p.domain) ?? "";
   const named = p.components.filter((c) => !SURFACE_COMPONENTS.has(c));
   const ordered = [...named.filter((c) => c !== p.component), ...named.filter((c) => c === p.component)];
-  const fidelity = fidelityQuery(brief);
+  const fidelity = fidelityQuery(brief, platform);
   const out: string[] = [];
   for (const c of ordered) {
     const q = capWords(`${core} ${c} ui`);
@@ -447,9 +472,9 @@ export function componentAppText(text: string): string {
  * to left, or null. Without a subject there is no lane: a bare "arabic app ui" returns mostly Quran,
  * prayer and calligraphy apps (live audit, 2026-10-11), so the Pinterest fidelity page runs instead.
  */
-export function localeQuery(brief: string): string | null {
-  const p = briefParts(brief);
-  const core = localeWord(brief);
+export function localeQuery(brief: string, platform?: Platform): string | null {
+  const p = briefParts(brief, platform);
+  const core = localeWord(brief, platform);
   return p.ui && p.arabic && core ? capWords(`arabic ${core} ${SURFACE_WORDS[p.surface]}`) : null;
 }
 
@@ -457,8 +482,8 @@ export function localeQuery(brief: string): string | null {
 const LOCALE_NOT_SUBJECT = /^(arabic|arab|rtl|bilingual|english|gcc|gulf|saudi|ksa|uae|emirati|qatari|kuwaiti|omani|bahraini|khaleeji)$/i;
 
 /** The subject the locale lane's titles must name ("flight"), or undefined. */
-export function localeWord(brief: string): string | undefined {
-  const core = coreNoun(briefParts(brief).domain);
+export function localeWord(brief: string, platform?: Platform): string | undefined {
+  const core = coreNoun(briefParts(brief, platform).domain);
   return core && !LOCALE_NOT_SUBJECT.test(core) ? core : undefined;
 }
 
@@ -468,39 +493,82 @@ export function pickStyle(taste: readonly string[], key: string, offset = 0): st
   return list[(cyrb53(`taste|${key}`) + offset) % list.length]!;
 }
 
-/** Taste lane variants for a direction (same style pick as laneTexts). */
+/** The style list a direction searches with: the user's taste, else the direction's style words. Never DEFAULT_TASTE. */
+export function directionStyles(taste: readonly string[], styleWords?: readonly string[]): string[] {
+  return [...(taste.length > 0 ? taste : styleWords ?? [])].map((w) => w.trim()).filter(Boolean);
+}
+
+/** One style from a list, picked by a stable key, or "" when the list is empty. */
+function pickFrom(list: readonly string[], key: string, offset = 0): string {
+  return list.length > 0 ? list[(cyrb53(`taste|${key}`) + offset) % list.length]! : "";
+}
+
+export type LaneOptions = {
+  /** Where the design lives; else detectPlatform(brief). "any" keeps the brief's own surface words. */
+  platform?: Platform;
+  /** The direction's verified style words (spec.styleWords): the taste lane uses them when the user gave no taste. */
+  styleWords?: readonly string[];
+};
+
+/** Taste lane variants for a direction (same style pick as laneTexts; no taste lane, none). */
 export function directionTasteVariants(
   brief: string | null | undefined,
   taste: readonly string[],
   key: string,
+  opts: LaneOptions = {},
 ): { app?: string; core?: string } {
   const b = brief?.trim();
-  return b ? tasteVariants(b, pickStyle(taste, key)) : {};
+  const style = pickFrom(directionStyles(taste, opts.styleWords), key);
+  if (!b || !style) return {};
+  return tasteVariants(b, style, opts.platform ?? detectPlatform(b));
 }
 
 /**
  * Every lane's words for one direction. `key` (the direction id) picks the styles: taste gets
- * one, hero the next, so a direction shows two looks from the list. Without a brief there are no
- * UI lanes, only the idea (search_references then searches the idea in UI forms).
+ * one, hero the next, so a direction shows two looks from the list. The style list is the user's
+ * taste, else `opts.styleWords` (the direction's spec); with neither there is no taste lane and
+ * its places go to the other lanes (never the owner's DEFAULT_TASTE). The platform (`opts`, else
+ * detectPlatform) words the UI lanes ("ipad app ui", "dashboard ui"), sets the title words they
+ * drop, and with the style words picks the curated galleries (lib/sources/registry.ts). Without a
+ * brief there are no UI lanes, only the idea (search_references then searches it in UI forms).
  */
-export function laneTexts(brief: string | null | undefined, idea: string, taste: readonly string[], key: string): LaneTexts {
+export function laneTexts(
+  brief: string | null | undefined,
+  idea: string,
+  taste: readonly string[],
+  key: string,
+  opts: LaneOptions = {},
+): LaneTexts {
   const lanes: LaneTexts = { idea };
   const b = brief?.trim();
   if (!b) return lanes;
-  lanes.taste = tasteQuery(b, pickStyle(taste, key));
-  lanes.fidelity = fidelityQuery(b);
-  const core = fidelityCoreQuery(b);
+  const platform = opts.platform ?? detectPlatform(b);
+  const styles = directionStyles(taste, opts.styleWords);
+  const style = pickFrom(styles, key);
+  if (style) lanes.taste = tasteQuery(b, style, platform);
+  lanes.fidelity = fidelityQuery(b, platform);
+  const core = fidelityCoreQuery(b, platform);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
-  const components = componentQueries(b);
+  const components = componentQueries(b, platform);
   if (components.length > 0) lanes.component = components;
   const bridge = bridgeQuery(b, idea);
   if (bridge) lanes.bridge = bridge;
-  const hero = heroQuery(b, pickStyle(taste, key, 1));
+  const hero = heroQuery(b, pickFrom(styles, key, 1), platform);
   if (hero) lanes.hero = hero;
-  const locale = localeQuery(b);
+  const locale = localeQuery(b, platform);
   if (locale) {
     lanes.locale = locale;
-    lanes.localeWord = localeWord(b);
+    lanes.localeWord = localeWord(b, platform);
   }
+  lanes.platform = platform;
+  const avoid = avoidWords(b, platform);
+  if (avoid.length > 0) lanes.avoid = avoid;
+  const p = briefParts(b, platform);
+  // Galleries index short topics: the core domain noun ("personal finance" searches "finance").
+  const topic = isUiBrief(b) ? coreNoun(p.domain) ?? "" : extractSubject(p.main, 1).title;
+  if (topic) lanes.topic = topic;
+  const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? [])], brief: b, key, artText: [idea] });
+  if (picked.ui.length > 0) lanes.galleries = picked.ui;
+  if (picked.art.length > 0) lanes.artGalleries = picked.art;
   return lanes;
 }

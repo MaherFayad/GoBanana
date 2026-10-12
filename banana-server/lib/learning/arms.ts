@@ -4,14 +4,18 @@
  * (lib/learning/terms.ts) and arm; planning picks an arm by Thompson sampling with a seeded RNG
  * (cyrb53 + mulberry32, the same as lib/bend).
  *
- * Arms (every lane is a UI lane; the inspiration lane and its arms were removed, and old ratings
- * of it are ignored: its term keys are never asked for):
+ * Arms (UI lanes and the art lane; the old inspiration lane's ratings are ignored: its term keys
+ * are never asked for, and art term keys start with "art|"):
  *   fidelity     default (with the core noun fallback), core (core noun up front)
  *   taste        default "{style} {domain} {component} ui design",
  *                app "{style} {domain} app {component} ui" (app briefs), core (core domain noun)
  *   component    default "{core} {component} ui", app "{core} {component} app ui"
  *   bridge       default "{ingredient} ui design", app "{ingredient} app ui"
  *   hero, locale default
+ *   gallery      default (the topic on the picked curated galleries)
+ *   art          default (the raw ingredient), poster "{ingredient} poster", graphic
+ *                "{ingredient} graphic design" (the old inspiration arms, renamed: round 7 found
+ *                "poster" and "graphic design" add art direction on popular topics)
  *   any lane     agent:{words}, recorded when an agent re-searches one lane with its own words
  *
  * Rules:
@@ -23,7 +27,7 @@
 import { cyrb53, mulberry32, type Rng } from "../bend/prng";
 import { componentAppText } from "../bend/queries";
 import { bridgeHead, planRequests, type LaneTexts, type PlannedRequest } from "../sources/plan";
-import type { LaneName, SourceSite } from "../sources/types";
+import type { LaneName, SourceSite, ZoneInput } from "../sources/types";
 import { MAX_KEY_LENGTH, queryWords } from "./terms";
 
 /** Distinct users who must rate a term and arm before it influences anyone else. */
@@ -51,6 +55,8 @@ export function builtInArms(lane: LaneName, lanes: LaneTexts, variants: ArmVaria
       return lanes.component?.length ? [UI_DEFAULT, "app"] : [UI_DEFAULT];
     case "bridge":
       return lanes.bridge ? [UI_DEFAULT, "app"] : [UI_DEFAULT];
+    case "art":
+      return lanes.art?.length ? [UI_DEFAULT, "poster", "graphic"] : [UI_DEFAULT];
     default:
       return [UI_DEFAULT];
   }
@@ -79,6 +85,7 @@ export function planWithArms(
   arms: Partial<Record<LaneName, string>>,
   sources?: readonly SourceSite[],
   variants: ArmVariants = {},
+  zone?: ZoneInput,
 ): PlannedRequest[] {
   const out: LaneTexts = { ...lanes };
   const agentWords = (lane: LaneName) => {
@@ -116,20 +123,45 @@ export function planWithArms(
     const agent = agentWords(lane);
     if (agent && lanes[lane]) out[lane] = agent;
   }
+  if (lanes.galleries?.length) {
+    const agent = agentWords("gallery");
+    if (agent) out.topic = agent;
+  }
+  if (lanes.art?.length) {
+    const agent = agentWords("art");
+    if (agent) out.art = [agent];
+    else if (arms.art === "poster") out.art = lanes.art.map((q) => `${q} poster`);
+    else if (arms.art === "graphic") out.art = lanes.art.map((q) => `${q} graphic design`);
+  }
 
   // The bridge filter keeps the direction's own idea, whatever words the bridge arm used.
-  return planRequests(out, sources, { bridgeWord: bridgeHead(lanes.idea) });
+  return planRequests(out, sources, { bridgeWord: bridgeHead(lanes.idea), ...(zone ? { zone } : {}) });
 }
 
 /**
  * The requests one lane would send with `text` as its words (a lane-only re-search). A bridge
  * re-search keeps the title filter of the direction's `ingredient` (no ingredient, no request).
+ * `base` gives the direction's platform filter, galleries and art galleries, so a re-search of the
+ * gallery or art lane searches the same sites.
  */
-export function planLane(lane: LaneName, text: string, sources?: readonly SourceSite[], ingredient?: string): PlannedRequest[] {
-  const lanes: LaneTexts = { idea: ingredient ?? "" };
+export function planLane(
+  lane: LaneName,
+  text: string,
+  sources?: readonly SourceSite[],
+  ingredient?: string,
+  base: LaneTexts = { idea: "" },
+): PlannedRequest[] {
+  const lanes: LaneTexts = { idea: ingredient ?? "", ...(base.avoid ? { avoid: base.avoid } : {}), ...(base.platform ? { platform: base.platform } : {}) };
   if (lane === "component") lanes.component = [text];
-  else lanes[lane] = text;
-  return planRequests(lanes, sources, { bridgeWord: bridgeHead(ingredient) }).filter((r) => r.lane === lane);
+  else if (lane === "art") {
+    lanes.art = [text];
+    if (base.artGalleries) lanes.artGalleries = base.artGalleries;
+  } else if (lane === "gallery") {
+    lanes.topic = text;
+    lanes.galleries = base.galleries?.length ? base.galleries : [];
+  } else lanes[lane] = text;
+  const plan = planRequests(lanes, sources, { bridgeWord: bridgeHead(ingredient), zone: lane === "art" ? "art" : "ui" }).filter((r) => r.lane === lane);
+  return plan;
 }
 
 /** Grouped rating counts: `great`, `bad` and `users` count each user once; `own*` are this user's raw counts. */

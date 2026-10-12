@@ -1,3 +1,7 @@
+import type { Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
+
+export type { Platform, VisualSpec } from "@/lib/direction-detail";
+
 /** The six bend moves (spec section 7). */
 export const MOVES = ["transplant", "material", "era", "constraint", "scale", "lens"] as const;
 export type MoveId = (typeof MOVES)[number];
@@ -14,8 +18,39 @@ export interface BendInput {
   lens?: string;
   /** Number of directions, 1 to 8. Defaults to 6. */
   count?: number;
-  /** Style words for the taste lane (lib/taste.ts). Defaults to DEFAULT_TASTE. Never changes ids. */
+  /**
+   * The user's own style words for the taste lane (lib/taste.ts). Never changes ids. Without them
+   * the taste lane uses each direction's spec.styleWords (never the owner's DEFAULT_TASTE).
+   */
   taste?: readonly string[];
+  /** Where the design lives. Leave out to detect it from the brief (lib/platform.ts). */
+  platform?: Platform;
+  /** Up to 3 pages or screens the wild idea is for ("pricing page"). Never changes ids. */
+  pages?: string[];
+}
+
+/** Tones a list entry can carry; subjects map to compatible tones (lib/bend/tone.ts). */
+export const TONES = ["calm", "energetic", "serious", "playful", "luxe", "dark", "light", "warm", "cold"] as const;
+export type Tone = (typeof TONES)[number];
+
+/** Visual hints on a list entry; the visual spec is built from them (lib/bend/spec.ts). */
+export interface EntryHints {
+  tone: readonly Tone[];
+  /** How odd the entry is: 1 design-literate, 2 surprising, 3 absurd. Gated by wildness. */
+  weird: 1 | 2 | 3;
+  /** Platforms the entry is never used on. */
+  notOn: readonly Platform[];
+  voice?: TypeVoice;
+  color?: string;
+  tex?: string;
+  motion?: string;
+  img?: string;
+  icons?: string;
+  layout?: string;
+  density?: string;
+  pattern?: string;
+  /** Verified search style words (lib/taste.ts). */
+  style: readonly string[];
 }
 
 /** A word list entry: the label reads well in titles, the query is short and image-searchable. */
@@ -29,6 +64,7 @@ export interface ListEntry {
   key: string;
   /** Reads well right before the subject ("Art Deco 1925 checkout"). False for entries like "1990s rave flyers". */
   leads: boolean;
+  hints: EntryHints;
 }
 
 /** The list entries one direction is built from, keyed by the slot each move fills. */
@@ -72,6 +108,20 @@ export interface Direction {
   /** The full combined idea (every move and the twist) for the agent to riff on. */
   prompt: string;
   ingredients: Ingredients;
+  /** Where the design lives (detected from the brief unless given). */
+  platform: Platform;
+  /** The pages the wild idea is for; empty means the brief's own screen. */
+  pages: string[];
+  /** The full visual spec: type, color, layout, imagery, motion and more, for the platform. */
+  spec: VisualSpec;
+  /** 1 to 3 raw image queries of the ingredients for the art zone, no UI words. */
+  artQueries: string[];
+}
+
+/** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */
+export interface WildSpot {
+  page: string;
+  why: string;
 }
 
 export interface LensPreset {
@@ -88,5 +138,9 @@ export interface BendResult {
   wildness: Wildness;
   wildnessLabel: string;
   lens: { id: string; name: { en: string; ar: string } } | null;
+  platform: Platform;
+  pages: string[];
+  /** Top places for one wild page on this platform. Empty when pages were given. */
+  wildSpots: WildSpot[];
   directions: Direction[];
 }

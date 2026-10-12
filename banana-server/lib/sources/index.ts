@@ -6,5 +6,6 @@ export * from "./web-search";
 export * from "./item-page";
 export * from "./quality";
 export * from "./plan";
+export * from "./registry";
 export { pinterestOwnAdapter } from "./pinterest-own";
 export { arenaAdapter } from "./arena";

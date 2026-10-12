@@ -1,3 +1,4 @@
+import { SOURCE_REGISTRY } from "./registry";
 import { DEFAULT_SOURCES, SOURCE_SITES, type SourceSite } from "./types";
 
 /**
@@ -16,12 +17,7 @@ export function normalizeSources(sources?: readonly string[] | null): SourceSite
  * against 28/60 for `(site:dribbble.com OR site:pinterest.com)`. So every source gets its own
  * query, and the OR form is never used.
  */
-export const SOURCE_SCOPES: Record<SourceSite, string> = {
-  pinterest: "pinterest.com/pin",
-  dribbble: "dribbble.com/shots",
-  behance: "behance.net/gallery",
-  awwwards: "awwwards.com/sites",
-};
+export const SOURCE_SCOPES = Object.fromEntries(SOURCE_REGISTRY.map((s) => [s.id, s.scope])) as Record<SourceSite, string>;
 
 /**
  * Remove any `site:` operators, OR and brackets the caller typed, so a query can never widen

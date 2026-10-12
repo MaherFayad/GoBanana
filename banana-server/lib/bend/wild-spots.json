@@ -1,0 +1,51 @@
+{
+  "mobile": [
+    { "page": "onboarding", "why": "Seen once, sets the tone, and nobody has learned the layout yet." },
+    { "page": "empty state", "why": "Nothing to read yet, so the screen has room for a strong idea." },
+    { "page": "achievement or streak moment", "why": "A reward should feel special, not like every other screen." },
+    { "page": "paywall", "why": "A memorable paywall sells the feeling, not just the feature list." },
+    { "page": "splash screen", "why": "A second of brand with no task to get in the way." },
+    { "page": "year in review", "why": "Made to be shared, so it should look like nothing else." },
+    { "page": "error or offline state", "why": "A surprising error turns a bad moment into a smile." },
+    { "page": "settings easter egg", "why": "A hidden corner rewards the curious without risking the main flow." },
+    { "page": "success screen", "why": "The task is done, so delight costs nothing." }
+  ],
+  "tablet": [
+    { "page": "onboarding", "why": "Seen once, and the big canvas gives the idea room." },
+    { "page": "empty state", "why": "A large blank area is the best place for one bold image." },
+    { "page": "reading or focus mode", "why": "Long sessions reward a distinct, calm world." },
+    { "page": "achievement moment", "why": "A reward should feel special on the big screen." },
+    { "page": "paywall", "why": "A memorable paywall sells the feeling, not just the features." },
+    { "page": "splash screen", "why": "A moment of brand with no task in the way." },
+    { "page": "year in review", "why": "Made to be shared, so it should look like nothing else." }
+  ],
+  "website": [
+    { "page": "launch page", "why": "It has one job, to be remembered, and it lives for weeks." },
+    { "page": "campaign page", "why": "Short lived, so it can break the house style safely." },
+    { "page": "404 page", "why": "Nobody expects it, so a bold idea lands for free." },
+    { "page": "about or manifesto page", "why": "Story pages are where personality is welcome." },
+    { "page": "pricing page", "why": "Everyone's pricing looks the same; standing out builds trust." },
+    { "page": "footer", "why": "People who scroll that far are curious, so reward them." },
+    { "page": "careers page", "why": "Culture shows best in how a page looks, not what it says." },
+    { "page": "changelog", "why": "Fans read it, and a fresh look makes updates feel bigger." },
+    { "page": "event or conference page", "why": "Built to create buzz for one moment." }
+  ],
+  "webapp": [
+    { "page": "empty states", "why": "Blank tables are dead space; an idea there teaches and delights." },
+    { "page": "first run", "why": "The first five minutes set how people feel about the tool." },
+    { "page": "404 page", "why": "Nobody expects it, so a bold idea lands for free." },
+    { "page": "changelog", "why": "Fans read it, and a fresh look makes updates feel bigger." },
+    { "page": "upgrade modal", "why": "A memorable upgrade moment sells better than a plain list." },
+    { "page": "loading states", "why": "Waiting is boring; a small idea makes it feel shorter." },
+    { "page": "milestone celebration", "why": "Work tools rarely celebrate, so it stands out." },
+    { "page": "login page", "why": "Seen every day, with no data to protect from decoration." }
+  ],
+  "any": [
+    { "page": "first run or onboarding", "why": "Seen once, sets the tone, and nobody knows the layout yet." },
+    { "page": "empty state", "why": "Nothing to read yet, so there is room for a strong idea." },
+    { "page": "404 or error page", "why": "Nobody expects it, so a bold idea lands for free." },
+    { "page": "launch or campaign page", "why": "Short lived, so it can break the house style safely." },
+    { "page": "success or reward moment", "why": "The task is done, so delight costs nothing." },
+    { "page": "paywall or pricing", "why": "Standing out where everyone looks the same builds trust." }
+  ]
+}

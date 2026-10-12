@@ -47,6 +47,8 @@ describe("bend_brief tool", () => {
     expect(BEND_BRIEF_DESCRIPTION).toContain("search_references");
     expect(BEND_BRIEF_DESCRIPTION).not.toMatch(/[\u2014\u2013]/);
     expect(BEND_BRIEF_DESCRIPTION.length).toBeLessThan(450);
+    expect(BEND_BRIEF_DESCRIPTION).toContain("one wild page or two");
+    expect(BEND_BRIEF_DESCRIPTION).toContain("wildSpots");
   });
 
   it("advertises the full input schema but leaves validation to the handler", () => {
@@ -56,7 +58,7 @@ describe("bend_brief tool", () => {
       properties: Record<string, Record<string, unknown>>;
       required: string[];
     };
-    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "lens", "moves", "taste", "wildness"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "lens", "moves", "pages", "platform", "taste", "wildness"]);
     expect(json.required.sort()).toEqual(["brief", "wildness"]);
     expect(json.properties.wildness?.maximum).toBe(5);
     expect(json.properties.count?.maximum).toBe(8);

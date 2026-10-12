@@ -32,6 +32,13 @@ export function badHint(lane: LaneName | null, reasons: readonly FeedbackReason[
   if (lane === "component") {
     return `Try ${RETRY(lane)}: name the product and one part of the screen, for example "banking quick actions ui".`;
   }
+  if (lane === "art") {
+    if (has("stock_or_shop")) return `Try ${RETRY(lane)}: name the thing itself, not a product, for example "korean bojagi patchwork". Shop listings are left out.`;
+    return `Try ${RETRY(lane)}: raw words for the idea, no UI words, for example "persian carpet pattern" or "synthwave poster".`;
+  }
+  if (lane === "gallery") {
+    return `Try ${RETRY(lane)}: one or two topic words, for example "fintech" or "analytics". Galleries match topics, not "app ui".`;
+  }
   if (lane === "bridge") {
     return `Try ${RETRY(lane)}: keep the idea's main word and name a screen, for example "vending machine checkout ui". Titles without the idea's main word are left out.`;
   }

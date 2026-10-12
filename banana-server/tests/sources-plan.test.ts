@@ -511,7 +511,9 @@ describe("plain query path", () => {
   it("retries with numbers and years stripped and the last 2 words", () => {
     expect(plainRetryQuery("teletext 1980s")).toBe(`teletext ui design ${UI_NEG}`);
     expect(plainRetryQuery("city pop 1985")).toBe(`city pop ui design ${UI_NEG}`);
-    expect(plainRetryQuery("a big 70's retro diner menu")).toBe(`diner menu ui design ${UI_NEG}`);
+    // Style words survive the cut (live test 2026-10-12: "brutalist landing page AI startup" lost "brutalist").
+    expect(plainRetryQuery("a big 70's retro diner menu")).toBe(`retro diner menu ui design ${UI_NEG}`);
+    expect(plainRetryQuery("brutalist landing page AI startup")).toBe(`brutalist ai startup ui design ${UI_NEG}`);
     expect(plainRetryQuery("make it cool")).toBeNull();
     expect(plainRetryQuery("1985")).toBeNull();
     // Already sent in that form: no retry.

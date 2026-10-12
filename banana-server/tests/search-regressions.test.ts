@@ -23,14 +23,20 @@ describe("domain comes from the opening clause", () => {
 });
 
 describe("wild ideas never become raw searches", () => {
-  it("every request of a direction is a UI form; the idea only reaches the title-filtered bridge lane", () => {
+  it("every UI request is a UI form; the raw idea goes only to the art zone, never mixed into UI lanes", () => {
     for (const idea of ["Uzbek suzani", "gas station sign", "teletext 1980s", "airline logo"]) {
-      const plan = planRequests(laneTexts(BANKING, idea, [], "k"));
-      expect(plan.length).toBeGreaterThan(0);
-      for (const r of plan) expect(hasUiWord(r.query), r.query).toBe(true);
-      expect(plan.some((r) => r.site === "behance")).toBe(false);
-      const withIdea = plan.filter((r) => r.query.toLowerCase().includes(idea.split(" ")[0]!.toLowerCase()));
+      const lanes = laneTexts(BANKING, idea, [], "k");
+      const ui = planRequests(lanes);
+      expect(ui.length).toBeGreaterThan(0);
+      for (const r of ui.filter((r) => r.lane !== "gallery")) expect(hasUiWord(r.query), r.query).toBe(true);
+      expect(ui.some((r) => r.site === "behance")).toBe(false);
+      const withIdea = ui.filter((r) => r.query.toLowerCase().includes(idea.split(" ")[0]!.toLowerCase()));
       expect(withIdea.every((r) => r.lane === "bridge" && r.titleWord)).toBe(true);
+      // With art queries, the idea is searched raw in its own zone (owner, 2026-10-12).
+      const both = planRequests({ ...lanes, art: [idea] });
+      const art = both.filter((r) => r.lane === "art");
+      expect(art.map((r) => r.site)).toEqual(["pinterest", "behance"]);
+      expect(both.filter((r) => r.lane !== "art").every((r) => !r.query.toLowerCase().startsWith(idea.toLowerCase()) || r.lane === "bridge")).toBe(true);
     }
   });
 });

@@ -5,6 +5,7 @@
  * The bar: polished, high-resolution design work (curated Dribbble shots, good pins), never
  * clip art, stock previews, product listings or tiny thumbnails.
  */
+import { SOURCE_REGISTRY, registryItemPath } from "./registry";
 import type { Reference } from "./types";
 
 /**
@@ -162,9 +163,11 @@ function siteScore(ref: Reference): number {
  * Higher is better. Larger images, curated sites and design-work titles score up; listings down;
  * a small nudge toward uncluttered work. Metadata only: the server never looks at the pixels.
  */
-export function qualityScore(ref: Reference): number {
+export function qualityScore(ref: Reference, opts: RankOptions = {}): number {
   const title = ref.title ?? "";
-  let score = sizeScore(ref) + siteScore(ref);
+  let score = sizeScore(ref) + siteScore(ref) + recencyScore(ref, opts.year);
+  // Art zone: a title that names the idea is more likely on idea; untitled pins rank last.
+  if (opts.ideaWord) score += titleHasAny(title, [opts.ideaWord, `${opts.ideaWord}s`]) ? 2 : title ? 0 : -1;
   if (DESIGN_WORDS.test(title)) score += 2;
   if (LISTING_WORDS.test(title)) score -= 2;
   if (UNCLUTTERED_WORDS.test(title)) score += 1;
@@ -172,10 +175,17 @@ export function qualityScore(ref: Reference): number {
   return score;
 }
 
+export type RankOptions = {
+  /** Art zone: the idea's head word; titles naming it score up. */
+  ideaWord?: string;
+  /** Current year for the recency score (tests pin it). */
+  year?: number;
+};
+
 /** Best first. Ties keep the search engine's order, so the result is deterministic. */
-export function rankReferences(refs: readonly Reference[]): Reference[] {
+export function rankReferences(refs: readonly Reference[], opts: RankOptions = {}): Reference[] {
   return refs
-    .map((ref, i) => ({ ref, i, score: qualityScore(ref) }))
+    .map((ref, i) => ({ ref, i, score: qualityScore(ref, opts) }))
     .sort((a, b) => b.score - a.score || a.i - b.i)
     .map((x) => x.ref);
 }
@@ -203,12 +213,23 @@ export function hasUiWord(text: string | undefined): boolean {
   return Boolean(text) && UI_TITLE_WORDS.test(text!);
 }
 
-/** An Awwwards site page is a website by definition; its title is the site's name. */
-function isAwwwardsSite(url: string | undefined): boolean {
+/**
+ * An item page on a curated UI gallery (Awwwards, Lapa Ninja, Refero, ... in lib/sources/registry.ts)
+ * is design work by definition: its title is usually the site or product name.
+ */
+export function isUiGalleryItem(url: string | undefined): boolean {
   if (!url) return false;
   try {
     const u = new URL(url);
-    return /(^|\.)awwwards\.com$/i.test(u.hostname) && /^\/sites\//i.test(u.pathname);
+    const host = u.hostname.toLowerCase();
+    return SOURCE_REGISTRY.some(
+      (s) =>
+        s.role === "gallery" &&
+        s.zone === "ui" &&
+        !("uiTitle" in s && s.uiTitle) &&
+        (host === s.domain || host.endsWith(`.${s.domain}`)) &&
+        registryItemPath(s.id, host, u.pathname),
+    );
   } catch {
     return false;
   }
@@ -218,13 +239,149 @@ function isAwwwardsSite(url: string | undefined): boolean {
  * The UI gate, applied to every search result (metadata only, the server never looks at pixels).
  * Keep a result when its title has a UI word, unless it also names other design work (logo,
  * branding, poster, illustration, packaging, ...) without saying app, ui, dashboard or website.
- * Untitled results are dropped (Pinterest often has no title). An Awwwards site page with a title
- * passes: it is a website.
+ * Untitled results are dropped (Pinterest often has no title). A titled item page on a curated UI
+ * gallery passes: it is a website or product screen.
  */
 export function isUiResult(title: string | undefined, url?: string): boolean {
-  const t = (title ?? "").replace(/\s+/g, " ").trim();
+  // Site suffixes are not title words: "Finance Graphics Visual Assets | Figma" names no UI.
+  const t = (title ?? "").replace(/\s+/g, " ").replace(/\s*[|:-]+\s*figma\s*$/i, "").trim();
   if (!t) return false;
-  if (isAwwwardsSite(url)) return true;
+  // A gallery item is a site or screen by definition, unless its title names other work only.
+  if (isUiGalleryItem(url)) return !(NON_UI_TITLE_WORDS.test(t) && !STRONG_UI_TITLE_WORDS.test(t));
   if (!UI_TITLE_WORDS.test(t)) return false;
   return !(NON_UI_TITLE_WORDS.test(t) && !STRONG_UI_TITLE_WORDS.test(t));
+}
+
+// ---------------------------------------------------------------------------
+// Kits and templates (owner, 2026-10-12): sales sheets, never one designed screen. A 2018
+// "Fashion Editorial UI Kit for Adobe XD" passed the old filter, which only ranked "template" down.
+
+const KIT_TITLE = wordsRe(
+  "(?:ui|ux|app|web|website|mobile|dashboard|design|figma|sketch|xd|wireframe|starter|icon|component)s? kits?|templates?|for adobe xd|adobe xd|for figma|for sketch|freebie|free download|psd",
+);
+
+/** True when the title sells a kit or template ("UI Kit", "Template", "for Adobe XD", "Figma kit", "Freebie"). */
+export function isKitTitle(title: string | undefined): boolean {
+  return Boolean(title) && KIT_TITLE.test(title!);
+}
+
+// ---------------------------------------------------------------------------
+// Art zone junk gate. The art lane has no UI gate (it is the raw ingredient as images), so it
+// gets its own filter for what made the round 11 board 60% junk: seed packets, jackets, a car air
+// freshener. Metadata only, like every other filter.
+
+/** Shop and listing signals: always junk, whatever the idea. */
+const SHOP_WORDS = wordsRe(
+  "price|prices|buy|buying|shop|shopping|store|sale|for sale|on sale|sold|etsy|amazon|aliexpress|alibaba|ebay|walmart|temu|shein|free shipping|in stock|add to cart|discount|coupon|wholesale|sku|order now|dropship",
+);
+/** "$12.99", "12,50 €", "£40", "US $5". */
+const PRICE = /(?:[$€£¥₹]\s?\d|\d\s?(?:[$€£¥₹]|usd|eur|gbp|aed|sar)(?![\p{L}]))/iu;
+/** Listing sizes and calls to visit a shop: "12 x 12", "8x10 in", "Visit NewRetro.Net". */
+/** Stock style tag lists as titles: "80s,abstract,art,backdrop,background,banner,...". */
+const TAG_SPAM = /^(?:[^,]{1,24},){6,}/;
+const LISTING_SHAPES = /\b\d+(?:\.\d+)?\s?(?:x|×)\s?\d+(?:\.\d+)?\b|\bvisit\s+\S+\.(?:com|net|co|shop|store|org)\b|\bsample packs?\b|\b\d+(?:\.\d+)?\s?-?\s?(?:inch|inches|in\.|cm|mm|ft\.?|feet|yards?|oz|ml)(?![a-z])|\brolls?\s*\(|\b(?:foot|feet|yard|yards|meter|metres?)\s+(?:roll|collection)\b/i;
+/** Product codes such as "SKU 12345", "AB-12345", "#A1234". */
+const SKU_LIKE = /\b(?:[A-Z]{1,4}-\d{4,}|#[A-Z]?\d{5,}|item\s*(?:no\.?|#)\s*\d+)\b/;
+/** Fashion and clothing listings (suzani jackets, kimono dresses). */
+const FASHION_WORDS = wordsRe(
+  "jacket|jackets|coat|coats|dress|dresses|shirt|shirts|t-?shirt|tee|tees|hoodie|hoodies|sweater|sweatshirt|cardigan|blouse|skirt|skirts|pants|trousers|jeans|shorts|kimono|robe|vest|outfit|outfits|clothing|apparel|menswear|womenswear|women'?s|men'?s|fashion|sneakers|shoes|boots|sandals|handbag|handbags|purse|tote|backpack|earrings|necklace|bracelet|jewelry|jewellery|scarf|scarves|hat|cap|socks|leggings|swimsuit|bikini|lingerie|costume",
+);
+/** Product listings that are not the idea itself (exempt when the art query names them). */
+const PRODUCT_WORDS = wordsRe(
+  "air freshener|seed packets?|seeds|sticker|stickers|mug|mugs|phone case|iphone case|pillow|pillows|cushion|cushions|pillowcase|blanket|mousepad|keychain|magnet|candle|candles|wallpaper|wall decal|decal|decor|home decor|gift|gifts|gift card|business cards?|wedding invitations?|invitations?|bundle|pack of|set of \\d+|toy|toys|plush|kit|kits|craft kit|diy kit|pattern pdf|sewing pattern|crochet pattern|knitting pattern|cross stitch pattern|svg|png file|clipart|vector pack",
+);
+/** Logo sheets and icon sets: marks, not art direction. */
+const LOGO_SHEET_WORDS = wordsRe("logo|logos|logotype|logo set|logo collection|logo design ideas|icon set|icons set|icon pack|vector set");
+/** Stock libraries that slip past isJunk. */
+const STOCK_WORDS = wordsRe("stock|unsplash|pexels|pixabay|rawpixel|vector illustration|stock photo|royalty");
+
+const tokensOf = (text: string) => new Set((text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).map((w) => w.replace(/s$/, "")));
+
+/**
+ * The art lane's junk gate. Drops shops, prices and product codes, fashion and clothing
+ * listings, product listings (stickers, mugs, pillows, air fresheners, seed packets), logo sheets
+ * and stock. A product word the art query itself names is not junk ("persian rug" may show rugs,
+ * "seed packet" may show seed packets), but shop and price signals always are. Untitled results
+ * pass (Pinterest often has no title); the URL and host checks still apply to them.
+ */
+export function isArtJunk(title: string | undefined, artQuery = ""): boolean {
+  const t = (title ?? "").replace(/\s+/g, " ").trim();
+  if (!t) return false;
+  if (SHOP_WORDS.test(t) || PRICE.test(t) || SKU_LIKE.test(t) || LISTING_SHAPES.test(t) || TAG_SPAM.test(t) || STOCK_WORDS.test(t) || LOGO_SHEET_WORDS.test(t)) return true;
+  const asked = tokensOf(artQuery);
+  const named = (re: RegExp) => {
+    const m = re.exec(t);
+    if (!m) return false;
+    // Exempt only when every word of the match is in the art query ("rug" in "persian rug").
+    return ![...tokensOf(m[0])].every((w) => asked.has(w));
+  };
+  return named(FASHION_WORDS) || named(PRODUCT_WORDS);
+}
+
+// ---------------------------------------------------------------------------
+// Platform title filter: an iPhone brief must not fill up with "Finance web ui design".
+
+/** True when the title has one of `words` as a whole word or phrase, any case. */
+export function titleHasAny(title: string | undefined, words: readonly string[]): boolean {
+  if (!title || words.length === 0) return false;
+  const alt = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+")).join("|");
+  return wordsRe(alt).test(title);
+}
+
+// ---------------------------------------------------------------------------
+// Recency (metadata only): newer work ranks higher. Dribbble shot ids, Dribbble userupload ids,
+// Behance gallery ids and Awwwards asset paths all grow with time; Pinterest pins are older on
+// average (round 4) and carry no usable date, so they stay neutral.
+
+/**
+ * Rough age bands, checked against dated public items (approximate, used only to rank):
+ * Dribbble shot 6,000,000 was posted around early 2019 and 17,000,000 around 2022; Behance
+ * gallery 75,000,000 around early 2019 and 150,000,000 around 2022.
+ */
+const OLD = { dribbble: 6_000_000, behance: 75_000_000 } as const;
+const NEW = { dribbble: 17_000_000, behance: 150_000_000 } as const;
+
+/** Year of a piece of work when its URLs tell it (Awwwards assets `/2023/06/`), else undefined. */
+function assetYear(url: string): number | undefined {
+  const m = /assets\.awwwards\.com\/awards\/[a-z]+\/(20\d\d)\//i.exec(url);
+  return m ? Number(m[1]) : undefined;
+}
+
+/** Comparable "newness" number for a reference, or undefined when nothing tells. */
+export function itemAge(ref: Pick<Reference, "sourceUrl" | "imageUrl">): { site: "dribbble" | "behance" | "awwwards"; id: number } | undefined {
+  const shot = /dribbble\.com\/shots\/(\d+)/.exec(ref.sourceUrl);
+  if (shot) return { site: "dribbble", id: Number(shot[1]) };
+  const gallery = /behance\.net\/gallery\/(\d+)/.exec(ref.sourceUrl);
+  if (gallery) return { site: "behance", id: Number(gallery[1]) };
+  const year = assetYear(ref.imageUrl);
+  if (year) return { site: "awwwards", id: year };
+  return undefined;
+}
+
+/** Title years: "2016" in a title is an old shot; the current or last year is a fresh one. */
+function titleYearScore(title: string, now: number): number {
+  const years = (title.match(/\b(20[0-3]\d)\b/g) ?? []).map(Number).filter((y) => y <= now + 1);
+  if (years.length === 0) return 0;
+  const y = Math.max(...years);
+  if (y >= now - 1) return 0.5;
+  if (y <= now - 5) return -1.5;
+  return 0;
+}
+
+/**
+ * Recency score from -2 to +2: old ids (before about 2019) score down, recent ones up, unknown
+ * ages neutral; a year in the title nudges it.
+ */
+export function recencyScore(ref: Pick<Reference, "sourceUrl" | "imageUrl" | "title">, now = new Date().getUTCFullYear()): number {
+  let score = 0;
+  const age = itemAge(ref);
+  if (age?.site === "dribbble" || age?.site === "behance") {
+    if (age.id < OLD[age.site]) score -= 1.5;
+    else if (age.id >= NEW[age.site]) score += 1;
+  } else if (age?.site === "awwwards") {
+    if (age.id <= now - 5) score -= 1.5;
+    else if (age.id >= now - 2) score += 1;
+  }
+  score += titleYearScore(ref.title ?? "", now);
+  return Math.max(-2, Math.min(2, score));
 }

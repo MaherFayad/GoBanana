@@ -19,12 +19,23 @@
  * A plain query (no direction) is forced into UI forms too (plainQueryPlan): searched as is when
  * it already names a UI, else as "{q} app ui" and "{q} ui design", at most 4 requests.
  */
+import type { Platform } from "../direction-detail";
 import { hasUiWord } from "./quality";
 import { cleanQuery } from "./query";
-import { SOURCE_SITES, type LaneName, type Mix, type Reference, type SourceSite } from "./types";
+import { sourceEntry } from "./registry";
+import { SOURCE_SITES, isGallery, laneZone, type LaneName, type Mix, type Reference, type SourceSite, type Zone, type ZoneInput } from "./types";
 
 /** Negatives for UI lanes: they cut template, kit and wireframe sales sheets. */
 export const UI_NEG = "-template -kit -free -wireframe";
+/** Negatives for the art lane: shop listings (unmeasured live; the junk gate is the real filter). */
+export const ART_NEG = "-etsy -amazon -aliexpress -sale -buy";
+
+/** Sites the art lane searches: the raw ingredient on pins and galleries (round 7: most reliable). */
+export const ART_SITES: readonly SourceSite[] = ["pinterest", "behance"];
+/** Most art queries a direction plans (bend gives 1 to 3). */
+export const MAX_ART_QUERIES = 3;
+/** Requests in a base plan; the rest of SERPER_MAX_REQUESTS (8) is kept for page 2 or a fallback. */
+export const BASE_MAX_REQUESTS = 7;
 
 export type { LaneName, Mix };
 
@@ -50,11 +61,54 @@ export type LaneTexts = {
   locale?: string;
   /** The subject the locale lane's titles must name, so off-topic Arabic apps drop out. */
   localeWord?: string;
+  /**
+   * Topic words for curated galleries ("fintech", "analytics"): galleries index site and product
+   * names and topics, not "app ui" forms.
+   */
+  topic?: string;
+  /** UI galleries this direction searches (lib/sources/registry.ts pickGalleries), in order. */
+  galleries?: SourceSite[];
+  /** Art galleries this direction searches (style tag matches only). */
+  artGalleries?: SourceSite[];
+  /** Platform the UI lanes were worded for (lib/platform.ts). */
+  platform?: Platform;
+  /**
+   * Title words the UI lanes drop for this platform ("web", "dashboard" on an iPhone brief),
+   * minus words the brief itself uses.
+   */
+  avoid?: string[];
+  /**
+   * Art zone: the direction's raw ingredients (its `artQueries`, else its idea), searched as is on
+   * Pinterest pins and Behance galleries with the art junk gate. 1 to 3.
+   */
+  art?: string[];
 };
 
 /** True when the lanes have anything to search (a brief gave them UI lanes). */
 export function hasUiLanes(lanes: LaneTexts): boolean {
-  return Boolean(lanes.fidelity || lanes.taste || lanes.component?.length || lanes.bridge || lanes.hero || lanes.locale);
+  return Boolean(
+    lanes.fidelity || lanes.taste || lanes.component?.length || lanes.bridge || lanes.hero || lanes.locale || lanes.galleries?.length,
+  );
+}
+
+/** True when the lanes have art queries. */
+export function hasArtLane(lanes: LaneTexts): boolean {
+  return Boolean(lanes.art?.some((q) => q.trim()));
+}
+
+/**
+ * Words for one gallery: its fixed query when it has one (Swissted: "poster"), else the topic with
+ * UI words and negatives taken out ("fintech app ui -template" gives "fintech"). Nothing left:
+ * "design".
+ */
+export function galleryWords(site: SourceSite, topic: string): string {
+  const fixed = sourceEntry(site).query;
+  if (fixed) return fixed;
+  const plain = cleanQuery(topic.replace(/(^|\s)-\S+/g, " "))
+    .replace(/\b(app ui|ui design|website ui|dashboard ui|ui ux|ui|ux|single screen|app|design)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return plain || "design";
 }
 
 export type PlannedRequest = {
@@ -68,7 +122,16 @@ export type PlannedRequest = {
   page?: number;
   /** Keep a result only when its title has this word (bridge lane precision filter, see titleHasWord). */
   titleWord?: string;
+  /** UI lanes: drop a result whose title has any of these words (platform filter). */
+  avoidWords?: string[];
+  /** Art lane: the idea's head word; titles that name it rank higher (never a hard filter). */
+  ideaWord?: string;
 };
+
+/** Zone of a planned request's results. */
+export function requestZone(req: Pick<PlannedRequest, "lane">): Zone {
+  return laneZone(req.lane);
+}
 
 /** A request that brings back fewer good results than this is retried once with its fallback. */
 export const FALLBACK_MIN_GOOD = 5;
@@ -120,20 +183,14 @@ export type PlanOptions = {
    * when the bridge words were changed (an arm), so it stays the direction's idea.
    */
   bridgeWord?: string | null;
+  /** Zones to search. Default: "both" when the lanes have art queries, else "ui". */
+  zone?: ZoneInput;
 };
 
-/**
- * Requests in priority order (the budget cuts from the end), one page each:
- * 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {core} {surface}" for Arabic
- * briefs, its titles filtered by the subject like the bridge lane's),
- * 3. taste, 4. and 5. the component lanes, 6. hero, 7. bridge. The 8th request is left for page 2
- * or the fidelity fallback (lib/sources/web-search.ts runPlan).
- * `sources`, when the caller picked them, limits the lanes to those sites: a request on another
- * site moves to the first picked site, and repeats are dropped.
- * The bridge lane is planned only when there is a head word to filter its titles by.
- */
-export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], opts: PlanOptions = {}): PlannedRequest[] {
+/** UI requests in priority order (see planRequests). */
+function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
   const out: PlannedRequest[] = [];
+  const avoid = lanes.avoid?.length ? lanes.avoid : undefined;
   const add = (lane: LaneName, text: string | undefined, site: SourceSite, neg: boolean, fallback?: string, titleWord?: string) => {
     if (!text) return;
     out.push({
@@ -142,34 +199,126 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], 
       site,
       ...(fallback ? { fallback: neg ? withNeg(fallback) : fallback } : {}),
       ...(titleWord ? { titleWord } : {}),
+      ...(avoid ? { avoidWords: avoid } : {}),
     });
   };
-  const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
+  const galleries = lanes.galleries ?? [];
+  const addGallery = (site: SourceSite | undefined) => {
+    if (site) out.push({ lane: "gallery", query: galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
+  };
+  // Website and web app briefs: a platform gallery replaces the Pinterest fidelity page (Pinterest
+  // is weak on web pages, round 4). Every other gallery follows taste.
+  const web = lanes.platform === "website" || lanes.platform === "webapp";
+  const first = web && !lanes.locale ? galleries[0] : undefined;
   add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
   if (lanes.locale) add("locale", lanes.locale, "pinterest", true, undefined, lanes.localeWord);
+  else if (first) addGallery(first);
   else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
   add("taste", lanes.taste, "dribbble", true);
+  const rest = first ? galleries.slice(1) : galleries;
+  addGallery(rest[0]);
   for (const c of (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES)) add("component", c, "dribbble", true);
   add("hero", lanes.hero, "dribbble", false);
   if (head) add("bridge", lanes.bridge, "dribbble", true, undefined, head);
-  return onSources(out, sources);
+  for (const site of rest.slice(1)) addGallery(site);
+  return out;
 }
 
-/** Move requests on unpicked sites to the first picked site, dropping repeats. No pick, no change. */
-function onSources<T extends { query: string; site: SourceSite; page?: number }>(reqs: T[], sources?: readonly SourceSite[]): T[] {
+/**
+ * Art requests: the first art query on Pinterest pins, then on Behance galleries, then on a
+ * matched art gallery (its fixed words or the art query); later art queries on Pinterest and
+ * Behance. Galleries go after Behance: live, a niche idea on an art gallery found nothing
+ * ("synthwave 1984" on typo/graphic posters, "holographic foil" on Cosmos), while Behance gave 2
+ * to 7 good results. In a both-zones search the cut usually leaves them out; art-only searches
+ * reach them.
+ */
+export function artRequests(queries: readonly string[] | undefined, galleries: readonly SourceSite[] = []): PlannedRequest[] {
+  const out: PlannedRequest[] = [];
+  const list = (queries ?? []).map(artWords).filter(Boolean).slice(0, MAX_ART_QUERIES);
+  list.forEach((q, i) => {
+    const ideaWord = bridgeHead(q) ?? undefined;
+    const idea = ideaWord ? { ideaWord } : {};
+    out.push({ lane: "art", query: `${q} ${ART_NEG}`, site: "pinterest", ...idea });
+    out.push({ lane: "art", query: `${q} ${ART_NEG}`, site: "behance", ...idea });
+    if (i === 0) for (const site of galleries) out.push({ lane: "art", query: galleryWords(site, q), site, ...idea });
+  });
+  return out;
+}
+
+/** An art query's plain words: no site operators, no negatives, at most 8 words. */
+export function artWords(raw: string): string {
+  return cleanQuery(raw.replace(/(^|\s)-\S+/g, " "))
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 8)
+    .join(" ");
+}
+
+/**
+ * Requests in priority order (the budget cuts from the end), one page each.
+ * UI: 1. fidelity on Dribbble, 2. fidelity on Pinterest (locale "arabic {core} {surface}" for
+ * Arabic briefs, its titles filtered by the subject like the bridge lane's; website briefs search
+ * Awwwards with the `web` words instead), 3. taste, 4. and 5. the component lanes, 6. hero,
+ * 7. bridge (only with a head word to filter its titles by).
+ * Art: each art query on Pinterest, then Behance.
+ * Both zones: UI and art alternate for the first two of each (fidelity, art, fidelity, art), then
+ * the rest of UI, then the rest of art, cut to BASE_MAX_REQUESTS so one request is left for page 2
+ * or a fallback (lib/sources/web-search.ts runPlan).
+ * `sources`, when the caller picked them, limits the lanes to those sites (see onSources).
+ */
+export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], opts: PlanOptions = {}): PlannedRequest[] {
+  const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
+  const zone: ZoneInput = opts.zone ?? (hasArtLane(lanes) ? "both" : "ui");
+  const ui = zone === "art" ? [] : onSources(uiRequests(lanes, head), sources);
+  const art = zone === "ui" ? [] : artOnSources(artRequests(lanes.art, lanes.artGalleries), sources);
+  if (art.length === 0) return ui;
+  if (ui.length === 0) return art.slice(0, BASE_MAX_REQUESTS);
+  const merged = [ui[0]!, art[0]!, ...(ui[1] ? [ui[1]] : []), ...(art[1] ? [art[1]] : []), ...ui.slice(2), ...art.slice(2)];
+  return merged.slice(0, BASE_MAX_REQUESTS);
+}
+
+/**
+ * Move requests on unpicked sites to the picked sites, round robin (so ["awwwards", "behance"]
+ * searches both, not only the first), dropping repeats. A request moved to a website gallery
+ * gets topic words (galleryWords). No pick, no change. Art requests go through artOnSources.
+ */
+function onSources<T extends { query: string; site: SourceSite; page?: number; fallback?: string }>(reqs: T[], sources?: readonly SourceSite[]): T[] {
   if (!sources || sources.length === 0) return reqs;
   const picked = SOURCE_SITES.filter((s) => sources.includes(s));
   if (picked.length === 0) return reqs;
   const seen = new Set<string>();
   const kept: T[] = [];
+  let moved = 0;
   for (const r of reqs) {
-    const site = picked.includes(r.site) ? r.site : picked[0]!;
-    const key = `${r.query}|${site}|${r.page ?? 1}`;
+    const site = picked.includes(r.site) ? r.site : picked[moved++ % picked.length]!;
+    const toWeb = isGallery(site) && !isGallery(r.site);
+    const next: T = toWeb ? { ...r, site, query: galleryWords(site, r.query) } : { ...r, site };
+    if (toWeb) delete next.fallback;
+    const key = `${next.query}|${site}|${r.page ?? 1}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    kept.push({ ...r, site });
+    kept.push(next);
   }
   return kept;
+}
+
+/**
+ * Art requests stay on the picked art sites (Pinterest, Behance, art galleries); a request on an
+ * unpicked site moves to the first picked art site; none picked, no art requests.
+ */
+function artOnSources(reqs: PlannedRequest[], sources?: readonly SourceSite[]): PlannedRequest[] {
+  if (!sources || sources.length === 0) return reqs;
+  const picked = SOURCE_SITES.filter((s) => sources.includes(s) && (ART_SITES.includes(s) || sourceEntry(s).zone === "art"));
+  if (picked.length === 0) return [];
+  const seen = new Set<string>();
+  return reqs
+    .map((r) => (picked.includes(r.site) ? r : { ...r, site: picked[0]! }))
+    .filter((r) => {
+      const key = `${r.query}|${r.site}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -199,19 +348,39 @@ export function plainQueryPlan(query: string, sources: readonly SourceSite[]): P
   if (!q) return [];
   const picked = SOURCE_SITES.filter((s) => sources.includes(s));
   const sites = picked.length > 0 ? picked : (["pinterest", "dribbble"] as SourceSite[]);
-  if (hasUiWord(q)) return sites.slice(0, PLAIN_MAX_REQUESTS).map((site) => ({ query: q, site }));
+  // A website gallery indexes topics and site names: it gets website words, never "app ui".
+  if (hasUiWord(q)) return sites.slice(0, PLAIN_MAX_REQUESTS).map((site) => ({ query: isGallery(site) ? galleryWords(site, q) : q, site }));
   const forced: PlainRequest[] = [
     { query: withNeg(`${q} app ui`), site: "dribbble" },
     { query: withNeg(`${q} ui design`), site: "dribbble" },
     { query: withNeg(`${q} app ui`), site: "pinterest" },
   ];
+  // Picked galleries get their own topic-word request first (they never match "app ui" forms).
+  forced.unshift(...sites.filter(isGallery).map((site) => ({ query: galleryWords(site, q), site })));
   return onSources(forced, sites).slice(0, PLAIN_MAX_REQUESTS);
+}
+
+/** A plain query in the art zone: the words as is, on the picked art sites (Pinterest, Behance). */
+export function artQueryPlan(query: string, sources: readonly SourceSite[]): PlainRequest[] {
+  return artOnSources(artRequests([query]), sources.length > 0 ? sources : ART_SITES).map((r) => ({ query: r.query, site: r.site }));
 }
 
 /** Words dropped from the short form of a plain query: filler and UI words. */
 const SHORT_STOP = new Set([
   "a", "an", "the", "and", "or", "of", "for", "to", "with", "in", "on", "at", "by", "from", "as", "into", "it", "is",
   "my", "me", "make", "cool", "style", "inspired", "like", "design", "designs", "ui", "ux", "app", "apps",
+  "page", "pages",
+]);
+
+/**
+ * Style words a short retry keeps (lib/taste.ts verified words plus common style names). One
+ * word each: multi-word styles keep their head ("big typography" keeps "typography").
+ */
+const STYLE_WORDS = new Set([
+  "brutalist", "brutalism", "neubrutalism", "neubrutalist", "minimal", "minimalist", "glassmorphism", "neumorphism",
+  "skeuomorphic", "skeuomorphism", "claymorphism", "retro", "vintage", "y2k", "swiss", "editorial", "bauhaus", "memphis",
+  "vaporwave", "synthwave", "cyberpunk", "monochrome", "grainy", "luxury", "dark", "neon", "pastel", "gradient",
+  "futuristic", "organic", "typography", "bento", "isometric", "pixel", "8-bit", "holographic", "chrome", "glass",
 ]);
 
 /**
@@ -224,7 +393,11 @@ export function plainRetryQuery(query: string, sent: readonly string[] = []): st
     .map((t) => t.replace(/['’-]+$/, ""))
     .filter((t) => t && /\p{L}/u.test(t) && !/^['’]?\d+(s|th|st|nd|rd)?$/i.test(t) && !SHORT_STOP.has(t) && !hasUiWord(t));
   if (tokens.length === 0) return null;
-  const words = `${tokens.slice(-2).join(" ")} ui design`;
+  // Style words survive the cut ("brutalist landing page ai startup" keeps "brutalist"), then the
+  // last 2 other words.
+  const styles = tokens.filter((t) => STYLE_WORDS.has(t)).slice(0, 2);
+  const rest = tokens.filter((t) => !STYLE_WORDS.has(t)).slice(-2);
+  const words = `${[...styles, ...rest].join(" ")} ui design`;
   const plain = (s: string) => cleanQuery(s.replace(/(^|\s)-\S+/g, " ")).toLowerCase();
   if (sent.some((s) => plain(s) === words)) return null;
   return withNeg(words);
@@ -246,22 +419,60 @@ export function laneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneN
   return quotas;
 }
 
+/** The art zone's share of a direction search: about a third of `count`, at least 3 (never more than count). */
+export function artQuota(count: number): number {
+  return Math.min(count, Math.max(3, Math.round(count / 3)));
+}
+
 /**
- * Merge lane lists: round robin across lanes (in the map's order), each lane up to its quota,
- * then whatever is left (round robin again) until `count`. `keyOf` gives the dedupe keys of a
- * reference; a reference that shares any key with one already placed is skipped.
+ * Quotas when the art lane is present: art gets artQuota(count), the UI lanes share the rest
+ * evenly (laneQuotas). Only art: all of it. No art: laneQuotas.
+ */
+export function zoneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneName, number> {
+  const ui = lanes.filter((l) => l !== "art");
+  if (!lanes.includes("art")) return laneQuotas(count, lanes);
+  if (ui.length === 0) return new Map([["art", count]]);
+  const art = artQuota(count);
+  const quotas = laneQuotas(count - art, ui);
+  quotas.set("art", art);
+  return quotas;
+}
+
+/** At most this many results by one creator or studio per search (owner, 2026-10-12). */
+export const CREATOR_CAP = 2;
+
+export type MergeOptions = {
+  /** Creator or studio keys of a reference (lib/learning/creator.ts creatorKeys); each is capped. */
+  groupsOf?: (ref: Reference) => readonly string[];
+  /** Cap per group. Default CREATOR_CAP. */
+  groupCap?: number;
+};
+
+/**
+ * Merge lane lists: round robin across lanes (in the map's order), each lane up to its quota;
+ * then places left in a zone go to that zone's other lanes first (an empty UI lane's places go
+ * to the other UI lanes, not to art, and the other way round); then whatever is left, round robin,
+ * until `count`. `keyOf` gives the dedupe keys of a reference; a reference that shares any key
+ * with one already placed is skipped. With `groupsOf`, a reference whose creator or studio already
+ * has `groupCap` places is skipped too (the studio cap).
  */
 export function mergeLanes(
   lists: ReadonlyMap<LaneName, readonly Reference[]>,
   quotas: ReadonlyMap<LaneName, number>,
   count: number,
   keyOf: (ref: Reference) => string[],
+  opts: MergeOptions = {},
 ): Reference[] {
   const out: Reference[] = [];
   const seen = new Set<string>();
+  const groups = new Map<string, number>();
+  const cap = opts.groupCap ?? CREATOR_CAP;
   const cursor = new Map<LaneName, number>();
   const placed = new Map<LaneName, number>();
   const lanes = [...lists.keys()];
+  const zoneBudget = new Map<Zone, number>();
+  for (const lane of lanes) zoneBudget.set(laneZone(lane), (zoneBudget.get(laneZone(lane)) ?? 0) + (quotas.get(lane) ?? 0));
+  const zonePlaced = new Map<Zone, number>();
   const nextFrom = (lane: LaneName): Reference | undefined => {
     const list = lists.get(lane) ?? [];
     let i = cursor.get(lane) ?? 0;
@@ -269,29 +480,55 @@ export function mergeLanes(
       const ref = list[i++]!;
       const keys = keyOf(ref);
       if (keys.some((k) => seen.has(k))) continue;
+      const g = opts.groupsOf?.(ref) ?? [];
+      if (g.some((k) => (groups.get(k) ?? 0) >= cap)) continue;
       cursor.set(lane, i);
       for (const k of keys) seen.add(k);
+      for (const k of g) groups.set(k, (groups.get(k) ?? 0) + 1);
       return ref;
     }
     cursor.set(lane, i);
     return undefined;
   };
-  const roundRobin = (capped: boolean) => {
+  const roundRobin = (limit: "lane" | "zone" | "none") => {
     let progress = true;
     while (out.length < count && progress) {
       progress = false;
       for (const lane of lanes) {
         if (out.length >= count) break;
-        if (capped && (placed.get(lane) ?? 0) >= (quotas.get(lane) ?? 0)) continue;
+        if (limit === "lane" && (placed.get(lane) ?? 0) >= (quotas.get(lane) ?? 0)) continue;
+        const zone = laneZone(lane);
+        if (limit === "zone" && (zonePlaced.get(zone) ?? 0) >= (zoneBudget.get(zone) ?? 0)) continue;
         const ref = nextFrom(lane);
         if (!ref) continue;
         out.push(ref);
         placed.set(lane, (placed.get(lane) ?? 0) + 1);
+        zonePlaced.set(zone, (zonePlaced.get(zone) ?? 0) + 1);
         progress = true;
       }
     }
   };
-  roundRobin(true);
-  roundRobin(false);
+  roundRobin("lane");
+  roundRobin("zone");
+  roundRobin("none");
   return out;
+}
+
+/** UI results first, then art (stable): the agent places UI references and the art row apart. */
+export function byZone<T extends { zone?: Zone }>(refs: readonly T[]): T[] {
+  return [...refs.filter((r) => r.zone !== "art"), ...refs.filter((r) => r.zone === "art")];
+}
+
+/** The words of one lane: a string, or several for the component and art lanes; gallery lanes use the topic. */
+export function laneValue(lanes: LaneTexts, lane: LaneName): string | string[] | undefined {
+  switch (lane) {
+    case "gallery":
+      return lanes.galleries?.length ? lanes.topic || "design" : undefined;
+    case "art":
+      return lanes.art?.length ? lanes.art : undefined;
+    case "component":
+      return lanes.component?.length ? lanes.component : undefined;
+    default:
+      return lanes[lane];
+  }
 }
