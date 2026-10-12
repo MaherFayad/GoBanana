@@ -266,7 +266,7 @@ html.lenis body {
   grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
   align-items: start;
   column-gap: var(--st-space-5xl);
-  padding-block: 10vh 12vh;
+  padding-block: 8vh 8vh;
   padding-inline: var(--story-gutter) 0;
 }
 
@@ -308,6 +308,12 @@ html.lenis body {
   padding: 0;
 }
 
+/* The mock's lower part is empty tray and board; fade it out instead of showing a flat block. */
+.story .board-window .frame {
+  max-block-size: 34rem;
+  mask-image: linear-gradient(var(--st-desk-bg) 62%, transparent);
+}
+
 .story .board-window .frame-bar {
   display: none;
 }
@@ -330,7 +336,7 @@ html.lenis body {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   column-gap: 30vw;
-  min-block-size: 56vh;
+  min-block-size: 46vh;
   padding-inline: var(--story-gutter);
 }
 
@@ -454,7 +460,7 @@ html.lenis body {
 /* ------------------------------------------------------------------ 4. three statements */
 
 .story .s-how {
-  padding-block: 10vh;
+  padding-block: 4vh;
 }
 
 .story .statement {
@@ -462,7 +468,7 @@ html.lenis body {
   grid-template-columns: minmax(0, 20rem) minmax(0, 1fr) minmax(0, 20rem);
   align-items: center;
   column-gap: var(--st-space-5xl);
-  min-block-size: 62vh;
+  min-block-size: 48vh;
   padding-inline: calc(var(--story-gutter) + 6vw);
 }
 
@@ -495,7 +501,7 @@ html.lenis body {
 /* ------------------------------------------------------------------ 5. FAQ */
 
 .story .s-faq {
-  padding: 16vh var(--story-gutter) 20vh;
+  padding: 8vh var(--story-gutter) 10vh;
 }
 
 .story .faq-head {
@@ -591,7 +597,7 @@ html.lenis body {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   column-gap: 30vw;
-  min-block-size: 100vh;
+  min-block-size: 78vh;
   padding-inline: var(--story-gutter);
 }
 
@@ -610,7 +616,7 @@ html.lenis body {
 .story .s-pricing {
   display: grid;
   justify-items: center;
-  padding: 14vh var(--site-gutter) 12vh;
+  padding: 8vh var(--site-gutter) 6vh;
   text-align: center;
 }
 
@@ -797,10 +803,11 @@ html.lenis body {
   box-shadow: var(--st-desk-shadow-soft);
 }
 
-/* The empty gaps the wipe runs over: only when the stage moves. */
-@media (prefers-reduced-motion: no-preference) {
-  .story .kit-gap {
-    block-size: 100svh;
+/* On a phone the grey heading comes first, so a short empty lead lets the wipe finish before it
+   shows (stage-scene.ts). Wide screens need none: their text only shows once the pin starts. */
+@media (max-width: 767.98px) and (prefers-reduced-motion: no-preference) {
+  .story .kit-gap:first-child {
+    block-size: 70svh;
   }
 }
 
@@ -820,8 +827,8 @@ html.lenis body {
 
 .story .s-next {
   position: relative;
-  min-block-size: 115vh;
-  padding: 30vh var(--site-gutter) 10vh;
+  min-block-size: 92vh;
+  padding: 14vh var(--site-gutter) 6vh;
 }
 
 .story .next-text {
@@ -831,16 +838,17 @@ html.lenis body {
   text-align: center;
 }
 
+/* Bottom end of the section, above the dock line, well under the notification stack. */
 .story .pile {
   position: absolute;
-  inset-block-end: 4vh;
+  inset-block-end: 6.5rem;
   inset-inline-end: 1.5rem;
   display: flex;
   flex-direction: column-reverse;
   flex-wrap: wrap-reverse;
   align-content: flex-start;
-  gap: var(--st-space-l) var(--st-space-xs);
-  block-size: 78vh;
+  gap: var(--st-space-s) var(--st-space-xs);
+  block-size: min(44vh, 26rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -849,7 +857,7 @@ html.lenis body {
 /* ------------------------------------------------------------------ 10. add again, footer */
 
 .story .s-end {
-  padding: 12vh var(--site-gutter) 14vh;
+  padding: 6vh var(--site-gutter) 8vh;
 }
 
 .story .story-footer {
@@ -1126,13 +1134,44 @@ html.lenis body {
     padding-block-end: var(--st-space-5xl);
   }
 
+  /* One row of files on a phone. */
   .story .pile {
     position: static;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     block-size: auto;
-    margin-block-start: var(--st-space-5xl);
+    margin-block-start: var(--st-space-4xl);
+  }
+
+  .story .pile li:nth-child(n + 5) {
+    display: none;
+  }
+
+  /* Board cards on a phone: the caption sits under the picture, and the twist with its button
+     follows as plain text instead of an overlay. */
+  .story .row-card .gallery-reveal {
+    position: static;
+    margin-block-start: var(--st-space-s);
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    opacity: 1;
+    translate: none;
+  }
+
+  .story .row-card .gallery-twist {
+    color: var(--st-desk-body);
+    font-size: 0.875rem;
+  }
+
+  .story .row-card > :not(.gallery-media, dialog) {
+    padding-inline: var(--st-space-xs);
+  }
+
+  .story .row {
+    padding-block-end: var(--st-space-3xl);
   }
 
   .story .story-footer {

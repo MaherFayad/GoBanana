@@ -187,12 +187,13 @@ void main() {
   vec2 px = vec2(frag.x, uRes.y - frag.y);
   vec2 sUv = frag / uRes;
 
-  // Block wipe into the grey section: top blocks first, a little jitter, a glitch while it runs.
+  // Block wipe into the grey section: bottom blocks first (the section rises from below), a
+  // little jitter, a glitch while it runs.
   vec2 blockId = floor(sUv * vec2(BX, BY));
   vec2 blockUv = (blockId + 0.5) / vec2(BX, BY);
   float seed = hash12(blockId);
   float active = smoothstep(0.02, 0.14, uLight) * (1.0 - smoothstep(0.86, 0.98, uLight));
-  float reveal = blockUv.y + (seed - 0.5) * 0.16;
+  float reveal = 1.0 - blockUv.y + (seed - 0.5) * 0.16;
   float lightMix = step(mix(1.1, -0.1, uLight), reveal);
   float frame = floor(uTime * 14.0);
   float glitch = step(1.0 - 0.22 * active, hash12(blockId + vec2(51.1, frame)));
@@ -305,16 +306,14 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
 
   function lightAmount(): number {
     if (!grey) return 0;
-    // The wipe runs while only the empty gaps at both ends of the section are on screen, so text
-    // never sits on a half-wiped background: in over the last 30% of the first gap, out over the
-    // first 30% of the last one (the next section keeps 30vh of air above its heading).
+    // In: from the moment the section's top edge enters until it is 30% down the screen. Its text
+    // only appears later (desktop: when the pin starts; phone: after a short leading gap), and the
+    // pricing window above is opaque enough to sit on any background.
+    // Out: while the section's bottom edge moves from 120% to 90% of the screen. By then the grey
+    // heading has faded out (story-motion.ts) or scrolled away, and the next heading is still below.
     const r = grey.getBoundingClientRect();
-    const gaps = grey.querySelectorAll<HTMLElement>(".kit-gap");
-    const gapIn = gaps[0]?.offsetHeight || vh;
-    const gapOut = gaps[gaps.length - 1]?.offsetHeight || vh;
-    const span = vh * 0.3;
-    const into = clamp((vh - gapIn + span - r.top) / span, 0, 1);
-    const out = clamp((r.bottom - gapOut + span) / span, 0, 1);
+    const into = clamp((vh - r.top) / (vh * 0.7), 0, 1);
+    const out = clamp((r.bottom - vh * 0.9) / (vh * 0.3), 0, 1);
     return Math.min(into, out);
   }
 

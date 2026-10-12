@@ -1401,9 +1401,33 @@ button.dwin-light {
     justify-content: space-between;
   }
 
+  /* Compact on a phone: 40px tiles in a tight glass strip. */
+  .site .dock {
+    padding: 0.25rem;
+    border-radius: 0.95rem;
+  }
+
+  .site .dock-list {
+    gap: 0.25rem;
+  }
+
   .site .dock-link {
-    inline-size: 2.75rem;
-    block-size: 2.75rem;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    border-radius: 0.7rem;
+  }
+
+  .site .dock-icon .st-icon {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
+
+  .site .dock-icon .brand-mark {
+    inline-size: 1.4rem;
+  }
+
+  .site:has(.dock) {
+    padding-block-end: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
 
   .site .site-footer {

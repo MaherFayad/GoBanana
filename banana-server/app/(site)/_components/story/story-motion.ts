@@ -151,6 +151,11 @@ export function mountMotion(root: HTMLElement): () => void {
       });
       const files = fan.parentElement?.querySelectorAll(".kit-file");
       if (files?.length) tl.fromTo(files, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, stagger: 0.2, duration: 0.4 }, wins.length * 0.45);
+      // The dark heading leaves before the wipe back to the desk starts (stage-scene.ts), then a
+      // short hold, so it never sits on the dark blocks.
+      const heading = pin.querySelector(".tt.is-grey");
+      if (heading) tl.to(heading, { opacity: 0, duration: 0.5 }, "+=0.4");
+      tl.to({}, { duration: 2 });
     }
 
     return () => {
