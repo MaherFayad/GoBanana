@@ -7,7 +7,7 @@ This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is no
 ## Hard rules
 - The server does no AI work. Skills tell the user's own agent what to think and which tools to call.
 - Never download, save or copy third-party reference images. Not in skills, evals, fixtures or docs. URLs and metadata only. A Frankenstein part is a crop rectangle the browser applies, never an image file.
-- User-facing words say "Frankenstein it" and "Frankenstein pages"; the tool names (`cut_parts`, `stitch_page`, `remix_stitch`, `update_stitch`, `stitch_md`) stay as they are.
+- User-facing words say "Frankenstein it" and "Frankenstein pages"; the tool names (`cut_parts`, `frankenstein_page`, `remix_frankenstein`, `update_frankenstein`, `stitch_md`) stay as they are.
 - Every reference shows its source link, in every skill reply and every export.
 - No scraping instructions of any kind. References come only from `search_references`.
 - The server returns text; the agent writes files to disk.

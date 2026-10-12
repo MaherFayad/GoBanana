@@ -8,7 +8,7 @@ Stay consistent with this run. The history lists every earlier GoBanana call in 
 - arrange_canvas: add the line "Layout: <layout>".
 - extract_palette with addSwatches true: list the swatches.
 - cut_parts: add each part from its answer to Parts, by role, with theme, steal note and "(guessedCrop)" when the answer said so.
-- stitch_page and remix_stitch: add the Frankenstein pages with the rows and slots their answers listed.
-- update_stitch: the page becomes what that answer listed; if the answer did not list it, apply the call's ops (swap, move, moveRow, remove, insert, crop, widths, mode, note, title) to the page yourself.
+- frankenstein_page and remix_frankenstein: add the Frankenstein pages with the rows and slots their answers listed.
+- update_frankenstein: the page becomes what that answer listed; if the answer did not list it, apply the call's ops (swap, move, moveRow, remove, insert, crop, widths, mode, note, title) to the page yourself.
 - delete_canvas: the canvas is gone; reply "Canvas not found. Pass a canvasId from get_canvas or new_canvas."
 Use the same format as the snapshot. Keep ids, titles and links exactly as earlier answers wrote them. Never invent items no call added, and never drop items a call added.

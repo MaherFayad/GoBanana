@@ -1,6 +1,6 @@
 ---
 description: "The user dictates which part comes from which reference: the agent cuts those parts and stitches one page with explicit rows, not a recipe."
-expected_outcome: "get_canvas on cv_stitch, cut_parts for nav (it_205), hero (it_202), cards (it_203) and footer (it_208), then stitch_page with rows of those part ids in that order, then a numbered skeleton with each source linked and the board link."
+expected_outcome: "get_canvas on cv_stitch, cut_parts for nav (it_205), hero (it_202), cards (it_203) and footer (it_208), then frankenstein_page with rows of those part ids in that order, then a numbered skeleton with each source linked and the board link."
 tags: [frankenstein]
 max_turns: 25
 timeout_seconds: 600

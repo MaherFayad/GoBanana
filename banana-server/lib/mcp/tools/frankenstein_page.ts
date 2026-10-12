@@ -1,5 +1,5 @@
 /**
- * `stitch_page` ("Frankenstein it", step 2): stack parts from the library into new pages. Pass
+ * `frankenstein_page` ("Frankenstein it", step 2): stack parts from the library into new pages. Pass
  * explicit rows of part ids, or a recipe of roles plus a number of variants and the server fills
  * each role from the library (seeded, so the same call gives the same pages). Frames go side by
  * side in the "Frankenstein pages" section. Each frame is one canvas item; all or nothing.
@@ -46,7 +46,7 @@ import {
 } from "./stitch-shared";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
-export const TOOL_NAME = "stitch_page";
+export const TOOL_NAME = "frankenstein_page";
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it, step 2: stack parts from the library into new Frankenstein pages, top to bottom, in a frame for the platform. " +
@@ -162,7 +162,7 @@ export function createStitchPageTool(deps: CanvasToolDeps) {
               ...(r.widths && r.slots.length > 1 ? { widths: r.widths } : {}),
             }));
             datas = [{ title: input.title ?? "Frankenstein page", platform, rows, ...common }];
-            if (input.variants && input.variants > 1) notes.push("variants works with a recipe. With rows you get one page; use remix_stitch for variants.");
+            if (input.variants && input.variants > 1) notes.push("variants works with a recipe. With rows you get one page; use remix_frankenstein for variants.");
           } else {
             const seed = hashSeed(`${input.canvasId}|${input.recipe!.join(",")}|${input.variants ?? 1}|${platform}`);
             const filled = fillRecipe(input.recipe!, parts, { variants: input.variants ?? 1, seed, platform, ...(input.title ? { title: input.title } : {}) });
@@ -184,10 +184,10 @@ export function createStitchPageTool(deps: CanvasToolDeps) {
       const out: StitchPageOutput = { canvasId: input.canvasId, sectionId, stitches, notes, webUrl: canvasWebUrl(deps.appUrl(), input.canvasId) };
       const lines = [`Made ${stitches.length} Frankenstein page${stitches.length === 1 ? "" : "s"} in the "${STITCH_SECTION_TITLE}" section (${sectionId}):`];
       placed.forEach((p, i) => lines.push(...stitchText(p.id, datas[i]!, parts)));
-      lines.push(...notes, SOURCE_REMINDER, "Change one with update_stitch, or make variants with remix_stitch.", `Web link: ${out.webUrl}`);
+      lines.push(...notes, SOURCE_REMINDER, "Change one with update_frankenstein, or make variants with remix_frankenstein.", `Web link: ${out.webUrl}`);
       return toolResult(lines.join("\n"), out);
     } catch {
-      console.error("[stitch_page] failed");
+      console.error("[frankenstein_page] failed");
       return toolMessage(TRY_AGAIN);
     }
   };

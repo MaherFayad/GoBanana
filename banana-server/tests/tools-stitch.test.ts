@@ -1,12 +1,12 @@
-/** cut_parts, stitch_page, remix_stitch, update_stitch and the get_canvas parts and pages, with in-memory repos. */
+/** cut_parts, frankenstein_page, remix_frankenstein, update_frankenstein and the get_canvas parts and pages, with in-memory repos. */
 import { describe, expect, it } from "vitest";
 import type { CanvasState, StoredNode } from "@/canvas/types";
 import { createCutPartsTool, MAX_CUTS, TOOL_DESCRIPTION as CUT_DESC } from "@/lib/mcp/tools/cut_parts";
 import { createGetCanvasTool, type GetCanvasOutput } from "@/lib/mcp/tools/get_canvas";
-import { createRemixStitchTool, TOOL_DESCRIPTION as REMIX_DESC } from "@/lib/mcp/tools/remix_stitch";
-import { createStitchPageTool, TOOL_DESCRIPTION as STITCH_DESC, type StitchPageOutput } from "@/lib/mcp/tools/stitch_page";
+import { createRemixStitchTool, TOOL_DESCRIPTION as REMIX_DESC } from "@/lib/mcp/tools/remix_frankenstein";
+import { createStitchPageTool, TOOL_DESCRIPTION as STITCH_DESC, type StitchPageOutput } from "@/lib/mcp/tools/frankenstein_page";
 import { STITCH_SECTION_TITLE } from "@/lib/mcp/tools/stitch-shared";
-import { createUpdateStitchTool, TOOL_DESCRIPTION as UPDATE_DESC } from "@/lib/mcp/tools/update_stitch";
+import { createUpdateStitchTool, TOOL_DESCRIPTION as UPDATE_DESC } from "@/lib/mcp/tools/update_frankenstein";
 import { MAX_PARTS, type Part } from "@/lib/stitch/types";
 import { library, part } from "./stitch-fixtures";
 import { ALICE, APP, BOB, imageNode, makeDeps, ref, seedCanvas, state, text } from "./tools-fixtures";
@@ -91,7 +91,7 @@ describe("cut_parts", () => {
   });
 });
 
-describe("stitch_page", () => {
+describe("frankenstein_page", () => {
   it("fills a recipe into distinct variants side by side in the Frankenstein pages section", async () => {
     const { deps, repos, id } = await withParts();
     const run = createStitchPageTool(deps);
@@ -168,7 +168,7 @@ describe("stitch_page", () => {
   });
 });
 
-describe("remix_stitch", () => {
+describe("remix_frankenstein", () => {
   async function seeded() {
     const ctx = await withParts();
     const made = (await createStitchPageTool(ctx.deps)({ canvasId: ctx.id, recipe: ["nav", "hero", "cards", "footer"], title: "Base" }, ALICE)).structuredContent as StitchPageOutput;
@@ -218,7 +218,7 @@ describe("remix_stitch", () => {
   });
 });
 
-describe("update_stitch", () => {
+describe("update_frankenstein", () => {
   async function seeded() {
     const ctx = await withParts([...library(), part("pt-side", "sidebar", 4)]);
     const made = (await createStitchPageTool(ctx.deps)({ canvasId: ctx.id, rows: [{ slots: [{ partId: "pt-nav1" }] }, { slots: [{ partId: "pt-hero2" }] }] }, ALICE))

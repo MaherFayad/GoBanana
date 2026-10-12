@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CanvasSnapshot, StitchSnapshot } from "@/lib/canvas/types";
 import { exportKit } from "@/lib/export";
 import { createExportKitTool } from "@/lib/mcp/tools/export_kit";
-import { createStitchPageTool } from "@/lib/mcp/tools/stitch_page";
+import { createStitchPageTool } from "@/lib/mcp/tools/frankenstein_page";
 import { checkoutCanvas } from "./export-fixtures";
 import { library } from "./stitch-fixtures";
 import { ALICE, makeDeps, seedCanvas, state, text } from "./tools-fixtures";

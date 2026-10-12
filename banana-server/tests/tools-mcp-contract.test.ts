@@ -46,9 +46,9 @@ const EXPECTED = [
   "arrange_canvas",
   "get_canvas",
   "cut_parts",
-  "stitch_page",
-  "remix_stitch",
-  "update_stitch",
+  "frankenstein_page",
+  "remix_frankenstein",
+  "update_frankenstein",
   "extract_palette",
   "export_kit",
   "delete_canvas",
@@ -82,9 +82,9 @@ describe("MCP contract", () => {
     expect(byName.export_kit!.inputSchema.required?.sort()).toEqual(["canvasId", "formats"]);
     expect(byName.arrange_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "layout"]);
     expect(byName.cut_parts!.inputSchema.required?.sort()).toEqual(["canvasId", "cuts"]);
-    expect(byName.stitch_page!.inputSchema.required).toEqual(["canvasId"]);
-    expect(byName.remix_stitch!.inputSchema.required?.sort()).toEqual(["canvasId", "count", "stitchId"]);
-    expect(byName.update_stitch!.inputSchema.required?.sort()).toEqual(["canvasId", "ops", "stitchId"]);
+    expect(byName.frankenstein_page!.inputSchema.required).toEqual(["canvasId"]);
+    expect(byName.remix_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "count", "stitchId"]);
+    expect(byName.update_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "ops", "stitchId"]);
     // Optional: without it, get_canvas lists recent canvases.
     expect(byName.get_canvas!.inputSchema.required ?? []).toEqual([]);
     expect(Object.keys(byName.bend_brief!.inputSchema.properties ?? {})).toContain("canvasId");

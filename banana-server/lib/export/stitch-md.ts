@@ -73,7 +73,7 @@ export function stitchMd(m: KitModel): string {
   const scope = scopeBlock(m);
   if (scope.length > 0) out.push(...scope, "");
   if (m.stitches.length === 0) {
-    out.push("No Frankenstein pages on this board yet. Cut parts with cut_parts and stack them into pages with stitch_page.", "");
+    out.push("No Frankenstein pages on this board yet. Cut parts with cut_parts and stack them into pages with frankenstein_page.", "");
     return out.join("\n");
   }
   out.push(

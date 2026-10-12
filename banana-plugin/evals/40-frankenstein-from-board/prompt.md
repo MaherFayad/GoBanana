@@ -1,6 +1,6 @@
 ---
 description: "Frankenstein it from a board: cuts with crops, steal notes and themes from at least 4 sources, then a recipe with 3 or more variants, presented as skeletons with source links."
-expected_outcome: "get_canvas on cv_stitch, one or two cut_parts calls with crops, themes and steal notes, stitch_page with platform website, a recipe and variants 3 to 6, open_canvas, then a numbered skeleton per variant with linked sources and the board link."
+expected_outcome: "get_canvas on cv_stitch, one or two cut_parts calls with crops, themes and steal notes, frankenstein_page with platform website, a recipe and variants 3 to 6, open_canvas, then a numbered skeleton per variant with linked sources and the board link."
 tags: [frankenstein, smoke]
 max_turns: 30
 timeout_seconds: 600

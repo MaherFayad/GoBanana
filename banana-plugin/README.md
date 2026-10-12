@@ -78,7 +78,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 ### MCP tools
 
-`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `delete_canvas`, `export_kit`, `cut_parts`, `stitch_page`, `remix_stitch`, `update_stitch`.
+`bend_brief`, `search_references`, `rate_references`, `rate_directions`, `extract_palette`, `new_canvas`, `open_canvas`, `add_to_canvas`, `arrange_canvas`, `get_canvas`, `delete_canvas`, `export_kit`, `cut_parts`, `frankenstein_page`, `remix_frankenstein`, `update_frankenstein`.
 
 - `bend_brief` takes `platform` and up to 3 `pages`, and returns `wildSpots` when no pages are given.
 - `search_references` returns two zones, `ui` and `art`. Sources: UI galleries by platform, plus Pinterest, Dribbble, Behance and Awwwards. At most 2 results per studio, newer work first, UI kits dropped.
@@ -87,7 +87,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
   - Art direction: Fonts In Use, typographic posters, Swissted, The Brand Identity, BP&O, Cosmos, Are.na, Designspiration.
   - Reached through web image search only, never scraped. Each search picks galleries by platform and style words.
 - `add_to_canvas` reference items take a `note` (what to steal, up to 280 characters).
-- `cut_parts`, `stitch_page`, `remix_stitch` and `update_stitch` power Frankenstein it. A part is a role plus a crop rectangle over a hotlinked image; the browser applies it. `get_canvas` lists parts by role and each Frankenstein page with its skeleton.
+- `cut_parts`, `frankenstein_page`, `remix_frankenstein` and `update_frankenstein` power Frankenstein it. A part is a role plus a crop rectangle over a hotlinked image; the browser applies it. `get_canvas` lists parts by role and each Frankenstein page with its skeleton.
 - `delete_canvas` deletes a canvas for good (sections, items, tray, share link) and frees a slot. It needs `confirm: true`, and the skills call it only after you say yes to a named board. You can also delete boards from the web dashboard.
 
 The server does no AI work: bend moves and specs are templates and word lists, and any thinking happens in your own agent. The server returns text; your agent writes the files.
@@ -124,8 +124,8 @@ Frankenstein pages: the nav from one reference, part of the hero from another, t
 
 1. **Pick the board, the platform and one page type** (landing, pricing, dashboard home, a phone home screen).
 2. **Look and slice.** The agent looks at each reference when it can see it, picks the strongest parts, and calls `cut_parts` with a role, a tight crop, light or dark, and a `steal:` note. It aims for 2 to 4 candidates per role from at least 4 sources. If it cannot see the images it says so, cuts by role only, and every crop is marked as a guess.
-3. **Stack.** `stitch_page` with a recipe (for a website: nav, hero, logos, features, cards, testimonial, cta, footer) and 3 or 4 variants, or with the exact rows you dictated ("nav from this, hero from that").
-4. **Judge and fix.** Rhythm, hierarchy, contrast jumps, seams, and whether it reads as one page. Fixes go through `update_stitch` (swap, move, recrop, widths); `remix_stitch` keeps the rows you like and swaps the rest. Modes `even` and `wireframe` help you judge structure.
+3. **Stack.** `frankenstein_page` with a recipe (for a website: nav, hero, logos, features, cards, testimonial, cta, footer) and 3 or 4 variants, or with the exact rows you dictated ("nav from this, hero from that").
+4. **Judge and fix.** Rhythm, hierarchy, contrast jumps, seams, and whether it reads as one page. Fixes go through `update_frankenstein` (swap, move, recrop, widths); `remix_frankenstein` keeps the rows you like and swaps the rest. Modes `even` and `wireframe` help you judge structure.
 5. **Present.** A numbered skeleton per variant: role, what it steals, and the source link.
 6. **Hand off.** FRANKENSTEIN.md (Free) and frankenstein-wireframe.html (Pro, grey boxes, no reference images). BUILD-PROMPT.md lists the Frankenstein pages. Build, then critique.
 

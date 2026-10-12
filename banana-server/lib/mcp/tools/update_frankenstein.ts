@@ -1,5 +1,5 @@
 /**
- * `update_stitch` ("Frankenstein it", push slices around): change one Frankenstein page with a
+ * `update_frankenstein` ("Frankenstein it", push slices around): change one Frankenstein page with a
  * list of operations, applied in order and all or nothing (lib/stitch/ops.ts).
  */
 import { z } from "zod";
@@ -18,16 +18,16 @@ import {
   TRY_AGAIN,
   type CanvasToolDeps,
 } from "./canvas-shared";
-import { STITCH_NOT_FOUND } from "./remix_stitch";
+import { STITCH_NOT_FOUND } from "./remix_frankenstein";
 import { cropSchema, idSchema, modeSchema, roleSchema, SOURCE_REMINDER, stitchNodes, stitchText, summarize, type StitchSummary } from "./stitch-shared";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
-export const TOOL_NAME = "update_stitch";
+export const TOOL_NAME = "update_frankenstein";
 export const MAX_OPS = 30;
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it: change one Frankenstein page with ops, applied in order, all or nothing: swap, move, moveRow, remove, insert, crop, widths, mode, note, title. " +
-  "Slot and row ids come from stitch_page or get_canvas.";
+  "Slot and row ids come from frankenstein_page or get_canvas.";
 
 const index = z.number().int().min(0).max(100);
 const widths = z.array(z.number().positive().max(12)).min(1).max(MAX_SLOTS_PER_ROW);
@@ -62,7 +62,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  stitchId: "Pass the id of a Frankenstein page from stitch_page or get_canvas.",
+  stitchId: "Pass the id of a Frankenstein page from frankenstein_page or get_canvas.",
   ops:
     `ops is a list of 1 to ${MAX_OPS} ops: { op: "swap", slotId, partId }, { op: "move", slotId, rowId?, index }, { op: "moveRow", rowId, index }, ` +
     '{ op: "remove", slotId or rowId }, { op: "insert", index? or afterRowId?, slots: [{ partId, role?, crop?, note? }], widths? }, { op: "crop", slotId, crop: { x, y, w, h } }, ' +
@@ -124,7 +124,7 @@ export function createUpdateStitchTool(deps: CanvasToolDeps) {
       ];
       return toolResult(lines.join("\n"), out);
     } catch {
-      console.error("[update_stitch] failed");
+      console.error("[update_frankenstein] failed");
       return toolMessage(TRY_AGAIN);
     }
   };

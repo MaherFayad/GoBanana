@@ -1,5 +1,5 @@
 /**
- * update_stitch operations. Pure and atomic: every op is checked against the stitch as the
+ * update_frankenstein operations. Pure and atomic: every op is checked against the stitch as the
  * earlier ops left it, and the first problem stops the whole list with a plain error.
  */
 import { MAX_PART_NOTE, MAX_STITCH_NOTE, MAX_STITCH_TITLE } from "./parse";

@@ -20,7 +20,7 @@ Rules:
 Then end with these lines:
 Cut <count> parts into the library of canvas <canvasId>. The browser applies each crop over the hotlinked image; nothing was downloaded or stored.
 Parts with guessedCrop were cropped by role and aspect. Check them on the board or pass a crop.
-Next: stitch_page with a recipe and variants, or with rows of these part ids.
+Next: frankenstein_page with a recipe and variants, or with rows of these part ids.
 
 Sources:
 - it_201: Dev tool landing page, dark (lapa.ninja): https://www.lapa.ninja/post/devtool-dark/

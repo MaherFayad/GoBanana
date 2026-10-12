@@ -1,5 +1,5 @@
 /**
- * `remix_stitch` ("Frankenstein it", try combinations): new variants of a Frankenstein page with
+ * `remix_frankenstein` ("Frankenstein it", try combinations): new variants of a Frankenstein page with
  * other parts in its slots, placed right of the original. Lock slots or roles to keep them, or
  * name the roles to vary. Seeded, so the same call on the same board gives the same variants.
  */
@@ -23,7 +23,7 @@ import {
 import { idSchema, placeRightOf, roleSchema, SOURCE_REMINDER, stitchNodes, stitchText, summarize, type StitchSummary } from "./stitch-shared";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
-export const TOOL_NAME = "remix_stitch";
+export const TOOL_NAME = "remix_frankenstein";
 
 export const TOOL_DESCRIPTION =
   "Frankenstein it: make variants of a Frankenstein page with other parts from the library in its slots, placed right of the original. " +
@@ -39,7 +39,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  stitchId: "Pass the id of a Frankenstein page from stitch_page or get_canvas.",
+  stitchId: "Pass the id of a Frankenstein page from frankenstein_page or get_canvas.",
   count: `count is how many variants to make, 1 to ${MAX_VARIANTS}.`,
   lock: "lock is a list of slot ids or roles to keep.",
   vary: "vary is a list of roles to swap.",
@@ -104,7 +104,7 @@ export function createRemixStitchTool(deps: CanvasToolDeps) {
       lines.push(...notes, SOURCE_REMINDER, `Web link: ${out.webUrl}`);
       return toolResult(lines.join("\n"), out);
     } catch {
-      console.error("[remix_stitch] failed");
+      console.error("[remix_frankenstein] failed");
       return toolMessage(TRY_AGAIN);
     }
   };

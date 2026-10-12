@@ -1,19 +1,19 @@
 ---
 name: gobanana-frankenstein
-description: Frankenstein it - cut the best parts out of the references on a GoBanana board (a nav here, a hero there, cards from a third) and stack them into new Frankenstein pages, several variants at once, like a designer slicing a swipe file. Each part is a role, a crop rectangle the browser applies, a light or dark tag and a "steal:" note, always with its source link. For ideas, not a finished design or the product's system. Use when the user says "frankenstein it", "frankenstein this", "frankenstein page", "frankenstein", "stitch", "stitch a page", "mix parts", "nav from this, hero from that", "combine these references into a page", "make new layouts from my board", "remix the references", "remix this one", "keep the nav, change the rest", or "wireframe from my references". Runs get_canvas, cut_parts, stitch_page, update_stitch, remix_stitch, open_canvas and export_kit (stitch_md for FRANKENSTEIN.md, wireframe_html for frankenstein-wireframe.html) from the GoBanana MCP server. Use gobanana-explore first when the board has no references, and gobanana-handoff to build one.
+description: Frankenstein it - cut the best parts out of the references on a GoBanana board (a nav here, a hero there, cards from a third) and stack them into new Frankenstein pages, several variants at once, like a designer slicing a swipe file. Each part is a role, a crop rectangle the browser applies, a light or dark tag and a "steal:" note, always with its source link. For ideas, not a finished design or the product's system. Use when the user says "frankenstein it", "frankenstein this", "frankenstein page", "frankenstein", "stitch", "stitch a page", "mix parts", "nav from this, hero from that", "combine these references into a page", "make new layouts from my board", "remix the references", "remix this one", "keep the nav, change the rest", or "wireframe from my references". Runs get_canvas, cut_parts, frankenstein_page, update_frankenstein, remix_frankenstein, open_canvas and export_kit (stitch_md for FRANKENSTEIN.md, wireframe_html for frankenstein-wireframe.html) from the GoBanana MCP server. Use gobanana-explore first when the board has no references, and gobanana-handoff to build one.
 ---
 
 # GoBanana: Frankenstein it
 
 Frankenstein it: cut parts out of the references on a board and stack them into new pages. The nav comes from one site, the hero from another, the cards from a third. Make a few variants, judge them like a designer, fix the weak seams, and hand over a page skeleton with every source linked.
 
-This is for ideas over one page, not the product's design system. A Frankenstein page is a sketch made of other people's work. In the tools it is called a stitch (`stitch_page`, `stitchId`); say "Frankenstein page" to the user: you take the structure and the moves, never the pixels.
+This is for ideas over one page, not the product's design system. A Frankenstein page is a sketch made of other people's work. In the tools it is called a stitch (`frankenstein_page`, `stitchId`); say "Frankenstein page" to the user: you take the structure and the moves, never the pixels.
 
 ## Ground rules
 
 - **Source link for every part you mention**, like `[Fintech pricing page](sourceUrl) (dribbble.com)`. No link, no mention. The board and every export keep the links too.
 - **Never download, save, crop or copy reference images.** A part is only a rectangle (fractions of the image) that the browser applies over the hotlinked image. Never fetch an image to disk, never cut it with a tool, never write it into the repo, not even "just to look". If the user asks for the cut images as files, say no in one or two lines, in these terms: "A part is only a crop rectangle the browser shows over the original image at its source; nothing is downloaded or cut, so there are no PNGs to save, and the images belong to their owners." Then offer FRANKENSTEIN.md, the wireframe, the board link, or building the sections with the project's own content.
-- **Trust write results.** The `cut_parts`, `stitch_page`, `update_stitch` and `remix_stitch` answers are the record: read the parts and pages from them. Do not call `get_canvas` after each write to check it; read the board once at the start, and again only if you truly need something the answers did not give.
+- **Trust write results.** The `cut_parts`, `frankenstein_page`, `update_frankenstein` and `remix_frankenstein` answers are the record: read the parts and pages from them. Do not call `get_canvas` after each write to check it; read the board once at the start, and again only if you truly need something the answers did not give.
 - **Do not describe pixels you did not see.** Say what you saw, what the user told you, or what the title says, and say which.
 - **Right platform.** Mobile pages take mobile parts, websites take website parts, web apps take web app parts. Skip references for another platform.
 - **UI zone only.** Cut from UI references (placed board items or tray references in zone `ui`). Art direction images are mood, not page parts. Never cut a reference rated `bad`.
@@ -64,15 +64,15 @@ A recipe is the list of roles, top to bottom. Start from the page type and drop 
 | mobile, home | `status-header, hero` (or `detail`), `list, cards, tabbar` |
 | tablet | the mobile recipe for app screens, the website recipe for sites |
 
-**From the library:** call `stitch_page` with `canvasId`, `platform`, a short `title`, `mode: "collage"`, the `recipe` and `variants: 3` or `4`. The server fills each role from the library, so each variant mixes at least 3 sources when it can, and places the frames side by side in a section on the board. A web app sidebar sits in the same row as the content; if the server's recipe cannot express that, pass explicit `rows` instead (next point).
+**From the library:** call `frankenstein_page` with `canvasId`, `platform`, a short `title`, `mode: "collage"`, the `recipe` and `variants: 3` or `4`. The server fills each role from the library, so each variant mixes at least 3 sources when it can, and places the frames side by side in a section on the board. A web app sidebar sits in the same row as the content; if the server's recipe cannot express that, pass explicit `rows` instead (next point).
 
-**The user dictated parts** ("nav from the dev tool page, hero from the coffee site"): cut those parts first, then call `stitch_page` with explicit `rows` and no recipe: one row per band, each `{ "slots": [{ "partId": "pt-...", "note": "steal: ..." }], "widths": [1, 3] }`. A row holds 1 slot (full width) or 2 to 3 side by side (sidebar and content, a card row). If a part they named is not on the board, say so and offer to search for it.
+**The user dictated parts** ("nav from the dev tool page, hero from the coffee site"): cut those parts first, then call `frankenstein_page` with explicit `rows` and no recipe: one row per band, each `{ "slots": [{ "partId": "pt-...", "note": "steal: ..." }], "widths": [1, 3] }`. A row holds 1 slot (full width) or 2 to 3 side by side (sidebar and content, a card row). If a part they named is not on the board, say so and offer to search for it.
 
 Pass `directionId` when the page serves one kept direction on the board, and a one line `note` with the idea.
 
 ### 5. Review each variant like a designer
 
-Read each variant from the `stitch_page` answer: its rows, slots, parts and sources. Then judge it:
+Read each variant from the `frankenstein_page` answer: its rows, slots, parts and sources. Then judge it:
 
 - **Rhythm:** dense and airy bands alternate; no three busy bands in a row.
 - **Hierarchy:** one clear hero; no second hero fighting it from a `features` band.
@@ -81,14 +81,14 @@ Read each variant from the `stitch_page` answer: its rows, slots, parts and sour
 - **Sources:** no two neighbouring bands from the same site; at least 3 sources per variant.
 - **One page:** it reads as one product, and you can say its idea in one line.
 
-Fix what fails with `update_stitch` (`canvasId`, `stitchId`, `ops`), for example:
+Fix what fails with `update_frankenstein` (`canvasId`, `stitchId`, `ops`), for example:
 
 - `{ "op": "swap", "slotId": "sl-...", "partId": "pt-..." }` to try another part in a slot
 - `{ "op": "crop", "slotId": "sl-...", "crop": {...} }` to tighten a slot without a new part (only when you saw the image)
 - `{ "op": "widths", "rowId": "rw-...", "widths": [1, 4] }`, `{ "op": "moveRow", "rowId": "rw-...", "index": 2 }`, `{ "op": "remove", "slotId": "sl-..." }`
 - `{ "op": "note", "note": "Editorial nav over a dashboard hero" }` for the variant's one line idea, and `{ "op": "note", "slotId": "sl-...", "note": "steal: ..." }` for a slot
 
-When one variant has rows you love, call `remix_stitch` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result.
+When one variant has rows you love, call `remix_frankenstein` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result.
 
 To judge structure, offer mode `even` (dark parts inverted so the page reads as one theme) or `wireframe` (grey with role labels): `{ "op": "mode", "mode": "wireframe" }`. Keep `collage` as the default view.
 

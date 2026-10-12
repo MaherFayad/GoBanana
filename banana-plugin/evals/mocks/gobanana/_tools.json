@@ -665,7 +665,7 @@
       }
     },
     {
-      "name": "stitch_page",
+      "name": "frankenstein_page",
       "title": "Stitch a Frankenstein page",
       "description": "Stack parts into new pages in a frame sized for the platform (390, 834 or 1440). Pass rows of part ids, or a recipe (roles top to bottom) plus variants (1 to 6) and the server fills each role from the parts library with seeded picks, mixing at least 3 sources per variant when it can. Frames go side by side on the canvas. Every slot shows its source.",
       "inputSchema": {
@@ -823,7 +823,7 @@
       }
     },
     {
-      "name": "remix_stitch",
+      "name": "remix_frankenstein",
       "title": "Remix a Frankenstein page",
       "description": "Make new variants of a Frankenstein page next to it. lock keeps slots (slot ids or roles); vary names the roles to swap (default: every unlocked slot). Seeded: the same call gives the same result.",
       "inputSchema": {
@@ -890,7 +890,7 @@
       }
     },
     {
-      "name": "update_stitch",
+      "name": "update_frankenstein",
       "title": "Edit a Frankenstein page",
       "description": "Edit one Frankenstein page with ops: swap (slotId, partId), move (slotId, rowId, index), moveRow (rowId, index), remove (slotId or rowId), insert (index, slots, widths), crop (slotId, crop), widths (rowId, widths), mode (collage, wireframe, even), note (note, optional slotId), title (title).",
       "inputSchema": {

@@ -1,6 +1,6 @@
 /**
- * Shared wiring for the "Frankenstein it" tools (cut_parts, stitch_page, remix_stitch,
- * update_stitch). Not a tool itself. Internal names say "stitch"; every text the user or agent
+ * Shared wiring for the "Frankenstein it" tools (cut_parts, frankenstein_page, remix_frankenstein,
+ * update_frankenstein). Not a tool itself. Internal names say "stitch"; every text the user or agent
  * reads says "Frankenstein page".
  */
 import { z } from "zod";

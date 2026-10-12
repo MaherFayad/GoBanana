@@ -139,7 +139,7 @@ export const MAX_PARTS = 80;
 /** Most rows in one stitch, and slots per row. */
 export const MAX_STITCH_ROWS = 14;
 export const MAX_SLOTS_PER_ROW = 3;
-/** Most variants one stitch_page or remix_stitch call makes. */
+/** Most variants one frankenstein_page or remix_frankenstein call makes. */
 export const MAX_VARIANTS = 6;
 
 export function clampCrop(c: Crop): Crop {

@@ -161,7 +161,7 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
           `- ${p.id}: ${p.role} from ${p.sourceSite} ${p.sourceUrl}, crop x ${pct(p.crop.x)}% y ${pct(p.crop.y)}% w ${pct(p.crop.w)}% h ${pct(p.crop.h)}%${p.guessedCrop ? " (guessed, pass a crop to fix it)" : ""}`,
         );
       }
-      lines.push("Next: stitch_page with rows of part ids, or a recipe of roles.", `Web link: ${out.webUrl}`);
+      lines.push("Next: frankenstein_page with rows of part ids, or a recipe of roles.", `Web link: ${out.webUrl}`);
       return toolResult(lines.join("\n"), out);
     } catch {
       console.error("[cut_parts] failed");
