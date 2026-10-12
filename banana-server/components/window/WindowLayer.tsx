@@ -44,8 +44,18 @@ type Props = {
   portal?: boolean;
   /** Escape closes the window (not for the canvas, where Escape belongs to the board). */
   escapeCloses?: boolean;
+  /**
+   * A loading shell (the route's loading.tsx): the window opens at once while the server loads,
+   * and the real window that replaces it takes over without opening a second time.
+   */
+  shell?: boolean;
   children: ReactNode;
 };
+
+/** The last loading shell: the real window of the same kind that follows it skips its open motion. */
+let lastShell: { kind: string; at: number } | null = null;
+/** The real window mounts in the same commit the shell leaves; this only guards against stale marks. */
+const SHELL_HANDOFF_MS = 1000;
 
 const noop = () => () => {};
 
@@ -76,7 +86,7 @@ function isolate(keep: HTMLElement): () => void {
   };
 }
 
-export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal = false, escapeCloses = false, children }: Props) {
+export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal = false, escapeCloses = false, shell = false, children }: Props) {
   const router = useRouter();
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const layerRef = useRef<HTMLDivElement>(null);
@@ -96,8 +106,11 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
     state.leaving = false;
     win.style.visibility = "";
     state.origin = overlay ? findOrigin(origin) : null;
+    // A real window that replaces its loading shell is already open: no second open motion.
+    const handoff = !shell && lastShell !== null && lastShell.kind === kind && Date.now() - lastShell.at < SHELL_HANDOFF_MS;
+    lastShell = shell ? { kind, at: Date.now() } : null;
     // A direct load animates in CSS (it paints before hydration); an overlay animates here.
-    if (overlay) animateOpen(win, state.origin?.getBoundingClientRect() ?? null, backRef.current);
+    if (overlay && !handoff) animateOpen(win, state.origin?.getBoundingClientRect() ?? null, backRef.current);
 
     const before = document.activeElement as HTMLElement | null;
     const scope = layer.closest(".site") ?? document.body;
@@ -137,6 +150,11 @@ export function WindowLayer({ mode, kind, label, closeHref, origin, dock, portal
       undoInert();
       root.style.overflow = scroll;
       if (title !== null) document.title = title;
+      // A shell hands over to the real window: mark the handoff, and focus stays with it.
+      if (shell) {
+        lastShell = { kind, at: Date.now() };
+        return;
+      }
       const focusBack = state.origin?.isConnected ? state.origin.querySelector<HTMLElement>("button, a") ?? state.origin : before;
       if (focusBack?.isConnected) requestAnimationFrame(() => focusBack.focus({ preventScroll: true }));
     };

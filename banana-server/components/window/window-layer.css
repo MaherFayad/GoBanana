@@ -137,3 +137,80 @@
     inset-block-start: 0;
   }
 }
+
+/* ------------------------------------------------------------------ loading shell (WindowShell) */
+
+.wl-shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+/* Canvas: the skeleton window fills the frame. */
+.wl-shell > .bn-skel-window {
+  flex: 1 1 auto;
+}
+
+/* Canvases: a Finder window with the sidebar and a grid of cards, on the shimmer bars. */
+.wl-skel-finder {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: var(--st-space-2xl);
+  min-block-size: 0;
+  padding: var(--st-space-s);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-strong);
+}
+
+.wl-skel-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-l);
+  padding: var(--st-space-l);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-solid);
+}
+
+.wl-skel-lights {
+  display: flex;
+  gap: 0.75rem;
+  margin-block-end: var(--st-space-l);
+}
+
+.wl-skel-lights > span {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 50%;
+  background: var(--st-desk-light-idle);
+}
+
+.wl-skel-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-2xl);
+  padding-block: var(--st-space-xl);
+  padding-inline: var(--st-space-s) var(--st-space-2xl);
+}
+
+.wl-skel-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--st-space-2xl);
+}
+
+.wl-skel-cards > .st-skeleton {
+  --st-skeleton-h: 11rem;
+}
+
+@media (max-width: 767.98px) {
+  .wl-skel-finder {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wl-skel-side {
+    display: none;
+  }
+}
