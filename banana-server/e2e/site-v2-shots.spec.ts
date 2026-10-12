@@ -24,7 +24,8 @@ mkdirSync(OUT, { recursive: true });
 
 const SIZES = { desktop: { viewport: { width: 1440, height: 900 } }, phone: { ...IPHONE } } as const;
 const LOCALES = ["en", "ar"] as const;
-const SECTIONS = ["#canvas", "#how", "#gallery", "#clips", "#ship-title", "#install", "#pricing-title", "#faq-title", "#final-title"];
+// The scroll story sections (docs/landing-motion-spec.md), in page order.
+const SECTIONS = ["#canvas", "#gallery", "#how", "#faq", "#ship", "#pricing", "#kit", "#next", "#end-title"];
 const COLORS: [number, number, number][][] = [
   [[186, 222, 255], [74, 108, 170]],
   [[255, 214, 170], [196, 72, 92]],
@@ -41,7 +42,8 @@ async function open(page: Page, url: string) {
     return route.fulfill({ status: 200, contentType: "image/png", body: gradientPng(320, 240, from!, to!) });
   });
   await page.goto(url);
-  await expect(page.locator("html")).toHaveClass(/reveal-on/);
+  // Hydrated: the menu bar clock is client only.
+  await expect(page.locator(".menubar-clock")).not.toBeEmpty();
   await page.evaluate(() => document.fonts.ready);
   await page.addStyleTag({ content: "*, *::before, *::after { caret-color: transparent !important; } nextjs-portal { display: none !important; }" });
 }
@@ -91,7 +93,7 @@ test.describe("open states", () => {
       await expect(page.locator(".quicklook")).toBeVisible();
       await shot(page, `quicklook-${locale}`);
       await page.keyboard.press("Escape");
-      await scrollTo(page, "#faq-title");
+      await scrollTo(page, "#faq");
       await page.locator(".mail-row").nth(2).click();
       await shot(page, `mail-${locale}`);
       await scrollTo(page, "#gallery");

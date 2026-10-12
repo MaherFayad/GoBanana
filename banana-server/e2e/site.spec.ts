@@ -73,16 +73,21 @@ test("the delete account dialog is a danger alertdialog with Cancel focused", as
   await expect(opener).toBeFocused();
 });
 
-test("copy buttons copy the code and show a Copied toast", async ({ page, context }) => {
+test("copy buttons copy the server address and show a Copied toast", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await visit(page, "/en");
-  const block = page.getByTestId("code-claude");
-  await block.getByRole("button").click();
-  const toast = page.locator(".st-toast");
-  await expect(toast).toBeVisible();
-  const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toMatch(/^claude mcp add --transport http /);
-  await expect(toast).toHaveCount(1);
+  // The landing has the address twice: the hero window and the last call at the end.
+  const blocks = page.getByTestId("code-server-url");
+  await expect(blocks).toHaveCount(2);
+  for (const block of await blocks.all()) {
+    await page.evaluate(() => navigator.clipboard.writeText(""));
+    await block.getByRole("button").click();
+    const toast = page.locator(".st-toast");
+    await expect(toast).toBeVisible();
+    await expect(toast).toHaveCount(1);
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toMatch(/^https?:\/\/\S+\/api\/mcp$/);
+  }
 });
 
 test("Arabic pages are rtl with the Arabic font, while code and the logo stay ltr", async ({ page }) => {
@@ -91,17 +96,16 @@ test("Arabic pages are rtl with the Arabic font, while code and the logo stay lt
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   const font = await page.locator(".site").evaluate((el) => getComputedStyle(el).fontFamily);
   expect(font).toMatch(/^"?IBM Plex Sans Arabic/);
-  for (const id of ["code-claude", "code-cursor"]) {
-    const block = page.getByTestId(id);
-    await expect(block).toHaveAttribute("dir", "ltr");
-    expect(await block.locator("pre").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
-  }
   // The server address is an ltr code run inside an rtl block, so the block still sits at the start.
-  const address = page.getByTestId("code-server-url").first().locator("code");
-  await expect(address).toHaveAttribute("dir", "ltr");
+  for (const address of await page.getByTestId("code-server-url").locator("code").all()) {
+    await expect(address).toHaveAttribute("dir", "ltr");
+    expect(await address.evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
+  }
+  // The export excerpts are code too.
+  for (const pre of await page.locator(".kit-fan pre").all()) expect(await pre.evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   expect(await page.locator(".brand").evaluate((el) => getComputedStyle(el).direction)).toBe("ltr");
   // The primary call to action is the yellow Studio primary button.
-  const cta = page.locator('.callout.is-hero .st-btn[data-variant="primary"]');
+  const cta = page.locator('.hero-head .st-btn[data-variant="primary"]');
   await expect(cta).toHaveCount(1);
 });
 
