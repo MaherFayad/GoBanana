@@ -1,0 +1,92 @@
+/*
+ * WindowLayer.tsx: one app window over the site (overlay) or on the desk (a direct load).
+ * The backdrop is the only blurred layer; the window moves with transform and opacity only
+ * (components/window/motion.ts). Tokens only, logical properties only.
+ */
+
+.wl {
+  position: fixed;
+  z-index: var(--st-z-spotlight);
+  inset: 0;
+  overscroll-behavior: contain;
+}
+
+.wl-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--st-window-backdrop);
+  backdrop-filter: blur(var(--st-window-backdrop-blur)) saturate(1.1);
+}
+
+/* A direct load: the desk itself, no page behind it to blur. */
+.wl[data-mode="page"] .wl-backdrop {
+  background: var(--st-desk-bg);
+  backdrop-filter: none;
+}
+
+.wl-window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  outline: none;
+}
+
+/* The canvas: a large window with a margin of desk around it. */
+.wl[data-kind="canvas"] .wl-window {
+  inset: clamp(0.5rem, 2.2vw, 2.25rem);
+}
+
+/* A centred settings window that scrolls inside. */
+.wl[data-kind="settings"] .wl-window {
+  inset-block: clamp(1rem, 7vh, 4.5rem);
+  inset-inline: 0;
+  inline-size: min(56rem, 100% - 2rem);
+  block-size: fit-content;
+  max-block-size: calc(100% - 2 * clamp(1rem, 7vh, 4.5rem));
+  margin-inline: auto;
+}
+
+/* Zoom: the window fills the screen. */
+.wl[data-zoomed] .wl-window {
+  inset: 0;
+  inline-size: auto;
+  block-size: auto;
+  max-block-size: none;
+  margin: 0;
+}
+
+/* A direct load opens in CSS, so the first paint is already moving (before hydration). */
+.wl[data-mode="page"] .wl-window {
+  animation: wl-open var(--st-window-open) var(--st-window-ease) backwards;
+}
+
+@keyframes wl-open {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl[data-mode="page"] .wl-window {
+    animation: wl-fade var(--st-duration-zoom) ease backwards;
+  }
+
+  @keyframes wl-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+@media (max-width: 719.98px) {
+  .wl[data-kind] .wl-window {
+    inset: 0;
+    inline-size: auto;
+    block-size: auto;
+    max-block-size: none;
+    margin: 0;
+  }
+}

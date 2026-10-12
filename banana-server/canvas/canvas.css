@@ -1720,6 +1720,22 @@
   background: none;
 }
 
+/* Inside a WindowLayer (components/window/window-layer.css) the layer is the desk and places the
+   window; the page only fills it. */
+.bn-page[data-framed] {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  padding: 0;
+  background: none;
+}
+
+.wl[data-zoomed] .bn-canvas[data-window] {
+  border-color: transparent;
+  border-radius: 0;
+}
+
 .bn-page > .bn-canvas {
   flex: 1 1 auto;
   block-size: auto;
@@ -2012,9 +2028,9 @@
   background: var(--st-desk-glass-border);
 }
 
-/* The board meets the sidebar on a soft rounded corner; with no sidebar (the shared canvas) it
-   runs straight to the window edge, and the window clips the rest. */
-.bn-canvas[data-window] .bn-body > .bn-flow:first-child {
+/* In a window the board sits square under the title bar and beside the sidebar, split by
+   hairlines: no rounded inset corner (it read as a stray panel edge under the bar). */
+.bn-canvas[data-window] .bn-flow {
   border-start-start-radius: 0;
 }
 
@@ -2092,6 +2108,11 @@
 
 a.bn-light::before {
   rotate: 45deg;
+}
+
+/* Minimize: a single bar. */
+button.bn-light[data-light="min"]::before {
+  background: linear-gradient(currentColor, currentColor) center / 100% 1.5px no-repeat;
 }
 
 .bn-lights:is(:hover, :focus-within) :is(a, button).bn-light::before {

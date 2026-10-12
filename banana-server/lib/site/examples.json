@@ -1,0 +1,1425 @@
+{
+ "generatedAt": "2026-10-12",
+ "serperRequests": 45,
+ "featured": "notes-launch",
+ "examples": [
+  {
+   "key": "notes-launch",
+   "brief": "launch page for an AI note-taking startup",
+   "platform": "website",
+   "wildness": 4,
+   "wildnessLabel": "Wild",
+   "lens": null,
+   "direction": {
+    "id": "bd-564z6z6q",
+    "title": "AI note-taking launch printed on a botanical specimen sheet",
+    "twist": "every other section inverted, end to end",
+    "move": "transplant + constraint",
+    "spec": {
+     "typography": "A classic book serif for display at clamp(48px, 8vw, 120px), a plain sans for body at 18px.",
+     "color": "Warm amber glow on deep brown; text at 4.5 to 1 contrast or more.",
+     "layout": "Every other section flips to inverted color, on a 12 column grid with fluid type.",
+     "motion": "Soft 250ms eases, like paper settling, and none with reduced motion on.",
+     "texture": "A soft paper grain on flat color.",
+     "signature": "The hero section built like a botanical specimen sheet.",
+     "pattern": "One specimen centred with a label in the corner, as the section divider.",
+     "steal": [
+      "The print details and wear of a botanical specimen sheet.",
+      "The discipline of one rule: every other section inverted.",
+      "The candlelit color temperature."
+     ],
+     "avoid": [
+      "A hero with no clear first action.",
+      "Body text wider than 75 characters.",
+      "Scroll jacking."
+     ],
+     "whyItFits": "A candlelit mood and botanical specimen sheet give the AI note-taking launch a look no competitor has."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-iscbht5t",
+     "title": "Soap bubble film AI note-taking launch, after Pakistani ajrak",
+     "twist": "oversized clock faces crowd the edges"
+    },
+    {
+     "id": "bd-mrkh32m8",
+     "title": "AI note-taking launch, rewound to Googie 1958",
+     "twist": "fingerprints the size of buildings"
+    },
+    {
+     "id": "bd-2ve1lj5w",
+     "title": "Newsprint paper AI note-taking launch, folded into a gig poster",
+     "twist": "borders from Panamanian mola"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_e22a77520ab87b90",
+     "title": "Editorial Hero Section for Photography Studio Website",
+     "creator": "Antonio Galinec",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/26171844-Editorial-Hero-Section-for-Photography-Studio-Website",
+     "src": "https://cdn.dribbble.com/userupload/43772631/file/original-447e10dcec47f32bc486ff40077d589d.jpg?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "The serif headline that breaks into italics mid line."
+    },
+    {
+     "id": "ref_91e8ca6ed7c12708",
+     "title": "Wootten: Cordwainer & Leather Craftsmen",
+     "site": "httpster.net",
+     "href": "https://httpster.net/website/wootten-cordwainer-and-leather-craftsmen/",
+     "src": "https://httpster.net/assets/media/z1/wootten-cordwainer-and-leather-craftsmen-2012-09-25T2000230000-Z1Jq2V1.webp",
+     "w": 1800,
+     "h": 1125,
+     "steal": "Objects laid out like pinned specimens, with a tiny label in the middle."
+    },
+    {
+     "id": "ref_2f68b8dc78b5ecd1",
+     "title": "ITB Worldwide",
+     "site": "siteinspire.com",
+     "href": "https://www.siteinspire.com/website/4768-itb-worldwide",
+     "src": "https://r2.siteinspire.com/cdn-cgi/image/width=800,height=500,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/KvsK3IxJHE3u.jpg",
+     "w": 1920,
+     "h": 1200,
+     "steal": "One calm sentence with the key words set in italic."
+    },
+    {
+     "id": "ref_9215574733abdf19",
+     "title": "YCN Studio",
+     "site": "httpster.net",
+     "href": "https://httpster.net/website/ycn-studio/",
+     "src": "https://httpster.net/assets/media/24/ycn-studio-2013-03-15T0900540000-24kS2d.webp",
+     "w": 1800,
+     "h": 1125,
+     "steal": "A plain index list of past work as the whole left column."
+    },
+    {
+     "id": "ref_7919f6d649c8ad64",
+     "title": "Input Logic",
+     "site": "siteinspire.com",
+     "href": "https://www.siteinspire.com/website/12508-input-logic",
+     "src": "https://r2.siteinspire.com/cdn-cgi/image/width=800,height=500,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/018/000/original-e30ab5f6920067344ecc88f90deaaf43.png",
+     "w": 1920,
+     "h": 1200,
+     "steal": "The inverted section: light type on deep color for one screen."
+    },
+    {
+     "id": "ref_c28b7b157ee0cbe6",
+     "title": "Josephmark",
+     "site": "httpster.net",
+     "href": "https://httpster.net/website/josephmark-2017/",
+     "src": "https://httpster.net/assets/media/wg/josephmark.com.au-WgFbO.webp",
+     "w": 1800,
+     "h": 1125,
+     "steal": "Navigation as giant type, with one word struck through."
+    },
+    {
+     "id": "ref_37edd018dfa0a51a",
+     "title": "AI Website Builder Landing Page UI",
+     "creator": "Naasmind",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27186570-AI-Website-Builder-Landing-Page-UI",
+     "src": "https://cdn.dribbble.com/userupload/47072232/file/073657897d13f007b36c3a43b85c7302.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "The feature grid, to calm down with a serif and a paper tone."
+    },
+    {
+     "id": "ref_fa08337416e1821c",
+     "title": "CASA NERO: Fashion Website Design (Editorial Landing Page)",
+     "creator": "Elux Space",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27278082-CASA-NERO-Fashion-Website-Design-Editorial-Landing-Page",
+     "src": "https://cdn.dribbble.com/userupload/47385738/file/43ebd5fbc3618338c7b2eeac43859152.png?format=webp&resize=800x",
+     "w": 3200,
+     "h": 2400,
+     "steal": "Black and white photos cropped hard into a magazine grid."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_b1ff9eb4ce73030d",
+     "title": "Herbarium Sheet Image",
+     "site": "pinterest.com",
+     "href": "https://fr.pinterest.com/pin/980729256389115625/",
+     "src": "https://i.pinimg.com/736x/b3/bd/63/b3bd63acd12050fa565fba653f6d2434.jpg",
+     "w": 736,
+     "h": 954,
+     "steal": "One specimen centred on the sheet, label in the bottom corner."
+    },
+    {
+     "id": "ref_9d5837ca2915b760",
+     "title": "herbarium sheet",
+     "site": "pinterest.com",
+     "href": "https://ph.pinterest.com/pin/herbarium-sheet--744501382156790478/",
+     "src": "https://i.pinimg.com/736x/e2/12/ab/e212ab27afcce8183e1fe24445662432.jpg",
+     "w": 736,
+     "h": 1073,
+     "steal": "Lots of empty paper around a single small object."
+    },
+    {
+     "id": "ref_233760820e3ab20f",
+     "title": "Herbarium Specimens",
+     "site": "pinterest.com",
+     "href": "https://kr.pinterest.com/pin/herbarium-specimens--66991113180245654/",
+     "src": "https://i.pinimg.com/736x/f0/28/d7/f028d715acdefe76baf31f0508868580.jpg",
+     "w": 735,
+     "h": 1036,
+     "steal": "The colour checker strip as a quiet divider."
+    },
+    {
+     "id": "ref_f43da3001aaad91b",
+     "title": "Kristin Ellen Martin Hockman on Instagram: “Antique Swedish...",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/antique-swedish-herbarium-specimens--115686284167359080/",
+     "src": "https://i.pinimg.com/736x/70/1e/b9/701eb9dd5498e82d400baf5bfba060d7.jpg",
+     "w": 736,
+     "h": 920,
+     "steal": "Faded inks and handwritten labels for captions."
+    }
+   ],
+   "stitch": {
+    "title": "Specimen launch",
+    "note": "A dark nav over an editorial serif hero, specimens as cards, the index list as proof, the menu as a footer.",
+    "platform": "website",
+    "rows": [
+     {
+      "parts": [
+       0
+      ]
+     },
+     {
+      "parts": [
+       1
+      ]
+     },
+     {
+      "parts": [
+       2,
+       3
+      ],
+      "widths": [
+       3,
+       2
+      ]
+     },
+     {
+      "parts": [
+       4
+      ]
+     },
+     {
+      "parts": [
+       5
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "role": "nav",
+      "crop": {
+       "x": 0,
+       "y": 0,
+       "w": 1,
+       "h": 0.07
+      },
+      "theme": "dark",
+      "note": "Pill nav and one call to action on the right.",
+      "ref": {
+       "id": "ref_7919f6d649c8ad64",
+       "title": "Input Logic",
+       "site": "siteinspire.com",
+       "href": "https://www.siteinspire.com/website/12508-input-logic",
+       "src": "https://r2.siteinspire.com/cdn-cgi/image/width=1400,height=875,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/018/000/original-e30ab5f6920067344ecc88f90deaaf43.png",
+       "w": 1920,
+       "h": 1200
+      }
+     },
+     {
+      "role": "hero",
+      "crop": {
+       "x": 0.08,
+       "y": 0.08,
+       "w": 0.84,
+       "h": 0.56
+      },
+      "theme": "light",
+      "note": "Serif and italic headline next to one photo.",
+      "ref": {
+       "id": "ref_e22a77520ab87b90",
+       "title": "Editorial Hero Section for Photography Studio Website",
+       "creator": "Antonio Galinec",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/26171844-Editorial-Hero-Section-for-Photography-Studio-Website",
+       "src": "https://cdn.dribbble.com/userupload/43772631/file/original-447e10dcec47f32bc486ff40077d589d.jpg?format=webp&resize=1400x",
+       "w": 1200,
+       "h": 900
+      }
+     },
+     {
+      "role": "cards",
+      "crop": {
+       "x": 0.03,
+       "y": 0.14,
+       "w": 0.94,
+       "h": 0.72
+      },
+      "theme": "light",
+      "note": "Each feature pinned like a specimen.",
+      "ref": {
+       "id": "ref_91e8ca6ed7c12708",
+       "title": "Wootten: Cordwainer & Leather Craftsmen",
+       "site": "httpster.net",
+       "href": "https://httpster.net/website/wootten-cordwainer-and-leather-craftsmen/",
+       "src": "https://httpster.net/assets/media/z1/wootten-cordwainer-and-leather-craftsmen-2012-09-25T2000230000-Z1Jq2V1.webp",
+       "w": 1800,
+       "h": 1125
+      }
+     },
+     {
+      "role": "content",
+      "crop": {
+       "x": 0,
+       "y": 0.1,
+       "w": 0.6,
+       "h": 0.6
+      },
+      "theme": "light",
+      "note": "The index list, as the proof column.",
+      "ref": {
+       "id": "ref_9215574733abdf19",
+       "title": "YCN Studio",
+       "site": "httpster.net",
+       "href": "https://httpster.net/website/ycn-studio/",
+       "src": "https://httpster.net/assets/media/24/ycn-studio-2013-03-15T0900540000-24kS2d.webp",
+       "w": 1800,
+       "h": 1125
+      }
+     },
+     {
+      "role": "features",
+      "crop": {
+       "x": 0,
+       "y": 0.68,
+       "w": 0.665,
+       "h": 0.3
+      },
+      "theme": "light",
+      "note": "Keep the grid, swap the icons for line drawings.",
+      "ref": {
+       "id": "ref_37edd018dfa0a51a",
+       "title": "AI Website Builder Landing Page UI",
+       "creator": "Naasmind",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/27186570-AI-Website-Builder-Landing-Page-UI",
+       "src": "https://cdn.dribbble.com/userupload/47072232/file/073657897d13f007b36c3a43b85c7302.png?format=webp&resize=1400x",
+       "w": 1200,
+       "h": 900
+      }
+     },
+     {
+      "role": "footer",
+      "crop": {
+       "x": 0.1,
+       "y": 0.16,
+       "w": 0.8,
+       "h": 0.7
+      },
+      "theme": "light",
+      "note": "The menu set huge, as the last screen.",
+      "ref": {
+       "id": "ref_c28b7b157ee0cbe6",
+       "title": "Josephmark",
+       "site": "httpster.net",
+       "href": "https://httpster.net/website/josephmark-2017/",
+       "src": "https://httpster.net/assets/media/wg/josephmark.com.au-WgFbO.webp",
+       "w": 1800,
+       "h": 1125
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "meditation",
+   "brief": "meditation app onboarding on iPhone",
+   "platform": "mobile",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "lens": null,
+   "direction": {
+    "id": "bd-ytfkafhl",
+    "title": "Marbled paper meditation onboarding with the rhythm of Indonesian batik",
+    "twist": "oversized monograms crowd the edges",
+    "move": "lens + material",
+    "spec": {
+     "typography": "A classic book serif for display at 34px, a plain sans for body at 17px.",
+     "color": "Pale butter yellow and soft blush on white; accents from Indonesian batik, text at 4.5 to 1 or more.",
+     "layout": "4 column grid, 16px margins, key actions in the thumb zone, a tab bar or bottom sheet.",
+     "motion": "Light 200ms fades and short slides, and none with reduced motion on.",
+     "texture": "Swirled marbled paper as endpapers behind content.",
+     "signature": "The onboarding framed by Indonesian batik patterns.",
+     "pattern": "A Indonesian batik band as the divider in the bottom sheet.",
+     "steal": [
+      "The pattern rhythm of Indonesian batik.",
+      "How light sits on marbled paper.",
+      "The scale jump of giant monograms.",
+      "The morning light color temperature."
+     ],
+     "avoid": [
+      "Text over marbled paper without a solid backing.",
+      "Tap targets under 44pt.",
+      "Detail hidden behind hover."
+     ],
+     "whyItFits": "A morning light mood suits people winding down, and Indonesian batik gives it a story."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-qmu7bn3r",
+     "title": "Meditation onboarding, rewound to Web 2.0 gloss 2006",
+     "twist": "folded into a bus stop timetable"
+    },
+    {
+     "id": "bd-u4kenozr",
+     "title": "Tiny meditation onboarding, huge rubber stamps",
+     "twist": "every other section inverted"
+    },
+    {
+     "id": "bd-5st3unv6",
+     "title": "Meditation onboarding straight out of 1950s mail order catalog",
+     "twist": "brackets at billboard size"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_f54fe7d0dc1e8848",
+     "title": "Mental Health App Onboarding Experience",
+     "creator": "Asmitaa",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/26017439-Mental-Health-App-Onboarding-Experience",
+     "src": "https://cdn.dribbble.com/userupload/43291559/file/original-41a88dbf6b5e5eb5782dbb52b8868673.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Arched frames that could hold a batik fill."
+    },
+    {
+     "id": "ref_274e0b9025720358",
+     "title": "TIDE: Sleep, Focus, Meditation",
+     "site": "screensdesign.com",
+     "href": "https://screensdesign.com/showcase/tide-sleep-focus-meditation",
+     "src": "https://media.screensdesign.com/avs-pp/aa14f3377ab240e7965cbcf22a553d01.webp",
+     "w": 2160,
+     "h": 4670,
+     "steal": "One big photo behind a short serif line."
+    },
+    {
+     "id": "ref_9794a46a025a5fa3",
+     "title": "InnerNow: Meditation & Joy",
+     "site": "screensdesign.com",
+     "href": "https://screensdesign.com/showcase/presence-meditation-joy",
+     "src": "https://media.screensdesign.com/avs-pp/4242217714e64be4bf65a2e11ff02f55.webp",
+     "w": 888,
+     "h": 1920,
+     "steal": "The full bleed first screen with one button."
+    },
+    {
+     "id": "ref_c54c660ac88e1c08",
+     "title": "Mindfullwell - Wellness App onboarding screen",
+     "creator": "Jhennifer",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/22920788-Mindfullwell-Wellness-App-onboarding-screen",
+     "src": "https://cdn.dribbble.com/userupload/11034122/file/original-448d6a40f02d012584610935d1bb138c.png?format=webp&resize=800x",
+     "w": 3200,
+     "h": 2400,
+     "steal": "Three onboarding steps with one idea each."
+    },
+    {
+     "id": "ref_f9d8239ec880efdb",
+     "title": "Meditation App",
+     "creator": "Nadya Lazurenko",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/24918143-Meditation-App",
+     "src": "https://cdn.dribbble.com/userupload/16752863/file/original-6847d40bf04566d4eb8d96d6f8f4f653.jpg?format=webp&resize=800x",
+     "w": 6400,
+     "h": 4800,
+     "steal": "Warm colour blocks behind each screen."
+    },
+    {
+     "id": "ref_c6a9703d4521a90a",
+     "title": "Meditation Moments - Guided",
+     "site": "screensdesign.com",
+     "href": "https://screensdesign.com/showcase/meditation-moments-guided",
+     "src": "https://media.screensdesign.com/avs-pp/7dd22ccbec574d82b8d3431a1b550c34.webp",
+     "w": 2160,
+     "h": 4670,
+     "steal": "A plain checklist of what the first week holds."
+    },
+    {
+     "id": "ref_177838be88e20336",
+     "title": "Slowdive | Meditation & Mantra",
+     "site": "screensdesign.com",
+     "href": "https://screensdesign.com/showcase/slowdive-meditation-mantra",
+     "src": "https://media.screensdesign.com/avs-pp/b1d947a89eac4f96a260c45f1bfc8540.webp",
+     "w": 2160,
+     "h": 4670,
+     "steal": "A dark screen with one centred pattern."
+    },
+    {
+     "id": "ref_1bd96669bace6921",
+     "title": "BreathEase: Meditation & Breathing App Onboarding",
+     "creator": "Yuliya Lebedeva",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/26266211-BreathEase-Meditation-Breathing-App-Onboarding",
+     "src": "https://cdn.dribbble.com/userupload/44073487/file/original-cd87d0dbdb47698005181b1b1e76a754.jpg?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Soft green cards with a single illustration."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_5cb2053c291cd0ed",
+     "title": "Megamendung Batik Pattern",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/22707335/Megamendung-Batik-Pattern",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/a81f2122707335.563170fd41b5a.jpg",
+     "w": 1200,
+     "h": 1200,
+     "steal": "Megamendung cloud lines, like marbled paper."
+    },
+    {
+     "id": "ref_75fb1e626e46056a",
+     "title": "Batik Kawung: Pattern Exploration",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/94440647/Batik-Kawung-Pattern-Exploration",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/af496894440647.5e7ec549ecbeb.png",
+     "w": 851,
+     "h": 852,
+     "steal": "Kawung circles as a repeating progress mark."
+    },
+    {
+     "id": "ref_d8bfb8518b8fed0d",
+     "title": "Indonesian batik. Design for textile, fabric, carpet",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/74749739/Indonesian-batik-Design-for-textile-fabric-carpet",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/6ce42474749739.5c38ce5b3237a.jpg",
+     "w": 1160,
+     "h": 772,
+     "steal": "Deep indigo with copper line work."
+    },
+    {
+     "id": "ref_6ef234a80947f3d6",
+     "title": "Trinita Batik - Branding",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/59301921/Trinita-Batik-Branding",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/8bdb8559301921.5a1fecf064716.jpg",
+     "w": 1400,
+     "h": 990,
+     "steal": "Batik used as a brand frame, not a wallpaper."
+    }
+   ],
+   "stitch": null
+  },
+  {
+   "key": "finance",
+   "brief": "personal finance home on iPhone",
+   "platform": "mobile",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "lens": null,
+   "direction": {
+    "id": "bd-l9kilfo2",
+    "title": "Personal finance as a morning light topographic map",
+    "twist": "no shadows, no depth",
+    "move": "transplant + constraint",
+    "spec": {
+     "typography": "A neutral neo-grotesk for display at 34px, the same family for body at 17px.",
+     "color": "Pale butter yellow and soft blush on white; text at 4.5 to 1 contrast or more.",
+     "layout": "Flat planes, no shadows or depth, on a 4 column grid with 16px margins and actions in the thumb zone.",
+     "motion": "Light 200ms fades and short slides, and none with reduced motion on.",
+     "texture": "Clean flat white surfaces.",
+     "signature": "The card built like a topographic map.",
+     "pattern": "Contour lines that tighten around the key point, as the bottom sheet.",
+     "steal": [
+      "The print details and wear of a topographic map.",
+      "The discipline of one rule: no shadows, no depth.",
+      "The morning light color temperature."
+     ],
+     "avoid": [
+      "Tap targets under 44pt.",
+      "Detail hidden behind hover.",
+      "Body text under 16px."
+     ],
+     "whyItFits": "A morning light mood suits people checking on their money, and topographic map gives it a story."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-n180vc45",
+     "title": "Edwardian 1905 personal finance with the rhythm of Iranian termeh",
+     "twist": "house rule: white text on color only"
+    },
+    {
+     "id": "bd-6giz03uf",
+     "title": "Personal finance in linen paper",
+     "twist": "fleurons at billboard size"
+    },
+    {
+     "id": "bd-r7w3zi87",
+     "title": "Personal finance smuggled back to 1939 World's Fair",
+     "twist": "everything hangs from the top, nothing breaks it"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_6531b533cc526f7a",
+     "title": "Genyer - Investment App Design",
+     "creator": "Farhan Fauzan",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/genyer-investment-app-design--541346817715468578/",
+     "src": "https://i.pinimg.com/736x/85/f3/b8/85f3b80bf65f2cb22856d6b6b21af02e.jpg",
+     "w": 736,
+     "h": 552,
+     "steal": "Pale green morning light behind the balance."
+    },
+    {
+     "id": "ref_49990a7deffb9b35",
+     "title": "Personal Banking & Finance App UI",
+     "creator": "Nixtio",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/26258323-Personal-Banking-Finance-App-UI",
+     "src": "https://cdn.dribbble.com/userupload/44048829/file/original-27b24160403eb47b6d50d013d1846d81.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Mint cards with the balance as the biggest thing."
+    },
+    {
+     "id": "ref_36fc8cc8edb39502",
+     "title": "Finance App UI Design",
+     "creator": "Orbix Studio",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27715366-Finance-App-UI-Design",
+     "src": "https://cdn.dribbble.com/userupload/48963489/file/baf0680dee59b27568b689915748f164.png?format=webp&resize=800x",
+     "w": 4800,
+     "h": 3600,
+     "steal": "A gauge that could become contour rings."
+    },
+    {
+     "id": "ref_927063e7b5b3fdd5",
+     "title": "Payno | Personal Finance Mobile App UI Design",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/930204498051481427/",
+     "src": "https://i.pinimg.com/736x/b9/bb/2a/b9bb2a5b9cf04958a24eb9f45e608449.jpg",
+     "w": 736,
+     "h": 981,
+     "steal": "One clean home screen, nothing extra."
+    },
+    {
+     "id": "ref_9377cc4acde7a105",
+     "title": "Personal Money Management Finance App UI UX Design",
+     "creator": "Aftabul Islam Samudro",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27148994-Personal-Money-Management-Finance-App-UI-UX-Design",
+     "src": "https://cdn.dribbble.com/userupload/46949261/file/bf010c5786b11d5b13fe16599c909dc2.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Charts in deep green with a glow."
+    },
+    {
+     "id": "ref_dc9bc86a7bf1f728",
+     "title": "Personal Finance Mobile App UI",
+     "creator": "Alamin Hossen",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27538440-Personal-Finance-Mobile-App-UI",
+     "src": "https://cdn.dribbble.com/userupload/48310616/file/d01d1da00bf837b6e33bc06f28388fbc.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Spending as a ring, with a list under it."
+    },
+    {
+     "id": "ref_cf3d2bff211e2c68",
+     "title": "Personal Finance Tracker Mobile App Design",
+     "creator": "Ronas IT",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27084022-Personal-Finance-Tracker-Mobile-App-Design",
+     "src": "https://cdn.dribbble.com/userupload/46727374/file/7e15f1f6d2a3b6bf68cb822d7dd5ff7e.png?format=webp&resize=800x",
+     "w": 3200,
+     "h": 2400,
+     "steal": "Big numbers on dark cards."
+    },
+    {
+     "id": "ref_1de836ab63a08b0c",
+     "title": "Personal Finance & Expense Tracker Mobile App",
+     "creator": "Nixtio",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/562950022194613583/",
+     "src": "https://i.pinimg.com/736x/60/f7/32/60f732eff919f5a377411af80abd5a63.jpg",
+     "w": 736,
+     "h": 1379,
+     "steal": "One loud accent colour for the main action."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_d070c22fb49d9b4f",
+     "title": "Eps10. Map of the topography line. Vector abstract...",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/eps10-map-of-the-topography-line-vector-abstract-topographic-map--283797214007831646/",
+     "src": "https://i.pinimg.com/736x/3b/7c/46/3b7c4675232233798e24f6a0e844b6ac.jpg",
+     "w": 736,
+     "h": 429,
+     "steal": "Contour lines as the chart grid."
+    },
+    {
+     "id": "ref_a77965044b100573",
+     "title": "3D map of the Europe, exaggerated EU topographic relief",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/177775749/3D-map-of-the-Europe-exaggerated-EU-topographic-relief",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/9166e0177775749.64dc937d64a26.jpg",
+     "w": 1400,
+     "h": 1028,
+     "steal": "Raised relief, to show where money piles up."
+    },
+    {
+     "id": "ref_fc1a6efab476850a",
+     "title": "Map of Northwest Washington State",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/69554829/Map-of-Northwest-Washington-State",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/8a0aa269554829.5b857ea6943d1.jpg",
+     "w": 1400,
+     "h": 931,
+     "steal": "Soft map colours for categories."
+    },
+    {
+     "id": "ref_7f18d69fb8f2d45e",
+     "title": "Topographic Map of Adirondack Mountains",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/203576845626030595/",
+     "src": "https://i.pinimg.com/736x/32/e3/4b/32e34b2cf2ca219dce58cb19e5c9c083.jpg",
+     "w": 735,
+     "h": 568,
+     "steal": "Elevation labels as tiny amount labels."
+    }
+   ],
+   "stitch": null
+  },
+  {
+   "key": "analytics",
+   "brief": "B2B analytics dashboard empty state",
+   "platform": "webapp",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "lens": null,
+   "direction": {
+    "id": "bd-w6ij22fh",
+    "title": "Liquid mercury B2B analytics empty, after Indian kantha quilts",
+    "twist": "texture instead of color, end to end",
+    "move": "material + lens",
+    "spec": {
+     "typography": "A high contrast editorial serif for display at 28px, a plain sans for body at 14px.",
+     "color": "Neutral base; texture does the work color would; text at 4.5 to 1 contrast or more.",
+     "layout": "Sidebar shell with a 12 column content area, dense tables, full keyboard support.",
+     "motion": "Slow 300ms fades and eases, nothing loops, and none with reduced motion on.",
+     "texture": "Mirror-like silver pools with soft reflections.",
+     "signature": "The empty state rendered in liquid mercury, with real light and shadow.",
+     "pattern": "Layered liquid mercury panels as the data table, depth shows what matters.",
+     "steal": [
+      "How light sits on liquid mercury.",
+      "The pattern rhythm of Indian kantha quilts.",
+      "The discipline of one rule: texture instead of color.",
+      "The spa-like color temperature."
+     ],
+     "avoid": [
+      "Text over liquid mercury without a solid backing.",
+      "Decoration inside data tables.",
+      "Motion on live numbers."
+     ],
+     "whyItFits": "A spa-like mood suits teams who read numbers all day, and liquid mercury gives it a story."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-2x7imt58",
+     "title": "B2B analytics empty rendered in hushed molten chrome",
+     "twist": "everything is a list, no exceptions"
+    },
+    {
+     "id": "bd-1xg3cao2",
+     "title": "B2B analytics empty as a sneaker box",
+     "twist": "diamonds the size of buildings"
+    },
+    {
+     "id": "bd-gf9spiez",
+     "title": "Hollywood Regency 1940s B2B analytics empty meets Guatemalan huipil",
+     "twist": "wax seals at billboard size"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_4c3c24d578afbf91",
+     "title": "Analytics dashboard Empty sate",
+     "creator": "Tali Teper",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/11604428-Analytics-dashboard-Empty-sate",
+     "src": "https://cdn.dribbble.com/userupload/27378454/file/original-3beceb5e24d7cd574c702ca9063bbcac.jpg?format=webp&resize=800x",
+     "w": 5874,
+     "h": 4404,
+     "steal": "Stat tiles kept in place while they wait for data."
+    },
+    {
+     "id": "ref_25d6cbd05e54f817",
+     "title": "Empty State Dashboard",
+     "creator": "Jakob Hauritz",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/26408179-Empty-State-Dashboard",
+     "src": "https://cdn.dribbble.com/userupload/20668799/file/original-b79b43031471e6c728874e311e691155.png?format=webp&resize=800x",
+     "w": 800,
+     "h": 600,
+     "steal": "Grey chart outlines as a preview of what comes."
+    },
+    {
+     "id": "ref_9c70c7ddd559fab7",
+     "title": "Proposales",
+     "site": "nicelydone.club",
+     "href": "https://nicelydone.club/examples/screens/b620d98a-4169-4b49-b1f5-e5aa1e5aeb31",
+     "src": "https://assets.nicelydone.club/f/proposales_empty-state_3a88547a_nicelydone.png",
+     "w": 3072,
+     "h": 1654,
+     "steal": "A dark empty table with one quiet prompt."
+    },
+    {
+     "id": "ref_f77a406ec7b82226",
+     "title": "Empty state",
+     "site": "nicelydone.club",
+     "href": "https://nicelydone.club/examples/screens/b24e9de7-e635-46fb-82cd-e7c5d129af80",
+     "src": "https://assets.nicelydone.club/f/digital-profile_empty-state_431ce463_nicelydone.jpg",
+     "w": 2880,
+     "h": 1524,
+     "steal": "One small card centred in a big calm space."
+    },
+    {
+     "id": "ref_a24748944bf82cb8",
+     "title": "Popup Dashboard",
+     "creator": "Amjad",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/22811634-Popup-Dashboard",
+     "src": "https://cdn.dribbble.com/userupload/44528600/file/6df2ab97b9ab22436614dea607c4cd90.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "Bars drawn as ghosts, labelled sample data."
+    },
+    {
+     "id": "ref_dbdfd8862a319fa4",
+     "title": "Dashboard UI • Empty State",
+     "creator": "Rebeca Viana",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/22058005-Dashboard-UI-Empty-State",
+     "src": "https://cdn.dribbble.com/userupload/8732263/file/original-fe4ae3bfdcc52ee1e962479af795f34e.png?format=webp&resize=800x",
+     "w": 1200,
+     "h": 900,
+     "steal": "The first action as the only coloured button."
+    },
+    {
+     "id": "ref_8baa0a032de25366",
+     "title": "Dashboard - Empty State",
+     "creator": "Marvin Sanchez",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/2865298-Dashboard-Empty-State",
+     "src": "https://cdn.dribbble.com/userupload/41830013/file/original-086de3d0c925dc4a13f051f419ddc6a6.png?format=webp&resize=800x",
+     "w": 800,
+     "h": 600,
+     "steal": "A friendly scene in the middle of the frame."
+    },
+    {
+     "id": "ref_78921a92fb654f37",
+     "title": "Search Empty State",
+     "site": "21st.dev",
+     "href": "https://21st.dev/@arihantcodes_1f7b8c4d/components/search-empty",
+     "src": "https://cdn.21st.dev/cdn-cgi/image/fit=scale-down,width=1280,quality=75,format=webp/https://cdn.21st.dev/arihantcodes_1f7b8c4d/search-empty/default/preview.1790148257351-2facd849-340f-40b2-bbe7-1a5822d0ac4c.png",
+     "w": 1280,
+     "h": 960,
+     "steal": "Search empty state with ready made suggestions."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_8d1264c5ec2cc05a",
+     "title": "Image result for mercury liquid texture",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/499336677428873498/",
+     "src": "https://i.pinimg.com/736x/72/ec/14/72ec14770e7c43412265ddf89c299897.jpg",
+     "w": 612,
+     "h": 433,
+     "steal": "Chrome ripples for the empty chart area."
+    },
+    {
+     "id": "ref_c010bb40b2c993b3",
+     "title": "Liquid Metal CGI & Fluid Dynamics | Sony Turbo TV Channel Ident",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/mercury-metal-artistic-photo--32862272274233126/",
+     "src": "https://i.pinimg.com/736x/86/99/49/8699497d6e06e59a8fdf64c67a836d7a.jpg",
+     "w": 736,
+     "h": 414,
+     "steal": "Mercury drops as loading dots."
+    },
+    {
+     "id": "ref_69ad3bad8d92991b",
+     "title": "Liquid metal texture background with chrome abstract waves",
+     "site": "pinterest.com",
+     "href": "https://jp.pinterest.com/pin/liquid-metal-texture-background-with-chrome-abstract-waves--897694138229576709/",
+     "src": "https://i.pinimg.com/736x/44/83/5d/44835d3088c1bd5763403adbd5cc402c.jpg",
+     "w": 673,
+     "h": 1200,
+     "steal": "Highlights, not colour, to show depth."
+    },
+    {
+     "id": "ref_ce4744faefeb2476",
+     "title": "Liquid Metal Voltage-Controlled Antenna Developed at North...",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/704039354277389198/",
+     "src": "https://i.pinimg.com/736x/b7/5f/64/b75f6413f720ce8c49ea1c73676a2876.jpg",
+     "w": 640,
+     "h": 359,
+     "steal": "A cold silver palette with one warm accent."
+    }
+   ],
+   "stitch": null
+  },
+  {
+   "key": "coffee",
+   "brief": "coffee roaster landing page",
+   "platform": "website",
+   "wildness": 4,
+   "wildnessLabel": "Wild",
+   "lens": null,
+   "direction": {
+    "id": "bd-nt4vqyp0",
+    "title": "Coffee roaster meets Kuba cloth, rewound to Memphis 1981",
+    "twist": "cards stacked like a deck, end to end",
+    "move": "era + lens + constraint",
+    "spec": {
+     "typography": "A sturdy grotesk for display at clamp(48px, 8vw, 120px), the same family for body at 18px.",
+     "color": "Cyan blue base with white line work; accents from Kuba cloth, text at 4.5 to 1 or more.",
+     "layout": "Cards stack like a deck you swipe through, on a 12 column grid with fluid type.",
+     "motion": "Short 150ms fades, no decorative motion, and none with reduced motion on.",
+     "texture": "Flat surfaces and hairline rules, no texture.",
+     "signature": "The hero section set in the type and color of Memphis 1981.",
+     "pattern": "Headers and labels from Memphis 1981 on the section divider.",
+     "steal": [
+      "The type and color of Memphis 1981.",
+      "The pattern rhythm of Kuba cloth.",
+      "The discipline of one rule: cards stacked like a deck.",
+      "The drafting table color temperature."
+     ],
+     "avoid": [
+      "A hero with no clear first action.",
+      "Body text wider than 75 characters.",
+      "Scroll jacking."
+     ],
+     "whyItFits": "A deliberate clash: a drafting table mood is the last thing hungry people deciding fast expect, so it sticks."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-2utg5tj6",
+     "title": "Coffee roaster wrapped in brushed aluminum",
+     "twist": "the wear of an air traffic flight strip"
+    },
+    {
+     "id": "bd-lkud0boc",
+     "title": "Coffee roaster meets Scottish tartan",
+     "twist": "stickers as big as the screen"
+    },
+    {
+     "id": "bd-b4xx6ve5",
+     "title": "Coffee roaster rendered in maximalist chunky knit",
+     "twist": "giant letterforms everywhere"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_1b0750870cb3ade4",
+     "title": "BRAZAVILLE. - Landing Page Design.",
+     "creator": "Nidal Benatia",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/9334434-BRAZAVILLE-Landing-Page-Design",
+     "src": "https://cdn.dribbble.com/userupload/25740210/file/original-11fddfeb18b90027135075c42b3ea78e.png?format=webp&resize=800x",
+     "w": 1600,
+     "h": 1200,
+     "steal": "Stacked heavy type on a deep green block."
+    },
+    {
+     "id": "ref_7aaada4949352793",
+     "title": "Oma Appel",
+     "site": "siteinspire.com",
+     "href": "https://www.siteinspire.com/website/11764-oma-appel",
+     "src": "https://r2.siteinspire.com/cdn-cgi/image/width=800,height=500,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/015/020/original.png",
+     "w": 1920,
+     "h": 1200,
+     "steal": "The name set edge to edge in one colour."
+    },
+    {
+     "id": "ref_aa8ffdec2f1bc5b0",
+     "title": "Landing Page UI Design: Coffee Roasting Business",
+     "creator": "Miodrag Vulicevic",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/21664477-Landing-Page-UI-Design-Coffee-Roasting-Business",
+     "src": "https://cdn.dribbble.com/userupload/7610502/file/original-f6eb8a6f41894511cc47314ad7fbdadc.png?format=webp&resize=800x",
+     "w": 1600,
+     "h": 7154,
+     "steal": "Line drawings of beans around the hero."
+    },
+    {
+     "id": "ref_1b6a0252c578fcda",
+     "title": "Tidewell: Coffee Product Page & Checkout",
+     "creator": "Prashant Bhakuni",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27758256-Tidewell-Coffee-Product-Page-Checkout",
+     "src": "https://cdn.dribbble.com/userupload/49123241/file/6afaa828e9f5e582a680843105298073.png?format=webp&resize=800x",
+     "w": 2880,
+     "h": 7040,
+     "steal": "A product page that reads like a tasting card."
+    },
+    {
+     "id": "ref_17915bce8db895b3",
+     "title": "Coffee Roasters Website",
+     "creator": "FleexStudio",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/18388367-Coffee-Roasters-Website",
+     "src": "https://cdn.dribbble.com/userupload/2801383/file/original-b27501652ce21b1e6380ea6210a9e6f9.jpg?format=webp&resize=800x",
+     "w": 4096,
+     "h": 3072,
+     "steal": "Beans shown as round swatches in a row."
+    },
+    {
+     "id": "ref_3b471e5ede76b287",
+     "title": "Landing page for Antillas Coffee Roasters",
+     "creator": "Jorge Domínguez",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27711481-Landing-page-for-Antillas-Coffee-Roasters",
+     "src": "https://cdn.dribbble.com/userupload/48949105/file/still-5e610cbc1e4e15bcf04e445fce9ee063.png?format=webp&resize=800x",
+     "w": 1468,
+     "h": 1080,
+     "steal": "A serif headline over one warm photo."
+    },
+    {
+     "id": "ref_7cd6b64b0f8eb995",
+     "title": "Touchy Coffee",
+     "site": "siteinspire.com",
+     "href": "https://www.siteinspire.com/website/12069-touchy-coffee",
+     "src": "https://r2.siteinspire.com/cdn-cgi/image/width=800,height=500,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/4CeuOWrOK2r4.jpg",
+     "w": 1920,
+     "h": 1200,
+     "steal": "Tins floating on white, shot from below."
+    },
+    {
+     "id": "ref_9a0ad20439bccfa1",
+     "title": "New Ground Coffee",
+     "site": "siteinspire.com",
+     "href": "https://www.siteinspire.com/website/12167-new-ground-coffee",
+     "src": "https://r2.siteinspire.com/cdn-cgi/image/width=800,height=500,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/fCEA5596KtnA.jpg",
+     "w": 1920,
+     "h": 1200,
+     "steal": "A spaced out serif wordmark across the top."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_bf2b7d861df738c6",
+     "title": "Memphis 1981-1988, Groninger Museum - AGI",
+     "site": "pinterest.com",
+     "href": "https://nl.pinterest.com/pin/memphis-19811988-groninger-museum-agi--383509724518045026/",
+     "src": "https://i.pinimg.com/736x/63/0d/7c/630d7c932d590410020ae46cdff57a27.jpg",
+     "w": 736,
+     "h": 674,
+     "steal": "Squiggles and confetti as section dividers."
+    },
+    {
+     "id": "ref_9017bee99503e525",
+     "title": "Ettore Sottsass “Tahiti” Lamp",
+     "creator": "Memphis Group",
+     "site": "pinterest.com",
+     "href": "https://ru.pinterest.com/pin/ettore-sottsass-tahiti-lamp-by-memphis-group-milano-1981--23151385576603530/",
+     "src": "https://i.pinimg.com/736x/33/c1/d6/33c1d66b3caacdaa7f1b418cf858acb9.jpg",
+     "w": 736,
+     "h": 1111,
+     "steal": "Primary colours on clean geometric parts."
+    },
+    {
+     "id": "ref_bea3be4b1c58b9e9",
+     "title": "Memphis co-founder Nathalie du Pasquier's un-serious book of...",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/34832597095161582/",
+     "src": "https://i.pinimg.com/736x/21/b9/7b/21b97b1203dc4bc34f21ed27a7986fc2.jpg",
+     "w": 595,
+     "h": 887,
+     "steal": "Black and white stripes next to loud colour."
+    },
+    {
+     "id": "ref_3da979ad25a17817",
+     "title": "Art et architecture",
+     "site": "pinterest.com",
+     "href": "https://ru.pinterest.com/pin/postmodern-design--585890232764115968/",
+     "src": "https://i.pinimg.com/736x/20/d9/1d/20d91dccf3c2b1d808d9cf53b9fb3235.jpg",
+     "w": 736,
+     "h": 1104,
+     "steal": "A poster grid with one tilted title."
+    }
+   ],
+   "stitch": {
+    "title": "Memphis roastery",
+    "note": "A red wordmark hero, bags as cards from two shops, a dark green review band, a blue footer.",
+    "platform": "website",
+    "rows": [
+     {
+      "parts": [
+       0
+      ]
+     },
+     {
+      "parts": [
+       1
+      ]
+     },
+     {
+      "parts": [
+       2,
+       3
+      ]
+     },
+     {
+      "parts": [
+       4
+      ]
+     },
+     {
+      "parts": [
+       5
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "role": "nav",
+      "crop": {
+       "x": 0,
+       "y": 0.009,
+       "w": 1,
+       "h": 0.024
+      },
+      "theme": "light",
+      "note": "Centred wordmark, cart on the right.",
+      "ref": {
+       "id": "ref_1b6a0252c578fcda",
+       "title": "Tidewell: Coffee Product Page & Checkout",
+       "creator": "Prashant Bhakuni",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/27758256-Tidewell-Coffee-Product-Page-Checkout",
+       "src": "https://cdn.dribbble.com/userupload/49123241/file/6afaa828e9f5e582a680843105298073.png?format=webp&resize=1400x",
+       "w": 2880,
+       "h": 7040
+      }
+     },
+     {
+      "role": "hero",
+      "crop": {
+       "x": 0,
+       "y": 0,
+       "w": 1,
+       "h": 0.56
+      },
+      "theme": "light",
+      "note": "The name as the hero, edge to edge.",
+      "ref": {
+       "id": "ref_7aaada4949352793",
+       "title": "Oma Appel",
+       "site": "siteinspire.com",
+       "href": "https://www.siteinspire.com/website/11764-oma-appel",
+       "src": "https://r2.siteinspire.com/cdn-cgi/image/width=1400,height=875,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/015/020/original.png",
+       "w": 1920,
+       "h": 1200
+      }
+     },
+     {
+      "role": "cards",
+      "crop": {
+       "x": 0.1,
+       "y": 0.412,
+       "w": 0.8,
+       "h": 0.105
+      },
+      "theme": "dark",
+      "note": "Bags on colour blocks, one per roast.",
+      "ref": {
+       "id": "ref_aa8ffdec2f1bc5b0",
+       "title": "Landing Page UI Design: Coffee Roasting Business",
+       "creator": "Miodrag Vulicevic",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/21664477-Landing-Page-UI-Design-Coffee-Roasting-Business",
+       "src": "https://cdn.dribbble.com/userupload/7610502/file/original-f6eb8a6f41894511cc47314ad7fbdadc.png?format=webp&resize=1400x",
+       "w": 1600,
+       "h": 7154
+      }
+     },
+     {
+      "role": "cards",
+      "crop": {
+       "x": 0.04,
+       "y": 0.73,
+       "w": 0.92,
+       "h": 0.15
+      },
+      "theme": "light",
+      "note": "Bags with name and price under each.",
+      "ref": {
+       "id": "ref_1b6a0252c578fcda",
+       "title": "Tidewell: Coffee Product Page & Checkout",
+       "creator": "Prashant Bhakuni",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/27758256-Tidewell-Coffee-Product-Page-Checkout",
+       "src": "https://cdn.dribbble.com/userupload/49123241/file/6afaa828e9f5e582a680843105298073.png?format=webp&resize=1400x",
+       "w": 2880,
+       "h": 7040
+      }
+     },
+     {
+      "role": "testimonial",
+      "crop": {
+       "x": 0.05,
+       "y": 0.685,
+       "w": 0.9,
+       "h": 0.095
+      },
+      "theme": "dark",
+      "note": "Three reviews on deep green.",
+      "ref": {
+       "id": "ref_aa8ffdec2f1bc5b0",
+       "title": "Landing Page UI Design: Coffee Roasting Business",
+       "creator": "Miodrag Vulicevic",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/21664477-Landing-Page-UI-Design-Coffee-Roasting-Business",
+       "src": "https://cdn.dribbble.com/userupload/7610502/file/original-f6eb8a6f41894511cc47314ad7fbdadc.png?format=webp&resize=1400x",
+       "w": 1600,
+       "h": 7154
+      }
+     },
+     {
+      "role": "footer",
+      "crop": {
+       "x": 0,
+       "y": 0.91,
+       "w": 1,
+       "h": 0.09
+      },
+      "theme": "dark",
+      "note": "A full blue footer with the name in caps.",
+      "ref": {
+       "id": "ref_1b6a0252c578fcda",
+       "title": "Tidewell: Coffee Product Page & Checkout",
+       "creator": "Prashant Bhakuni",
+       "site": "dribbble.com",
+       "href": "https://dribbble.com/shots/27758256-Tidewell-Coffee-Product-Page-Checkout",
+       "src": "https://cdn.dribbble.com/userupload/49123241/file/6afaa828e9f5e582a680843105298073.png?format=webp&resize=1400x",
+       "w": 2880,
+       "h": 7040
+      }
+     }
+    ]
+   }
+  },
+  {
+   "key": "grocery",
+   "brief": "Ramadan offers page for a grocery delivery app",
+   "platform": "mobile",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "lens": {
+    "en": "Sadu weaving",
+    "ar": "نسيج السدو"
+   },
+   "direction": {
+    "id": "bd-o19eocx1",
+    "title": "Grocery delivery offers meets Sadu textile pattern",
+    "twist": "shaped like an airmail envelope",
+    "move": "transplant + lens",
+    "spec": {
+     "typography": "A tall condensed sans for display at 34px, a plain sans for body at 17px.",
+     "color": "Acid yellow and electric green on white; accents from Sadu textile pattern, text at 4.5 to 1 or more.",
+     "layout": "4 column grid, 16px margins, key actions in the thumb zone, a tab bar or bottom sheet.",
+     "motion": "Quick 150ms snaps with one bounce on success, and none with reduced motion on.",
+     "texture": "Flat bold fills with crisp edges.",
+     "signature": "The card framed by Sadu textile pattern patterns.",
+     "pattern": "A Sadu textile pattern band as the divider in the bottom sheet.",
+     "steal": [
+      "The pattern rhythm of Sadu textile pattern.",
+      "The print details and wear of an airmail envelope.",
+      "The acid bright color temperature."
+     ],
+     "avoid": [
+      "Tap targets under 44pt.",
+      "Detail hidden behind hover.",
+      "Body text under 16px."
+     ],
+     "whyItFits": "A acid bright mood suits hungry people deciding fast, and Sadu textile pattern gives it a story."
+    }
+   },
+   "others": [
+    {
+     "id": "bd-xm83s1s6",
+     "title": "Cork board grocery delivery offers, after diamond weave motif",
+     "twist": "pie slices blown up huge"
+    },
+    {
+     "id": "bd-41qcbfmz",
+     "title": "Hollywood Regency 1940s grocery delivery offers meets Bedouin tent weaving",
+     "twist": "two weights only, no exceptions"
+    },
+    {
+     "id": "bd-seidj6c8",
+     "title": "Grocery delivery offers with the rhythm of woven triangle motifs",
+     "twist": "monospace type only"
+    }
+   ],
+   "queries": 7,
+   "ui": [
+    {
+     "id": "ref_c8acf2b653748aa2",
+     "title": "Mobile App Design for Right-to-Left Languages (Arabic Language)",
+     "creator": "Kristina Volchek",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/18884480-Mobile-App-Design-for-Right-to-Left-Languages-Arabic-Language",
+     "src": "https://cdn.dribbble.com/userupload/3176282/file/original-9de03b61237031fc4f088fc7ffbd1f6c.jpg?format=webp&resize=800x",
+     "w": 4800,
+     "h": 3600,
+     "steal": "Right to left layout with Arabic numerals done well."
+    },
+    {
+     "id": "ref_1aa54a66b90d052e",
+     "title": "Ramadan Mubarak Timer App Concept",
+     "creator": "Md Salah Uddin",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/20991577-Ramadan-Mubarak-Timer-App-Concept",
+     "src": "https://cdn.dribbble.com/userupload/5553984/file/original-cfc36bc7fc2ca57e37164acd01589e35.jpg?format=webp&resize=800x",
+     "w": 1600,
+     "h": 1200,
+     "steal": "Gold lantern art on a dark first screen."
+    },
+    {
+     "id": "ref_3e37d709000230bb",
+     "title": "Ramadan Mubarak Eid Ul Fitr Mobile App",
+     "creator": "UIX Maruf Hossen",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27185557-Ramadan-Mubarak-Eid-Ul-Fitr-Mobile-App",
+     "src": "https://cdn.dribbble.com/userupload/47068999/file/5b76bb3e0dc799ddf3fd679689a91ffa.png?format=webp&resize=800x",
+     "w": 3200,
+     "h": 2400,
+     "steal": "Warm cream cards with crescent details."
+    },
+    {
+     "id": "ref_a9e0e738a66eab16",
+     "title": "ROZA: Modern Islamic Mobile App Design",
+     "creator": "Nexmuse",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27499295-ROZA-Modern-Islamic-Mobile-App-Design",
+     "src": "https://cdn.dribbble.com/userupload/48164430/file/5a545718ec1f5bdf5960ee33cc927816.png?format=webp&resize=800x",
+     "w": 1920,
+     "h": 1440,
+     "steal": "A big countdown to iftar as the hero."
+    },
+    {
+     "id": "ref_357777cf53ebf7e0",
+     "title": "Ramadan Timer App Concept",
+     "site": "pinterest.com",
+     "href": "https://jp.pinterest.com/pin/951244752553317486/",
+     "src": "https://i.pinimg.com/736x/86/92/cd/8692cdb4768019f8ad29432e97805711.jpg",
+     "w": 736,
+     "h": 552,
+     "steal": "One clean timer card, lots of white."
+    },
+    {
+     "id": "ref_6314f577c48eab11",
+     "title": "Ramadan Islamic App UI",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/780600547941766597/",
+     "src": "https://i.pinimg.com/736x/ce/e2/2c/cee22ce3de170ed65dcacc06ddc1d031.jpg",
+     "w": 736,
+     "h": 1103,
+     "steal": "Prayer times as a short list with icons."
+    },
+    {
+     "id": "ref_d81caa6ded181e2b",
+     "title": "Ramadan App",
+     "creator": "RH",
+     "site": "pinterest.com",
+     "href": "https://pt.pinterest.com/pin/304415256081489886/",
+     "src": "https://i.pinimg.com/736x/72/f8/8a/72f88aaeb662604a8c6011b71ba59be7.jpg",
+     "w": 736,
+     "h": 552,
+     "steal": "Soft purple day cards in a grid."
+    },
+    {
+     "id": "ref_8b751aca4a4dd005",
+     "title": "Super App: Ride, Food & Delivery Mobile App UI/UX",
+     "creator": "Nes-Lab",
+     "site": "dribbble.com",
+     "href": "https://dribbble.com/shots/27733793-Super-App-Ride-Food-Delivery-Mobile-App-UI-UX",
+     "src": "https://cdn.dribbble.com/userupload/49032163/file/094c5eb5a8d29ff5b584fe1c3a0d1fdb.jpg?format=webp&resize=800x",
+     "w": 5760,
+     "h": 4140,
+     "steal": "Food and delivery tiles on a dark map."
+    }
+   ],
+   "art": [
+    {
+     "id": "ref_6d56c52a36b6bb26",
+     "title": "Al Sadu Weaving In Kuwait",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/al-sadu-weaving-in-kuwait--6473993207609203/",
+     "src": "https://i.pinimg.com/736x/84/c8/5e/84c85eb592f2bb2b7f0bc3352560fdb6.jpg",
+     "w": 736,
+     "h": 981,
+     "steal": "Camel and triangle rows as offer dividers."
+    },
+    {
+     "id": "ref_62069e1525ec46a3",
+     "title": "Sadu Fabric",
+     "site": "behance.net",
+     "href": "https://www.behance.net/gallery/70082187/Sadu-Fabric",
+     "src": "https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/8a888c70082187.5b97a0aa6b9d9.jpg",
+     "w": 850,
+     "h": 704,
+     "steal": "Red, white and black bands for the offer tags."
+    },
+    {
+     "id": "ref_5b69b11f89ce1b7f",
+     "title": "Sadu - and why I am in Kuwait at all....",
+     "site": "pinterest.com",
+     "href": "https://es.pinterest.com/pin/705024516668974059/",
+     "src": "https://i.pinimg.com/736x/1e/eb/ae/1eebae5e5dcd5ba20469779f9a7da3a9.jpg",
+     "w": 736,
+     "h": 489,
+     "steal": "Big diamond motifs as the badge on the best offer."
+    },
+    {
+     "id": "ref_d7cc5b91f89dd0b1",
+     "title": "sadu fabric Syrian Arab Republic Fabric",
+     "site": "pinterest.com",
+     "href": "https://www.pinterest.com/pin/419960734000274341/",
+     "src": "https://i.pinimg.com/736x/a3/6b/7e/a36b7e51e0ab960b759e741efd83283d.jpg",
+     "w": 495,
+     "h": 660,
+     "steal": "Narrow woven stripes as a progress bar."
+    }
+   ],
+   "stitch": null
+  }
+ ]
+}

@@ -17,6 +17,7 @@ import { bt } from "./Bidi";
 import { docsHref } from "./desktop/Dock";
 import { MenuClock } from "./desktop/MenuClock";
 import { RollLabel } from "./desktop/RollButton";
+import { MenuBarMenu } from "./desktop/MenuBarMenu";
 import { LanguageSwitch, SiteNav } from "./SiteNav";
 import "./desktop/desktop.css";
 
@@ -43,32 +44,48 @@ export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; s
   const c = t.common;
   const other: Locale = c.language.switchToLang === "ar" ? "ar" : "en";
   const canvases = href(locale, "canvases");
+  const nav = [
+    { href: `${href(locale)}#how`, label: c.nav.how },
+    { href: href(locale, "gallery"), label: c.nav.gallery },
+    { href: docsHref(locale), label: c.nav.docs },
+    { href: href(locale, "pricing"), label: c.nav.pricing },
+  ];
+  const signInHref = `${SIGN_IN_PATH}?returnTo=${encodeURIComponent(canvases)}`;
   return (
     <header className="site-header menubar">
       <div className="menubar-start">
         <Brand locale={locale} withName />
-        <SiteNav
-          label={c.navLabel}
-          items={[
-            { href: `${href(locale)}#how`, label: c.nav.how },
-            { href: `${href(locale)}#gallery`, label: c.nav.gallery },
-            { href: docsHref(locale), label: c.nav.docs },
-            { href: href(locale, "pricing"), label: c.nav.pricing },
-          ]}
-        />
+        <SiteNav label={c.navLabel} items={nav} />
       </div>
       <div className="menubar-end">
-        <LanguageSwitch to={other} label={c.language.label} name={c.language.switchTo} />
+        <span className="menubar-wide">
+          <LanguageSwitch to={other} label={c.language.label} name={c.language.switchTo} />
+        </span>
         <MenuClock locale={locale} />
         {signedIn ? (
-          <Link className="menubar-link" href={canvases}>
+          <Link className="menubar-link menubar-wide" href={canvases}>
             {c.yourCanvases}
           </Link>
         ) : (
-          <a className="menubar-link" href={`${SIGN_IN_PATH}?returnTo=${encodeURIComponent(canvases)}`}>
+          <a className="menubar-link menubar-wide" href={signInHref}>
             {c.signIn}
           </a>
         )}
+        {/* Narrow screens: the nav, "Your canvases" and the language fold into one menu. */}
+        <MenuBarMenu
+          className="menubar-narrow"
+          label={c.menu}
+          trigger={c.menu}
+          items={[
+            ...nav.map((n) => ({ kind: "link" as const, ...n })),
+            { kind: "sep" as const },
+            signedIn
+              ? { kind: "link" as const, href: canvases, label: c.yourCanvases }
+              : { kind: "link" as const, href: signInHref, label: c.signIn },
+            { kind: "sep" as const },
+            { kind: "lang" as const, to: other, label: c.language.label, name: c.language.switchTo, hint: other.toUpperCase() },
+          ]}
+        />
         <a className="menubar-pill" href={`${href(locale)}#install`}>
           <RollLabel>{c.addToClaude}</RollLabel>
         </a>
@@ -77,15 +94,23 @@ export function SiteHeader({ locale, t, signedIn }: { locale: Locale; t: Dict; s
   );
 }
 
+/**
+ * The footer, the same on every page as on the landing page (its section 10): the Bend mark tile
+ * and the name, the year, the source note and the language switch, then the link columns. A solid
+ * desk-black band that runs to the bottom of the page, with room under it for the fixed dock
+ * (desktop.css), so no lighter strip shows below it.
+ */
 export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
   const f = t.common.footer;
+  const c = t.common;
   const home = href(locale);
+  const other: Locale = c.language.switchToLang === "ar" ? "ar" : "en";
   const columns = [
     {
       title: f.product,
       links: [
         { href: `${home}#how`, label: f.howItWorks },
-        { href: `${home}#gallery`, label: f.gallery },
+        { href: href(locale, "gallery"), label: f.gallery },
         { href: href(locale, "pricing"), label: f.pricing },
         { href: href(locale, "canvases"), label: f.canvases },
       ],
@@ -109,35 +134,34 @@ export function SiteFooter({ locale, t }: { locale: Locale; t: Dict }) {
   ];
   return (
     <footer className="site-footer">
-      <div className="wrap">
-        <div className="footer-top">
-          <div className="footer-brand">
-            <Brand locale={locale} className="footer-logo" withName />
-            <p>{bt(f.blurb)}</p>
-          </div>
-          <nav className="footer-columns" aria-label={t.common.footerLabel}>
-            {columns.map((col) => (
-              <div key={col.title} className="footer-col">
-                <h2 className="footer-title">{col.title}</h2>
-                <ul>
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      {l.href.startsWith("/docs/") ? <a href={l.href}>{l.label}</a> : <Link href={l.href}>{l.label}</Link>}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </div>
-        <div className="footer-fine">
-          <p>{bt(f.note)}</p>
-          {/* Latin in both languages: isolated inline, so the line still sits at the page's start. */}
-          <p>
-            <bdi dir="ltr">{fmt(f.rights, { year: new Date().getUTCFullYear() })}</bdi>
-          </p>
-        </div>
+      <div className="sf-brand">
+        <Link className="sf-logo" href={home} dir="ltr">
+          <span className="sf-tile" aria-hidden="true">
+            <BrandMark />
+          </span>
+          <span className="sf-name">{APP_NAME}</span>
+        </Link>
+        {/* Latin in both languages: isolated inline, so the line still sits at the page's start. */}
+        <p>
+          <bdi dir="ltr">{fmt(f.rights, { year: new Date().getUTCFullYear() })}</bdi>
+        </p>
+        <p className="sf-note">{bt(f.note)}</p>
+        <LanguageSwitch to={other} label={c.language.label} name={c.language.switchTo} />
       </div>
+      <nav className="sf-columns" aria-label={c.footerLabel}>
+        {columns.map((col) => (
+          <div key={col.title} className="sf-col">
+            <h2 className="sf-title">{col.title}</h2>
+            <ul>
+              {col.links.map((l) => (
+                <li key={l.label}>
+                  {l.href.startsWith("/docs/") ? <a href={l.href}>{l.label}</a> : <Link href={l.href}>{l.label}</Link>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
     </footer>
   );
 }

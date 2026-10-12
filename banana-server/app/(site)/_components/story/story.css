@@ -123,12 +123,13 @@ html.lenis body {
   block-size: 100%;
 }
 
-/* ------------------------------------------------------------------ notification stack, fixed */
+/* ------------------------------------------------------------------ notification stack */
 
+/* At the top of the page only: it scrolls away with the hero, so it never covers a window. */
 .story .notes {
-  position: fixed;
+  position: absolute;
   z-index: 40;
-  inset-block-start: calc(var(--desk-bar) + 0.75rem);
+  inset-block-start: 0.75rem;
   inset-inline-end: 1rem;
   inline-size: 20rem;
 }
@@ -263,18 +264,18 @@ html.lenis body {
 .story .s-board {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-  align-items: start;
-  column-gap: var(--st-space-5xl);
-  padding-block: 8vh 8vh;
-  padding-inline: var(--story-gutter) 0;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--st-space-11xl);
+  padding-block: 12vh 8vh;
+  padding-inline: var(--story-gutter);
 }
 
+/* The heading on the start side, the three notes in a row on the end side, the board under them. */
 .story .board-text {
-  position: sticky;
-  inset-block-start: 22vh;
   display: grid;
-  gap: var(--st-space-4xl);
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: end;
+  column-gap: var(--st-space-12xl);
 }
 
 .story .tt:not(.is-hero, .is-callout, .is-window) {
@@ -283,7 +284,8 @@ html.lenis body {
 
 .story .board-notes {
   display: grid;
-  gap: var(--st-space-xl);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--st-space-4xl);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -300,22 +302,7 @@ html.lenis body {
 }
 
 .story .board-window {
-  inline-size: 72vw;
-  margin-block-start: 6vh;
-}
-
-.story .board-window .dwin-body {
-  padding: 0;
-}
-
-.story .board-window .frame-bar {
-  display: none;
-}
-
-.story .board-window .frame {
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  inline-size: 100%;
 }
 
 /* ------------------------------------------------------------------ 3. made with */
@@ -966,9 +953,9 @@ html.lenis body {
     display: none;
   }
 
+  /* The fixed CSS tile would sit behind text; on a phone the tile lives in its slots instead. */
   .story .stage-tile {
-    inline-size: 80vw;
-    opacity: 0.3;
+    display: none;
   }
 
   .story .s-hero {
@@ -1001,19 +988,14 @@ html.lenis body {
   }
 
   .story .s-board {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--st-space-4xl);
+    row-gap: var(--st-space-4xl);
     padding: 10vh var(--story-gutter);
   }
 
-  .story .board-text {
-    position: static;
-  }
-
-  .story .board-window {
-    inline-size: 100%;
-    margin: 0;
+  .story .board-text,
+  .story .board-notes {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--st-space-4xl);
   }
 
   .story .made-head,
@@ -1189,5 +1171,194 @@ html.lenis body {
   .story .sf-columns {
     flex-wrap: wrap;
     gap: var(--st-space-4xl);
+  }
+}
+
+/* ------------------------------------------------------------------ tile slots (phones) */
+
+/* Empty slots made for the tile on a phone: the WebGL stage centres the tile in the slot on screen
+   (stage-scene.ts), so no text ever sits on it. Without the stage, the slot draws a still tile. */
+.story .tile-slot {
+  display: none;
+}
+
+@media (max-width: 1099.98px) {
+  .story:not([data-stage="gl"]) .tile-slot::before {
+    content: "";
+    inline-size: min(40vw, 10rem);
+    aspect-ratio: 1;
+    border-radius: 22%;
+    background: linear-gradient(var(--st-desk-tile), var(--st-desk-tile-side));
+    box-shadow:
+      0 0.4rem 0 var(--st-desk-tile-side),
+      var(--st-desk-shadow-soft);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .story .tile-slot {
+    display: grid;
+    place-items: center;
+    block-size: min(64vw, 16rem);
+  }
+
+  /* Hero: the window, the reference icons, the tile, then the four callouts two by two. */
+  .story .s-hero {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--st-space-6xl) var(--st-space-4xl);
+  }
+
+  .story .s-hero > * {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .story .s-hero > .hero-head {
+    order: 0;
+  }
+
+  .story .s-hero > .tile-slot {
+    order: 3;
+    block-size: min(48vw, 12rem);
+  }
+
+  .story .s-hero > .callout[data-callout] {
+    order: 4;
+    grid-row: auto;
+    grid-column: auto;
+    align-self: start;
+    justify-self: stretch;
+    max-inline-size: none;
+  }
+
+  .story .tt.is-callout {
+    font-size: 1.35rem;
+  }
+
+  .story .callout p {
+    font-size: 0.875rem;
+  }
+
+  /* Statements: heading, then the line under it, no tall empty blocks. */
+  .story .s-how {
+    padding-block: 2vh;
+  }
+
+  .story .statement {
+    min-block-size: 0;
+    gap: var(--st-space-xl);
+    padding-block: 7vh;
+  }
+
+  .story .statement .tile-slot {
+    grid-column: 1;
+    margin-block-start: var(--st-space-6xl);
+  }
+
+  /* FAQ: rows and the open answer keep their side padding inside the window. */
+  .story .mail-row {
+    padding: var(--st-space-l) var(--st-space-2xl);
+  }
+
+  .story .mail-read {
+    padding: var(--st-space-s) var(--st-space-2xl) var(--st-space-2xl);
+  }
+
+  .story .mail-read-meta {
+    flex-wrap: wrap;
+  }
+
+  /* Brief. Bend. Ship.: the tile between the words and the button, no empty screen. */
+  .story .s-ship {
+    min-block-size: 0;
+    gap: var(--st-space-4xl);
+    padding-block: 10vh 8vh;
+  }
+}
+
+/* ------------------------------------------------------------------ tablets (768 to 1099) */
+
+@media (min-width: 768px) and (max-width: 1099.98px) {
+  /* Hero: heading and icons on the start side, the window on the end side, callouts two by two below. */
+  .story .s-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 21rem);
+    grid-template-rows: auto auto auto auto;
+    row-gap: var(--st-space-7xl);
+    padding-inline: var(--site-gutter);
+  }
+
+  .story .hero-head {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .story .hero-icons {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .story .hero-window {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .story .callout[data-callout] {
+    grid-row: auto;
+    align-self: start;
+    justify-self: start;
+    margin: 0;
+  }
+
+  .story .callout[data-callout="0"],
+  .story .callout[data-callout="2"] {
+    grid-column: 1;
+  }
+
+  .story .callout[data-callout="1"],
+  .story .callout[data-callout="3"] {
+    grid-column: 2;
+  }
+
+  .story .callout[data-callout="0"],
+  .story .callout[data-callout="1"] {
+    grid-row: 3;
+  }
+
+  .story .callout[data-callout="2"],
+  .story .callout[data-callout="3"] {
+    grid-row: 4;
+  }
+
+  /* Statements: the side columns get the room, the tile keeps the narrow middle. */
+  .story .statement {
+    grid-template-columns: minmax(0, 1fr) 16rem minmax(0, 1fr);
+    padding-inline: var(--site-gutter);
+  }
+
+  .story .stage-tile {
+    display: none;
+  }
+
+  /* The tile lives in its slots here too (stage-scene.ts): beside the first statement and
+     between Brief. Bend. Ship. and its button. The hero has no room for one. */
+  .story .tile-slot {
+    display: grid;
+    place-items: center;
+    min-block-size: 14rem;
+  }
+
+  .story .s-hero > .tile-slot {
+    display: none;
+  }
+
+  .story .statement .tile-slot {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .story .s-ship {
+    grid-template-columns: minmax(0, 1fr) 14rem minmax(0, 1fr);
+    column-gap: var(--st-space-4xl);
   }
 }

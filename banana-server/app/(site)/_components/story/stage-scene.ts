@@ -179,7 +179,8 @@ vec4 drawTile(vec2 px) {
   vec3 faceCol = uFace * (0.78 + 0.28 * diff + grain * 0.07);
   col = mix(tileCol, faceCol, mark);
   col += (vec3(1.0) * 0.35 + uGlint * 0.15) * spec * (0.4 + mark);
-  return vec4(col * uDim, 1.0);
+  // Dims at or above 0.3 only darken (text over the tile); below that the tile fades out (phones).
+  return vec4(col * max(uDim, 0.3), clamp(uDim * 3.4, 0.0, 1.0));
 }
 
 void main() {
@@ -226,6 +227,8 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 
 export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   const narrowQuery = window.matchMedia("(max-width: 767.98px)");
+  // Phones and tablets: the tile only shows in the empty slots made for it (story.css .tile-slot).
+  const slotQuery = window.matchMedia("(max-width: 1099.98px)");
   const dpr = narrowQuery.matches ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
   const renderer = new Renderer({ alpha: false, antialias: false, dpr });
   const gl = renderer.gl;
@@ -283,6 +286,8 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   window.addEventListener("pointermove", onMove, { passive: true });
 
   const sections = Array.from(document.querySelectorAll("[data-mark]"));
+  // Phones: the tile only shows inside an empty slot made for it (`data-tile-slot`), never behind text.
+  const slots = Array.from(document.querySelectorAll<HTMLElement>("[data-tile-slot]"));
   const grey = document.querySelector("[data-grey]");
 
   const cur: MarkTarget = { scale: 1, y: 0.5, dim: 1 };
@@ -295,7 +300,25 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
   let raf = 0;
   const t0 = performance.now();
 
+  /** Phone and tablet target: the most visible tile slot (tile centred in it, `scale` is its half size in px), else hidden. */
+  function slotTarget(): MarkTarget {
+    let best: DOMRect | null = null;
+    let bestArea = 0;
+    for (const el of slots) {
+      const r = el.getBoundingClientRect();
+      const seen = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+      if (r.height > 0 && seen > bestArea) {
+        bestArea = seen;
+        best = r;
+      }
+    }
+    if (!best) return { ...cur, dim: 0 };
+    const width = Math.min(best.height * 0.8, best.width * 0.9, vw * 0.62);
+    return { scale: width / 2, y: (best.top + best.height / 2) / vh, dim: 1 };
+  }
+
   function target(): MarkTarget {
+    if (slotQuery.matches && slots.length > 0) return slotTarget();
     const mid = vh * 0.5;
     for (const s of sections) {
       const r = s.getBoundingClientRect();
@@ -328,13 +351,15 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
 
     const want = target();
     const k = first ? 1 : 0.06;
-    cur.scale += (want.scale - cur.scale) * k;
-    cur.y += (want.y - cur.y) * k;
+    const pinned = slotQuery.matches && slots.length > 0;
+    cur.scale += (want.scale - cur.scale) * (pinned ? 1 : k);
+    // In a slot the tile scrolls with the page, so it never drifts over the text around it.
+    cur.y += (want.y - cur.y) * (pinned ? 1 : k);
     cur.dim += (want.dim - cur.dim) * Math.min(1, k * 2);
     first = false;
 
     // Scroll speed: the tile dips and tips, then settles back.
-    dip += (clamp(vel * 1.4, -140, 140) - dip) * 0.14;
+    dip += ((pinned ? 0 : clamp(vel * 1.4, -140, 140)) - dip) * 0.14;
     tip += (clamp(-vel * 0.012, -0.6, 0.6) - tip) * 0.14;
     if (flipStart < 0 && Math.abs(vel) > 70) flipStart = time;
     let flip = 0;
@@ -347,13 +372,14 @@ export function mountStage(host: HTMLElement, onReady: () => void): () => void {
     mx += (tx - mx) * 0.12;
     my += (ty - my) * 0.12;
     const narrow = narrowQuery.matches;
-    const half = (narrow ? vw * 0.4 : Math.min(vw * 0.15, vh * 0.24)) * cur.scale;
+    const half = pinned ? cur.scale : (narrow ? vw * 0.4 : Math.min(vw * 0.15, vh * 0.24)) * cur.scale;
     const float = Math.sin(time * 0.9) * 0.04 * half;
     u.uMarkSize!.value = half;
     u.uMarkPos!.value = [vw / 2, vh * cur.y + float + dip];
     u.uRot!.value = [my * 0.35 + tip + flip + Math.sin(time * 0.9 * 0.8) * 0.082, mx * 0.5 + Math.cos(time * 0.9 * 0.6) * 0.082, 0];
-    // On a phone the tile sits behind the text, so it stays dim enough for 4.5:1 over its face.
-    u.uDim!.value = cur.dim * (narrow ? 0.3 : 1);
+    // On a phone the tile sits in its own slot with no text over it; without slots it stays dim
+    // enough for 4.5:1 text over its face.
+    u.uDim!.value = cur.dim * (narrow && !pinned ? 0.3 : 1);
     u.uLight!.value = lightAmount();
     u.uTime!.value = time;
     renderer.render({ scene: mesh });

@@ -37,6 +37,8 @@ export interface WebCanvasProps {
   pricingHref?: string;
   /** Where the window's close light goes. */
   dashboardHref?: string;
+  /** Inside a WindowLayer (components/window): the layer places the window, this page only fills it. */
+  framed?: boolean;
 }
 
 /** Same rule as the inline view (ui/canvas/main.tsx): under 720px the canvas goes compact. */
@@ -67,6 +69,7 @@ export function WebCanvas({
   shareToken = null,
   pricingHref = "/en/pricing",
   dashboardHref = "/en/canvases",
+  framed = false,
 }: WebCanvasProps) {
   const [conflict, setConflict] = useState(false);
   const compact = useNarrow();
@@ -87,7 +90,7 @@ export function WebCanvas({
 
   return (
     <ToastProvider>
-      <div className="bn-page" data-desk="">
+      <div className="bn-page" data-desk="" data-framed={framed ? "" : undefined}>
         {conflict && (
           <div className="bn-banner">
             <div className="st-alert" data-tone="warning" role="alert">

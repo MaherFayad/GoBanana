@@ -647,7 +647,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
                 return (
                   // The whole card is the title button's hit area (a stretched ::after): a click or
                   // Enter shows the canvas in the Inspector, a second one opens it.
-                  <li key={card.id} className="lab-card" data-selected={isSel ? "" : undefined}>
+                  <li key={card.id} className="lab-card" data-selected={isSel ? "" : undefined} data-window-origin={`canvas:${card.id}`}>
                     <div className="lab-card-art">
                       <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
                       {card.shared ? (

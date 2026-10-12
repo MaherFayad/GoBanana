@@ -9,9 +9,15 @@
  *   assistive tech and drawn dimmed so it does not look clickable.
  * Each light is 12px with a 24px target, centres 24px apart (SC 2.5.8). The lights are always on
  * the inline start, so they sit on the right in Arabic, like the rest of the bar.
+ *
+ * Inside a WindowLayer (components/window, the web canvas on the site) all three lights work
+ * through the layer: red closes with the window animation (still a link to the dashboard, so it
+ * works before hydration), yellow minimizes into the dock, green zooms the window to fill the
+ * screen (aria-pressed).
  */
 import { useCallback, useSyncExternalStore } from "react";
 import { Tooltip } from "@/components/studio/Tooltip";
+import { useWindowFrame } from "@/components/window/frame";
 
 export interface WindowLightsProps {
   /** Where the red light goes. Leave unset for a read-only window (the shared canvas). */
@@ -39,6 +45,36 @@ function useFullscreen(): { supported: boolean; active: boolean } {
 }
 
 export function WindowLights({ closeHref, closeLabel = "Close canvas, back to your canvases" }: WindowLightsProps) {
+  const frame = useWindowFrame();
+  if (frame && closeHref) {
+    return (
+      <span className="bn-lights" data-testid="window-lights">
+        <Tooltip content="Back to your canvases">
+          <a
+            className="bn-light"
+            data-light="close"
+            href={closeHref}
+            aria-label={closeLabel}
+            onClick={(e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              frame.close();
+            }}
+          />
+        </Tooltip>
+        <Tooltip content="Minimize">
+          <button type="button" className="bn-light" data-light="min" aria-label="Minimize canvas" onClick={frame.minimize} />
+        </Tooltip>
+        <Tooltip content={frame.zoomed ? "Exit full screen" : "Full screen"}>
+          <button type="button" className="bn-light" data-light="zoom" aria-label="Full screen" aria-pressed={frame.zoomed} onClick={frame.toggleZoom} />
+        </Tooltip>
+      </span>
+    );
+  }
+  return <BrowserLights closeHref={closeHref} closeLabel={closeLabel} />;
+}
+
+function BrowserLights({ closeHref, closeLabel }: WindowLightsProps) {
   const full = useFullscreen();
   const interactive = Boolean(closeHref) || full.supported;
 

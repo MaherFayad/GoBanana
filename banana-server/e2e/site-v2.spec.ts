@@ -3,7 +3,7 @@
  * sticky menu bar, the "Add to Claude" window (copy, move with the keyboard, close and reopen),
  * the dock, the Mail-style FAQ by keyboard, desktop icons with Quick Look, the phone home screen
  * without sideways scroll, and Arabic mirroring. Runs against `next dev` with the E2E sign-in
- * bypass (playwright.config.ts), which checks the showcase against an empty takedown list.
+ * bypass (playwright.config.ts), which checks the examples against an empty takedown list.
  *
  * Image CDN requests are answered with synthetic gradients, never anyone's image. Landing copy
  * changes often, so landing elements are found by role and structure, not by their words.
@@ -47,7 +47,7 @@ test.describe("menu bar", () => {
   test("stays at the top while scrolling, with the nav, language, Your canvases and Add to Claude", async ({ page }) => {
     await open(page, "/en");
     const bar = page.getByRole("banner");
-    expect(await hrefs(page, "header .site-nav a")).toEqual(["/en#how", "/en#gallery", "/docs/", "/en/pricing"]);
+    expect(await hrefs(page, "header .site-nav a")).toEqual(["/en#how", "/en/gallery", "/docs/", "/en/pricing"]);
     // Signed in through the E2E bypass, so the bar links to the canvases.
     await expect(bar.locator(".menubar-link")).toHaveAttribute("href", "/en/canvases");
     await expect(bar.locator(".menubar-pill")).toHaveAttribute("href", "/en#install");
@@ -211,7 +211,7 @@ test.describe("desktop icons and Quick Look", () => {
 
 test.describe("phone home screen", () => {
   test.use({ ...IPHONE });
-  for (const url of ["/en", "/ar", "/en/pricing", "/ar/canvases", "/en/account", "/en/no-such-page"]) {
+  for (const url of ["/en", "/ar", "/en/pricing", "/ar/canvases", "/en/account", "/en/no-such-page", "/en/gallery", "/ar/gallery"]) {
     test(`${url} has no sideways scroll`, async ({ page }) => {
       await mockCdn(page);
       await page.goto(url);
@@ -290,20 +290,47 @@ test.describe("board row", () => {
   }
 });
 
-test.describe("gallery Finder window", () => {
-  test("Open example shows the board with every reference linked", async ({ page }) => {
+test.describe("real examples", () => {
+  test("the home board shows a direction, art and UI references, each linked to its source", async ({ page }) => {
     await open(page, "/en");
-    const card = page.locator(".gallery-card").first();
-    await card.scrollIntoViewIfNeeded();
-    await card.locator(".gallery-reveal .st-btn").focus();
-    await expect(card.locator(".gallery-reveal")).toHaveCSS("opacity", "1");
-    await page.keyboard.press("Enter");
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator(".board-dialog-credit")).toHaveCount(4);
-    await expect(dialog.locator(".board-dialog-palette li")).toHaveCount(5);
-    await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
+    const board = page.locator("#board-win .ex-board");
+    // The window is taller than the screen: bring its title bar in under the fixed menu bar
+    // (scroll-padding), not the board's middle, so the lights are not covered when axe runs.
+    await page.locator("#board-win").evaluate((el) => el.scrollIntoView({ block: "start", behavior: "instant" }));
+    await expect(board.locator(".ex-title")).not.toBeEmpty();
+    const links = board.locator(".ex-tile-link");
+    expect(await links.count()).toBeGreaterThanOrEqual(9);
+    for (const href of await links.evaluateAll((els) => els.map((e) => e.getAttribute("href")))) expect(href).toMatch(/^https:\/\//);
+    await expect(board.locator(".ex-tile-link").first()).toHaveAttribute("rel", "noopener noreferrer");
+    await axe(page, ".s-board", "example board");
+  });
+
+  test("the Frankenstein page switches views and keeps a source link on every slot", async ({ page }) => {
+    await open(page, "/en");
+    const stitch = page.locator("#stitch-win .ex-stitch");
+    await stitch.scrollIntoViewIfNeeded();
+    const slots = stitch.locator(".ex-slot");
+    expect(await slots.count()).toBeGreaterThanOrEqual(4);
+    await expect(stitch.locator(".ex-slot figcaption a")).toHaveCount(await slots.count());
+    await stitch.getByRole("button", { name: "Wireframe" }).click();
+    await expect(stitch).toHaveAttribute("data-mode", "wireframe");
+    await expect(stitch.locator(".ex-role").first()).toBeVisible();
+    await stitch.getByRole("button", { name: "Even" }).click();
+    await expect(stitch.getByRole("button", { name: "Even" })).toHaveAttribute("aria-pressed", "true");
+    await axe(page, ".s-stitch", "Frankenstein page");
+  });
+
+  test("the gallery filters by platform with plain links", async ({ page }) => {
+    await open(page, "/en/gallery");
+    const all = await page.locator(".gx-item:visible").count();
+    expect(all).toBeGreaterThanOrEqual(4);
+    await page.locator(".gx-filter a", { hasText: "Mobile app" }).click();
+    await expect(page).toHaveURL(/platform=mobile/);
+    await expect(page.locator(".gx-filter a[aria-current='page']")).toHaveText("Mobile app");
+    const mobile = await page.locator(".gx-item:visible").count();
+    expect(mobile).toBeGreaterThan(0);
+    expect(mobile).toBeLessThan(all);
+    await axe(page, ".gx", "gallery");
   });
 });
 
@@ -311,7 +338,7 @@ test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
   test("every window is visible", async ({ page }) => {
     await page.goto("/en");
-    for (const sel of [".mail-row", ".gallery-card", ".price-table", ".fan-win", "#install", "[data-reveal]"]) {
+    for (const sel of [".mail-row", ".ex-card", ".ex-board", ".price-table", ".fan-win", "#install", "[data-reveal]"]) {
       expect(await page.locator(sel).first().evaluate((el) => getComputedStyle(el).opacity), sel).toBe("1");
     }
   });

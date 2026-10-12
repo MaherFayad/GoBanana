@@ -1,5 +1,6 @@
 /**
- * Full-screen web canvas: /c/:id (spec section 9). The same React Flow app as the
+ * Web canvas: /c/:id (spec section 9), as a window on the desk (canvas-view.tsx). Opened from a
+ * site page, the same URL is intercepted and the window opens over that page instead. The same React Flow app as the
  * inline MCP Apps canvas, saving through /api/canvas/:id.
  *
  * Signed out: proxy.ts already sends the visitor to AuthKit; this page also redirects
@@ -7,13 +8,8 @@
  * Never indexed: canvases are private working files.
  */
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
-import { WebCanvas } from "@/canvas/WebCanvas";
-import { loadCanvasForPage } from "@/canvas/server-load";
 import { APP_NAME } from "@/lib/config";
-import { getRepos } from "@/lib/db";
-import { e2eAuthBypass, signInHref } from "@/lib/web-auth";
-import { getWebUser } from "@/lib/web-session";
+import { CanvasView } from "./canvas-view";
 
 export const dynamic = "force-dynamic";
 
@@ -26,20 +22,5 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function CanvasPage({ params }: Props) {
   const { id } = await params;
-  const result = await loadCanvasForPage(id, { getUser: getWebUser, repos: getRepos, bypass: e2eAuthBypass() });
-  if (result.kind === "signed_out") redirect(signInHref(`/c/${encodeURIComponent(id)}`));
-  if (result.kind === "not_found") notFound();
-  const { canvas } = result;
-  return (
-    <WebCanvas
-      canvasId={canvas.id}
-      appName={APP_NAME}
-      title={canvas.title}
-      initialState={canvas.state}
-      initialUpdatedAt={canvas.updatedAt}
-      readOnly={canvas.readOnly}
-      plan={canvas.plan}
-      shareToken={canvas.shareToken}
-    />
-  );
+  return <CanvasView id={id} mode="page" dashboardHref="/en/canvases" />;
 }

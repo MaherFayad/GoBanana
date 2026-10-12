@@ -1,0 +1,146 @@
+/*
+ * The gallery page: a two-tone heading, a platform filter (links in a segmented control), then
+ * one window per example board. Tokens only, logical properties only.
+ */
+
+.site .gx {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--st-space-9xl);
+  inline-size: 100%;
+  max-inline-size: calc(80rem + 2 * var(--site-gutter));
+  margin-inline: auto;
+  padding: 12vh var(--site-gutter) 10vh;
+}
+
+.site .gx-head {
+  display: grid;
+  gap: var(--st-space-3xl);
+  max-inline-size: 44rem;
+}
+
+.site .tt.gx-title {
+  margin: 0;
+  font-size: clamp(2.6rem, 1rem + 4.4vw, 4.8rem);
+}
+
+.site .gx-lead {
+  margin: 0;
+  color: var(--st-desk-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.site .gx-made {
+  margin: 0;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .gx-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-l) var(--st-space-4xl);
+}
+
+.site .gx-filter .ex-seg {
+  margin: 0;
+  list-style: none;
+}
+
+.site .gx-filter a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.25rem;
+  padding-inline: 0.875rem;
+  border-radius: var(--st-radius-pill);
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.site .gx-filter a:hover {
+  color: var(--st-desk-heading);
+}
+
+.site .gx-filter a[aria-current="page"] {
+  background: var(--st-desk-glass-hover);
+  box-shadow: inset 0 0 0 var(--st-border-width) var(--st-desk-glass-border);
+  color: var(--st-desk-heading);
+}
+
+.site .gx-filter a:focus-visible {
+  outline: 2px solid var(--st-desk-heading);
+  outline-offset: 1px;
+}
+
+.site .gx-count {
+  margin: 0;
+  color: var(--st-desk-meta);
+  font-size: 0.8125rem;
+}
+
+.site .gx-empty {
+  margin: 0;
+  color: var(--st-desk-body);
+}
+
+.site .gx-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--st-space-12xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The platform filter (GalleryFilter): only the boards of the chosen platform show. */
+.site .gx[data-filter="mobile"] .gx-item:not([data-platform="mobile"]),
+.site .gx[data-filter="website"] .gx-item:not([data-platform="website"]),
+.site .gx[data-filter="webapp"] .gx-item:not([data-platform="webapp"]) {
+  display: none;
+}
+
+.site .gx-item {
+  max-inline-size: none;
+  scroll-margin-block-start: 6rem;
+}
+
+.site .gx-window .dwin-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--st-space-9xl);
+  padding: var(--st-space-8xl);
+}
+
+.site .gx-stitch {
+  padding-block-start: var(--st-space-8xl);
+  border-block-start: var(--st-border-width) solid var(--st-desk-hairline);
+}
+
+.site .gx-stitch .ex-frame {
+  max-inline-size: 60rem;
+}
+
+.site .gx-notice {
+  margin: 0;
+  color: var(--st-desk-body);
+  font-size: 0.8125rem;
+}
+
+.site .gx-notice a {
+  color: var(--st-desk-heading);
+}
+
+@media (max-width: 767.98px) {
+  .site .gx {
+    gap: var(--st-space-7xl);
+    padding-block-start: 8vh;
+  }
+
+  .site .gx-window .dwin-body {
+    padding: var(--st-space-3xl);
+  }
+}

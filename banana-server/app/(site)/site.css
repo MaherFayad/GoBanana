@@ -120,8 +120,7 @@ body:has(> .site) {
   padding-block: var(--st-space-s);
 }
 
-.site .brand,
-.site .footer-logo {
+.site .brand {
   display: inline-flex;
   align-items: center;
   gap: var(--st-space-s);
@@ -149,10 +148,6 @@ body:has(> .site) {
   block-size: 1.5rem;
   aspect-ratio: 710 / 536.3;
   color: var(--st-brand-mark);
-}
-
-.site .footer-logo .brand-mark {
-  block-size: 1.375rem;
 }
 
 .site .site-nav {
@@ -238,80 +233,130 @@ body:has(> .site) {
   padding-block: var(--st-space-9xl) var(--st-space-11xl);
 }
 
-/* Footer: brand blurb, link columns, then a fine print row. */
+/* Footer (SiteChrome.tsx SiteFooter), the same on every page as the landing page's own footer
+   (story-footer): the mark tile and the name, the year, the source note and the language switch,
+   then the link columns. One solid desk-black band that runs to the bottom of the page and
+   covers the film grain; its bottom padding is the room for the fixed dock, so the dock floats
+   over the footer and no lighter strip shows under it. */
+.site {
+  --site-dock-room: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.site .site-footer,
+.site .story .story-footer {
+  position: relative;
+  background: var(--st-desk-bg);
+}
+
 .site .site-footer {
-  background: var(--st-bg-body);
-  border-block-start: var(--st-border-width) solid var(--st-border-muted);
-  color: var(--st-text-muted);
-}
-
-.site .site-footer .wrap {
   display: flex;
-  flex-direction: column;
-  gap: var(--st-space-9xl);
-  padding-block: var(--st-space-10xl) var(--st-space-6xl);
-}
-
-.site .footer-top {
-  display: grid;
-  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-  gap: var(--st-space-9xl);
+  flex-wrap: wrap;
   align-items: start;
+  justify-content: space-between;
+  gap: var(--st-space-5xl);
+  padding: var(--st-space-5xl) clamp(1rem, 9vw, 9rem) calc(var(--st-space-3xl) + var(--site-dock-room));
+  color: var(--st-desk-body);
 }
 
-.site .footer-brand p {
-  margin-block: var(--st-space-s) 0;
+.site .story .story-footer {
+  padding-block-end: calc(var(--st-space-3xl) + var(--site-dock-room));
 }
 
-.site .footer-columns {
+.site .site-footer .sf-brand {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  justify-items: start;
+  gap: var(--st-space-l);
+  color: var(--st-desk-body);
+  font-size: 0.875rem;
+}
+
+.site .site-footer .sf-brand p {
+  margin: 0;
+}
+
+.site .site-footer .sf-note {
+  max-inline-size: 26rem;
+}
+
+.site .site-footer .sf-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--st-space-2xl);
+  color: var(--st-desk-heading);
+  text-decoration: none;
+}
+
+.site .site-footer .sf-tile {
+  display: grid;
+  place-items: center;
+  inline-size: 5.5rem;
+  block-size: 5.5rem;
+  border-radius: 1.4rem;
+  background: var(--st-desk-tile);
+  box-shadow:
+    0 0.25rem 0 var(--st-desk-tile-side),
+    var(--st-desk-shadow-soft);
+}
+
+.site .site-footer .sf-tile .brand-mark {
+  inline-size: 66%;
+  block-size: auto;
+  color: var(--st-desk-mark-face);
+}
+
+.site .site-footer .sf-name {
+  font-size: clamp(2.4rem, 1.6rem + 2vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: var(--st-desk-tracking);
+}
+
+.site .site-footer .sf-columns {
+  display: flex;
   gap: var(--st-space-6xl);
 }
 
-/* Column titles like the landing footer: small, grey, sentence case. */
-.site .footer-title {
-  margin: 0 0 var(--st-space-s);
-  color: var(--st-text-subtle);
+.site .site-footer .sf-title {
+  margin: 0 0 var(--st-space-xl);
+  color: var(--st-desk-body);
   font-size: 0.8125rem;
-  font-weight: var(--st-weight-medium);
+  font-weight: 500;
 }
 
-.site .footer-col ul {
+.site .site-footer .sf-col ul {
+  display: grid;
+  gap: var(--st-space-s);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.site .footer-col li + li {
-  margin-block-start: 0;
+.site .site-footer .sf-col li {
+  margin: 0;
 }
 
-.site .footer-col a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 36px;
-  color: var(--st-text-muted);
+.site .site-footer .sf-col a {
+  color: var(--st-desk-heading);
+  font-size: 1rem;
   text-decoration: none;
 }
 
-.site .footer-col a:hover {
-  color: var(--st-text-bright);
+.site .site-footer .sf-col a:hover {
   text-decoration: underline;
 }
 
-.site .footer-fine {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--st-space-s) var(--st-space-3xl);
-  padding-block-start: var(--st-space-3xl);
-  border-block-start: var(--st-border-width) solid var(--st-border-muted);
-  color: var(--st-text-subtle);
-}
+@media (max-width: 767.98px) {
+  .site {
+    --site-dock-room: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
 
-.site .footer-fine p {
-  margin: 0;
+  .site .site-footer {
+    flex-direction: column;
+  }
+
+  .site .site-footer .sf-columns {
+    flex-wrap: wrap;
+    gap: var(--st-space-4xl);
+  }
 }
 
 /* ------------------------------------------------------------------ shared blocks */
@@ -791,8 +836,40 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 /* One glass window (desktop.css .dwin): the list at the start, the settings pane beside it. */
 .site .settings-page {
   max-inline-size: calc(56rem + 2 * var(--site-gutter));
-  /* Room under the window so nothing sits behind the fixed dock. */
-  padding-block-end: calc(var(--st-space-12xl) + var(--st-space-5xl));
+}
+
+/* The same window opened over a page (WindowLayer, @modal/(.)account): it fills the layer's frame
+   and scrolls inside; zoomed it loses its corners. */
+.site .wl .dwin.settings {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  max-block-size: 100%;
+  background: var(--st-desk-glass-strong);
+}
+
+.site .wl .settings .dwin-body.settings-body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 719.98px) {
+  .site .wl .dwin.settings {
+    border-color: transparent;
+    border-radius: 0;
+  }
+}
+
+.site .wl[data-zoomed] .dwin.settings {
+  border-color: transparent;
+  border-radius: 0;
+}
+
+/* Desk dialogs (confirms, the phone sheet) dim and softly blur the page behind them. */
+.site .st-dialog::backdrop {
+  background: var(--st-window-backdrop);
+  backdrop-filter: blur(var(--st-window-backdrop-blur));
 }
 
 .site .settings .dwin-body.settings-body {
@@ -1419,11 +1496,6 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
   .site .page {
     padding-block: var(--st-space-7xl) var(--st-space-9xl);
-  }
-
-  .site .footer-top {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--st-space-7xl);
   }
 
   :where(.site) h2 {

@@ -336,6 +336,13 @@
   --st-desk-leading: 0.9;
   --st-desk-roll: 0.3s;
   --st-desk-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Window motion (open, close, zoom, minimize), macOS style: a quick settle with a soft end.
+     The page behind a window that opens over it is dimmed and softly blurred. */
+  --st-window-open: 300ms;
+  --st-window-close: 220ms;
+  --st-window-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --st-window-backdrop: #00000066;
+  --st-window-backdrop-blur: 10px;
   /* Landing scroll story (docs/landing-motion-spec.md): the WebGL stage behind the page, the 3D
      Bend tile, the grey export section and the mouse glyph trail. The stage reads these. */
   --st-desk-stage: #0a0a0b;
@@ -880,6 +887,8 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --st-desk-roll: 0ms;
+    --st-window-open: 0ms;
+    --st-window-close: 0ms;
     --st-duration-instant: 0ms;
     --st-duration-fast: 0ms;
     --st-duration-quick: 0ms;

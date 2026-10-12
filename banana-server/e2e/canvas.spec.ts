@@ -576,6 +576,8 @@ test.describe("moodboard canvas", () => {
     await openCanvas(page);
     await page.evaluate(() => document.documentElement.setAttribute("dir", "rtl"));
     const check = async (label: string) => {
+      // Contrast is measured on settled pixels, not mid fade (the dialog and window open animations).
+      await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running" || a.effect?.getTiming().iterations === Infinity));
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
       const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(serious, `${label}: ${JSON.stringify(serious.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), null, 2)}`).toEqual([]);

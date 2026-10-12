@@ -23,7 +23,8 @@ export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-type Props = { children: ReactNode; params: Promise<{ locale: string }> };
+/** `modal`: the window slot (@modal). The canvas and account settings open there, over the page. */
+type Props = { children: ReactNode; modal: ReactNode; params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export default async function SiteLayout({ children, params }: Props) {
+export default async function SiteLayout({ children, modal, params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDict(locale);
@@ -47,6 +48,7 @@ export default async function SiteLayout({ children, params }: Props) {
         {t.common.skipLink}
       </a>
       {children}
+      {modal}
       <ToastViewport labels={t.common.toast} />
     </div>
   );

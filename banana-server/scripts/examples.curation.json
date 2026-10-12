@@ -1,0 +1,185 @@
+{
+ "featured": "notes-launch",
+ "sizes": {
+  "ref_e22a77520ab87b90": [1200, 900],
+  "ref_37edd018dfa0a51a": [1200, 900],
+  "ref_f54fe7d0dc1e8848": [1200, 900],
+  "ref_1bd96669bace6921": [1200, 900],
+  "ref_49990a7deffb9b35": [1200, 900],
+  "ref_9377cc4acde7a105": [1200, 900],
+  "ref_dc9bc86a7bf1f728": [1200, 900],
+  "ref_25d6cbd05e54f817": [800, 600],
+  "ref_a24748944bf82cb8": [1200, 900],
+  "ref_dbdfd8862a319fa4": [1200, 900],
+  "ref_9ee00461d0c403b7": [1200, 900]
+ },
+ "examples": [
+  {
+   "key": "notes-launch",
+   "brief": "launch page for an AI note-taking startup",
+   "wildness": 4,
+   "count": 4,
+   "direction": "bd-564z6z6q",
+   "ui": [
+    { "id": "ref_e22a77520ab87b90", "steal": "The serif headline that breaks into italics mid line." },
+    { "id": "ref_91e8ca6ed7c12708", "steal": "Objects laid out like pinned specimens, with a tiny label in the middle." },
+    { "id": "ref_2f68b8dc78b5ecd1", "steal": "One calm sentence with the key words set in italic." },
+    { "id": "ref_9215574733abdf19", "steal": "A plain index list of past work as the whole left column." },
+    { "id": "ref_7919f6d649c8ad64", "steal": "The inverted section: light type on deep color for one screen." },
+    { "id": "ref_c28b7b157ee0cbe6", "steal": "Navigation as giant type, with one word struck through." },
+    { "id": "ref_37edd018dfa0a51a", "steal": "The feature grid, to calm down with a serif and a paper tone." },
+    { "id": "ref_fa08337416e1821c", "steal": "Black and white photos cropped hard into a magazine grid." }
+   ],
+   "art": [
+    { "id": "ref_b1ff9eb4ce73030d", "steal": "One specimen centred on the sheet, label in the bottom corner." },
+    { "id": "ref_9d5837ca2915b760", "steal": "Lots of empty paper around a single small object." },
+    { "id": "ref_233760820e3ab20f", "steal": "The colour checker strip as a quiet divider." },
+    { "id": "ref_f43da3001aaad91b", "steal": "Faded inks and handwritten labels for captions." }
+   ],
+   "stitch": {
+    "title": "Specimen launch",
+    "note": "A dark nav over an editorial serif hero, specimens as cards, the index list as proof, the menu as a footer.",
+    "platform": "website",
+    "rows": [{ "parts": [0] }, { "parts": [1] }, { "parts": [2, 3], "widths": [3, 2] }, { "parts": [4] }, { "parts": [5] }],
+    "parts": [
+     { "ref": "ref_7919f6d649c8ad64", "role": "nav", "crop": { "x": 0, "y": 0, "w": 1, "h": 0.07 }, "theme": "dark", "note": "Pill nav and one call to action on the right." },
+     { "ref": "ref_e22a77520ab87b90", "role": "hero", "crop": { "x": 0.08, "y": 0.08, "w": 0.84, "h": 0.56 }, "theme": "light", "note": "Serif and italic headline next to one photo." },
+     { "ref": "ref_91e8ca6ed7c12708", "role": "cards", "crop": { "x": 0.03, "y": 0.14, "w": 0.94, "h": 0.72 }, "theme": "light", "note": "Each feature pinned like a specimen." },
+     { "ref": "ref_9215574733abdf19", "role": "content", "crop": { "x": 0, "y": 0.1, "w": 0.6, "h": 0.6 }, "theme": "light", "note": "The index list, as the proof column." },
+     { "ref": "ref_37edd018dfa0a51a", "role": "features", "crop": { "x": 0, "y": 0.68, "w": 0.665, "h": 0.3 }, "theme": "light", "note": "Keep the grid, swap the icons for line drawings." },
+     { "ref": "ref_c28b7b157ee0cbe6", "role": "footer", "crop": { "x": 0.1, "y": 0.16, "w": 0.8, "h": 0.7 }, "theme": "light", "note": "The menu set huge, as the last screen." }
+    ]
+   }
+  },
+  {
+   "key": "meditation",
+   "brief": "meditation app onboarding on iPhone",
+   "wildness": 3,
+   "count": 4,
+   "direction": "bd-ytfkafhl",
+   "ui": [
+    { "id": "ref_f54fe7d0dc1e8848", "steal": "Arched frames that could hold a batik fill." },
+    { "id": "ref_274e0b9025720358", "steal": "One big photo behind a short serif line." },
+    { "id": "ref_9794a46a025a5fa3", "steal": "The full bleed first screen with one button." },
+    { "id": "ref_c54c660ac88e1c08", "steal": "Three onboarding steps with one idea each." },
+    { "id": "ref_f9d8239ec880efdb", "steal": "Warm colour blocks behind each screen." },
+    { "id": "ref_c6a9703d4521a90a", "steal": "A plain checklist of what the first week holds." },
+    { "id": "ref_177838be88e20336", "steal": "A dark screen with one centred pattern." },
+    { "id": "ref_1bd96669bace6921", "steal": "Soft green cards with a single illustration." }
+   ],
+   "art": [
+    { "id": "ref_5cb2053c291cd0ed", "steal": "Megamendung cloud lines, like marbled paper." },
+    { "id": "ref_75fb1e626e46056a", "steal": "Kawung circles as a repeating progress mark." },
+    { "id": "ref_d8bfb8518b8fed0d", "steal": "Deep indigo with copper line work." },
+    { "id": "ref_6ef234a80947f3d6", "steal": "Batik used as a brand frame, not a wallpaper." }
+   ]
+  },
+  {
+   "key": "finance",
+   "brief": "personal finance home on iPhone",
+   "wildness": 3,
+   "count": 4,
+   "direction": "bd-l9kilfo2",
+   "ui": [
+    { "id": "ref_6531b533cc526f7a", "steal": "Pale green morning light behind the balance." },
+    { "id": "ref_49990a7deffb9b35", "steal": "Mint cards with the balance as the biggest thing." },
+    { "id": "ref_36fc8cc8edb39502", "steal": "A gauge that could become contour rings." },
+    { "id": "ref_927063e7b5b3fdd5", "steal": "One clean home screen, nothing extra." },
+    { "id": "ref_9377cc4acde7a105", "steal": "Charts in deep green with a glow." },
+    { "id": "ref_dc9bc86a7bf1f728", "steal": "Spending as a ring, with a list under it." },
+    { "id": "ref_cf3d2bff211e2c68", "steal": "Big numbers on dark cards." },
+    { "id": "ref_1de836ab63a08b0c", "steal": "One loud accent colour for the main action." }
+   ],
+   "art": [
+    { "id": "ref_d070c22fb49d9b4f", "steal": "Contour lines as the chart grid." },
+    { "id": "ref_a77965044b100573", "steal": "Raised relief, to show where money piles up." },
+    { "id": "ref_fc1a6efab476850a", "steal": "Soft map colours for categories." },
+    { "id": "ref_7f18d69fb8f2d45e", "steal": "Elevation labels as tiny amount labels." }
+   ]
+  },
+  {
+   "key": "analytics",
+   "brief": "B2B analytics dashboard empty state",
+   "wildness": 3,
+   "count": 4,
+   "direction": "bd-w6ij22fh",
+   "ui": [
+    { "id": "ref_4c3c24d578afbf91", "steal": "Stat tiles kept in place while they wait for data." },
+    { "id": "ref_25d6cbd05e54f817", "steal": "Grey chart outlines as a preview of what comes." },
+    { "id": "ref_9c70c7ddd559fab7", "steal": "A dark empty table with one quiet prompt." },
+    { "id": "ref_f77a406ec7b82226", "steal": "One small card centred in a big calm space." },
+    { "id": "ref_a24748944bf82cb8", "steal": "Bars drawn as ghosts, labelled sample data." },
+    { "id": "ref_dbdfd8862a319fa4", "steal": "The first action as the only coloured button." },
+    { "id": "ref_8baa0a032de25366", "steal": "A friendly scene in the middle of the frame." },
+    { "id": "ref_78921a92fb654f37", "steal": "Search empty state with ready made suggestions." }
+   ],
+   "art": [
+    { "id": "ref_8d1264c5ec2cc05a", "steal": "Chrome ripples for the empty chart area." },
+    { "id": "ref_c010bb40b2c993b3", "steal": "Mercury drops as loading dots." },
+    { "id": "ref_69ad3bad8d92991b", "steal": "Highlights, not colour, to show depth." },
+    { "id": "ref_ce4744faefeb2476", "steal": "A cold silver palette with one warm accent." }
+   ]
+  },
+  {
+   "key": "coffee",
+   "brief": "coffee roaster landing page",
+   "wildness": 4,
+   "count": 4,
+   "direction": "bd-nt4vqyp0",
+   "ui": [
+    { "id": "ref_1b0750870cb3ade4", "steal": "Stacked heavy type on a deep green block." },
+    { "id": "ref_7aaada4949352793", "steal": "The name set edge to edge in one colour." },
+    { "id": "ref_aa8ffdec2f1bc5b0", "steal": "Line drawings of beans around the hero." },
+    { "id": "ref_1b6a0252c578fcda", "steal": "A product page that reads like a tasting card." },
+    { "id": "ref_17915bce8db895b3", "steal": "Beans shown as round swatches in a row." },
+    { "id": "ref_3b471e5ede76b287", "steal": "A serif headline over one warm photo." },
+    { "id": "ref_7cd6b64b0f8eb995", "steal": "Tins floating on white, shot from below." },
+    { "id": "ref_9a0ad20439bccfa1", "steal": "A spaced out serif wordmark across the top." }
+   ],
+   "art": [
+    { "id": "ref_bf2b7d861df738c6", "steal": "Squiggles and confetti as section dividers." },
+    { "id": "ref_9017bee99503e525", "steal": "Primary colours on clean geometric parts." },
+    { "id": "ref_bea3be4b1c58b9e9", "steal": "Black and white stripes next to loud colour." },
+    { "id": "ref_3da979ad25a17817", "steal": "A poster grid with one tilted title." }
+   ],
+   "stitch": {
+    "title": "Memphis roastery",
+    "note": "A red wordmark hero, bags as cards from two shops, a dark green review band, a blue footer.",
+    "platform": "website",
+    "rows": [{ "parts": [0] }, { "parts": [1] }, { "parts": [2, 3] }, { "parts": [4] }, { "parts": [5] }],
+    "parts": [
+     { "ref": "ref_1b6a0252c578fcda", "role": "nav", "crop": { "x": 0, "y": 0.009, "w": 1, "h": 0.024 }, "theme": "light", "note": "Centred wordmark, cart on the right." },
+     { "ref": "ref_7aaada4949352793", "role": "hero", "crop": { "x": 0, "y": 0, "w": 1, "h": 0.56 }, "theme": "light", "note": "The name as the hero, edge to edge." },
+     { "ref": "ref_aa8ffdec2f1bc5b0", "role": "cards", "crop": { "x": 0.1, "y": 0.412, "w": 0.8, "h": 0.105 }, "theme": "dark", "note": "Bags on colour blocks, one per roast." },
+     { "ref": "ref_1b6a0252c578fcda", "role": "cards", "crop": { "x": 0.04, "y": 0.73, "w": 0.92, "h": 0.15 }, "theme": "light", "note": "Bags with name and price under each." },
+     { "ref": "ref_aa8ffdec2f1bc5b0", "role": "testimonial", "crop": { "x": 0.05, "y": 0.685, "w": 0.9, "h": 0.095 }, "theme": "dark", "note": "Three reviews on deep green." },
+     { "ref": "ref_1b6a0252c578fcda", "role": "footer", "crop": { "x": 0, "y": 0.91, "w": 1, "h": 0.09 }, "theme": "dark", "note": "A full blue footer with the name in caps." }
+    ]
+   }
+  },
+  {
+   "key": "grocery",
+   "brief": "Ramadan offers page for a grocery delivery app",
+   "wildness": 3,
+   "lens": "sadu",
+   "count": 4,
+   "direction": "bd-o19eocx1",
+   "ui": [
+    { "id": "ref_c8acf2b653748aa2", "steal": "Right to left layout with Arabic numerals done well." },
+    { "id": "ref_1aa54a66b90d052e", "steal": "Gold lantern art on a dark first screen." },
+    { "id": "ref_3e37d709000230bb", "steal": "Warm cream cards with crescent details." },
+    { "id": "ref_a9e0e738a66eab16", "steal": "A big countdown to iftar as the hero." },
+    { "id": "ref_357777cf53ebf7e0", "steal": "One clean timer card, lots of white." },
+    { "id": "ref_6314f577c48eab11", "steal": "Prayer times as a short list with icons." },
+    { "id": "ref_d81caa6ded181e2b", "steal": "Soft purple day cards in a grid." },
+    { "id": "ref_8b751aca4a4dd005", "steal": "Food and delivery tiles on a dark map." }
+   ],
+   "art": [
+    { "id": "ref_6d56c52a36b6bb26", "steal": "Camel and triangle rows as offer dividers." },
+    { "id": "ref_62069e1525ec46a3", "steal": "Red, white and black bands for the offer tags." },
+    { "id": "ref_5b69b11f89ce1b7f", "steal": "Big diamond motifs as the badge on the best offer." },
+    { "id": "ref_d7cc5b91f89dd0b1", "steal": "Narrow woven stripes as a progress bar." }
+   ]
+  }
+ ]
+}

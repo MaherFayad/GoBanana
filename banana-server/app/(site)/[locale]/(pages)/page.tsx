@@ -15,8 +15,9 @@
  * Every section carries `data-mark="scale y dim"` for the stage: how big the tile is, where it sits
  * (fraction of the viewport height) and how bright it is while that section is in the middle.
  *
- * References are real, published work, hotlinked with the creator and source link on each
- * (lib/site/showcase.ts, filtered by the takedown list per request).
+ * The examples are real: briefs bent by the engine and searched live (lib/site/examples.json, made
+ * by scripts/make-examples.ts). Images are hotlinked with the source link on each, and the list
+ * goes through the takedown list per request (lib/site/examples.ts).
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -27,19 +28,14 @@ import { ArrowEndIcon } from "@/components/studio/icons";
 import { FOUNDING_CAP } from "@/lib/billing/paddle";
 import { PLAN_ORDER } from "@/lib/billing/plans";
 import { APP_NAME, getConfig } from "@/lib/config";
-import { getRepos } from "@/lib/db";
-import { memoTakedowns } from "@/lib/db/takedowns";
 import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
 import { getDict, type Dict } from "@/lib/site/dict";
-import { en } from "@/lib/site/dict/en";
 import kitPreview from "@/lib/site/kit-preview.json";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
-import { GALLERY_BOARDS, HERO_TILES } from "@/lib/site/moves";
+import { HERO_TILES } from "@/lib/site/moves";
 import { priceText } from "@/lib/site/plans";
-import { GALLERY_REFS, HERO_REFS, showcaseIndex, siteName, type ShowcaseItem } from "@/lib/site/showcase";
-import { loadShowcase } from "@/lib/site/showcase-load";
-import { compileTakedowns } from "@/lib/takedown";
-import { e2eAuthBypass } from "@/lib/web-auth";
+import { EXAMPLES, EXAMPLES_FILE, featuredFirst, siteLabel, slug } from "@/lib/site/examples";
+import { visibleExamples } from "@/lib/site/examples-load";
 import { bidi, bt } from "../../_components/Bidi";
 import { DesktopIcons, type DeskIcon } from "../../_components/desktop/DesktopIcons";
 import { docsHref } from "../../_components/desktop/Dock";
@@ -47,17 +43,19 @@ import { MailApp } from "../../_components/desktop/MailApp";
 import { NotificationStack, type Notice } from "../../_components/desktop/NotificationStack";
 import { RollButton } from "../../_components/desktop/RollButton";
 import { Window } from "../../_components/desktop/Window";
-import { GalleryBoard, type BoardRef } from "../../_components/GalleryBoard";
-import { ProductFrame } from "../../_components/ProductFrame";
 import { ServerAddress } from "../../_components/ServerAddress";
 import { LanguageSwitch } from "../../_components/SiteNav";
 import { BoardRow } from "../../_components/story/BoardRow";
+import { ExampleBoard } from "../../_components/story/ExampleBoard";
+import { ExampleCard } from "../../_components/story/ExampleCard";
+import { StitchView } from "../../_components/story/StitchView";
 import { StoryMotion } from "../../_components/story/StoryMotion";
 import { StoryStage } from "../../_components/story/StoryStage";
 import "../../_components/landing.css";
 import "../../_components/story/story.css";
+import "../../_components/story/examples.css";
 
-// Per request: the showcase goes through the takedown list on every render (hard rule 5).
+// Per request: the examples go through the takedown list on every render (hard rule 5).
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -72,18 +70,7 @@ function mcpUrl(): string {
   return getConfig().mcpResourceUrl ?? "https://YOUR-DOMAIN/api/mcp";
 }
 
-/**
- * The visible showcase, or null (fail closed: generative art) when the takedown list cannot load.
- * The E2E sign-in bypass (never on in a production build) has no database, so it checks against
- * an empty list.
- */
-async function visibleShowcase(): Promise<ShowcaseItem[] | null> {
-  const loadMatcher =
-    e2eAuthBypass() && !process.env.DATABASE_URL ? async () => compileTakedowns([]) : () => memoTakedowns(getRepos().takedowns)();
-  return loadShowcase({ loadMatcher });
-}
 
-const BOARD_KEYS = ["souq", "transit", "loud", "private"] as const;
 /** Where each export window lands, in rem from the middle of the stage (mirrored in Arabic). */
 const FAN = [
   { x: -22, y: -9 },
@@ -93,16 +80,10 @@ const FAN = [
   { x: 24, y: 8 },
 ];
 
-const kebab = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
-/** File names for the pile: the gallery boards and the showcase lenses (always Latin file names). */
+/** File names for the pile: the example boards and their art references (always Latin file names). */
 function pileNames(): string[] {
-  const boards = en.landing.gallery.cards.map((c) => `${kebab(c.title)}.board`);
-  const refs = Object.values(en.landing.showcase.lenses).map((l) => `${kebab(l)}.ref`);
+  const boards = EXAMPLES.map((ex) => `${slug(ex.brief)}.board`);
+  const refs = EXAMPLES.flatMap((ex) => ex.art.slice(0, 2).map((r) => `${slug(r.title, 3)}.ref`));
   const out: string[] = [];
   for (let i = 0; out.length < boards.length + refs.length; i++) {
     if (i < refs.length) out.push(refs[i]!);
@@ -172,24 +153,27 @@ export default async function LandingPage({ params }: Props) {
   const beta = betaPlan() !== null;
   const url = mcpUrl();
 
-  const items = await visibleShowcase();
-  const refs = items ? showcaseIndex(items) : null;
+  const { examples, images } = await visibleExamples();
+  const [featured, ...rest] = featuredFirst(examples);
+  const x = t.examples;
   const altLang = locale === "ar" ? "en" : undefined;
-  const credit = (item: ShowcaseItem): ReactNode =>
-    item.creator ? bt(t.showcase.credit, { creator: item.creator, site: siteName(item.sourceSite) }) : <bdi dir="ltr">{siteName(item.sourceSite)}</bdi>;
-  const boardRef = (item: ShowcaseItem | undefined): BoardRef | null =>
-    item ? { src: item.thumbUrl, alt: item.title, altLang, href: item.sourceUrl, credit: credit(item), title: item.title } : null;
+  const gallery = href(locale, "gallery");
+  const stitches = examples.flatMap((ex) => (ex.stitch ? [{ key: ex.key, stitch: ex.stitch }] : []));
 
+  // Desktop icons: the first art direction reference of four examples, with the direction it was found for.
   const icons: DeskIcon[] = [];
-  if (refs) {
-    for (const tile of HERO_TILES) {
-      const item = refs.get(HERO_REFS[tile.art]);
-      if (!item) continue;
-      const lens = t.showcase.lenses[item.lens];
-      const what = item.move ? bt(t.showcase.what, { move: t.showcase.moves[item.move], lens }) : lens;
-      icons.push({ id: tile.art, src: item.thumbUrl, title: item.title, altLang, art: tile.art, href: item.sourceUrl, credit: credit(item), what });
-      if (icons.length === 4) break;
-    }
+  for (const ex of examples) {
+    const r = ex.art[0];
+    if (!r) continue;
+    const art = HERO_TILES[icons.length % HERO_TILES.length]!.art;
+    const credit: ReactNode = <bdi dir="ltr">{siteLabel(r.site)}</bdi>;
+    const what = (
+      <span lang={altLang} dir="auto">
+        {ex.direction.title}
+      </span>
+    );
+    icons.push({ id: ex.key, src: r.src, title: r.title, altLang, art, href: r.href, credit, what });
+    if (icons.length === 4) break;
   }
 
   const monthly = priceText("pro_monthly", p).amount;
@@ -251,7 +235,7 @@ export default async function LandingPage({ params }: Props) {
       title: f.product,
       links: [
         { href: `${home}#how`, label: f.howItWorks },
-        { href: `${home}#gallery`, label: f.gallery },
+        { href: href(locale, "gallery"), label: f.gallery },
         { href: href(locale, "pricing"), label: f.pricing },
         { href: href(locale, "canvases"), label: f.canvases },
       ],
@@ -301,6 +285,7 @@ export default async function LandingPage({ params }: Props) {
             <p>{bidi(c.body)}</p>
           </div>
         ))}
+        <div className="tile-slot" data-tile-slot="" aria-hidden="true" />
         <div className="hero-window">
           <Window id="install" title={fmt(s.add.dim)} titleNode={bidi(fmt(s.add.dim))} className="add-window is-frost" controls labels={d.window}>
             <AddBody t={t} locale={locale} url={url} level="h2" />
@@ -328,12 +313,51 @@ export default async function LandingPage({ params }: Props) {
             ))}
           </ul>
         </div>
-        <div className="board-window" data-parallax="">
-          <Window as="div" title={s.board.window} titleNode={<bdi dir="ltr">{s.board.window}</bdi>} className="is-frame is-frost" id="board-win" controls labels={d.window}>
-            <ProductFrame t={t.frame} />
-          </Window>
-        </div>
+        {featured ? (
+          <div className="board-window" data-parallax="">
+            <Window
+              as="div"
+              title={`${slug(featured.brief)}.board`}
+              titleNode={<bdi dir="ltr">{`${slug(featured.brief)}.board`}</bdi>}
+              className="is-example is-frost"
+              id="board-win"
+              controls
+              labels={d.window}
+            >
+              <ExampleBoard ex={featured} t={x} locale={locale} idPrefix="featured" eager={4} />
+            </Window>
+          </div>
+        ) : null}
       </section>
+
+      {/* ------------------------------------------------------------ 2b. Frankenstein it */}
+      {stitches.length > 0 ? (
+        <section className="s-stitch" aria-labelledby="stitch" data-mark="0.8 0.5 0.5">
+          <div className="stitch-text">
+            <Lines id="stitch" lines={[bidi(s.stitch.dim), bidi(s.stitch.bright)]} />
+            <p className="story-lead" data-reveal="">
+              {bidi(s.stitch.lead)}
+            </p>
+          </div>
+          <div className="stitch-window" data-parallax="">
+            <Window
+              as="div"
+              title="frankenstein.page"
+              titleNode={<bdi dir="ltr">frankenstein.page</bdi>}
+              className="is-example is-frost"
+              id="stitch-win"
+              controls
+              labels={d.window}
+            >
+              <StitchView
+                items={stitches}
+                en={altLang}
+                labels={{ modes: x.modes, modesLabel: x.modesLabel, pagesLabel: x.pagesLabel, roles: x.roles, slot: x.slot, parts: x.parts, newTab: x.newTab }}
+              />
+            </Window>
+          </div>
+        </section>
+      ) : null}
 
       {/* ------------------------------------------------------------ 3. made with */}
       <section className="s-made" aria-labelledby="gallery" data-mark="1 0.42 1">
@@ -344,38 +368,25 @@ export default async function LandingPage({ params }: Props) {
           <Lines id="gallery" lines={[bidi(s.made.dim), bt(s.made.bright)]} />
         </div>
         <BoardRow label={s.made.label} prev={s.made.prev} next={s.made.next}>
-          {t.gallery.cards.map((card, i) => (
-            <li key={card.title} className="row-card gallery-card">
-              <GalleryBoard
-                index={i}
-                board={BOARD_KEYS[i]!}
-                title={card.title}
-                body={bidi(card.body)}
-                twist={bidi(card.twist)}
-                tags={card.tags}
-                palette={card.palette}
-                arts={GALLERY_BOARDS[i]!}
-                refs={refs ? GALLERY_REFS[i]!.map((id) => boardRef(refs.get(id))) : null}
-                labels={{
-                  openExample: t.gallery.openExample,
-                  exampleEyebrow: t.gallery.exampleEyebrow,
-                  twist: t.gallery.twist,
-                  paletteLabel: t.gallery.paletteLabel,
-                  paletteTitle: t.gallery.paletteTitle,
-                  sources: t.showcase.sources,
-                  sourcesTitle: t.gallery.sourcesTitle,
-                  newTab: t.field.newTab,
-                  close: dict.common.close,
-                }}
-              />
+          {rest.map((ex) => (
+            <li key={ex.key} className="row-card ex-row-card">
+              <ExampleCard ex={ex} t={x} locale={locale} boardHref={`${gallery}#${ex.key}`} />
             </li>
           ))}
         </BoardRow>
-        {refs ? (
+        <div className="made-foot">
+          <RollButton href={gallery} size="md" variant="secondary" icon={<ArrowEndIcon size={16} />}>
+            {x.all}
+          </RollButton>
           <p className="made-notice">
-            {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
+            {images ? fmt(x.made, { date: EXAMPLES_FILE.generatedAt, n: EXAMPLES_FILE.serperRequests }) : x.noImages}{" "}
+            {images ? (
+              <>
+                {t.showcase.notice} <Link href={href(locale, "takedown")}>{t.showcase.noticeLink}</Link>
+              </>
+            ) : null}
           </p>
-        ) : null}
+        </div>
       </section>
 
       {/* ------------------------------------------------------------ 4. three statements */}
@@ -389,6 +400,7 @@ export default async function LandingPage({ params }: Props) {
             <p className="story-lead" data-reveal="">
               {bidi(st.body)}
             </p>
+            {i === 0 ? <div className="tile-slot" data-tile-slot="" aria-hidden="true" /> : null}
           </div>
         ))}
       </section>
@@ -415,6 +427,7 @@ export default async function LandingPage({ params }: Props) {
       {/* ------------------------------------------------------------ 6. brief, bend, ship */}
       <section className="s-ship" aria-labelledby="ship" data-mark="0.6 0.56 1">
         <Lines id="ship" className="is-big" lines={s.ship.lines.map((l) => bidi(l))} dim={2} />
+        <div className="tile-slot" data-tile-slot="" aria-hidden="true" />
         <div className="ship-side">
           <p className="story-lead" data-reveal="">
             {bt(s.ship.lead)}

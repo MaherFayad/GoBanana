@@ -260,6 +260,121 @@ html:has(.site .menubar) {
   background: var(--st-desk-glass-hover);
 }
 
+/* ------------------------------------------------------------------ menu bar menus (MenuBarMenu.tsx)
+
+   macOS style: a frosted panel that drops from under its bar item, rounded, hairline border,
+   soft shadow, compact rows with an optional hint at the end, separators between groups. Opens
+   with a quick fade and a small slide from the top (0ms under reduced motion). */
+
+.site .menubar-wide {
+  display: contents;
+}
+
+.site .menubar-narrow {
+  display: none;
+}
+
+.site .mb {
+  position: relative;
+}
+
+.site .mb-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 1.5rem;
+  padding-inline: var(--st-space-s);
+  border: 0;
+  border-radius: var(--st-radius-field);
+  background: none;
+  color: var(--st-desk-heading);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.site .mb-trigger:hover,
+.site .mb-trigger[data-open] {
+  background: var(--st-desk-glass-hover);
+}
+
+.site .mb-menu {
+  position: absolute;
+  z-index: var(--st-z-toolbar-popover);
+  inset-block-start: calc(100% + 0.35rem);
+  inset-inline-end: 0;
+  min-inline-size: 13.5rem;
+  padding: 0.3rem;
+  border: var(--st-border-width) solid var(--st-desk-hairline);
+  border-radius: 0.6rem;
+  background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur-strong)) saturate(1.6);
+  box-shadow: var(--st-desk-shadow-soft);
+  outline: none;
+  transform-origin: top;
+  animation: mb-drop var(--st-duration-medium) var(--st-ease-out);
+}
+
+@keyframes mb-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+}
+
+.site .mb-item {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-xl);
+  min-block-size: 1.75rem;
+  padding-inline: var(--st-space-m);
+  border-radius: 0.35rem;
+  color: var(--st-desk-heading);
+  font-size: 0.875rem;
+  text-decoration: none;
+  outline: none;
+}
+
+/* The highlight follows the pointer and the arrow keys (rows take focus on hover). */
+.site .mb-item:focus,
+.site .mb-item:focus-visible {
+  background: var(--st-primary-fill);
+  box-shadow: none;
+  color: var(--st-primary-text);
+}
+
+.site .mb-item[aria-current="page"] .mb-label {
+  font-weight: 600;
+}
+
+.site .mb-label {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.site .mb-hint {
+  color: var(--st-desk-meta);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.site .mb-item:focus .mb-hint {
+  color: inherit;
+}
+
+.site .mb-sep {
+  block-size: var(--st-border-width);
+  margin: 0.3rem var(--st-space-m);
+  background: var(--st-desk-hairline);
+}
+
+@media (forced-colors: active) {
+  .site .mb-item:focus {
+    outline: 2px solid Highlight;
+  }
+}
+
 /* ------------------------------------------------------------------ windows */
 
 .site .dwin {
@@ -278,6 +393,11 @@ html:has(.site .menubar) {
 
 .site .dwin[data-controls] {
   z-index: 2;
+}
+
+/* Keyboard moves and the green light (put back) glide; a pointer drag follows the hand. */
+.site .dwin[data-controls]:not([data-dragging]) {
+  transition: translate var(--st-window-close) var(--st-window-ease);
 }
 
 .site .dwin[data-controls]:focus-within,
@@ -1118,12 +1238,6 @@ button.dwin-light {
   margin-block-end: var(--st-space-3xl);
 }
 
-.site .site-footer {
-  padding-block-end: var(--st-space-3xl);
-  border-block-start-color: var(--st-desk-glass-edge);
-  background: transparent;
-}
-
 .site .dock {
   position: fixed;
   z-index: var(--st-z-topbar);
@@ -1187,9 +1301,15 @@ button.dwin-light {
   color: currentColor;
 }
 
-/* Every page keeps room at the bottom, so the fixed dock never covers content or the footer. */
+/* Every page keeps room at the bottom, so the fixed dock never covers content. A page with a
+   footer gives that room inside the footer instead (site.css --site-dock-room), so the footer runs
+   to the bottom and the dock floats over it. */
 .site:has(.dock) {
-  padding-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
+  padding-block-end: var(--site-dock-room);
+}
+
+.site:has(.dock):has(.site-footer, .story-footer) {
+  padding-block-end: 0;
 }
 
 /* The name is always in the link; it shows as a label over the icon on hover and focus. */
@@ -1254,9 +1374,15 @@ button.dwin-light {
 
 /* ------------------------------------------------------------------ phone home screen */
 
-@media (max-width: 429.98px) {
-  .site .menubar-clock {
+/* Narrow screens: no clock; the nav, "Your canvases" and the language fold into the Menu item. */
+@media (max-width: 767.98px) {
+  .site .menubar-clock,
+  .site .menubar-wide {
     display: none;
+  }
+
+  .site .menubar-narrow {
+    display: block;
   }
 }
 
@@ -1448,13 +1574,6 @@ button.dwin-light {
     inline-size: 1.4rem;
   }
 
-  .site:has(.dock) {
-    padding-block-end: calc(4rem + env(safe-area-inset-bottom, 0px));
-  }
-
-  .site .site-footer {
-    padding-block-end: var(--st-space-3xl);
-  }
 
   /* Compare table turns into one card per plan. */
   .site .desk-page .table-scroll {

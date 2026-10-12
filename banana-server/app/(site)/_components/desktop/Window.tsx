@@ -11,10 +11,15 @@
  * - The red light closes (focus goes to a "Reopen" button left in its place, or to `onClose`),
  *   the yellow one minimises to the title bar (aria-expanded), the green one puts the window back.
  *   Escape anywhere inside closes it.
+ * - Motion (components/window/motion.ts): a window opened from a button grows out of it, close
+ *   scales down and fades, minimise sends a copy of the window into the dock (genie-like) while
+ *   the window folds to its title bar, and the green light glides the window back. Reduced
+ *   motion: short fades.
  * - Moving is off under 768px (the phone home screen stacks windows) and under
  *   prefers-reduced-motion. The lights still work there.
  */
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
+import { animateClose, animateMinimize, animateOpen, dockTarget, ghost, recentPress, reducedMotion } from "@/components/window/motion";
 import { fmt } from "@/lib/site/i18n";
 
 export type WindowLabels = {
@@ -42,6 +47,8 @@ type Props = {
   onClose?: () => void;
   /** Focus the title (move handle) on mount, for windows opened from a button. */
   autoFocus?: boolean;
+  /** Working lights from a WindowLayer (FrameLights), in place of the picture lights. */
+  lights?: ReactNode;
   style?: CSSProperties;
   id?: string;
   as?: "div" | "section" | "article";
@@ -79,6 +86,7 @@ export function Window({
   labels,
   onClose,
   autoFocus,
+  lights,
   style,
   id,
   as: Tag = "section",
@@ -112,6 +120,15 @@ export function Window({
     if (autoFocus) handleRef.current?.focus();
   }, [autoFocus, canMove]);
 
+  // A window opened from a button (Quick Look) grows out of it; a reopened one scales in.
+  const reopening = useRef(false);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || closed) return;
+    if (autoFocus || reopening.current) animateOpen(el, recentPress()?.getBoundingClientRect() ?? null);
+    reopening.current = false;
+  }, [autoFocus, closed]);
+
   useEffect(() => {
     if (focusAfter.current === "reopen") reopenRef.current?.focus();
     if (focusAfter.current === "handle") handleRef.current?.focus();
@@ -120,13 +137,31 @@ export function Window({
 
   const name = (template: string | undefined) => fmt(template ?? "", { title });
 
-  function close() {
+  const leaving = useRef(false);
+  async function close() {
+    const el = rootRef.current;
+    if (leaving.current) return;
+    leaving.current = true;
+    if (el) await animateClose(el, null);
+    leaving.current = false;
     if (onClose) {
       onClose();
       return;
     }
     focusAfter.current = "reopen";
     setClosed(true);
+  }
+
+  function toggleMinimised() {
+    const el = rootRef.current;
+    if (el && !minimised && !reducedMotion()) {
+      // A copy flies into the dock while the window folds to its title bar.
+      const copy = ghost(el, el.getBoundingClientRect());
+      void animateMinimize(copy, dockTarget()).then(() => copy.remove());
+    } else if (el) {
+      animateOpen(el, null);
+    }
+    setMinimised((m) => !m);
   }
 
   function moveTo(next: Offset) {
@@ -138,7 +173,7 @@ export function Window({
     if (!controls) return;
     if (e.key === "Escape") {
       e.stopPropagation();
-      close();
+      void close();
     }
   }
 
@@ -179,6 +214,7 @@ export function Window({
         className="dwin-reopen"
         onClick={() => {
           focusAfter.current = "handle";
+          reopening.current = true;
           setClosed(false);
         }}
       >
@@ -215,7 +251,7 @@ export function Window({
       >
         {controls && labels ? (
           <span className="dwin-lights">
-            <button type="button" className="dwin-light" data-light="close" aria-label={name(labels.close)} onClick={close} />
+            <button type="button" className="dwin-light" data-light="close" aria-label={name(labels.close)} onClick={() => void close()} />
             <button
               type="button"
               className="dwin-light"
@@ -223,7 +259,7 @@ export function Window({
               aria-label={name(minimised ? labels.restore : labels.minimise)}
               aria-expanded={!minimised}
               aria-controls={bodyId}
-              onClick={() => setMinimised((m) => !m)}
+              onClick={toggleMinimised}
             />
             <button
               type="button"
@@ -234,6 +270,8 @@ export function Window({
               onClick={() => moved && setOffset({ x: 0, y: 0 })}
             />
           </span>
+        ) : lights ? (
+          lights
         ) : (
           <span className="dwin-lights" aria-hidden="true">
             <span className="dwin-light" data-light="close" />
