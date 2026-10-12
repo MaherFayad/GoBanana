@@ -11,7 +11,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { mutateCanvas } from "@/lib/canvas/store";
+import { loadCanvas, mutateCanvas } from "@/lib/canvas/store";
 import type { NewFeedback, ReferenceRecord } from "@/lib/db/types";
 import { parseCreator } from "@/lib/learning/creator";
 import { badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, type FeedbackReason } from "@/lib/learning/hints";
@@ -26,6 +26,7 @@ import {
   TRY_AGAIN,
   type CanvasToolDeps,
 } from "./canvas-shared";
+import { reconcileHintFor } from "./reconcile_direction";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "rate_references";
@@ -178,7 +179,13 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         hints,
         ...(input.canvasId ? { canvasId: input.canvasId } : {}),
       };
-      return toolResult(text(out), out);
+      // Great ratings change a direction's palette weights: nudge a reconcile when one is due.
+      let hint: string | null = null;
+      if (input.canvasId && rows.length > 0) {
+        const loaded = await loadCanvas(deps.repos, userId, input.canvasId, takedownLoader(deps));
+        if (loaded) hint = await reconcileHintFor(deps.repos, userId, loaded.canvas, loaded.state);
+      }
+      return toolResult(`${text(out)}${hint ? `\n${hint}` : ""}`, out);
     } catch {
       console.error("[rate_references] failed");
       return toolMessage(TRY_AGAIN);

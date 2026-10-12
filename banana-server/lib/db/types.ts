@@ -123,6 +123,11 @@ export interface DirectionRepo {
    */
   setVerdict(canvasId: string, ids: readonly string[], verdict: "keep" | "drop"): Promise<number>;
   /**
+   * Merge `spec` and `reconciled` (reconcile_direction) into one direction's detail by row uuid,
+   * keeping the rest. Returns false when the row is not on that canvas. Callers check ownership.
+   */
+  setReconciled(canvasId: string, id: string, patch: Pick<DirectionDetail, "spec" | "reconciled">): Promise<boolean>;
+  /**
    * Search texts of the directions on the user's most recently updated canvases (at most
    * `canvasLimit`), skipping `excludeCanvasId`. bend_brief uses it so new boards do not repeat
    * the ideas of the last few.
@@ -206,6 +211,8 @@ export interface FeedbackRepo {
    * or by this user. Never returns user ids.
    */
   directionStats(userId: string, k: number): Promise<IngredientStatRow[]>;
+  /** This user's latest verdict per item key, for the given keys only (reconcile_direction weights). */
+  verdictsFor(userId: string, itemKeys: readonly string[]): Promise<Map<string, FeedbackVerdict>>;
 }
 
 export interface BlocklistRepo {

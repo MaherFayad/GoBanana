@@ -5,6 +5,7 @@
 import type {
   CanvasDirection,
   CanvasItem,
+  CanvasPalette,
   CanvasSnapshot,
   ContrastResult,
   NoteItem,
@@ -23,7 +24,9 @@ import {
   type VisualSpec,
   type Zone,
 } from "../direction-detail";
+import { parseReconciled } from "../db/detail";
 import fontsData from "../kit/fonts.json";
+import { voiceFonts, voiceFontsUrl, type VoiceFonts } from "../kit/voice-fonts";
 import { EXPORT_PLATFORMS, platformOf, type ExportPlatform } from "./platform";
 import { cleanPages, explorationDir, globsFor, inferPages, kitSlug, type Scope } from "./scope";
 import { contrastRatio, finite, normalizeHex, oneLine, plainBlock, safeUrl, tokenName } from "./util";
@@ -94,7 +97,8 @@ export interface ColorToken {
   oklch: string | null;
   /** Role as written on the canvas, when it differs from the token name. */
   canvasRole: string | null;
-  from: "palette" | "swatch" | "contrast";
+  /** fallback: neutral placeholders when a direction has images but none could be read for color. */
+  from: "palette" | "swatch" | "contrast" | "fallback";
 }
 
 export interface ExploreColor {
@@ -221,6 +225,19 @@ export interface KitModel {
   components: ComponentToken[];
   /** Stitch frames ("Frankenstein pages") for the focus directions or no direction, in reading order. */
   stitches: StitchSnapshot[];
+  /** The lead direction's type voice as four named Google Fonts (Latin and Arabic, display and body). */
+  fonts: VoiceFonts;
+  /** One Google Fonts link for those four. */
+  fontsUrl: string;
+  /**
+   * Where the ship colors came from: "board" (reconcile_direction on the focus directions),
+   * "canvas" (extract_palette runs and swatches), "fallback" (neutral placeholders) or "none".
+   */
+  colorsFrom: "board" | "canvas" | "fallback" | "none";
+  /** Board mood line from reconcile_direction, when it ran. */
+  mood: string | null;
+  /** Main colors inside each Frankenstein part's crop (reconcile_direction), by part id. */
+  partColors: Map<string, string[]>;
 }
 
 // ---------- builders ----------
@@ -301,11 +318,11 @@ function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): R
 const TEXT_LIKE = /^(on-|text|ink|white|black|foreground|fg)/;
 const SURFACE_LIKE = /(surface|neutral|background|paper|base|canvas)/;
 
-function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
+function buildColors(palettes: readonly CanvasPalette[], swatchOrder: CanvasItem[]) {
   type Raw = { hex: string; oklch: string | null; role: string | null; tag: Tag; from: "palette" | "swatch" };
 
   const contrast: ContrastResult[] = [];
-  for (const p of snapshot.palettes ?? []) {
+  for (const p of palettes) {
     for (const r of p.contrast ?? []) {
       const fg = normalizeHex(r.fg);
       const bg = normalizeHex(r.bg);
@@ -317,7 +334,7 @@ function buildColors(snapshot: CanvasSnapshot, swatchOrder: CanvasItem[]) {
   const inShipPair = new Set(contrast.filter((r) => r.tag === "ship").flatMap((r) => [r.fg, r.bg]));
 
   const raw: Raw[] = [];
-  for (const p of snapshot.palettes ?? []) {
+  for (const p of palettes) {
     for (const c of p.colors ?? []) {
       const hex = normalizeHex(c.hex);
       if (!hex) continue;
@@ -442,6 +459,8 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   if (typeof r.prompt === "string" && oneLine(r.prompt)) d.prompt = oneLine(r.prompt, 600);
   if (typeof r.wildness === "number" && Number.isFinite(r.wildness)) d.wildness = Math.min(5, Math.max(1, Math.round(r.wildness)));
   if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
+  const rec = parseReconciled(r.reconciled);
+  if (rec) d.reconciled = rec;
   return d;
 }
 
@@ -553,7 +572,34 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const focusRefs = references.filter((r) => !r.directionId || !knownIds.has(r.directionId) || focusIds.has(r.directionId));
   const lead = focus.find((d) => d.detail?.spec) ?? focus[0];
 
-  const { ship, explore, contrast } = buildColors(snapshot, allItems);
+  // Colors: the focus directions' own board palettes (reconcile_direction) when they ran, so each
+  // direction exports its own palette; then the canvas palettes. With board palettes, swatches in
+  // other directions' sections are left out too.
+  const boardPalettes: CanvasPalette[] = focus.flatMap((d) => {
+    const r = d.detail?.reconciled;
+    return r && r.palette.length > 0 ? [{ colors: r.palette, contrast: r.contrast }] : [];
+  });
+  const inOtherDirections = new Set(
+    sections.filter((s) => s.directionId && knownIds.has(s.directionId) && !focusIds.has(s.directionId)).flatMap((s) => s.items.map((i) => i.id)),
+  );
+  const colors =
+    boardPalettes.length > 0
+      ? buildColors(boardPalettes, allItems.filter((i) => !inOtherDirections.has(i.id)))
+      : buildColors(snapshot.palettes ?? [], allItems);
+  const { explore, contrast } = colors;
+  let ship = colors.ship;
+  let colorsFrom: KitModel["colorsFrom"] = ship.length === 0 ? "none" : boardPalettes.length > 0 ? "board" : "canvas";
+  // A direction with images always gets named colors: neutral placeholders when none could be read.
+  const focusImages = focusRefs.filter((r) => r.directionId && focusIds.has(r.directionId)).length;
+  if (ship.length === 0 && focusImages >= 3) {
+    ship = [
+      { name: "surface", hex: "#ffffff", oklch: null, canvasRole: null, from: "fallback" },
+      { name: "ink", hex: "#1a1a1a", oklch: null, canvasRole: null, from: "fallback" },
+    ];
+    colorsFrom = "fallback";
+  }
+  const partColors = new Map<string, string[]>();
+  for (const d of directions) for (const [id, hexes] of Object.entries(d.detail?.reconciled?.parts ?? {})) if (!partColors.has(id)) partColors.set(id, hexes);
 
   // A type sample placed on the canvas is the user's own pick and wins; then the direction's
   // type voice; then the default.
@@ -563,6 +609,9 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const pairing = fromSample ?? fromVoice ?? defaultPairing();
   const pairingFrom = fromSample ? "canvas" : fromVoice ? "voice" : "default";
   const arabic = pairing.scripts.includes("arabic");
+  // Latin fonts follow the pairing in use (a type sample on the board wins); Arabic follow the voice.
+  const voice = voiceFonts(lead?.detail?.spec?.typeVoice);
+  const fonts: VoiceFonts = { ...voice, latinDisplay: { ...pairing.display }, latinBody: { ...pairing.body } };
 
   const title = oneLine(snapshot.title, 80) || "Untitled canvas";
   const brief = oneLine(snapshot.brief, 500);
@@ -624,6 +673,11 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     spacing: platform.spacing.map(([k, d]): [string, Dim] => [k, { ...d }]),
     components: buildComponents(ship),
     stitches: (snapshot.stitches ?? []).filter((st) => !st.directionId || !knownIds.has(st.directionId) || focusIds.has(st.directionId)),
+    fonts,
+    fontsUrl: voiceFontsUrl(fonts),
+    colorsFrom,
+    mood: focus.map((d) => d.detail?.reconciled?.mood).find((m) => !!m) ?? null,
+    partColors,
   };
 }
 

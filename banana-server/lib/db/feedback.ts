@@ -4,9 +4,10 @@
  * Arm stats are computed from these rows on read, grouped so that each user counts once per
  * term key and arm; user ids never leave the query (DECISIONS.md).
  */
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { blockedItems, searchFeedback } from "@/db/schema";
+import type { FeedbackVerdict } from "@/lib/learning/hints";
 import { isUuid } from "./ids";
 import type { ArmStatRow, BlocklistRepo, FeedbackRepo, IngredientStatRow, NewFeedback } from "./types";
 
@@ -27,6 +28,23 @@ export async function listCreatorRatings(db: Db, userId: string, limit = 500) {
     .where(and(eq(searchFeedback.userId, userId), isNotNull(searchFeedback.creator)))
     .orderBy(desc(searchFeedback.createdAt))
     .limit(limit);
+}
+
+/** Most item keys one verdictsFor read asks about (the images of one direction, plus slack). */
+const MAX_VERDICT_KEYS = 100;
+
+/** The user's latest verdict per item key (reconcile_direction weights great images up). */
+export async function readVerdictsFor(db: Db, userId: string, itemKeys: readonly string[]): Promise<Map<string, FeedbackVerdict>> {
+  const keys = [...new Set(itemKeys)].filter(Boolean).slice(0, MAX_VERDICT_KEYS);
+  const out = new Map<string, FeedbackVerdict>();
+  if (!isUuid(userId) || keys.length === 0) return out;
+  const rows = await db
+    .select({ itemKey: searchFeedback.itemKey, verdict: searchFeedback.verdict })
+    .from(searchFeedback)
+    .where(and(eq(searchFeedback.userId, userId), inArray(searchFeedback.itemKey, keys)))
+    .orderBy(desc(searchFeedback.createdAt));
+  for (const r of rows) if (!out.has(r.itemKey)) out.set(r.itemKey, r.verdict);
+  return out;
 }
 
 /** The grouped stats query. Exported so tests can check the SQL without a database. */
@@ -116,6 +134,7 @@ export function feedbackRepo(db: Db): FeedbackRepo {
     listCreatorRatings: (userId, limit) => listCreatorRatings(db, userId, limit),
     armStats: (userId, termKeys) => readArmStats(db, userId, termKeys),
     directionStats: (userId, k) => readDirectionStats(db, userId, k),
+    verdictsFor: (userId, itemKeys) => readVerdictsFor(db, userId, itemKeys),
   };
 }
 

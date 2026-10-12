@@ -15,6 +15,7 @@ import { register as stitchPage } from "./frankenstein_page";
 import { register as remixStitch } from "./remix_frankenstein";
 import { register as updateStitch } from "./update_frankenstein";
 import { register as extractPalette } from "./extract_palette";
+import { register as reconcileDirection } from "./reconcile_direction";
 import { register as exportKit } from "./export_kit";
 import { register as deleteCanvas } from "./delete_canvas";
 import { register as saveCanvasState } from "./save_canvas_state";
@@ -39,6 +40,7 @@ export const tools: RegisterTool[] = [
   remixStitch,
   updateStitch,
   extractPalette,
+  reconcileDirection,
   exportKit,
   deleteCanvas,
   // App-only (MCP Apps visibility ["app"]): the inline canvas saves and reloads through them.

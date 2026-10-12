@@ -1,8 +1,8 @@
 {
-  "default": "space-grotesk-inter",
+  "default": "space-grotesk-public-sans",
   "voices": {
-    "grotesk": "space-grotesk-inter",
-    "neo-grotesk": "inter-tight-inter",
+    "grotesk": "space-grotesk-public-sans",
+    "neo-grotesk": "hanken-grotesk-figtree",
     "serif-editorial": "instrument-serif-inter-tight",
     "serif-classic": "playfair-source-sans",
     "mono": "space-mono-space-grotesk",
@@ -13,6 +13,28 @@
     "slab": "zilla-slab-plex-sans"
   },
   "pairings": [
+    {
+      "id": "space-grotesk-public-sans",
+      "name": "Space Grotesk and Public Sans",
+      "display": { "family": "Space Grotesk", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Public Sans", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["tech", "clean", "confident"],
+      "sample": "Bold ideas, clear screens",
+      "url": "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Public+Sans:wght@400;700&display=swap"
+    },
+    {
+      "id": "hanken-grotesk-figtree",
+      "name": "Hanken Grotesk and Figtree",
+      "display": { "family": "Hanken Grotesk", "weight": 700, "fallback": "sans-serif" },
+      "body": { "family": "Figtree", "weight": 400, "fallback": "sans-serif" },
+      "licence": "OFL-1.1",
+      "scripts": ["latin"],
+      "mood": ["neutral", "swiss", "precise"],
+      "sample": "Plain shapes, tight spacing",
+      "url": "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700&family=Figtree:wght@400;700&display=swap"
+    },
     {
       "id": "space-grotesk-inter",
       "name": "Space Grotesk and Inter",

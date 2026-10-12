@@ -9,6 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
+// Loaded before the fs spies go on: module loading reads files, the tools under test must not.
+import "@/lib/mcp/tools/rate_references";
 
 const writes: string[] = [];
 

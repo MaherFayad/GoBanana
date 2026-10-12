@@ -3,14 +3,29 @@ import type { KitModel } from "./model";
 import { directionRefs } from "./model";
 import { globsText, pagesText, scopeBlock } from "./scope";
 import { SPEC_AXES, bullets, exploreLine, fontsLine, kitTitle, refLine, shipLine, typeScaleText } from "./scoped";
-import { stitchSection } from "./stitch-md";
-import { mdText } from "./util";
+import { STITCH_MD_FILE, stitchSection } from "./stitch-md";
+import { mdAutolink, mdText } from "./util";
 
 export function buildPromptMd(m: KitModel): string {
   const out: string[] = [`# Build prompt: ${mdText(kitTitle(m))}`, ""];
   const scope = scopeBlock(m);
   if (scope.length > 0) out.push(...scope, "");
-  out.push("Paste everything under Prompt into Claude Code, Cursor, v0 or Lovable. It builds only the pages named in it.", "");
+  out.push("## Before any code", "");
+  if (m.stitches.length > 0) {
+    out.push(
+      `1. Call get_snapshot on each Frankenstein page and look at it: ${m.stitches.map((st) => `"${mdText(st.title, 120)}" (${st.id})`).join(", ")}.`,
+      `2. Read the part notes under Frankenstein pages below (colors, type scale, density, RTL, and the source image with its crop) and \`${m.dir}/${STITCH_MD_FILE}\`.`,
+      "3. Compare the page you are about to build with the snapshot and the board's colors. Build only once they match.",
+      "",
+    );
+  } else {
+    out.push(
+      `1. Open the board${m.webUrl ? ` (${mdAutolink(m.webUrl)})` : ""} and look at this direction's references before writing code.`,
+      "2. Use the ship colors and named fonts below, not defaults.",
+      "",
+    );
+  }
+  out.push("Paste everything from Before any code down into Claude Code, Cursor, v0 or Lovable. It builds only the pages named in it.", "");
 
   out.push("## Prompt", "");
   // Look first (get_snapshot is a parts view: each part's source image with its crop rect, never a rendered PNG).
@@ -47,7 +62,7 @@ export function buildPromptMd(m: KitModel): string {
     }
   }
 
-  out.push(...stitchSection(m, "###"));
+  out.push(...stitchSection(m, "###", { parts: true }));
   out.push("### Platform constraints", "", bullets([`${m.platform.columns}, ${m.platform.margins}.`, `Targets: ${m.platform.targets}.`, ...m.platform.constraints]), "");
   out.push(
     "### Type and color",

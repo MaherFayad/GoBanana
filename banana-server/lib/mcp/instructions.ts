@@ -5,15 +5,16 @@
  * images linked to their Mobbin page (owner decision, 2026-10-12). Plain words, no em dashes.
  */
 export const SERVER_INSTRUCTIONS = [
-  "GoBanana bends one page or screen (a launch page, onboarding, an empty state, a paywall) into wild but buildable directions and fills a moodboard canvas with linked references. It is for one crazy idea over a page or two, not a whole product redesign.",
+  "GoBanana bends one page or screen (a launch page, onboarding, a paywall) into wild but buildable directions and fills a moodboard canvas with linked references: one crazy idea over a page or two, not a product redesign.",
   "",
-  "First, check whether the user also has a Mobbin connector (tools named search_screens, search_flows or search_sections). If so, use both: Mobbin for what shipped apps do on this page, GoBanana for the directions that go past it.",
-  "1. Before bend_brief, search Mobbin once per page for the same page on the same platform (for example checkout on iOS). From 3 to 6 shipped screens, note the baseline (the layout most apps share) and the must keeps (patterns users rely on).",
-  "2. When you pick directions from bend_brief, drop ideas that only restyle the baseline, keep ideas whose pattern keeps the must keeps, and for each kept direction find 2 to 4 Mobbin screens it builds on (wild ones, or ones that fit it).",
-  "3. Place them in that direction's UI grid with add_to_canvas { type: 'screen', imageUrl: image_url, sourceUrl: mobbin_url, app, platform, note: 'steal: ...', directionId }. Add one note 'Shipped today: [App, screen](mobbin link), ...' and a 'BUILD ON: [App, screen](mobbin link)' line in each idea note.",
-  "Mobbin screens are hotlinked from the connector's image_url and always link to their Mobbin page: never download them, never pass them to search_references. A wild or fitting one can be a Frankenstein part (cut_parts with its itemId, for example a real pay bar under a wild hero), never the whole page. With no Mobbin connector, skip all of this and do not mention Mobbin.",
+  "First, check whether the user also has a Mobbin connector (search_screens, search_flows, search_sections). If so, use both: Mobbin for what shipped apps do, GoBanana for directions that go past it.",
+  "1. Before bend_brief, search Mobbin for the same page on the same platform. From 3 to 6 shipped screens, note the baseline (the layout most apps share) and the must keeps.",
+  "2. Drop directions that only restyle the baseline or break a must keep; for each kept one find 2 to 4 Mobbin screens it builds on (wild ones, or ones that fit).",
+  "3. Place them in that direction's UI grid with add_to_canvas { type: 'screen', imageUrl: image_url, sourceUrl: mobbin_url, screenId, app, platform, note: 'steal: ...', directionId }, and add a 'BUILD ON: [App, screen](mobbin link)' line in each idea note.",
+  "Mobbin screens are hotlinked and link to their Mobbin page: never download them or pass them to search_references. A wild or fitting one can be a Frankenstein part (cut_parts with its itemId), never the whole page. With no Mobbin connector, skip this and do not mention Mobbin.",
   "",
-  "Flow: get_canvas (reuse a matching board) or new_canvas, bend_brief with the platform and the page, keep the best 3 directions, search_references once per kept direction, rate_references (bad for junk, great for 1 to 3 standouts), add_to_canvas with 6 to 8 UI and 2 to 4 art per direction (art in the art row, each with a 'steal:' note), arrange_canvas, then open_canvas and give the web link.",
-  "Always show each reference's source link. Never download or copy reference images.",
-  "Look before building: call get_snapshot on the board and each Frankenstein page before writing any screen; if you cannot see images, say so and ask; never guess from titles. Rate and note from the thumbnails.",
+  "Flow: get_canvas (reuse a matching board) or new_canvas, bend_brief with the platform and the page, keep the best 3 directions, search_references once per kept direction, rate_references (bad for junk, great for 1 to 3 standouts), add_to_canvas with 6 to 8 UI and 2 to 4 art per direction (each art with a 'steal:' note), arrange_canvas, then open_canvas and give the web link.",
+  "Look at the thumbnails results return and rate and note from them, never from titles. Look before building: call get_snapshot on the board and each Frankenstein page before writing any screen; if you cannot see images, say so and ask.",
+  "Read boards with get_canvas summary: true first. Before export_kit, run reconcile_direction on each kept direction so its spec matches the board, and tell the user about any conflicts it lists. Several kept directions export one folder each: build one at a time.",
+  "Always show each reference's source link.",
 ].join("\n");

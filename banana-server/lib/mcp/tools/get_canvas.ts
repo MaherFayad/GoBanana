@@ -24,8 +24,8 @@ import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type To
 export const TOOL_NAME = "get_canvas";
 
 export const TOOL_DESCRIPTION =
-  "Read a canvas: its brief, directions (platform, pages, kept or not, visual spec), sections, items with their source links and notes, swatches and palettes. " +
-  "Also the parts library and the Frankenstein pages. Use it to see what the user kept or changed before next steps or export. " +
+  "Read a canvas: brief, directions with spec, sections, items with source links and notes, palettes, parts and Frankenstein pages. " +
+  "Call it with summary: true first (ids, titles, roles, notes, directionIds only), then the full view only when you need the details. " +
   "Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.";
 
 export const inputSchema = z.object({
@@ -34,7 +34,75 @@ export const inputSchema = z.object({
     .boolean()
     .optional()
     .describe("Show small thumbnails of up to 12 placed references; look at them before you judge the board. Default true. Mobbin images that need a refresh are flagged either way."),
+  summary: z.boolean().optional().describe("Compact view: ids, titles, roles, notes and directionIds only. Use it first."),
 });
+
+/** A full get_canvas text above this many characters ends with a hint to use summary mode. */
+export const LARGE_RESULT = 12_000;
+
+export type CanvasSummary = {
+  canvasId: string;
+  title: string;
+  webUrl: string | null;
+  directions: { id: string; title: string; verdict: "keep" | "drop" | null; reconciled: boolean }[];
+  sections: { id: string; title: string; directionId: string | null }[];
+  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string }[];
+  parts: { id: string; role: string; note?: string }[];
+  stitches: { id: string; title: string; directionId?: string }[];
+};
+
+const clip = (s: string | null | undefined, max: number) => {
+  const t = (s ?? "").replace(/\s+/g, " ").trim();
+  return t.length > max ? `${t.slice(0, max - 3)}...` : t;
+};
+
+/** Summary mode: ids, titles, roles, notes and directionIds only (no specs, URLs or geometry). */
+export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
+  const sectionDir = new Map(c.sections.map((s) => [s.id, s.directionId ?? null]));
+  return {
+    canvasId: c.id ?? "",
+    title: c.title,
+    webUrl: c.webUrl ?? null,
+    directions: c.directions.map((d) => ({ id: d.id, title: d.title, verdict: d.detail?.verdict ?? null, reconciled: !!d.detail?.reconciled })),
+    sections: c.sections.map((s) => ({ id: s.id, title: s.title, directionId: s.directionId ?? null })),
+    items: c.items.map((it) => {
+      const dir = it.sectionId ? sectionDir.get(it.sectionId) : null;
+      const base = { id: it.id, type: it.type, ...(dir ? { directionId: dir } : {}) };
+      switch (it.type) {
+        case "image":
+        case "upload":
+          return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
+        case "note":
+          return { ...base, note: clip(it.text, 160) };
+        case "swatch":
+          return { ...base, title: it.hex, ...(it.role ? { role: it.role } : {}) };
+        case "typeSample":
+          return { ...base, title: it.pairingId };
+        case "section":
+          return { ...base, title: it.title };
+      }
+    }),
+    parts: (c.parts ?? []).map((p) => ({ id: p.id, role: p.role, ...(p.note ? { note: clip(p.note, 160) } : {}) })),
+    stitches: (c.stitches ?? []).map((s) => ({ id: s.id, title: s.title, ...(s.directionId ? { directionId: s.directionId } : {}) })),
+  };
+}
+
+export function summaryText(s: CanvasSummary): string {
+  const lines = [`Canvas "${s.title}" (id ${s.canvasId}), summary. Web link: ${s.webUrl ?? ""}`];
+  for (const d of s.directions) {
+    lines.push(`Direction ${d.id}: ${d.title} [${d.verdict === "keep" ? "kept" : d.verdict === "drop" ? "dropped" : "not rated"}${d.reconciled ? ", reconciled" : ""}]`);
+  }
+  const byDir = new Map<string | null, CanvasSummary["items"]>();
+  for (const it of s.items) byDir.set(it.directionId ?? null, [...(byDir.get(it.directionId ?? null) ?? []), it]);
+  for (const [dir, items] of byDir) {
+    lines.push(dir ? `Items of direction ${dir}:` : "Items with no direction:");
+    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}`);
+  }
+  if (s.parts.length > 0) lines.push(`Parts: ${s.parts.map((p) => `${p.id} (${p.role})`).join(", ")}`);
+  for (const st of s.stitches) lines.push(`Frankenstein page ${st.id}: ${st.title}${st.directionId ? ` (direction ${st.directionId})` : ""}`);
+  lines.push("Call get_canvas without summary for specs, source links and palettes. Always show each reference's source link when you mention it.");
+  return lines.join("\n");
+}
 
 /** Canvases the list shows, most recently updated first. */
 export const RECENT_CANVASES = 10;
@@ -220,7 +288,7 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
     const parsed = parseArgs(inputSchema, raw, {}, "Pass a canvasId, or nothing to list recent canvases.");
     if (!parsed.ok) return toolMessage(parsed.message);
-    const { canvasId } = parsed.data;
+    const { canvasId, summary } = parsed.data;
     if (!canvasId) return listRecent(deps, userId);
     if (!plausibleId(canvasId)) return toolMessage(CANVAS_NOT_FOUND);
 
@@ -238,9 +306,15 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
         palettes,
         webUrl: canvasWebUrl(deps.appUrl(), canvasId),
       });
+      if (summary) {
+        const s = canvasSummary(canvas);
+        return toolResult(summaryText(s), s);
+      }
       const { parts: _p, stitches: _s, ...rest } = compactDirections(canvas);
       const out: GetCanvasOutput = { canvas: rest, tray: loaded.state.tray, parts: partsByRole(canvas), stitches: stitchOverview(canvas) };
-      return toolResult(canvasText(canvas, loaded.state.tray.length), out);
+      let text = canvasText(canvas, loaded.state.tray.length);
+      if (text.length > LARGE_RESULT) text += "\nThis board is large: next time call get_canvas with summary: true first, then read the full view only when you need the details.";
+      return toolResult(text, out);
     } catch {
       console.error("[get_canvas] failed");
       return toolMessage(TRY_AGAIN);

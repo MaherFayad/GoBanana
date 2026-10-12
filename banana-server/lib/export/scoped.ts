@@ -50,7 +50,8 @@ export function typeScaleText(m: KitModel): string {
 
 export function fontsLine(m: KitModel): string {
   const p = m.pairing;
-  return `${p.display.family} (display, weight ${p.display.weight}) and ${p.body.family} (body), ${p.licence} from Google Fonts: ${mdAutolink(p.url)}`;
+  const f = m.fonts;
+  return `${p.display.family} (display, weight ${p.display.weight}) and ${p.body.family} (body), ${p.licence} from Google Fonts: ${mdAutolink(p.url)}; Arabic: ${f.arabicDisplay.family} (display, weight ${f.arabicDisplay.weight}) and ${f.arabicBody.family} (body), all four in one link: ${mdAutolink(m.fontsUrl)}`;
 }
 
 export function shipLine(m: KitModel): string {

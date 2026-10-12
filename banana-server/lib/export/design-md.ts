@@ -95,19 +95,38 @@ function colors(m: KitModel): string {
   const out: string[] = [];
   if (m.ship.length === 0) {
     out.push("No colors are tagged ship yet, so the front matter has no color tokens. Run a palette on the board and tag a swatch ship once it passes contrast.");
+  } else if (m.colorsFrom === "fallback") {
+    out.push(
+      "The images on this board could not be read for color (host or format), so these two neutrals are placeholders that pass 4.5:1. Run reconcile_direction once the direction has JPEG or PNG images from allowed hosts, then export again.",
+    );
   } else {
     out.push(
       m.scope === "page"
         ? "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board. Use them only on the pages this file applies to, as overrides on top of the project's own colors."
         : "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board and are the only colors for production.",
     );
+    if (m.colorsFrom === "board") {
+      out.push(
+        `They come from this direction's own placed images (reconcile_direction), with images rated great counted more. A pair is ship at 4.5:1 for text, or at 3:1 for UI parts, large text and icons only.${m.mood ? ` Board mood: ${mdText(m.mood, 300)}` : ""}`,
+      );
+    }
     out.push(
       list(
         m.ship.map((c) => {
           const parts = [`**${c.name} (${c.hex}):**`];
           if (c.oklch) parts.push(`${mdText(c.oklch)}.`);
           if (c.canvasRole) parts.push(`Called "${mdText(c.canvasRole)}" on the board.`);
-          parts.push(c.from === "contrast" ? "Text color from a passing contrast check." : c.from === "swatch" ? "From a swatch on the board." : "From the extracted palette.");
+          parts.push(
+            c.from === "contrast"
+              ? "Text color from a passing contrast check."
+              : c.from === "swatch"
+                ? "From a swatch on the board."
+                : c.from === "fallback"
+                  ? "Neutral placeholder."
+                  : m.colorsFrom === "board"
+                    ? "From this direction's images on the board."
+                    : "From the extracted palette.",
+          );
           return parts.join(" ");
         }),
       ),
@@ -144,6 +163,7 @@ function typography(m: KitModel): string {
       pairingSource(m) +
       ` Mood: ${p.mood.join(", ")}. Load it from ${mdAutolink(p.url)}.`,
   );
+  out.push(`Named fonts for this direction (${m.fonts.voice.replace(/-/g, " ")} type voice), so the build never falls back to a system default:\n\n${fontsList(m)}`);
   out.push(
     list(
       m.typography.map(
@@ -163,6 +183,19 @@ function typography(m: KitModel): string {
     out.push(`On the web, set display to \`${m.platform.fluid.display}\` and headline to \`${m.platform.fluid.headline}\`; the px tokens above are the largest size.`);
   }
   return out.join("\n\n");
+}
+
+/** The four named Google Fonts of the direction's type voice, as a list. */
+export function fontsList(m: KitModel): string {
+  const f = m.fonts;
+  const line = (label: string, x: { family: string; weight: number; fallback: string }) => `**${label}:** ${x.family}, weight ${x.weight} (fallback ${x.fallback}).`;
+  return list([
+    line("Latin display", f.latinDisplay),
+    line("Latin body", f.latinBody),
+    line("Arabic display", f.arabicDisplay),
+    line("Arabic body", f.arabicBody),
+    `All four from Google Fonts in one link: ${mdAutolink(m.fontsUrl)}. Do not swap in Inter, Roboto or Arial.`,
+  ]);
 }
 
 export function pairingSource(m: KitModel): string {
