@@ -78,8 +78,13 @@ export type DashboardDeps = {
 export async function loadDashboard(userId: string, deps: DashboardDeps): Promise<DashboardLoad> {
   let repos: Pick<Repos, "canvases" | "takedowns">;
   let summaries: CanvasSummary[];
+  // The takedown list loads alongside the canvases (one round trip, not two); it is only used
+  // when a card has collage previews.
+  let takedowns: Promise<Awaited<ReturnType<Repos["takedowns"]["list"]>>> | null = null;
   try {
     repos = deps.repos();
+    takedowns = repos.takedowns.list();
+    takedowns.catch(() => {});
     summaries = await repos.canvases.listOwned(userId, { limit: deps.limit ?? DASHBOARD_LIMIT });
   } catch {
     console.error("[dashboard] canvases could not load");
@@ -88,7 +93,7 @@ export async function loadDashboard(userId: string, deps: DashboardDeps): Promis
   let matcher: TakedownMatcher | null = null;
   if (summaries.some((s) => s.previews.length > 0)) {
     try {
-      matcher = compileTakedowns(await repos.takedowns.list());
+      matcher = compileTakedowns(await takedowns);
     } catch {
       console.error("[dashboard] takedown list could not load; collages hidden");
     }

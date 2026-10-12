@@ -16,6 +16,10 @@
     "binding": "ASSETS"
   },
   "observability": { "enabled": true },
+  // Smart Placement: the Worker runs near the database (Neon, us-east-2) instead of near the
+  // visitor. A signed-in page makes several database round trips in a row; from the Gulf each
+  // one cost about 200 ms at the edge. Static assets are still served from the edge.
+  "placement": { "mode": "smart" },
   // Daily at 03:17 UTC: purge references older than 30 days that are not on a canvas, and
   // search ratings older than 12 months.
   "triggers": { "crons": ["17 3 * * *"] },
