@@ -416,6 +416,8 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
   return (
     <div className="lab dash" data-collapsed={collapsed ? "" : undefined} data-view={layout}>
       <div className="dwin dash-win">
+        {/* Arabic: the lights stay at the window's top left, as macOS draws them (dashboard.css). */}
+        <div className="dash-corner">{lights}</div>
         {/* ------------------------------------------------------------ sidebar */}
         <aside className="lab-side dash-side" aria-label={t.sidebarLabel}>
           <div className="dash-side-top">
