@@ -1841,6 +1841,7 @@
   color: var(--st-text-bright);
   font-size: 1.125rem;
   font-weight: var(--st-weight-medium);
+  line-height: 1.4;
   overflow-wrap: anywhere;
   unicode-bidi: isolate;
 }

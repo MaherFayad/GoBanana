@@ -667,7 +667,7 @@ button.dwin-light {
   line-height: 1.5;
 }
 
-.site .add-window .server-address {
+.site :is(.add-window, .inst-panel) .server-address {
   grid-template-columns: minmax(0, 1fr);
   gap: var(--st-space-l);
   inline-size: 100%;
@@ -678,22 +678,22 @@ button.dwin-light {
   text-align: start;
 }
 
-.site .add-window :is(.server-address-mark, .server-address-hint) {
+.site :is(.add-window, .inst-panel) :is(.server-address-mark, .server-address-hint) {
   display: none;
 }
 
 /* The address reads as a field, not a pill: small mono type, a field radius, one or two lines. */
-.site .add-window .server-address {
+.site :is(.add-window, .inst-panel) .server-address {
   gap: var(--st-space-m);
   padding: var(--st-space-l);
   border-radius: 0.75rem;
 }
 
-.site .add-window .server-address-url {
+.site :is(.add-window, .inst-panel) .server-address-url {
   margin: 0;
 }
 
-.site .add-window .server-address-url code {
+.site :is(.add-window, .inst-panel) .server-address-url code {
   display: block;
   padding: var(--st-space-s) var(--st-space-m);
   border-radius: var(--st-radius-field);
@@ -703,11 +703,11 @@ button.dwin-light {
   line-height: 1.5;
 }
 
-.site .add-window .server-address-label {
+.site :is(.add-window, .inst-panel) .server-address-label {
   font-size: 0.6875rem;
 }
 
-.site .add-window .server-address-copy {
+.site :is(.add-window, .inst-panel) .server-address-copy {
   inline-size: 100%;
   justify-content: center;
   border-radius: var(--st-radius-field);
