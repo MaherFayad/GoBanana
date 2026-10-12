@@ -1,0 +1,139 @@
+---
+title: إعداد GoBanana
+description: عنوان خادم واحد، وتسجيل دخول عبر OAuth، ولا مفتاح API. اختر تطبيقك لترى الخطوات بالضبط.
+---
+
+import { Aside, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import ServerUrl from '../../../../components/ServerUrl.astro';
+
+GoBanana خادم MCP بعيد. كل التطبيقات تتصل بالعنوان نفسه:
+
+<ServerUrl />
+
+- **طريقة النقل:** Streamable HTTP. لا عملية محلية تثبتها ولا شيء تشغله.
+- **تسجيل الدخول:** OAuth 2.1 عبر WorkOS AuthKit. يفتح تطبيقك نافذة متصفح في المرة الأولى. لا مفتاح API تلصقه.
+- **الحساب:** أول تسجيل دخول ينشئ حسابك في GoBanana. استخدم البريد نفسه على الويب لترى لوحاتك في `/ar/canvases`.
+- **الإضافة (Claude فقط):** تضيف إضافة Claude تسع مهارات فوق الخادم. التطبيقات الأخرى تحصل على الأدوات دون المهارات.
+
+## اختر تطبيقك
+
+<CardGrid>
+	<LinkCard title="Claude Code" description="إضافة مع المهارات، وتسجيل الدخول عبر /mcp، و--plugin-dir للتطوير المحلي." href="/docs/ar/setup/claude-code/" />
+	<LinkCard title="Claude.ai وClaude Desktop" description="موصل مخصص مع OAuth. اللوحة داخل المحادثة." href="/docs/ar/setup/claude-apps/" />
+	<LinkCard title="ChatGPT" description="موصل عبر وضع المطور." href="/docs/ar/setup/chatgpt/" />
+	<LinkCard title="Cursor" description="ملف mcp.json، وتسجيل دخول بنقرة واحدة." href="/docs/ar/setup/cursor/" />
+	<LinkCard title="VS Code وGitHub Copilot" description="ملف mcp.json في مساحة العمل أو في إعدادات المستخدم." href="/docs/ar/setup/vs-code/" />
+	<LinkCard title="Windsurf" description="ملف mcp_config.json مع serverUrl." href="/docs/ar/setup/windsurf/" />
+	<LinkCard title="Codex" description="الأمر codex mcp add، ثم تسجيل الدخول." href="/docs/ar/setup/codex/" />
+	<LinkCard title="أي تطبيق MCP آخر" description="ما يجب أن يدعمه تطبيقك، وجسر للتطبيقات التي تدعم stdio فقط." href="/docs/ar/setup/other-clients/" />
+</CardGrid>
+
+## الإعدادات جنبا إلى جنب
+
+<Tabs syncKey="client">
+<TabItem label="Claude Code">
+
+```bash
+# With the skills (recommended), Claude Code 2.1.275 or later; then /mcp to sign in
+/plugin install gobanana --marketplace MaherFayad/GoBanana
+
+# Older versions
+/plugin marketplace add MaherFayad/GoBanana
+/plugin install gobanana@gobanana
+
+# Server only, no skills
+claude mcp add --transport http gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="تطبيقات Claude">
+
+**Customize** (التخصيص)، ثم **Connectors** (الموصلات)، ثم **Add custom connector** (إضافة موصل مخصص). العنوان:
+
+```text
+https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="Cursor">
+
+```json title="~/.cursor/mcp.json"
+{
+  "mcpServers": {
+    "gobanana": {
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="VS Code">
+
+```bash
+code --add-mcp "{\"name\":\"gobanana\",\"type\":\"http\",\"url\":\"https://gobanana-server.maherfayad55.workers.dev/api/mcp\"}"
+```
+
+أو في مساحة العمل:
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Windsurf">
+
+```json title="mcp_config.json (Cascade, ... menu, MCPs, Open MCP config file)"
+{
+  "mcpServers": {
+    "gobanana": {
+      "serverUrl": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Codex">
+
+```bash
+codex mcp add gobanana --url https://gobanana-server.maherfayad55.workers.dev/api/mcp
+codex mcp login gobanana
+```
+
+</TabItem>
+</Tabs>
+
+<Aside type="note" title="كيف تم التحقق منها">
+قورنت كل الإعدادات هنا بتوثيق كل تطبيق بتاريخ 2026-10-12. على هذا الجهاز، كتب Claude Code 2.1.226 وVS Code 1.141.0 وCodex CLI 0.101.0 هذه الإدخالات نفسها في ملفات تعريف مؤقتة. كل صفحة إعداد تنتهي بما تم التحقق منه لذلك التطبيق وما لم يتم.
+</Aside>
+
+## ثم تحقق
+
+اطلب من وكيلك: **«تحقق من اتصالي بـ GoBanana.»** سيستدعي `ping` ويجب أن يرد بـ:
+
+```text
+Connected to GoBanana as you@example.com.
+```
+
+مزيد من الفحوص: [تحقق من أنه يعمل](/docs/ar/setup/check/). إذا كان هناك خلل: [حل المشكلات](/docs/ar/setup/troubleshooting/).
+
+## أي تطبيق أستخدم؟
+
+| التطبيق | المهارات | اللوحة داخل المحادثة | يكتب الملفات في مستودعك |
+| --- | --- | --- | --- |
+| Claude Code | نعم، مع الإضافة | لا، رابط ويب | نعم |
+| Claude.ai وClaude Desktop | نعم، مع الإضافة (Cowork وإضافات المؤسسات) | نعم (MCP Apps) | لا، انسخها من الرد |
+| ChatGPT | لا | لم تختبر | لا |
+| Cursor وVS Code وWindsurf وCodex | لا | لم تختبر، استخدم رابط الويب | نعم |
+
+أفضل تركيبة اليوم: استكشف وركب صفحات فرانكنشتاين في Claude.ai أو Claude Desktop حيث تظهر اللوحة داخل المحادثة، ثم سلم من Claude Code أو Cursor أو Codex داخل مستودعك، بالحساب نفسه.
+
+للوحة دائما رابط ويب، فيستطيع كل تطبيق فتحها، داخل المحادثة أو خارجها.

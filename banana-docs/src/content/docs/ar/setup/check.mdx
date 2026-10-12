@@ -1,0 +1,30 @@
+---
+title: تأكد أنه يعمل
+description: أربعة فحوص سريعة، من «هل هو متصل» إلى «هل أستطيع إنشاء لوحة»، مع شكل الإجابة الصحيحة.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+<Steps>
+
+1. **متصل ومسجل الدخول.** اطلب: «افحص اتصالي بـ GoBanana.» يستدعي الوكيل [`ping`](/docs/ar/reference/tools/ping/). الإجابة الصحيحة:
+
+   ```text
+   Connected to GoBanana as you@example.com.
+   ```
+
+   أما "You are not signed in. Reconnect to sign in again." فمعناها أن تسجيل الدخول لم يكتمل أو انتهت صلاحيته. راجع [حل المشكلات](/docs/ar/setup/troubleshooting/#تكرار-تسجيل-الدخول-أو-لم-تسجل-الدخول).
+
+2. **الأدوات ظاهرة.** اطلب: «ما أدوات GoBanana التي تراها؟» يجب أن تحصل على 17: `ping` و`bend_brief` و`search_references` و`rate_references` و`rate_directions` و`new_canvas` و`open_canvas` و`get_canvas` و`add_to_canvas` و`arrange_canvas` و`delete_canvas` و`cut_parts` و`frankenstein_page` و`remix_frankenstein` و`update_frankenstein` و`extract_palette` و`export_kit`. بعض العملاء يعرضون أيضا `save_canvas_state` و`load_canvas_state`، وهاتان تخصان واجهة اللوحة.
+
+3. **ثني مجاني.** اطلب: «اثنِ الموجز ’صفحة أسعار لاستوديو خزف‘ بمستوى جموح 3 لموقع ويب، باتجاهين، ولا تحفظه.» يستدعي الوكيل [`bend_brief`](/docs/ar/reference/tools/bend-brief/) بلا لوحة. لا يُحفظ شيء ولا تُستهلك أي عملية بحث. يجب أن ترى اتجاهين، لكل منهما مواصفاته.
+
+4. **لوحاتك.** اطلب: «اعرض لوحاتي في GoBanana.» يستدعي الوكيل [`get_canvas`](/docs/ar/reference/tools/get-canvas/) بلا معرف. الحساب الجديد يجيب بأنه لا توجد لوحات بعد. ثم افتح `https://gobanana-server.maherfayad55.workers.dev/ar/canvases` في متصفح بالحساب نفسه، ويجب أن تظهر القائمة نفسها.
+
+</Steps>
+
+إن نجحت الفحوص الأربعة، فأنشئ [لوحتك الأولى](/docs/ar/start/first-board/).
+
+## افحص المهارات (Claude فقط)
+
+في Claude Code، اكتب `/` وابحث عن `gobanana-explore` وباقي مهارات `gobanana-*`، أو شغّل `/plugin` وتأكد أن **gobanana** مفعلة. في Claude.ai، تأتي المهارات مع الإضافة من إعدادات مؤسستك.

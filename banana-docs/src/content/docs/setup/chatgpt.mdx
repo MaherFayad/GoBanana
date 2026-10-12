@@ -1,31 +1,36 @@
 ---
 title: ChatGPT
-description: Add GoBanana as a custom connector in ChatGPT developer mode and sign in with OAuth.
+description: Add GoBanana as a custom MCP app in ChatGPT developer mode and sign in with OAuth.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 import ServerUrl from '../../../components/ServerUrl.astro';
 
-ChatGPT can use GoBanana's tools through a custom MCP connector. There is no ChatGPT plugin with skills, so give it the short playbook below.
+ChatGPT can use GoBanana's tools as a custom app (connector) built on MCP, through **developer mode** on the ChatGPT web app. There is no ChatGPT plugin with skills, so give it the short playbook below.
 
 <ServerUrl />
 
+## Who can do this
+
+Per OpenAI's help article "Developer mode and MCP apps in ChatGPT": on **Business**, only admins and owners can turn on developer mode and add an app; on **Enterprise** and **Edu**, admins can grant developer mode to chosen people; **Pro** users turn on developer mode themselves to use custom apps. Plan rules change often; if you do not see the option, ask your workspace admin.
+
+## Add GoBanana
+
 <Steps>
 
-1. Open **Settings**, then **Apps and connectors** (the name may read **Connectors** on some plans).
+1. Open **Settings**, then **Apps** (some accounts show **Apps and connectors** or **Connectors**), then **Advanced settings**, and turn on **Developer mode**. If it is not there, look under **Settings**, **Security**.
 
-2. Under **Advanced settings**, turn on **Developer mode**. On Business and Enterprise workspaces an admin may need to allow it first.
-
-3. Choose **Create** (or **Add connector**). Fill in:
+2. Choose **Create** (some accounts show **Add custom connector** or **Add MCP server**). Fill in:
    - **Name:** `GoBanana`
+   - **Description:** `Wild design directions, linked references and a moodboard canvas for one page.` The model reads it to decide when to use the app.
    - **MCP server URL:** `https://gobanana-server.maherfayad55.workers.dev/api/mcp`
-   - **Authentication:** OAuth
+   - **Authentication:** OAuth. Leave the client ID and secret empty.
 
-4. Save. ChatGPT opens the GoBanana sign in page. Sign in.
+3. Save. ChatGPT opens the GoBanana sign in page; sign in. ChatGPT then scans the tools. The app is saved as a draft labeled **Dev**.
 
-5. In a new chat, pick **Developer mode** in the tools menu and turn on **GoBanana**.
+4. In a new chat, open the tools menu, pick **Developer mode**, and turn on **GoBanana**.
 
-6. Ask: **"Use the GoBanana ping tool."** It should reply "Connected to GoBanana as you@example.com."
+5. Ask: **"Use the GoBanana ping tool."** It should reply "Connected to GoBanana as you@example.com."
 
 </Steps>
 
@@ -45,9 +50,10 @@ Never download or copy images.
 
 ## Notes
 
-- ChatGPT asks to confirm tool calls that change data (create, add, delete). Read the confirm for `delete_canvas` carefully: it cannot be undone.
+- ChatGPT asks you to confirm tool calls that change data. Read the confirm for `delete_canvas` carefully: it cannot be undone.
 - ChatGPT may show tool results (`structuredContent`) to the model, so opening a large board adds tokens to the chat. GoBanana keeps that part small and sends the full board to the canvas view only.
+- A workspace admin can publish the app so it appears in the workspace's approved list.
 
-<Aside type="caution" title="Not verified here">
-ChatGPT's menus change often, and whether the GoBanana canvas shows inline depends on MCP Apps support in your ChatGPT workspace. These steps were not run end to end for these docs. If the board does not show, open the web link in the reply.
-</Aside>
+## What was verified
+
+On 2026-10-12 the steps were compared with OpenAI's help article (summary, the page itself blocked automated reading) and several current vendor guides, which agree on the flow but name the menus differently. GoBanana's endpoint was checked to answer with a standard OAuth challenge and to support dynamic client registration, which ChatGPT uses. Adding the app in ChatGPT and whether the board shows inline there were **not** tested. If the board does not show, open the web link in the reply.

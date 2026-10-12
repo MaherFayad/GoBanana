@@ -7,45 +7,57 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
 GitHub Copilot in VS Code uses MCP servers in **agent mode**.
 
+## Add GoBanana
+
+<Tabs syncKey="vscode">
+<TabItem label="One command">
+
+From a terminal, add it to your VS Code user profile:
+
+```bash
+code --add-mcp "{\"name\":\"gobanana\",\"type\":\"http\",\"url\":\"https://gobanana-server.maherfayad55.workers.dev/api/mcp\"}"
+```
+
+VS Code prints `Added MCP servers: gobanana`.
+
+</TabItem>
+<TabItem label="This project">
+
+Create `.vscode/mcp.json` in the workspace and commit it to share the server with the team:
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+VS Code also reads `.mcp.json` at the project root, which uses `mcpServers` instead of `servers` (the same file Claude Code writes).
+
+</TabItem>
+<TabItem label="Command Palette">
+
+Run **MCP: Add Server** from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P), choose **HTTP**, paste the URL, name it `gobanana`, and pick where to save it. To edit your user config by hand, run **MCP: Open User Configuration**.
+
+</TabItem>
+</Tabs>
+
+## Start it and sign in
+
 <Steps>
 
-1. Open the config. Pick where:
-
-   <Tabs syncKey="scope">
-   <TabItem label="For this project">
-
-   Create `.vscode/mcp.json` in the workspace. Commit it to share the server with the team.
-
-   </TabItem>
-   <TabItem label="For you (all projects)">
-
-   Run **MCP: Open User Configuration** from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P).
-
-   </TabItem>
-   </Tabs>
-
-2. Add GoBanana and save:
-
-   ```json title=".vscode/mcp.json"
-   {
-     "servers": {
-       "gobanana": {
-         "type": "http",
-         "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
-       }
-     }
-   }
-   ```
-
-   Or run **MCP: Add Server**, choose **HTTP**, paste the URL and name it `gobanana`.
-
-3. A **Start** code lens appears above the entry. Click it. VS Code asks to sign in with GoBanana; allow it, sign in in the browser, and come back.
-
-4. Open the Copilot Chat view, switch to **Agent** mode, open the **tools** picker and make sure the GoBanana tools are checked.
-
-5. Ask: **"Use the GoBanana ping tool."**
+1. Open the Copilot Chat view and switch to **Agent** mode.
+2. Open the **tools** picker and make sure the GoBanana tools are checked. The server starts; VS Code may ask you to trust it first.
+3. When VS Code asks to sign in for GoBanana, allow it and sign in in the browser.
+4. Ask: **"Use the GoBanana ping tool."**
 
 </Steps>
+
+To restart or see logs, run **MCP: List Servers**, pick **gobanana**, and choose **Show Output** (or **Disable** and **Enable**). **MCP: Reset Trust** clears trust choices.
 
 ## Without skills
 
@@ -55,6 +67,10 @@ Copilot does not load Claude plugins. Save the playbook as a prompt file or past
 
 `export_kit` with the `copilot` format (Pro) returns `.github/instructions/gobanana-<slug>.instructions.md` with `applyTo` set to your page's files. Copilot applies it only when it works on those files. GoBanana never edits your global `.github/copilot-instructions.md`. See [Hand off](/docs/guides/handoff/).
 
-<Aside type="note" title="Organization policy">
-On Copilot Business and Enterprise, an admin can turn MCP servers off for the organization. If GoBanana's tools never show, check the "MCP servers in Copilot" policy.
+<Aside type="note" title="Organizations">
+Organizations can centrally manage which MCP servers Copilot may use. If GoBanana's tools never show, ask your admin whether MCP servers are allowed.
 </Aside>
+
+## What was verified
+
+Checked on 2026-10-12 against the VS Code docs "Add and manage MCP servers". On this machine, VS Code 1.141.0 ran the one command above with a temporary profile (`--user-data-dir`) and wrote exactly the `servers` entry shown in the project tab, with `"type": "http"`. The VS Code docs page does not describe the OAuth prompt, and the sign in itself was not tested here.

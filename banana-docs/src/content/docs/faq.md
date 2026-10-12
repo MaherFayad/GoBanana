@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: Straight answers to the questions designers and developers ask about GoBanana. Where the repo has not decided something, it says so.
+description: Straight answers to the questions designers and developers ask about GoBanana.
 ---
 
 ## The product
@@ -123,11 +123,11 @@ On the web, `/en/account`, then **Delete account**. Your canvases, references, p
 
 ### Can my team use it?
 
-Each person needs their own account; the terms say one person per account. To share: Pro share links give a view only board, a committed `.mcp.json` or `.cursor/mcp.json` gives everyone the server, and exported files in the repo work for the whole team. Team plans, shared workspaces and seat billing are **not decided in the repo**.
+GoBanana is for individuals. There are no team plans, and none are planned: each person uses their own account, as the [terms](https://gobanana-server.maherfayad55.workers.dev/en/terms#plans) say. A team can still work side by side: Pro share links give a view only board, a committed `.mcp.json` or `.cursor/mcp.json` gives everyone the server, and exported files in the repo work for the whole team.
 
 ### What does it cost, and can I get a refund?
 
-Free is $0. Pro is $5 a month or $39 a year, Founding is $29 once (first 100 buyers). During the beta every account gets Pro limits and nothing is charged. Paddle is the Merchant of Record and handles payments, tax, invoices and refunds under its buyer terms. A specific refund window is **not set in the repo**; ask through Paddle. See [Plans and limits](/docs/reference/plans/).
+Free is $0. Pro is $5 a month or $39 a year, Founding is $29 once (first 100 buyers). During the beta every account gets Pro limits and nothing is charged. You can get a **full refund within 14 days of your first payment**. Refunds are handled by Paddle, the payment provider and Merchant of Record, which also handles tax and invoices. See the [terms](https://gobanana-server.maherfayad55.workers.dev/en/terms#plans) and [Plans and limits](/docs/reference/plans/).
 
 ### What are the limits?
 
@@ -143,4 +143,4 @@ The terms promise at least 30 days notice so you can export your work.
 
 ### Can I self host GoBanana?
 
-Not offered today. The plugin is MIT licensed; a self hosted server is **not decided in the repo**.
+Not today. Self hosting may come later; there is no date. The plugin is MIT licensed.

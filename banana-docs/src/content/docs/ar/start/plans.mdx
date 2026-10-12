@@ -1,0 +1,47 @@
+---
+title: الخطط
+description: ابدأ مجانا. انتقل إلى Pro حين تحتاج مزيدا من عمليات البحث واللوحات وروابط المشاركة وكل صيغ التصدير. مجاني للجميع خلال المرحلة التجريبية.
+---
+
+import { Aside, CardGrid, Card } from '@astrojs/starlight/components';
+
+<Aside type="tip" title="المرحلة التجريبية: Pro للجميع">
+الدفع غير متاح بعد. ما دام GoBanana في المرحلة التجريبية، يحصل كل حساب مسجل الدخول على حدود Pro ولا تدفع شيئا. تبقى خطتك المسجلة هي المجانية، وتتوقف حدود Pro عند تفعيل الفوترة.
+</Aside>
+
+<CardGrid>
+	<Card title="المجانية · 0 دولار" icon="star">
+		30 عملية بحث في الشهر، و3 لوحات، و40 عنصرا في كل لوحة. التصدير: DESIGN.md وBRIEF.md وDIRECTION.md وBUILD-PROMPT.md وFRANKENSTEIN.md.
+	</Card>
+	<Card title="Pro · 5 دولارات في الشهر أو 39 دولارا في السنة" icon="rocket">
+		300 عملية بحث في الشهر، ولوحات بلا حد، و300 عنصر في كل لوحة، وروابط المشاركة، و1 GB للرفع، وكل صيغ التصدير.
+	</Card>
+	<Card title="Founding · 29 دولارا مرة واحدة" icon="heart">
+		مزايا Pro مع 200 عملية بحث في الشهر، ما دام GoBanana متاحا. لأول 100 مشتر. ليست اشتراكا.
+	</Card>
+</CardGrid>
+
+## مجاني دائما
+
+في كل الخطط، وبلا حصة:
+
+- `bend_brief`: ثني الموجز إلى اتجاهات، كلما أردت
+- `rate_references` و`rate_directions`: تعليم البحث ما يبقيه
+- `get_canvas` و`add_to_canvas` و`arrange_canvas` و`open_canvas` و`new_canvas` (ضمن حدود اللوحات والعناصر)
+- Frankenstein it: `cut_parts` و`frankenstein_page` و`remix_frankenstein` و`update_frankenstein`
+- `extract_palette` مع تباين WCAG
+- `delete_canvas`
+
+وحدها `search_references` تحسب من حصة البحث الشهرية: الاستدعاء الواحد عملية بحث واحدة، أيا كان ما يعيده.
+
+## ماذا يحدث عند بلوغ الحد
+
+ترد الأداة برسالة واحدة واضحة ورابط للترقية، مثل:
+
+```text
+You have used your 30 free searches this month. Upgrade: https://gobanana-server.maherfayad55.workers.dev/en/pricing
+```
+
+تعرض المهارات هذه الرسالة مرة واحدة وتتوقف. لا تعيد المحاولة في حلقة أبدا. وعند حد اللوحات تعرض خيارين: الإضافة إلى إحدى لوحاتك، أو حذف لوحة قديمة (فقط بعد موافقتك على لوحة محددة بالاسم).
+
+الأرقام الكاملة وكل الرسائل وقواعد التصفير: [مرجع الخطط والحدود](/docs/ar/reference/plans/).

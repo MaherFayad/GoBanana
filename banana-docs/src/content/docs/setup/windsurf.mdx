@@ -1,15 +1,19 @@
 ---
-title: Windsurf
-description: Add GoBanana to Windsurf's mcp_config.json as a remote server and sign in.
+title: Windsurf (Devin Desktop)
+description: Add GoBanana to the Cascade MCP config in Windsurf, now called Devin Desktop, as a remote server and sign in.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
+Windsurf was renamed **Devin Desktop** in 2026. Its Cascade panel still reads remote MCP servers from an `mcp_config.json` file.
+
 <Steps>
 
-1. In Windsurf, open **Settings**, then **Cascade**, then **MCP servers**, and choose **View raw config** (or open `~/.codeium/windsurf/mcp_config.json`; on Windows `%USERPROFILE%\.codeium\windsurf\mcp_config.json`).
+1. In the Cascade panel, click the **...** (Actions) menu at the top right, go to the **MCPs** section and click **Open MCP config file**. Opening it from the app avoids guessing the path, which depends on your version:
+   - Devin Desktop (per its docs): `~/.config/devin/mcp_config.json` on macOS and Linux, `%APPDATA%\devin\mcp_config.json` on Windows.
+   - Older Windsurf builds: `~/.codeium/windsurf/mcp_config.json` (`%USERPROFILE%\.codeium\windsurf\mcp_config.json` on Windows).
 
-2. Add GoBanana and save:
+2. Add GoBanana under `mcpServers` and save:
 
    ```json title="mcp_config.json"
    {
@@ -21,18 +25,20 @@ import { Aside, Steps } from '@astrojs/starlight/components';
    }
    ```
 
-3. Choose **Refresh** in the MCP panel. Windsurf asks you to sign in; a browser window opens on the GoBanana sign in page.
+   The docs accept `serverUrl` or `url` for a remote server.
+
+3. Back in the **MCPs** section, make sure the toggle next to **gobanana** is on. When it asks you to sign in, your browser opens the GoBanana sign in page.
 
 4. In Cascade, ask: **"Use the GoBanana ping tool."**
 
 </Steps>
 
-<Aside type="note" title="Tool limit">
-Cascade caps how many tools it keeps on at once across all servers. GoBanana has 17 tools for the agent. If some are missing, switch off tools you do not need in other servers.
+<Aside type="note" title="100 tools">
+Cascade can use 100 tools in total at a time, across all servers. GoBanana has 17 for the agent. If some are missing, turn off tools you do not need in other servers.
 </Aside>
 
-Windsurf does not load Claude plugins. Paste the playbook from [No plugin?](/docs/start/first-board/#no-plugin), or save it in `.windsurf/rules/`. For hand-off, BUILD-PROMPT.md and the AGENTS.md section work in Windsurf. See [Hand off](/docs/guides/handoff/).
+Windsurf does not load Claude plugins. Paste the playbook from [No plugin?](/docs/start/first-board/#no-plugin), or save it as a rule. For hand-off, BUILD-PROMPT.md and the AGENTS.md section work here. See [Hand off](/docs/guides/handoff/).
 
-<Aside type="caution" title="Not verified here">
-These steps follow Windsurf's docs; they were not run end to end for these docs. If your Windsurf build has no browser sign in for remote servers, use the bridge in [Other MCP clients](/docs/setup/other-clients/#stdio-only-clients).
-</Aside>
+## What was verified
+
+Checked on 2026-10-12 against the Cascade MCP docs (now at docs.devin.ai), which give the menu path, the `serverUrl` field, the 100 tool limit, and say OAuth is supported but do not describe the sign in screens. The older Windsurf path comes from current third party guides, not an official page. Windsurf is not installed on this machine, so nothing here was run. If your build cannot sign in to remote servers, use the bridge in [Other MCP clients](/docs/setup/other-clients/#stdio-only-clients).

@@ -16,7 +16,8 @@ Any client that speaks the Model Context Protocol over HTTP with OAuth can use G
 | --- | --- |
 | URL | `https://gobanana-server.maherfayad55.workers.dev/api/mcp` |
 | Transport | Streamable HTTP, stateless. `GET`, `POST` and `DELETE` on the same path |
-| Auth | OAuth 2.1 bearer token, required on every request. Sign in runs through WorkOS AuthKit |
+| Auth | OAuth 2.1 bearer token, required on every request. Sign in runs through WorkOS AuthKit (authorization code with PKCE `S256`) |
+| Client registration | Both Client ID Metadata Documents (`client_id_metadata_document_supported: true`) and Dynamic Client Registration (a `registration_endpoint`). No pre-registered client ID needed |
 | Discovery | A request without a token gets `401` with `WWW-Authenticate: Bearer ... resource_metadata="https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource"` (RFC 9728). The metadata is also served at `/.well-known/oauth-protected-resource/api/mcp` |
 | Resource | `https://gobanana-server.maherfayad55.workers.dev/api/mcp`. Tokens must carry it as their audience |
 | Tools | 17 for the agent, plus 2 app-only tools the canvas view uses (`save_canvas_state`, `load_canvas_state`). Do not call those two from an agent |
@@ -45,11 +46,28 @@ Some clients can only start local servers over stdio. Bridge them with `mcp-remo
 }
 ```
 
-The first start opens a browser to sign in. `mcp-remote` keeps the token in `~/.mcp-auth`. Delete that folder to sign out.
+The first start opens a browser to sign in. `mcp-remote` keeps credentials in `~/.mcp-auth` (change it with `MCP_REMOTE_CONFIG_DIR`). Delete that folder to sign out. Its default transport, `http-first`, is right for GoBanana.
 
 <Aside type="note" title="Third party">
 `mcp-remote` is an open source community tool, not part of GoBanana. In team setups, pin a version you have checked (`mcp-remote@<version>`) instead of the latest.
 </Aside>
+
+## Check the endpoint yourself
+
+```bash
+# An unsigned call: expect 401 and a WWW-Authenticate header with resource_metadata
+curl -i -X POST https://gobanana-server.maherfayad55.workers.dev/api/mcp   -H "content-type: application/json" -H "accept: application/json, text/event-stream"   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Protected resource metadata: names the authorization server
+curl https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource
+
+# Or with the MCP Inspector (opens a browser to sign in when run in a terminal)
+npx -y @modelcontextprotocol/inspector --cli https://gobanana-server.maherfayad55.workers.dev/api/mcp --method tools/list
+```
+
+## What was verified
+
+On 2026-10-12: the unsigned `curl` above returned `401` with `WWW-Authenticate: Bearer error="invalid_token", error_description="No authorization provided", resource_metadata="https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource"`. Both metadata URLs returned the resource `…/api/mcp` and the AuthKit authorization server, whose `/.well-known/oauth-authorization-server` lists the authorize, token and registration endpoints, PKCE `S256` and CIMD support. MCP Inspector 2.10.1 in non-interactive mode stopped with `auth_required`, as expected. The `mcp-remote` config follows its README; it was not run here.
 
 ## Writing your own client
 

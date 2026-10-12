@@ -1,0 +1,143 @@
+---
+title: Claude Code
+description: ثبت إضافة GoBanana لتحصل على 9 مهارات، وسجل الدخول عبر /mcp، أو أضف الخادم وحده. إضافة إلى --plugin-dir للتطوير المحلي.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+يستفيد Claude Code من GoBanana أكثر من غيره: مهارات الإضافة تنفذ المسار كله، ويستطيع Claude Code كتابة ملفات التسليم مباشرة في مستودعك.
+
+## الخيار الأول: الإضافة (موصى به)
+
+تجمع الإضافة اتصال الخادم والمهارات التسع (`gobanana-explore` و`gobanana-frankenstein` و`gobanana-handoff` وغيرها). راجع [المهارات](/docs/ar/reference/skills/).
+
+<Steps>
+
+1. **ثبت الإضافة.** في Claude Code 2.1.275 أو أحدث، يضيف أمر واحد سوق GoBanana ويثبت الإضافة:
+
+   ```text
+   /plugin install gobanana --marketplace MaherFayad/GoBanana
+   ```
+
+   يعرض Claude Code السوق الذي وجده ويطلب منك التأكيد. في الإصدارات الأقدم، أضف السوق أولا ثم ثبت:
+
+   ```text
+   /plugin marketplace add MaherFayad/GoBanana
+   /plugin install gobanana@gobanana
+   ```
+
+   من الطرفية، دون جلسة: `claude plugin install gobanana --marketplace MaherFayad/GoBanana` (الإصدار 2.1.292 أو أحدث)، أو `claude plugin marketplace add MaherFayad/GoBanana` ثم `claude plugin install gobanana@gobanana`.
+
+2. **اختر النطاق.** يفتح التثبيت تفاصيل الإضافة. راجع ما تضيفه (9 مهارات وخادم MCP باسم `gobanana`)، ثم اختر **Install for you** (لك، في كل المشاريع)، أو **Install for all collaborators on this repository** (للمشروع)، أو **Install for you, in this repo only** (محلي). إذا انتهى الملخص بالعبارة `Run /reload-plugins to apply.`، شغل `/reload-plugins`.
+
+3. **سجل الدخول.** شغل:
+
+   ```text
+   /mcp
+   ```
+
+   اختر **plugin:gobanana:gobanana** ثم اختر المصادقة. يفتح متصفحك صفحة تسجيل الدخول إلى GoBanana (WorkOS AuthKit). سجل الدخول، وحين يخبرك المتصفح أنك تستطيع إغلاقه، عد إلى Claude Code. إذا لم يفتح المتصفح، انسخ الرابط الذي يطبعه Claude Code. ومن الطرفية، يؤدي `claude mcp login` المهمة نفسها.
+
+4. **تحقق.** اكتب `/` وابحث عن مهارات `gobanana-*`، ثم اطلب:
+
+   ```text
+   تحقق من اتصالي بـ GoBanana.
+   ```
+
+   يستدعي Claude الأداة `ping` ويرد بـ "Connected to GoBanana as you@example.com."
+
+</Steps>
+
+## الخيار الثاني: الخادم فقط
+
+بلا مهارات، الأدوات فقط. مفيد في مستودع تريد فيه التصدير فقط، أو حين لا يمكن الوصول إلى GitHub.
+
+النطاقات: `local` (الافتراضي: أنت، في هذا المشروع)، أو `project` (ملف `.mcp.json` تضيفه إلى المستودع)، أو `user` (أنت، في كل المشاريع).
+
+<Tabs syncKey="scope">
+<TabItem label="لك (كل المشاريع)">
+
+```bash
+claude mcp add --transport http --scope user gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+</TabItem>
+<TabItem label="لهذا المشروع">
+
+```bash
+claude mcp add --transport http --scope project gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
+```
+
+يكتب هذا الأمر ملف `.mcp.json` في جذر المشروع تستطيع إضافته إلى المستودع، فيحصل فريقك على الخادم أيضا. ومع ذلك يسجل كل شخص الدخول بحسابه الخاص.
+
+</TabItem>
+</Tabs>
+
+بعدها شغل Claude Code، ثم `/mcp`، واختر **gobanana** وسجل الدخول. الخادم المحصور في المشروع يطلب الموافقة في المرة الأولى. ويعرض `claude mcp list` حالته.
+
+بدون الإضافة، أعط Claude دليل التشغيل مرة واحدة في كل محادثة. راجع [بدون الإضافة](/docs/ar/start/first-board/#بدون-الإضافة).
+
+## الخيار الثالث: التطوير المحلي مع --plugin-dir
+
+لتجربة نسخة محلية من الإضافة (مثلا بعد تعديل مهارة)، وجه Claude Code إلى المجلد:
+
+```bash
+git clone https://github.com/MaherFayad/GoBanana.git
+cd your-project
+claude --plugin-dir /path/to/Gobanana/banana-plugin
+```
+
+يحمل `--plugin-dir` الإضافة لتلك الجلسة فقط. عدل ملف `SKILL.md`، وأعد تشغيل Claude Code، فيسري التغيير. ملف `.mcp.json` في المجلد يشير إلى الخادم نفسه:
+
+```json title="banana-plugin/.mcp.json"
+{
+  "mcpServers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+للتحقق من صلاحية الإضافة (الوضع الصارم يحتاج Claude Code 2.1.281 أو أحدث، لأنه يعرف حقول المجلدات في plugin.json):
+
+```bash
+claude plugin validate --strict ./banana-plugin
+```
+
+## أسماء الأدوات في Claude Code
+
+مع الإضافة تظهر الأدوات بالشكل `mcp__plugin_gobanana_gobanana__<tool>`، مثل `mcp__plugin_gobanana_gobanana__bend_brief`. ومع الخيار الثاني تكون `mcp__gobanana__<tool>`. استخدم هذه الأسماء إذا أضفتها إلى `permissions.allow` في `.claude/settings.json` حتى لا يسألك Claude في كل مرة:
+
+```json title=".claude/settings.json"
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_gobanana_gobanana__ping",
+      "mcp__plugin_gobanana_gobanana__bend_brief",
+      "mcp__plugin_gobanana_gobanana__get_canvas",
+      "mcp__plugin_gobanana_gobanana__rate_references",
+      "mcp__plugin_gobanana_gobanana__rate_directions"
+    ]
+  }
+}
+```
+
+اترك `delete_canvas` خارج قائمة السماح، حتى يسألك Claude دائما قبل الحذف.
+
+## اللوحة في Claude Code
+
+يعمل Claude Code في الطرفية، فلا يستطيع عرض اللوحة داخل المحادثة. كل رد من المهارات ينتهي برابط الويب: «افتح اللوحة من هنا: https://gobanana-server.maherfayad55.workers.dev/c/...». افتحه في متصفح مسجل الدخول بالحساب نفسه.
+
+## ما تم التحقق منه
+
+تم الفحص بتاريخ 2026-10-12 مقابل توثيق Claude Code (صفحتا MCP والإضافات). مع Claude Code 2.1.226 على Windows، كتب الأمر `claude mcp add --transport http --scope project gobanana <url>` ملف `.mcp.json` المعروض أعلاه، وأظهره `claude mcp get gobanana` كخادم HTTP بانتظار الموافقة. ترد نقطة النهاية الحية على الطلب غير الموقع بـ `401` وترويسة `WWW-Authenticate` تشير إلى بيانات OAuth الوصفية الخاصة بها، وهذا ما يستخدمه تسجيل الدخول عبر `/mcp`. وتم فحص السوق (`.claude-plugin/marketplace.json` في جذر المستودع، واسم السوق `gobanana`) بإضافة وتثبيت محليين في إعدادات مؤقتة، ويجتاز `claude plugin validate` الفحص. التثبيت من GitHub باستخدام `MaherFayad/GoBanana` يعمل بعد دمج الفرع الذي يحتوي هذا الملف في الفرع الافتراضي للمستودع. أما تسجيل الدخول عبر المتصفح نفسه فلم يجرب لهذا التوثيق.
+
+## الترقية من تثبيت قديم
+
+تغير اسم مفتاح الخادم في الإضافة من `banana` إلى `gobanana`، وتغيرت أسماء المهارات من `banana-*` إلى `gobanana-*`. إذا رأيت خادما قديما باسم `banana` في `/mcp`، أزل الإضافة القديمة، وثبت `gobanana@gobanana`، وسجل الدخول من جديد.
+
+## التالي
+
+[لوحتك الأولى](/docs/ar/start/first-board/)، أو [التسليم إلى وكيل البرمجة](/docs/ar/guides/handoff/) إذا كانت لديك لوحة بالفعل.

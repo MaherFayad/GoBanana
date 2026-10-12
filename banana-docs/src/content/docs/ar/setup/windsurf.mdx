@@ -1,0 +1,44 @@
+---
+title: Windsurf (Devin Desktop)
+description: أضف GoBanana إلى إعدادات MCP في Cascade داخل Windsurf، واسمه الآن Devin Desktop، كخادم بعيد ثم سجل الدخول.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+تغير اسم Windsurf إلى **Devin Desktop** في 2026. وما زالت لوحة Cascade فيه تقرأ خوادم MCP البعيدة من الملف `mcp_config.json`.
+
+<Steps>
+
+1. في لوحة Cascade، انقر قائمة **...** (Actions) أعلى اليمين، وانتقل إلى قسم **MCPs** ثم انقر **Open MCP config file**. فتح الملف من التطبيق يغنيك عن تخمين مساره، فالمسار يختلف حسب الإصدار:
+   - Devin Desktop (حسب وثائقه): `~/.config/devin/mcp_config.json` على macOS وLinux، و`%APPDATA%\devin\mcp_config.json` على Windows.
+   - إصدارات Windsurf الأقدم: `~/.codeium/windsurf/mcp_config.json` (و`%USERPROFILE%\.codeium\windsurf\mcp_config.json` على Windows).
+
+2. أضف GoBanana تحت `mcpServers` واحفظ الملف:
+
+   ```json title="mcp_config.json"
+   {
+     "mcpServers": {
+       "gobanana": {
+         "serverUrl": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+       }
+     }
+   }
+   ```
+
+   تقبل الوثائق الحقل `serverUrl` أو `url` للخادم البعيد.
+
+3. ارجع إلى قسم **MCPs** وتأكد أن المفتاح بجوار **gobanana** مفعل. عندما يطلب منك تسجيل الدخول، يفتح المتصفح صفحة تسجيل الدخول في GoBanana.
+
+4. في Cascade، اطلب: **«استخدم أداة ping في GoBanana.»**
+
+</Steps>
+
+<Aside type="note" title="100 أداة">
+يستطيع Cascade استخدام 100 أداة كحد أقصى في الوقت نفسه، من كل الخوادم مجتمعة. لدى GoBanana منها 17 أداة للوكيل. إن غاب بعضها، فأوقف الأدوات التي لا تحتاجها في الخوادم الأخرى.
+</Aside>
+
+لا يحمّل Windsurf إضافات Claude. الصق دليل العمل من [بدون الإضافة](/docs/ar/start/first-board/#بدون-الإضافة)، أو احفظه كقاعدة. أما التسليم، فيعمل هنا الملف BUILD-PROMPT.md وقسم AGENTS.md. راجع [التسليم](/docs/ar/guides/handoff/).
+
+## ما الذي تم التحقق منه
+
+جرى التحقق في 2026-10-12 مقابل وثائق MCP الخاصة بـ Cascade (وهي الآن على docs.devin.ai)، وفيها مسار القائمة والحقل `serverUrl` وحد 100 أداة، وتذكر أن OAuth مدعوم لكنها لا تصف شاشات تسجيل الدخول. مسار Windsurf الأقدم مأخوذ من أدلة حديثة لأطراف أخرى، لا من صفحة رسمية. Windsurf غير مثبت على هذا الجهاز، فلم يُشغَّل أي شيء هنا. إن لم يستطع إصدارك تسجيل الدخول إلى الخوادم البعيدة، فاستخدم الجسر في [عملاء MCP آخرون](/docs/ar/setup/other-clients/#عملاء-stdio-فقط).

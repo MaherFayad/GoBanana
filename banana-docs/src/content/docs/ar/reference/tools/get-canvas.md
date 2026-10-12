@@ -1,0 +1,55 @@
+---
+title: get_canvas
+description: يقرأ لوحة كاملة، بموجزها واتجاهاتها ومواصفاتها وأقسامها وعناصرها مع روابط المصادر والملاحظات ولوحات الألوان ومكتبة الأجزاء وصفحات فرانكنشتاين، أو يسرد آخر 10 لوحات لك.
+---
+
+| الخطة | الحصة | يغير البيانات | التلميحات |
+| --- | --- | --- | --- |
+| كل الخطط | لا شيء | لا | للقراءة فقط |
+
+## المدخلات
+
+| الاسم | النوع | مطلوب | الحدود | ماذا يفعل |
+| --- | --- | --- | --- | --- |
+| `canvasId` | string | لا | من 1 إلى 100 حرف | اللوحة المراد قراءتها. اتركه فارغا لسرد لوحاتك الأخيرة |
+
+## وضع السرد
+
+```json
+{ "name": "get_canvas", "arguments": {} }
+```
+
+```text
+Recent canvases, newest first:
+- c3f1a0d2-…: "Coffee launch page" (24 references, 3 directions, updated 2026-10-12) brief: launch page for a specialty coffee roaster
+- 7be0…: "Frosted checkout" (31 references, 4 directions, updated 2026-10-09) brief: flight checkout screen for a GCC travel OTA
+If the user's request continues one of these, pass its canvasId to bend_brief, search_references and add_to_canvas to add to it.
+```
+
+الحساب الجديد يحصل على "No canvases yet. Create one with new_canvas."
+
+## وضع القراءة
+
+```json
+{ "name": "get_canvas", "arguments": { "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f" } }
+```
+
+يسرد النص بهذا الترتيب:
+
+1. العنوان، ورابط الويب، والموجز.
+2. **الاتجاهات**: المعرف، والعنوان، ونص البحث، والمنصة، والصفحات، والحالة `kept` أو `dropped` أو `not rated`، ومواصفات مختصرة (الخط، والبصمة، والنمط، والتخطيط، والألوان، وكلمات الأسلوب). نص أمر البناء الطويل لا يظهر هنا، ويستخدمه التصدير.
+3. **الأقسام** مع عناصرها: `image it_…: Title (dribbble.com) https://… [art direction] [ship] note: steal: …`، والملاحظات، وعينات الألوان.
+4. العناصر التي ليست في أي قسم.
+5. لوحات الألوان.
+6. **مكتبة الأجزاء** مرتبة حسب الدور، ومع كل جزء مصدره، و`(guessed crop)` إذا كان الخادم قد خمن القص، وملاحظته.
+7. **صفحات فرانكنشتاين**: العنوان، والمعرف، والمنصة، ووضع العرض، وأصل إعادة المزج، وهيكل الصفحة صفا صفا (الدور، ومعرف الخانة، ومعرف الجزء، ورابط المصدر، والملاحظة).
+8. عدد نتائج البحث التي تنتظر في الدرج.
+
+المهارات تقرأ اللوحة مرة واحدة في البداية، ثم تثق بنتائج الكتابة بعد ذلك، بدلا من استدعاء `get_canvas` بعد كل تغيير.
+
+## الرسائل
+
+| الرسالة | الحل |
+| --- | --- |
+| "That canvas was not found…" | معرف خاطئ أو لوحة من حساب آخر |
+| "Pass a canvasId, or nothing to list recent canvases." | شكل المدخلات غير صحيح |

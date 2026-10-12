@@ -1,0 +1,78 @@
+---
+title: Cursor
+description: أضف GoBanana إلى ملف mcp.json في Cursor، وسجل الدخول مرة واحدة، ودع قواعد Cursor من GoBanana ترتبط بصفحتك الجامحة.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Cursor مكان ممتاز **للتسليم**: قاعدة Cursor التي يصدرها GoBanana ترتبط وحدها حين تعدل ملفات الصفحة الجامحة.
+
+<Steps>
+
+1. افتح إعدادات MCP. اختر المكان:
+
+   <Tabs syncKey="scope">
+   <TabItem label="لك (كل المشاريع)">
+
+   الملف `~/.cursor/mcp.json` في مجلد المستخدم (على Windows `%USERPROFILE%\.cursor\mcp.json`). أنشئه إذا لم يكن موجودا.
+
+   </TabItem>
+   <TabItem label="لهذا المشروع">
+
+   الملف `.cursor/mcp.json` في جذر المشروع. أضفه إلى المستودع ليحصل الفريق على الخادم. ويسجل كل شخص الدخول بحسابه الخاص.
+
+   </TabItem>
+   </Tabs>
+
+2. أضف GoBanana واحفظ. الخادم البعيد يحتاج `url` فقط، دون `type` ودون ترويسات:
+
+   ```json title="mcp.json"
+   {
+     "mcpServers": {
+       "gobanana": {
+         "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+       }
+     }
+   }
+   ```
+
+   إذا كان في الملف خوادم أخرى، أضف إدخال `gobanana` داخل الكائن `mcpServers` الموجود.
+
+3. افتح **Customize** في الشريط الجانبي وابحث عن **gobanana** في قائمة MCP. سيطلب منك تسجيل الدخول (OAuth). يفتح متصفحك صفحة تسجيل الدخول إلى GoBanana، فسجل الدخول وعد إلى Cursor. لا تضف كتلة `auth`: GoBanana لا يحتاج معرف عميل ثابتا.
+
+4. في محادثة Agent، اطلب: **«تحقق من اتصالي بـ GoBanana.»** يطلب Cursor الموافقة افتراضيا قبل تشغيل أي أداة MCP، ثم يستدعي `ping`.
+
+</Steps>
+
+<Aside type="tip" title="حين لا يتصل">
+افتح لوحة Output (Ctrl+Shift+U أو Cmd+Shift+U) واختر **MCP Logs**. ظهور "401" هناك يعني فقط أن تسجيل الدخول لم يكتمل بعد.
+</Aside>
+
+## بدون المهارات
+
+لا يحمل Cursor إضافات Claude، فالصق دليل التشغيل من [بدون الإضافة](/docs/ar/start/first-board/#بدون-الإضافة) مرة واحدة، أو احفظه كقاعدة مشروع في `.cursor/rules/gobanana-flow.mdc`:
+
+```markdown title=".cursor/rules/gobanana-flow.mdc"
+---
+description: How to use the GoBanana MCP tools for one wild page
+alwaysApply: false
+---
+When the user asks to go wild on a page: pin the platform and one page, call
+new_canvas, then bend_brief with count 8 and the canvasId. Keep the 3 ideas with a
+clear UI path. Search each with search_references (directionId, canvasId), rate junk
+with rate_references, rate all 8 with rate_directions, place 2 to 4 art and 6 to 8 UI
+items per direction with "steal:" notes, arrange_canvas by_direction, open_canvas.
+Always show source links. Never download or copy reference images.
+```
+
+## التسليم في Cursor
+
+اطلب «سلم هذا لـ Cursor». يستدعي Cursor الأداة `export_kit` بالصيغة `cursor_rules` (Pro)، ويكتب `.cursor/rules/gobanana-<slug>.mdc` مع ضبط `globs` على ملفات صفحتك، فترتبط القاعدة كلما عدلتها. في الخطة المجانية، استخدم BUILD-PROMPT.md. راجع [التسليم](/docs/ar/guides/handoff/).
+
+## اللوحة
+
+افتح رابط الويب الموجود في الرد في متصفحك، وأنت مسجل الدخول بالحساب نفسه.
+
+## ما تم التحقق منه
+
+تم الفحص بتاريخ 2026-10-12 مقابل توثيق MCP في Cursor (أماكن ملفات الإعداد، والحقلين `mcpServers` و`url`، وOAuth للخوادم البعيدة، و**Customize** و**MCP Logs**). وتم التحقق من ملف JSON أعلاه مقابل ذلك المخطط. على هذا الجهاز، أظهر الخيار `--add-mcp` في Cursor 3.6.21 الرسالة "Added MCP servers: gobanana" مع ملف تعريف مؤقت، لكنه لم يكتب أي ملف استطعنا إيجاده هناك، لذلك لا نقدمه كطريقة إعداد. أما تسجيل الدخول، وهل تظهر اللوحة داخل المحادثة في Cursor، فلم يختبرا.

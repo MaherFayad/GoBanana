@@ -1,29 +1,29 @@
 ---
 title: Codex
-description: Add GoBanana to OpenAI Codex (CLI and IDE extension) as a streamable HTTP server and log in with OAuth.
+description: Add GoBanana to OpenAI Codex (CLI, IDE extension and desktop app) as a streamable HTTP server and log in with OAuth.
 ---
 
 import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
-Codex reads `AGENTS.md`, so it picks up GoBanana's scoped AGENTS.md section on its own after a hand-off.
+Codex reads `AGENTS.md`, so it picks up GoBanana's scoped AGENTS.md section on its own after a hand-off. The Codex CLI, the IDE extension and the desktop app share one MCP configuration, so one setup covers all three.
 
 <Steps>
 
 1. Add the server. Pick one:
 
    <Tabs syncKey="codex">
-   <TabItem label="Command">
+   <TabItem label="CLI">
 
    ```bash
    codex mcp add gobanana --url https://gobanana-server.maherfayad55.workers.dev/api/mcp
    ```
 
-   Codex detects that the server uses OAuth and starts the sign in right away.
+   It prints `Added global MCP server 'gobanana'.`
 
    </TabItem>
    <TabItem label="config.toml">
 
-   Add this to `~/.codex/config.toml`:
+   Add this to `~/.codex/config.toml` (or a trusted project's `.codex/config.toml`):
 
    ```toml title="~/.codex/config.toml"
    [mcp_servers.gobanana]
@@ -31,17 +31,25 @@ Codex reads `AGENTS.md`, so it picks up GoBanana's scoped AGENTS.md section on i
    ```
 
    </TabItem>
+   <TabItem label="IDE or desktop app">
+
+   - **IDE extension:** gear menu, **MCP servers**, **Add server**, choose **Streamable HTTP**, enter the URL, save, then **Restart extension**.
+   - **Desktop app:** **Settings**, **MCP servers**, **Add server**, choose **Streamable HTTP**, enter the URL, save, then **Restart**.
+
+   When GoBanana needs sign in, select **Authenticate**.
+
+   </TabItem>
    </Tabs>
 
-2. Log in, if it did not start on its own:
+2. Log in:
 
    ```bash
    codex mcp login gobanana
    ```
 
-   A browser opens on the GoBanana sign in page. On a machine with no browser, add `--no-browser` and paste the callback URL when asked.
+   Your browser opens the GoBanana sign in page. Codex picks the OAuth client method on its own; do not pass `--oauth-client-id`.
 
-3. Check the server is listed:
+3. Check it is listed:
 
    ```bash
    codex mcp list
@@ -51,7 +59,11 @@ Codex reads `AGENTS.md`, so it picks up GoBanana's scoped AGENTS.md section on i
 
 </Steps>
 
-The Codex IDE extension and the Codex app read the same `config.toml`, so one setup covers all three.
+<Aside type="caution" title="Older Codex CLIs">
+With Codex CLI 0.101.0, `codex mcp list` showed the **Auth** column as `Unsupported` for GoBanana right after `add`, and `add` did not start a sign in by itself. Run `codex mcp login gobanana` anyway: it starts the browser sign in. Updating Codex is the better fix.
+</Aside>
+
+To sign out, run `codex mcp logout gobanana`. `codex mcp --help` lists every MCP command.
 
 ## Without skills
 
@@ -61,6 +73,6 @@ Codex does not load Claude plugins. Paste the playbook from [No plugin?](/docs/s
 
 Ask "hand this off". The agent exports `agents_md` (Pro) and merges one section into `AGENTS.md` between `<!-- gobanana:<slug> -->` markers, never touching the rest. On Free, use BUILD-PROMPT.md. See [Hand off](/docs/guides/handoff/).
 
-<Aside type="note" title="Tokens">
-Codex stores the OAuth token in your system keyring or its credentials file. To sign out, run `codex mcp logout gobanana`.
-</Aside>
+## What was verified
+
+Checked on 2026-10-12 against OpenAI's Codex MCP docs. On this machine, Codex CLI 0.101.0 with a temporary `CODEX_HOME` ran the `add` command above, wrote exactly the `config.toml` entry shown, and `codex mcp list` listed it as enabled. `codex mcp login gobanana` started without error and waited for the browser; the sign in was not completed for these docs.

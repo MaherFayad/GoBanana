@@ -1,0 +1,78 @@
+---
+title: Codex
+description: أضف GoBanana إلى OpenAI Codex (سطر الأوامر وإضافة المحرر وتطبيق سطح المكتب) كخادم streamable HTTP وسجل الدخول عبر OAuth.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+يقرأ Codex الملف `AGENTS.md`، لذلك يلتقط قسم AGENTS.md المحدود النطاق من GoBanana تلقائيا بعد التسليم. يتشارك سطر أوامر Codex وإضافة المحرر وتطبيق سطح المكتب إعدادات MCP واحدة، فإعداد واحد يكفي للثلاثة.
+
+<Steps>
+
+1. أضف الخادم. اختر طريقة واحدة:
+
+   <Tabs syncKey="codex">
+   <TabItem label="سطر الأوامر">
+
+   ```bash
+   codex mcp add gobanana --url https://gobanana-server.maherfayad55.workers.dev/api/mcp
+   ```
+
+   يطبع الأمر `Added global MCP server 'gobanana'.`
+
+   </TabItem>
+   <TabItem label="config.toml">
+
+   أضف هذا إلى `~/.codex/config.toml` (أو إلى `.codex/config.toml` في مشروع موثوق):
+
+   ```toml title="~/.codex/config.toml"
+   [mcp_servers.gobanana]
+   url = "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+   ```
+
+   </TabItem>
+   <TabItem label="المحرر أو تطبيق سطح المكتب">
+
+   - **إضافة المحرر:** قائمة الترس، ثم **MCP servers**، ثم **Add server**، واختر **Streamable HTTP**، وأدخل الرابط، واحفظ، ثم **Restart extension**.
+   - **تطبيق سطح المكتب:** **Settings**، ثم **MCP servers**، ثم **Add server**، واختر **Streamable HTTP**، وأدخل الرابط، واحفظ، ثم **Restart**.
+
+   عندما يحتاج GoBanana إلى تسجيل الدخول، اختر **Authenticate**.
+
+   </TabItem>
+   </Tabs>
+
+2. سجل الدخول:
+
+   ```bash
+   codex mcp login gobanana
+   ```
+
+   يفتح المتصفح صفحة تسجيل الدخول في GoBanana. يختار Codex طريقة عميل OAuth بنفسه، فلا تمرر `--oauth-client-id`.
+
+3. تأكد أن الخادم ظاهر في القائمة:
+
+   ```bash
+   codex mcp list
+   ```
+
+4. شغّل Codex واطلب: **«استخدم أداة ping في GoBanana.»**
+
+</Steps>
+
+<Aside type="caution" title="إصدارات Codex CLI الأقدم">
+مع Codex CLI 0.101.0، أظهر `codex mcp list` العمود **Auth** بالقيمة `Unsupported` لـ GoBanana مباشرة بعد `add`، ولم يبدأ `add` تسجيل الدخول من تلقاء نفسه. شغّل `codex mcp login gobanana` على أي حال، فهو يبدأ تسجيل الدخول في المتصفح. والحل الأفضل هو تحديث Codex.
+</Aside>
+
+لتسجيل الخروج، شغّل `codex mcp logout gobanana`. ويعرض `codex mcp --help` كل أوامر MCP.
+
+## بدون المهارات
+
+لا يحمّل Codex إضافات Claude. الصق دليل العمل من [بدون الإضافة](/docs/ar/start/first-board/#بدون-الإضافة)، أو ضعه في ملف `AGENTS.md` خارج علامات GoBanana.
+
+## التسليم إلى Codex
+
+اطلب «سلّم هذا». يصدّر الوكيل `agents_md` (Pro) ويدمج قسما واحدا في `AGENTS.md` بين العلامتين `<!-- gobanana:<slug> -->`، دون أن يلمس بقية الملف. في الخطة المجانية، استخدم BUILD-PROMPT.md. راجع [التسليم](/docs/ar/guides/handoff/).
+
+## ما الذي تم التحقق منه
+
+جرى التحقق في 2026-10-12 مقابل وثائق MCP الخاصة بـ Codex من OpenAI. على هذا الجهاز، شغّل Codex CLI 0.101.0 مع `CODEX_HOME` مؤقت أمر `add` أعلاه، فكتب مدخل `config.toml` المعروض بالضبط، وأظهره `codex mcp list` مفعلا. بدأ `codex mcp login gobanana` دون خطأ وانتظر المتصفح، ولم يُستكمل تسجيل الدخول لأجل هذه الوثائق.

@@ -1,0 +1,59 @@
+---
+title: ChatGPT
+description: أضف GoBanana كتطبيق MCP مخصص في وضع المطور في ChatGPT، وسجل الدخول عبر OAuth.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import ServerUrl from '../../../../components/ServerUrl.astro';
+
+يستطيع ChatGPT استخدام أدوات GoBanana كتطبيق مخصص (موصل) مبني على MCP، عبر **وضع المطور** (developer mode) في تطبيق ChatGPT على الويب. لا توجد إضافة لـ ChatGPT فيها مهارات، فأعطه دليل التشغيل القصير أدناه.
+
+<ServerUrl />
+
+## من يستطيع ذلك
+
+حسب مقالة المساعدة من OpenAI بعنوان "Developer mode and MCP apps in ChatGPT": في خطة **Business** يستطيع المشرفون والمالكون فقط تفعيل وضع المطور وإضافة تطبيق، وفي **Enterprise** و**Edu** يستطيع المشرفون منح وضع المطور لأشخاص محددين، ومستخدمو **Pro** يفعلون وضع المطور بأنفسهم لاستخدام التطبيقات المخصصة. قواعد الخطط تتغير كثيرا، فإذا لم تجد الخيار، اسأل مشرف مساحة العمل.
+
+## أضف GoBanana
+
+<Steps>
+
+1. افتح **Settings**، ثم **Apps** (بعض الحسابات تعرض **Apps and connectors** أو **Connectors**)، ثم **Advanced settings**، وفعل **Developer mode**. إذا لم تجده هناك، ابحث في **Settings** ثم **Security**.
+
+2. اختر **Create** (بعض الحسابات تعرض **Add custom connector** أو **Add MCP server**). واملأ:
+   - **Name:** `GoBanana`
+   - **Description:** `Wild design directions, linked references and a moodboard canvas for one page.` يقرأ النموذج هذا الوصف ليقرر متى يستخدم التطبيق.
+   - **MCP server URL:** `https://gobanana-server.maherfayad55.workers.dev/api/mcp`
+   - **Authentication:** OAuth. اترك معرف العميل وكلمة السر فارغين.
+
+3. احفظ. يفتح ChatGPT صفحة تسجيل الدخول إلى GoBanana، فسجل الدخول. بعدها يفحص ChatGPT الأدوات. ويحفظ التطبيق كمسودة بالتسمية **Dev**.
+
+4. في محادثة جديدة، افتح قائمة الأدوات، واختر **Developer mode**، وفعل **GoBanana**.
+
+5. اطلب: **«استخدم أداة ping في GoBanana.»** يجب أن يرد بـ "Connected to GoBanana as you@example.com."
+
+</Steps>
+
+## أعطه دليل التشغيل
+
+الصق هذا النص مرة واحدة في بداية المحادثة، أو احفظه في تعليمات أحد المشاريع:
+
+```text
+Use the GoBanana tools. Pin the platform and one page. Call new_canvas, then bend_brief
+with count 8 and the canvasId. Keep the 3 ideas with a clear UI path. For each, call
+search_references with the directionId and canvasId, rate junk with rate_references,
+then call rate_directions for all 8. Place 2 to 4 art items and 6 to 8 UI items per
+direction with add_to_canvas, each with a "steal:" note, call arrange_canvas with
+by_direction, then open_canvas. Show every reference with its source link.
+Never download or copy images.
+```
+
+## ملاحظات
+
+- يطلب منك ChatGPT تأكيد استدعاءات الأدوات التي تغير البيانات. اقرأ تأكيد `delete_canvas` بعناية: لا يمكن التراجع عنه.
+- قد يعرض ChatGPT نتائج الأدوات (`structuredContent`) على النموذج، لذلك يضيف فتح لوحة كبيرة رموزا (tokens) إلى المحادثة. يبقي GoBanana هذا الجزء صغيرا، ويرسل اللوحة كاملة إلى عرض اللوحة فقط.
+- يستطيع مشرف مساحة العمل نشر التطبيق ليظهر في قائمة التطبيقات المعتمدة في مساحة العمل.
+
+## ما تم التحقق منه
+
+بتاريخ 2026-10-12 تمت مقارنة الخطوات بمقالة المساعدة من OpenAI (عبر ملخص، لأن الصفحة نفسها منعت القراءة الآلية) وبعدة أدلة حديثة من مزودين، تتفق على المسار لكنها تسمي القوائم بأسماء مختلفة. وتم التحقق من أن نقطة النهاية في GoBanana ترد بتحدي OAuth قياسي وتدعم التسجيل الديناميكي للعملاء، وهو ما يستخدمه ChatGPT. أما إضافة التطبيق في ChatGPT، وهل تظهر اللوحة داخل المحادثة هناك، فلم **يختبرا**. إذا لم تظهر اللوحة، افتح رابط الويب في الرد.

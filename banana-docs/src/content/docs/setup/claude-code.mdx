@@ -13,17 +13,22 @@ The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `
 
 <Steps>
 
-1. **Install the plugin** from the marketplace that lists GoBanana:
+1. **Install the plugin.** On Claude Code 2.1.275 or later, one command adds the GoBanana marketplace and installs:
 
    ```text
-   /plugin install gobanana --marketplace <owner>/<repo>
+   /plugin install gobanana --marketplace MaherFayad/GoBanana
    ```
 
-   <Aside type="caution" title="Marketplace not public yet">
-   The marketplace owner and repo are set at launch. Until then, use Option B, or load the plugin folder from a clone of the GoBanana repo with `--plugin-dir` (below).
-   </Aside>
+   Claude Code shows the marketplace it resolved and asks you to confirm. On older versions, add the marketplace first, then install:
 
-2. **Restart Claude Code** if it asks, so the plugin loads.
+   ```text
+   /plugin marketplace add MaherFayad/GoBanana
+   /plugin install gobanana@gobanana
+   ```
+
+   From your shell, without a session: `claude plugin install gobanana --marketplace MaherFayad/GoBanana` (2.1.292 or later), or `claude plugin marketplace add MaherFayad/GoBanana` then `claude plugin install gobanana@gobanana`.
+
+2. **Pick a scope.** The install opens the plugin's details. Review what it adds (9 skills and the `gobanana` MCP server), then choose **Install for you** (every project), **Install for all collaborators on this repository** (project), or **Install for you, in this repo only** (local). If the summary ends with `Run /reload-plugins to apply.`, run `/reload-plugins`.
 
 3. **Sign in.** Run:
 
@@ -31,9 +36,9 @@ The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `
    /mcp
    ```
 
-   Pick **plugin:gobanana:gobanana** from the list and choose **Authenticate** (or **Log in**). A browser window opens on the GoBanana sign in page. Sign in with email or a provider. When the browser says you can close it, go back to the terminal. The server shows as connected.
+   Pick **plugin:gobanana:gobanana** and choose to authenticate. Your browser opens the GoBanana sign in page (WorkOS AuthKit). Sign in; when the browser says you can close it, go back to Claude Code. If the browser does not open, copy the URL Claude Code prints. From the shell, `claude mcp login` does the same.
 
-4. **Check it.** Ask:
+4. **Check it.** Type `/` and look for the `gobanana-*` skills, then ask:
 
    ```text
    Check my GoBanana connection.
@@ -45,7 +50,9 @@ The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `
 
 ## Option B: the server only
 
-No skills, just the tools. Useful in a repo where you only want to export, or when the marketplace is not reachable.
+No skills, just the tools. Useful in a repo where you only want to export, or when GitHub is not reachable.
+
+Scopes: `local` (the default: you, this project), `project` (a `.mcp.json` you commit) or `user` (you, every project).
 
 <Tabs syncKey="scope">
 <TabItem label="For you (all projects)">
@@ -66,7 +73,7 @@ This writes a `.mcp.json` at the project root that you can commit, so your team 
 </TabItem>
 </Tabs>
 
-Then start Claude Code, run `/mcp`, pick **gobanana** and sign in.
+Then start Claude Code, run `/mcp`, pick **gobanana** and sign in. A project scoped server asks for approval the first time. `claude mcp list` shows its status.
 
 Without the plugin, give Claude the playbook once per chat. See [No plugin?](/docs/start/first-board/#no-plugin).
 
@@ -75,7 +82,7 @@ Without the plugin, give Claude the playbook once per chat. See [No plugin?](/do
 To try a local copy of the plugin (for example after editing a skill), point Claude Code at the folder:
 
 ```bash
-git clone <gobanana-repo-url>
+git clone https://github.com/MaherFayad/GoBanana.git
 cd your-project
 claude --plugin-dir /path/to/Gobanana/banana-plugin
 ```
@@ -93,7 +100,7 @@ claude --plugin-dir /path/to/Gobanana/banana-plugin
 }
 ```
 
-To check the plugin is valid:
+To check the plugin is valid (strict mode needs Claude Code 2.1.281 or later, which knows the directory fields in plugin.json):
 
 ```bash
 claude plugin validate --strict ./banana-plugin
@@ -123,9 +130,13 @@ Leave `delete_canvas` out of the allow list, so Claude always asks before deleti
 
 Claude Code runs in a terminal, so it cannot show the board inline. Every skill reply ends with the web link: "Open the board here: https://gobanana-server.maherfayad55.workers.dev/c/...". Open it in a browser signed in with the same account.
 
+## What was verified
+
+Checked on 2026-10-12 against the Claude Code docs (MCP and plugin pages). With Claude Code 2.1.226 on Windows, `claude mcp add --transport http --scope project gobanana <url>` wrote the `.mcp.json` shown above and `claude mcp get gobanana` listed it as an HTTP server pending approval. The live endpoint answers an unsigned request with `401` and a `WWW-Authenticate` header that points to its OAuth metadata, which is what `/mcp` sign in uses. The marketplace (`.claude-plugin/marketplace.json` at the repo root, marketplace name `gobanana`) was checked by a local add and install in a temporary config, and `claude plugin validate` passes. Installing from GitHub with `MaherFayad/GoBanana` works once the branch with that file is merged into the repo's default branch. The browser sign in itself was not run for these docs.
+
 ## Upgrading from an older install
 
-The plugin's server key was renamed from `banana` to `gobanana`, and the skills from `banana-*` to `gobanana-*`. If you see an old `banana` server in `/mcp`, uninstall the old plugin, install `gobanana`, and sign in again.
+The plugin's server key was renamed from `banana` to `gobanana`, and the skills from `banana-*` to `gobanana-*`. If you see an old `banana` server in `/mcp`, uninstall the old plugin, install `gobanana@gobanana`, and sign in again.
 
 ## Next
 

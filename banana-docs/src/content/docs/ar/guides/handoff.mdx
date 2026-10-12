@@ -1,0 +1,152 @@
+---
+title: سلّم الاتجاه إلى وكيل البرمجة
+description: حزمة التسليم المحصورة في نطاق الصفحة، DIRECTION.md وBUILD-PROMPT.md وREVIEW.md وDESIGN.md وقواعد Cursor وتعليمات Copilot وأقسام CLAUDE.md وAGENTS.md، وكيف تلتقطها كل أداة.
+---
+
+import { Aside, FileTree, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+قل **«سلّم هذا»** (أو «قواعد Cursor لهذا»، «موجه لـ v0»). تصدر المهارة `gobanana-handoff` الاتجاه الذي أبقيته كملفات تقرؤها أدوات البرمجة لديك تلقائيا، وتكتبها في مستودعك.
+
+## النطاق: صفحة واحدة لا نظامك كله
+
+كل ملف **محصور في نطاق الصفحة** افتراضيا (`scope: "page"`). ينطبق على الصفحات التي تسميها فقط، ويرث نظام التصميم في مشروعك، ولا يغيره. يبدأ كل ملف بالكتلة نفسها:
+
+> **Scope: one wild page, not the product design system.** Applies only to: pricing page, /launch.
+> Files: `**/pricing/**`, `**/pricing.*`, `**/launch/**`, `**/launch.*`.
+> This inherits the project's own design system and its existing DESIGN.md, and does not change them.
+> Tokens here are page level overrides: use them only inside these pages.
+
+مرر `pages` كأسماء صفحات أو مسارات أو أنماط glob، حتى 5: `"pricing page"`، `"/launch"`، `"app/pricing/**"`. تتحول الأسماء إلى أنماط مثل `**/pricing/**`، وتبقى المسارات والأنماط كما كتبتها.
+
+يوجد `scope: "system"` لحالة تريد فيها فعلا أن يصبح الاتجاه نظام منتجك. لا تستخدمه المهارات إلا إذا قلت ذلك صراحة («اجعل هذا نظام التصميم لدينا»). عندها يذهب DESIGN.md إلى جذر المشروع وتصبح القواعد عامة.
+
+## الحزمة
+
+<FileTree>
+- design/explorations/frosted-sleeve/
+  - DIRECTION.md المواصفات البصرية الكاملة (المجانية)
+  - BUILD-PROMPT.md موجه واحد لأي أداة (المجانية)
+  - DESIGN.md رموز محصورة في النطاق كتجاوزات (المجانية)
+  - REVIEW.md قائمة فحص لـ ابنِ ثم قيّم (Pro)
+  - FRANKENSTEIN.md هياكل صفحات فرانكنشتاين (المجانية)
+  - frankenstein-wireframe.html مخطط هيكلي بصناديق رمادية (Pro)
+  - kit/
+    - tokens.json رموز التجاوز، بصيغة W3C DTCG (Pro)
+    - theme.css سمة Tailwind للصفحة (Pro)
+- .cursor/rules/gobanana-frosted-sleeve.mdc قاعدة Cursor مع globs (Pro)
+- .github/instructions/gobanana-frosted-sleeve.instructions.md لـ Copilot، مع applyTo (Pro)
+- AGENTS.md قسم واحد معلم، يدمج (Pro)
+- CLAUDE.md قسم واحد معلم، يدمج (Pro)
+</FileTree>
+
+`frosted-sleeve` هو الاسم المختصر للاتجاه، مأخوذ من عنوانه.
+
+| الملف | ما يحتويه |
+| --- | --- |
+| **DIRECTION.md** | النمط، والمكون المميز، والخطوط، والألوان، والتخطيط، والصور، والحركة، والملمس، والأيقونات، والكثافة، وما تأخذه، وما تتجنبه، ولماذا يناسب، وكل روابط المصادر |
+| **BUILD-PROMPT.md** | موجه واحد تلصقه في أي مكان: الصفحات، والمنصة، والمواصفات، والقيود، ومعيار «الانتهاء». يسرد صفحات فرانكنشتاين إذا كانت على اللوحة |
+| **DESIGN.md** | بصيغة DESIGN.md من Google Labs. الألوان في المقدمة من نوع `ship` فقط. يفحص بالأمر `npx --yes @google/design.md@0.4.0 lint` |
+| **REVIEW.md** | قائمة فحص بنجاح أو إصلاح: بند لكل سطر في المواصفات، وكل سطر تجنب، إضافة إلى تباين WCAG 2.2 AA وحجم أهداف اللمس |
+| **قاعدة Cursor** | القواعد، مع ضبط `globs` على صفحاتك، فترتبط القاعدة عندما تعدل تلك الملفات |
+| **تعليمات Copilot** | القواعد، مع ضبط `applyTo` على صفحاتك |
+| **قسم AGENTS.md / CLAUDE.md** | الصفحات المعنية، ومكان الملفات، والفرق بين ship وexplore، وعدم نسخ صور المراجع أبدا، والانتهاء عند اجتياز REVIEW.md |
+
+## كيف تلتقطها كل أداة
+
+<Tabs syncKey="client">
+<TabItem label="Claude Code">
+
+يقرأ Claude Code ملف `CLAUDE.md` في الجذر وفي المجلدات التي يعمل فيها. يشير قسم GoBanana إلى `@design/explorations/<slug>/DIRECTION.md`. إذا كان CLAUDE.md لديك يستورد `@AGENTS.md` بالفعل، فقسم AGENTS.md يكفي.
+
+```markdown title="CLAUDE.md"
+<!-- gobanana:frosted-sleeve -->
+## Wild page: Frosted sleeve (GoBanana)
+
+Applies only to `app/checkout/**`. Inherits our design system. Does not change it.
+
+When you work on these files:
+- Read @design/explorations/frosted-sleeve/DIRECTION.md first.
+- Use the token overrides in design/explorations/frosted-sleeve/DESIGN.md for these pages only.
+- Only `ship` colors carry text. `explore` colors are concept only.
+- Do not edit shared components, global CSS or tokens for this page. Make page-local variants.
+- Never copy reference images into the repo.
+- When done, grade the page against design/explorations/frosted-sleeve/REVIEW.md (gobanana-critique).
+<!-- /gobanana:frosted-sleeve -->
+```
+
+</TabItem>
+<TabItem label="Cursor">
+
+لا شيء تفعله. يحتوي `.cursor/rules/gobanana-<slug>.mdc` على `globs` لصفحاتك، فعدّل ملفا مطابقا وتصبح القاعدة ضمن السياق.
+
+</TabItem>
+<TabItem label="Copilot">
+
+لا شيء تفعله. يحتوي `.github/instructions/gobanana-<slug>.instructions.md` على أنماط `applyTo`. ولا يعدل GoBanana أبدا الملف `.github/copilot-instructions.md`.
+
+</TabItem>
+<TabItem label="Codex">
+
+يستخدم Codex وغيره من قراء AGENTS.md أقرب ملف `AGENTS.md`. يشير قسم GoBanana إلى DIRECTION.md.
+
+```markdown title="AGENTS.md"
+<!-- gobanana:frosted-sleeve -->
+## Wild page: Frosted sleeve (GoBanana)
+
+Applies only to: `app/checkout/**`. Inherits the project's design system. Does not change it.
+
+- Read `design/explorations/frosted-sleeve/DIRECTION.md` before editing these files.
+- Token overrides for these pages: `design/explorations/frosted-sleeve/DESIGN.md`. Do not move them into the global tokens.
+- Colors tagged `ship` passed WCAG 2.2 contrast. Colors tagged `explore` are concept only: never put text on them.
+- Keep shared components unchanged. Make page-local variants inside `app/checkout/`.
+- Respect `prefers-reduced-motion`.
+- Reference images belong to their owners. Never copy them into the repo; link to the source.
+- Done when every item in `design/explorations/frosted-sleeve/REVIEW.md` passes.
+<!-- /gobanana:frosted-sleeve -->
+```
+
+</TabItem>
+<TabItem label="v0، Lovable">
+
+الصق BUILD-PROMPT.md في محادثة جديدة. وفي Lovable يمكنك أيضا لصقه في معرفة المشروع.
+
+</TabItem>
+</Tabs>
+
+## ما تفعله المهارة
+
+<Steps>
+
+1. **تختار الاتجاه والصفحات.** من المحادثة أو من `get_canvas`. وتربط أسماء الصفحات بمساراتك الحقيقية عندما ترى الكود (`app/pricing/page.tsx`).
+2. **تكتشف أدواتك** من علامات المستودع وتذكر ما وجدته: `CLAUDE.md` أو `.claude/` (Claude Code)، و`.cursor/` (Cursor)، و`.github/instructions/` أو `copilot-instructions.md` (Copilot)، و`AGENTS.md` (Codex)، و`lovable-tagger` في package.json (Lovable).
+3. **تصدر** باستخدام `export_kit`: دائما `direction_md` و`build_prompt` و`review`، إضافة إلى الصيغة الخاصة بكل أداة وجدتها.
+4. **تكتب** كل ملف في المسار الذي عاد به، وتنشئ المجلدات.
+5. **تدمج** في AGENTS.md وCLAUDE.md بين `<!-- gobanana:<slug> -->` و`<!-- /gobanana:<slug> -->`. النص خارج العلامتين يبقى كما هو حرفا بحرف. وتعرض عليك الفروق.
+6. **تبلغ** بقائمة الملفات وسطر واحد عن النطاق.
+
+</Steps>
+
+## قواعد الدمج
+
+- `AGENTS.md` و`CLAUDE.md` **لا يستبدلان أبدا**. يضاف القسم المعلم أو يستبدل فقط.
+- `.github/copilot-instructions.md` وملف `DESIGN.md` في الجذر والرموز والسمة وCSS العام **لا تمس أبدا** في نطاق الصفحة.
+- الملفات تحت `design/explorations/<slug>/` وملفات Cursor وCopilot الخاصة بكل اسم مختصر تخص GoBanana. في التصدير الثاني يعرض الوكيل الفروق ويسأل قبل استبدالها.
+- **لا صور مراجع في المستودع.** الملفات ترتبط بالمصادر.
+
+## في الخطة المجانية
+
+`review` و`cursor_rules` و`copilot` و`agents_md` و`claude_md` و`tokens` و`tailwind` و`wireframe_html` ضمن Pro. في الخطة المجانية، يعيد استدعاء واحد لـ `export_kit` الملفات المجانية ورسالة عن الخطة بالنسبة للباقي. تكتب المهارة DIRECTION.md وBUILD-PROMPT.md (وDESIGN.md إذا طلبته)، وتعرض الرسالة مرة واحدة، وتذكرك بأن **BUILD-PROMPT.md يعمل في أي أداة بلصقه**. وإذا طلبت، تضيف يدويا إشارة من سطرين إلى AGENTS.md أو CLAUDE.md لديك، داخل العلامتين.
+
+<Aside type="tip" title="من Claude.ai إلى مستودعك">
+استكشفت في Claude.ai؟ اللوحة محفوظة في حسابك. في Claude Code أو Cursor أو Codex، قل «سلّم لوحة frosted sleeve» فيجدها الوكيل باستخدام `get_canvas` ويصدر هناك، حيث يمكنه كتابة الملفات.
+</Aside>
+
+## مهارات ذات صلة
+
+| المهارة | قل | تكتب |
+| --- | --- | --- |
+| `gobanana-design-md` | «DESIGN.md لهذه الصفحة» | DESIGN.md محصورا في النطاق، ثم تفحصه (3 جولات إصلاح على الأكثر) |
+| `gobanana-agents-md` | «AGENTS.md»، «قواعد لوكلاء البرمجة» | قسم AGENTS.md، وCLAUDE.md إن وجد لديك |
+| `gobanana-asset-kit` | «حزمة الأصول»، «رموز لهذه الصفحة» | من `kit/00-readme.md` إلى `kit/06-sources.md`: الرموز، وسمة Tailwind، وتدرجات آمنة، وزوج خطوط واحد بترخيص مفتوح، ومجموعة أيقونات واحدة (Lucide أو Phosphor) |
+
+التالي: [ابنِ ثم قيّم](/docs/ar/guides/critique/).

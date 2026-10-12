@@ -1,0 +1,74 @@
+---
+title: عملاء MCP آخرون
+description: ما يحتاجه أي عميل MCP لاستخدام GoBanana، وحقائق نقطة الاتصال، وجسر للعملاء الذين لا يشغلون إلا خوادم stdio محلية.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import ServerUrl from '../../../../components/ServerUrl.astro';
+
+أي عميل يتحدث Model Context Protocol عبر HTTP مع OAuth يستطيع استخدام GoBanana.
+
+<ServerUrl />
+
+## حقائق نقطة الاتصال
+
+| | |
+| --- | --- |
+| الرابط | `https://gobanana-server.maherfayad55.workers.dev/api/mcp` |
+| النقل | Streamable HTTP بلا حالة. `GET` و`POST` و`DELETE` على المسار نفسه |
+| المصادقة | رمز OAuth 2.1 من نوع bearer، مطلوب في كل طلب. يمر تسجيل الدخول عبر WorkOS AuthKit (رمز تفويض مع PKCE `S256`) |
+| تسجيل العميل | يدعم الطريقتين: Client ID Metadata Documents (`client_id_metadata_document_supported: true`) وDynamic Client Registration (عبر `registration_endpoint`). لا حاجة إلى معرف عميل مسجل مسبقا |
+| الاكتشاف | الطلب بلا رمز يتلقى `401` مع `WWW-Authenticate: Bearer ... resource_metadata="https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource"` (RFC 9728). وتُقدَّم البيانات الوصفية أيضا على `/.well-known/oauth-protected-resource/api/mcp` |
+| المورد | `https://gobanana-server.maherfayad55.workers.dev/api/mcp`. يجب أن تحمله الرموز كجمهور لها (audience) |
+| الأدوات | 17 أداة للوكيل، إضافة إلى أداتين خاصتين بالتطبيق تستخدمهما واجهة اللوحة (`save_canvas_state` و`load_canvas_state`). لا تستدعِ هاتين الأداتين من وكيل |
+| الواجهة | مورد MCP Apps واحد، `ui://banana/canvas` (من نوع `text/html;profile=mcp-app`)، تفتحه الأداة `open_canvas` |
+
+المسار `/api/mcp` وحده هو نقطة اتصال MCP. أما مسارات `/api/...` الأخرى فتجيب عملاء MCP بالرمز 404.
+
+## ما يجب أن يدعمه عميلك
+
+- **خوادم HTTP البعيدة** (streamable HTTP). العملاء القدامى الذين يدعمون SSE فقط لن يتصلوا.
+- **OAuth لـ MCP**: قراءة تحدي `401`، والبيانات الوصفية للمورد المحمي، وتسجيل الدخول في المتصفح. إن كان عميلك يقبل فقط ترويسة ثابتة أو مفتاح API، فلن يستطيع تسجيل الدخول، فلا توجد مفاتيح API في GoBanana.
+- **اختياري، MCP Apps**: لعرض اللوحة داخل المحادثة. بدونه، يحمل الرد رابطا على الويب.
+
+## عملاء stdio فقط
+
+بعض العملاء لا يشغلون إلا خوادم محلية عبر stdio. اربطهم بالأداة `mcp-remote`، وهي تعمل محليا، وتتولى تسجيل الدخول عبر OAuth في متصفحك، وتمرر الطلبات إلى GoBanana. تحتاج إلى Node.js 18 أو أحدث.
+
+```json title="Your client's MCP config"
+{
+  "mcpServers": {
+    "gobanana": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://gobanana-server.maherfayad55.workers.dev/api/mcp"]
+    }
+  }
+}
+```
+
+عند التشغيل الأول يفتح المتصفح لتسجيل الدخول. تحفظ `mcp-remote` بيانات الدخول في `~/.mcp-auth` (غيّر المكان عبر `MCP_REMOTE_CONFIG_DIR`). احذف هذا المجلد لتسجيل الخروج. طريقة النقل الافتراضية فيها، `http-first`، مناسبة لـ GoBanana.
+
+<Aside type="note" title="أداة من طرف آخر">
+`mcp-remote` أداة مجتمعية مفتوحة المصدر، وليست جزءا من GoBanana. في إعدادات الفرق، ثبّت إصدارا راجعته (`mcp-remote@<version>`) بدل أحدث إصدار.
+</Aside>
+
+## افحص نقطة الاتصال بنفسك
+
+```bash
+# An unsigned call: expect 401 and a WWW-Authenticate header with resource_metadata
+curl -i -X POST https://gobanana-server.maherfayad55.workers.dev/api/mcp   -H "content-type: application/json" -H "accept: application/json, text/event-stream"   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Protected resource metadata: names the authorization server
+curl https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource
+
+# Or with the MCP Inspector (opens a browser to sign in when run in a terminal)
+npx -y @modelcontextprotocol/inspector --cli https://gobanana-server.maherfayad55.workers.dev/api/mcp --method tools/list
+```
+
+## ما الذي تم التحقق منه
+
+في 2026-10-12: أعاد أمر `curl` غير الموقّع أعلاه الرمز `401` مع `WWW-Authenticate: Bearer error="invalid_token", error_description="No authorization provided", resource_metadata="https://gobanana-server.maherfayad55.workers.dev/.well-known/oauth-protected-resource"`. وأعاد رابطا البيانات الوصفية كلاهما المورد `…/api/mcp` وخادم التفويض AuthKit، الذي يسرد ملفه `/.well-known/oauth-authorization-server` نقاط التفويض والرموز والتسجيل، وPKCE `S256`، ودعم CIMD. وتوقف MCP Inspector 2.10.1 في الوضع غير التفاعلي عند `auth_required`، كما هو متوقع. إعداد `mcp-remote` مأخوذ من ملف README الخاص به، ولم يُشغَّل هنا.
+
+## كتابة عميلك الخاص
+
+استخدم SDK لـ MCP (TypeScript أو Python أو غيرهما) مع أداة OAuth المساعدة فيه، ووجهه إلى الرابط، واطلب قائمة الأدوات. مخطط JSON لكل أداة صارم. المدخلات الخاطئة لا ترمي استثناء أبدا، بل تعيد رسالة بسيطة مثل "brief must be 1 to 500 characters." اقرأ `content[0].text`. راجع [مرجع الأدوات](/docs/ar/reference/tools/).

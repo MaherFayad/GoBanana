@@ -14,7 +14,7 @@ Cursor is a great place to **hand off**: GoBanana's Cursor rule attaches on its 
    <Tabs syncKey="scope">
    <TabItem label="For you (all projects)">
 
-   `~/.cursor/mcp.json` (on Windows `%USERPROFILE%\.cursor\mcp.json`). Or in Cursor: **Settings**, then **Tools and MCP** (older builds: **MCP**), then **Add custom MCP**.
+   `~/.cursor/mcp.json` in your home folder (on Windows `%USERPROFILE%\.cursor\mcp.json`). Create it if it does not exist.
 
    </TabItem>
    <TabItem label="For this project">
@@ -24,7 +24,7 @@ Cursor is a great place to **hand off**: GoBanana's Cursor rule attaches on its 
    </TabItem>
    </Tabs>
 
-2. Add GoBanana and save:
+2. Add GoBanana and save. A remote server needs only `url`; no `type` and no headers:
 
    ```json title="mcp.json"
    {
@@ -38,14 +38,14 @@ Cursor is a great place to **hand off**: GoBanana's Cursor rule attaches on its 
 
    If the file already has other servers, add the `gobanana` entry inside the existing `mcpServers` object.
 
-3. In **Settings**, **Tools and MCP**, GoBanana shows **Needs login** (or a **Connect** button). Click it. A browser window opens; sign in. Back in Cursor, the server turns green and lists its tools.
+3. Open **Customize** in the sidebar and find **gobanana** in the MCP list. It asks you to sign in (OAuth). Your browser opens the GoBanana sign in page; sign in and return to Cursor. Do not add an `auth` block: GoBanana does not need a fixed client ID.
 
-4. In the Agent chat, ask: **"Check my GoBanana connection."** Cursor calls `ping`.
+4. In the Agent chat, ask: **"Check my GoBanana connection."** Cursor asks for approval before it runs an MCP tool by default, then calls `ping`.
 
 </Steps>
 
-<Aside type="tip" title="Turn tools on">
-Cursor lets you switch single tools off. Keep `bend_brief`, `search_references`, `rate_references`, `rate_directions`, `new_canvas`, `get_canvas`, `add_to_canvas`, `arrange_canvas`, `open_canvas` and `export_kit` on for the full flow.
+<Aside type="tip" title="When it does not connect">
+Open the Output panel (Ctrl+Shift+U or Cmd+Shift+U) and pick **MCP Logs**. A "401" there just means sign in has not finished.
 </Aside>
 
 ## Without skills
@@ -71,4 +71,8 @@ Ask "hand this off for Cursor". Cursor calls `export_kit` with `cursor_rules` (P
 
 ## The canvas
 
-Open the web link from the reply in your browser, signed in with the same account. Inline display in Cursor was not tested for these docs.
+Open the web link from the reply in your browser, signed in with the same account.
+
+## What was verified
+
+Checked on 2026-10-12 against Cursor's MCP docs (config locations, the `mcpServers` and `url` fields, OAuth for remote servers, **Customize** and **MCP Logs**). The JSON above was checked against that schema. On this machine, Cursor 3.6.21's `--add-mcp` flag reported "Added MCP servers: gobanana" with a temporary profile, but wrote no file we could find there, so it is not given as a setup path. The sign in and whether the board shows inline in Cursor were not tested.

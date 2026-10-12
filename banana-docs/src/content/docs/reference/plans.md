@@ -15,7 +15,7 @@ description: Every limit per plan, which export needs Pro, the exact limit messa
 | Uploads to your canvases | No | 1 GB | 1 GB | 1 GB |
 | Export formats | 5 free formats | All 15 | All 15 | All 15 |
 
-Prices are in US dollars. Paddle is the reseller and Merchant of Record: it handles payment, sales tax or VAT, invoices and refunds. Pro yearly saves about 35% against 12 monthly payments. The Founding plan is for the first 100 buyers.
+GoBanana is for individuals: there are no team plans. Prices are in US dollars. Paddle is the reseller and Merchant of Record: it handles payment, sales tax or VAT, invoices and refunds. Pro yearly saves about 35% against 12 monthly payments. The Founding plan is for the first 100 buyers.
 
 :::tip[Beta]
 Payments are off during the beta. Every signed in account gets Pro monthly limits (300 searches, unlimited canvases, all exports) and nothing is charged.
@@ -71,4 +71,4 @@ The plugin's skills show the message once and stop. They never loop.
 
 ## Cancelling and refunds
 
-A subscription can be cancelled at any time and stays active to the end of the paid period, then the account returns to Free. Refunds and billing questions go through Paddle, under Paddle's buyer terms. Prices may change for new purchases; subscribers get at least 30 days notice. See the [terms](https://gobanana-server.maherfayad55.workers.dev/en/terms).
+A subscription can be cancelled at any time and stays active to the end of the paid period, then the account returns to Free. You can get a full refund within 14 days of your first payment. Refunds and billing questions are handled by Paddle, the payment provider. Prices may change for new purchases; subscribers get at least 30 days notice. See the [terms](https://gobanana-server.maherfayad55.workers.dev/en/terms#plans).

@@ -34,8 +34,12 @@ GoBanana is a remote MCP server. Every client connects to the same address:
 <TabItem label="Claude Code">
 
 ```bash
-# With the skills (recommended): install the plugin, then run /mcp and log in
-/plugin install gobanana --marketplace <owner>/<repo>
+# With the skills (recommended), Claude Code 2.1.275 or later; then /mcp to sign in
+/plugin install gobanana --marketplace MaherFayad/GoBanana
+
+# Older versions
+/plugin marketplace add MaherFayad/GoBanana
+/plugin install gobanana@gobanana
 
 # Server only, no skills
 claude mcp add --transport http gobanana https://gobanana-server.maherfayad55.workers.dev/api/mcp
@@ -44,7 +48,7 @@ claude mcp add --transport http gobanana https://gobanana-server.maherfayad55.wo
 </TabItem>
 <TabItem label="Claude apps">
 
-Settings, then **Connectors**, then **Add custom connector**. Name: `GoBanana`. URL:
+**Customize**, then **Connectors**, then **Add custom connector**. URL:
 
 ```text
 https://gobanana-server.maherfayad55.workers.dev/api/mcp
@@ -66,6 +70,12 @@ https://gobanana-server.maherfayad55.workers.dev/api/mcp
 </TabItem>
 <TabItem label="VS Code">
 
+```bash
+code --add-mcp "{\"name\":\"gobanana\",\"type\":\"http\",\"url\":\"https://gobanana-server.maherfayad55.workers.dev/api/mcp\"}"
+```
+
+Or in the workspace:
+
 ```json title=".vscode/mcp.json"
 {
   "servers": {
@@ -80,7 +90,7 @@ https://gobanana-server.maherfayad55.workers.dev/api/mcp
 </TabItem>
 <TabItem label="Windsurf">
 
-```json title="~/.codeium/windsurf/mcp_config.json"
+```json title="mcp_config.json (Cascade, ... menu, MCPs, Open MCP config file)"
 {
   "mcpServers": {
     "gobanana": {
@@ -101,8 +111,8 @@ codex mcp login gobanana
 </TabItem>
 </Tabs>
 
-<Aside type="note" title="Field names move">
-Client config formats change from time to time. The steps here follow each client's own docs as of October 2026; not every client was tested end to end. If a field was renamed, the only part that matters is the URL above and "HTTP" or "streamable HTTP" as the transport.
+<Aside type="note" title="How these were checked">
+Every config here was compared with the client's own docs on 2026-10-12. On this machine, Claude Code 2.1.226, VS Code 1.141.0 and Codex CLI 0.101.0 wrote these exact entries into temporary profiles. Each setup page ends with what was verified for that client and what was not.
 </Aside>
 
 ## Then check it
@@ -121,11 +131,9 @@ More checks: [Check it works](/docs/setup/check/). Something off: [Troubleshooti
 | --- | --- | --- | --- |
 | Claude Code | Yes, with the plugin | No, web link | Yes |
 | Claude.ai, Claude Desktop | Yes, with the plugin (Cowork and organization plugins) | Yes (MCP Apps) | No, copy from the reply |
-| ChatGPT | No | Depends on MCP Apps support in your workspace | No |
-| Cursor, VS Code, Windsurf, Codex | No | Not checked, use the web link | Yes |
+| ChatGPT | No | Not tested | No |
+| Cursor, VS Code, Windsurf, Codex | No | Not tested, use the web link | Yes |
 
 The best pairing today: explore and Frankenstein in Claude.ai or Claude Desktop where the board shows inline, then hand off from Claude Code, Cursor or Codex in your repo, using the same account.
 
-<Aside type="caution" title="What we could not verify">
-Inline canvas support in ChatGPT, Cursor, VS Code, Windsurf and Codex was not tested for these docs. The board always has a web link, so every client can open it.
-</Aside>
+The board always has a web link, so every client can open it, inline or not.

@@ -1,0 +1,76 @@
+---
+title: VS Code وGitHub Copilot
+description: أضف GoBanana إلى ملف mcp.json في VS Code لوضع الوكيل في Copilot، وسجل الدخول، واحصل على تعليمات Copilot محصورة في صفحتك الجامحة.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+يستخدم GitHub Copilot في VS Code خوادم MCP في **وضع الوكيل** (agent mode).
+
+## أضف GoBanana
+
+<Tabs syncKey="vscode">
+<TabItem label="أمر واحد">
+
+من الطرفية، أضفه إلى ملف تعريف المستخدم في VS Code:
+
+```bash
+code --add-mcp "{\"name\":\"gobanana\",\"type\":\"http\",\"url\":\"https://gobanana-server.maherfayad55.workers.dev/api/mcp\"}"
+```
+
+يطبع VS Code الرسالة `Added MCP servers: gobanana`.
+
+</TabItem>
+<TabItem label="هذا المشروع">
+
+أنشئ `.vscode/mcp.json` في مساحة العمل وأضفه إلى المستودع لتشارك الخادم مع الفريق:
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "gobanana": {
+      "type": "http",
+      "url": "https://gobanana-server.maherfayad55.workers.dev/api/mcp"
+    }
+  }
+}
+```
+
+يقرأ VS Code أيضا ملف `.mcp.json` في جذر المشروع، وهو يستخدم `mcpServers` بدل `servers` (وهو الملف نفسه الذي يكتبه Claude Code).
+
+</TabItem>
+<TabItem label="لوحة الأوامر">
+
+شغل **MCP: Add Server** من لوحة الأوامر (Ctrl+Shift+P أو Cmd+Shift+P)، واختر **HTTP**، والصق العنوان، وسمه `gobanana`، واختر مكان حفظه. لتعديل إعدادات المستخدم يدويا، شغل **MCP: Open User Configuration**.
+
+</TabItem>
+</Tabs>
+
+## شغله وسجل الدخول
+
+<Steps>
+
+1. افتح عرض Copilot Chat وانتقل إلى وضع **Agent**.
+2. افتح منتقي **tools** (الأدوات) وتأكد أن أدوات GoBanana محددة. يبدأ الخادم، وقد يطلب منك VS Code أن تثق به أولا.
+3. حين يطلب VS Code تسجيل الدخول إلى GoBanana، وافق وسجل الدخول في المتصفح.
+4. اطلب: **«استخدم أداة ping في GoBanana.»**
+
+</Steps>
+
+لإعادة التشغيل أو رؤية السجلات، شغل **MCP: List Servers**، واختر **gobanana**، ثم **Show Output** (أو **Disable** ثم **Enable**). ويمسح **MCP: Reset Trust** اختيارات الثقة.
+
+## بدون المهارات
+
+لا يحمل Copilot إضافات Claude. احفظ دليل التشغيل كملف طلب (prompt file) أو الصقه في بداية المحادثة. النص موجود في [بدون الإضافة](/docs/ar/start/first-board/#بدون-الإضافة).
+
+## التسليم لـ Copilot
+
+تعيد `export_kit` بالصيغة `copilot` (Pro) الملف `.github/instructions/gobanana-<slug>.instructions.md` مع ضبط `applyTo` على ملفات صفحتك. يطبقه Copilot فقط حين يعمل على تلك الملفات. لا يعدل GoBanana أبدا ملفك العام `.github/copilot-instructions.md`. راجع [التسليم](/docs/ar/guides/handoff/).
+
+<Aside type="note" title="المؤسسات">
+تستطيع المؤسسات أن تدير مركزيا خوادم MCP المسموح بها في Copilot. إذا لم تظهر أدوات GoBanana أبدا، اسأل المشرف هل خوادم MCP مسموحة.
+</Aside>
+
+## ما تم التحقق منه
+
+تم الفحص بتاريخ 2026-10-12 مقابل توثيق VS Code بعنوان "Add and manage MCP servers". على هذا الجهاز، شغل VS Code 1.141.0 الأمر الواحد أعلاه مع ملف تعريف مؤقت (`--user-data-dir`)، وكتب بالضبط إدخال `servers` المعروض في تبويب المشروع، مع `"type": "http"`. صفحة توثيق VS Code لا تصف نافذة طلب OAuth، ولم يختبر تسجيل الدخول نفسه هنا.

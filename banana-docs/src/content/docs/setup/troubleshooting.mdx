@@ -15,10 +15,10 @@ The token is missing, expired or for another server. Fix it per client:
 
 | Client | Do this |
 | --- | --- |
-| Claude Code | Run `/mcp`, pick the GoBanana server, choose **Clear authentication** if shown, then **Authenticate** again |
-| Claude.ai, Desktop | Settings, Connectors, GoBanana, **Disconnect**, then **Connect** |
-| Cursor | Settings, Tools and MCP, toggle GoBanana off and on, then **Connect** |
-| VS Code | Run **MCP: List Servers**, pick gobanana, **Restart**; or the Accounts menu, sign out of GoBanana |
+| Claude Code | Run `/mcp`, pick the GoBanana server, choose **Clear authentication**, then sign in again (or **Re-authenticate**). From the shell: `claude mcp logout <name>` then `claude mcp login <name>` |
+| Claude.ai, Desktop | **Customize**, **Connectors**, GoBanana: disconnect or remove it, then **Connect** again |
+| Cursor | **Customize**, find gobanana, toggle it off and on, then sign in again. Logs: Output panel, **MCP Logs** |
+| VS Code | Run **MCP: List Servers**, pick gobanana, **Disable** then **Enable**, or **Show Output** for logs |
 | Codex | `codex mcp logout gobanana`, then `codex mcp login gobanana` |
 | mcp-remote | Delete `~/.mcp-auth` and restart the client |
 
@@ -37,9 +37,9 @@ The token is missing, expired or for another server. Fix it per client:
 
 1. Check the server is **connected** in your client's MCP list, not just added. A server that needs sign in shows no tools.
 2. Check the URL is exactly `https://gobanana-server.maherfayad55.workers.dev/api/mcp`.
-3. Check the tools are **turned on** for the chat: the tools menu in Claude, the tools picker in VS Code agent mode, the per tool toggles in Cursor and Windsurf.
-4. **Claude Code plugin:** run `/plugin` and check **gobanana** is enabled. An old install may still use the server key `banana`; reinstall the plugin.
-5. **Too many tools:** some clients cap the total number of tools across servers. Turn off tools from other servers.
+3. Check the tools are **turned on** for the chat: **+**, **Connectors** in Claude, the tools picker in VS Code agent mode, **Customize** in Cursor, the **MCPs** toggles in Windsurf.
+4. **Claude Code plugin:** run `/plugin`, open the **Installed** tab and check **gobanana** is enabled (or run `claude plugin list`). An old install may still use the server key `banana`; reinstall with `/plugin install gobanana@gobanana`.
+5. **Too many tools:** some clients cap the total across servers (Cascade in Windsurf: 100). Turn off tools from other servers.
 6. Restart the client. Some clients only read the config at start.
 
 </Steps>
