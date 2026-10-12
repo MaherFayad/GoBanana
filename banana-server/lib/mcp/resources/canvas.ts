@@ -12,8 +12,9 @@
  *
  * CSP (`_meta.ui.csp`):
  * - `resourceDomains`: the image host allowlist (lib/sources/allowlist.ts, same list the
- *   search adapter filters on), Google Fonts for type samples, and our own origin
- *   (APP_URL) for the UI fonts the view loads from public/ (never inlined, see
+ *   search adapter filters on), the Mobbin image hosts for screens the agent places from the
+ *   user's own Mobbin connector (lib/sources/mobbin.ts), Google Fonts for type samples, and
+ *   our own origin (APP_URL) for the UI fonts the view loads from public/ (never inlined, see
  *   ui/canvas/vite.config.ts). Images load in the browser from their source; nothing is
  *   proxied. User uploads are same-origin paths behind the web session
  *   (`/api/uploads/:id`), so inline they show as link cards.
@@ -24,6 +25,7 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { APP_NAME } from "@/lib/config";
 import { allowlistFromEnv, allowlistToCspDomains } from "@/lib/sources/allowlist";
+import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import { CANVAS_UI_URI } from "@/lib/mcp/tools/open_canvas";
 import { APP_ORIGIN_PLACEHOLDER, CANVAS_ASSET_PATH } from "./canvas-asset";
 
@@ -41,7 +43,8 @@ export type CanvasCsp = { resourceDomains: string[]; connectDomains: string[] };
 export function canvasCsp(opts: { imageHostAllowlist?: string; appUrl?: string } = {}): CanvasCsp {
   const allowlist = allowlistFromEnv(opts.imageHostAllowlist ?? readEnv("IMAGE_HOST_ALLOWLIST"));
   const own = appOrigin(opts.appUrl ?? readEnv("APP_URL"));
-  const domains = [...allowlistToCspDomains(allowlist), ...FONT_DOMAINS, ...(own ? [own] : [])];
+  const mobbin = MOBBIN_IMAGE_HOSTS.map((h) => `https://${h}`);
+  const domains = [...allowlistToCspDomains(allowlist), ...mobbin, ...FONT_DOMAINS, ...(own ? [own] : [])];
   return { resourceDomains: [...new Set(domains)], connectDomains: [] };
 }
 

@@ -367,3 +367,90 @@ describe("export_kit", () => {
     expect(text(res)).not.toContain(ref(1).sourceUrl);
   });
 });
+
+describe("add_to_canvas screens (Mobbin)", () => {
+  const SCREEN = {
+    type: "screen",
+    imageUrl: "https://mobbin.com/api/mcp/short/9N5TNmdP",
+    sourceUrl: "https://mobbin.com/screens/6490283f-b69b-459c-b8e0-ef95ec4ee1bc",
+    app: "Luma",
+    title: "Checkout",
+    platform: "ios",
+    note: "steal: the full width pay bar",
+  } as const;
+
+  it("places a Mobbin screen as a hotlinked UI reference linked to its Mobbin page", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await seedCanvas(repos, ALICE);
+    await repos.directions.upsertMany(c.id, [{ bendId: "bd-1", move: "era", title: "Checkout as a 1970s ticket", searchQuery: "q" }]);
+    const res = await createAddToCanvasTool(deps)({ canvasId: c.id, items: [{ ...SCREEN, directionId: "bd-1" }] }, ALICE);
+    expect(res.isError).toBeFalsy();
+    const s = await stored(repos, c.id);
+    const img = s.nodes.find((n) => n.type === "image")!;
+    expect(img.data).toMatchObject({
+      imageUrl: SCREEN.imageUrl,
+      sourceUrl: SCREEN.sourceUrl,
+      sourceSite: "mobbin.com",
+      title: "Luma: Checkout",
+      note: SCREEN.note,
+      thumbUrl: null,
+    });
+    // UI zone (no art mark), a phone shaped tile, in the direction's section.
+    expect((img.data as { zone?: string }).zone).toBeUndefined();
+    expect(img.h).toBeGreaterThan(img.w);
+    const section = s.nodes.find((n) => n.type === "section")!;
+    expect(section.data).toMatchObject({ directionId: "bd-1" });
+    expect(img.parentId).toBe(section.id);
+    // Bytescale (the CDN the short link redirects to) is a Mobbin host too.
+    const cdn = await createAddToCanvasTool(deps)(
+      { canvasId: c.id, items: [{ type: "screen", imageUrl: "https://bytescale.mobbin.com/FW25bBB/image/x.webp?enc=1.abc", sourceUrl: SCREEN.sourceUrl }] },
+      ALICE,
+    );
+    expect(cdn.isError).toBeFalsy();
+    const titles = (await stored(repos, c.id)).nodes.flatMap((n) => (n.type === "image" ? [n.data.title] : []));
+    expect(titles).toContain("Mobbin screen");
+  });
+
+  it("skips screens off mobbin.com or with unsafe links, and keeps the rest", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await seedCanvas(repos, ALICE);
+    const bad = [
+      { sourceUrl: "https://dribbble.com/shots/1" },
+      { sourceUrl: "https://mobbin.com.evil.example/screens/1" },
+      { sourceUrl: "http://mobbin.com/screens/1" },
+      { sourceUrl: "https://mobbin.com/" },
+      { sourceUrl: "https://user:pw@mobbin.com/screens/1" },
+      { imageUrl: "https://evil.example/mobbin.com/x.webp" },
+      { imageUrl: "https://notmobbin.com/x.webp" },
+      { imageUrl: "data:image/png;base64,AAAA" },
+      { imageUrl: "javascript:alert(1)" },
+      { imageUrl: "https://mobbin.com:8443/x.webp" },
+    ];
+    const res = await createAddToCanvasTool(deps)(
+      { canvasId: c.id, items: [...bad.map((b) => ({ ...SCREEN, ...b })), SCREEN] },
+      ALICE,
+    );
+    expect(res.isError).toBeFalsy();
+    const out = res.structuredContent as { items: unknown[]; skipped: { index: number; reason: string }[] };
+    expect(out.items).toHaveLength(1);
+    expect(out.skipped.map((s) => s.index)).toEqual(bad.map((_, i) => i));
+    expect(out.skipped[0]!.reason).toContain("mobbin.com");
+    // Only bad screens: nothing placed, a plain error.
+    const none = await createAddToCanvasTool(deps)({ canvasId: c.id, items: [{ ...SCREEN, imageUrl: "https://evil.example/x.webp" }] }, ALICE);
+    expect(none.isError).toBe(true);
+    expect(text(none)).toContain("imageUrl must be");
+  });
+
+  it("refuses over long links and skips taken down screens", async () => {
+    const { deps, repos } = makeDeps({ takedowns: [SCREEN.sourceUrl] });
+    const c = await seedCanvas(repos, ALICE);
+    const add = createAddToCanvasTool(deps);
+    const long = await add({ canvasId: c.id, items: [{ ...SCREEN, imageUrl: `https://mobbin.com/${"a".repeat(2100)}` }] }, ALICE);
+    expect(long.isError).toBe(true);
+    expect(text(long)).toContain('{ type: "screen"');
+    const res = await add({ canvasId: c.id, items: [SCREEN, { type: "note", text: "Shipped today" }] }, ALICE);
+    const out = res.structuredContent as { items: { type: string }[]; skipped: { reason: string }[] };
+    expect(out.items.map((i) => i.type)).toEqual(["note"]);
+    expect(out.skipped[0]!.reason).toContain("takedown");
+  });
+});

@@ -367,7 +367,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A reference can carry a note (what to steal, up to 280 characters). Links in notes are clickable.",
+      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -393,12 +393,31 @@
                   "type": "string",
                   "enum": [
                     "reference",
+                    "screen",
                     "note",
                     "swatch",
                     "section"
                   ]
                 },
                 "referenceId": {
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "type": "string",
+                  "description": "For screen items: the image_url the Mobbin connector returned."
+                },
+                "sourceUrl": {
+                  "type": "string",
+                  "description": "For screen items: the mobbin_url of the screen."
+                },
+                "app": {
+                  "type": "string"
+                },
+                "platform": {
+                  "type": "string",
+                  "enum": ["ios", "web"]
+                },
+                "directionId": {
                   "type": "string"
                 },
                 "text": {
@@ -416,7 +435,7 @@
                 "note": {
                   "type": "string",
                   "maxLength": 280,
-                  "description": "For reference items: what to steal from it, for example steal: the stamped date as a section divider."
+                  "description": "For reference and screen items: what to steal from it, for example steal: the stamped date as a section divider."
                 }
               }
             }

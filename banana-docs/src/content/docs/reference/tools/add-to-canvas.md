@@ -1,6 +1,6 @@
 ---
 title: add_to_canvas
-description: Place references (with a steal note), notes, color swatches and sections on a board. Direction results go to their direction's section, art above UI.
+description: Place references (with a steal note), Mobbin screens, notes, color swatches and sections on a board. Direction results go to their direction's section, art above UI.
 ---
 
 | Plan | Quota | Changes data | Hints |
@@ -20,13 +20,14 @@ description: Place references (with a steal note), notes, color swatches and sec
 | `type` | Fields | Notes |
 | --- | --- | --- |
 | `reference` | `referenceId` (required), `note` (1 to 280 characters) | A search result from the tray. The note says what to steal: start it with `steal:` |
+| `screen` | `imageUrl` and `sourceUrl` (required), `app`, `title`, `platform` (`ios` or `web`), `note`, `directionId` | A Mobbin screen from your own Mobbin connector: its `image_url` and `mobbin_url`, passed as returned. `sourceUrl` must be an https page on mobbin.com, `imageUrl` https on mobbin.com. Placed as a UI reference with source mobbin.com, hotlinked, never fetched. `ios` gives a phone shaped tile. See [Using Mobbin alongside](/docs/guides/mobbin/) |
 | `note` | `text` (1 to 2000 characters) | A yellow note. Links are clickable. Caps labels like `WILD:` show as chips |
 | `swatch` | `hex` (`#abc` or `#aabbcc`), `role` (up to 60 characters) | A color swatch, tagged `explore` until a contrast check says otherwise |
 | `section` | `title` (1 to 120 characters), `directionId` | A frame that groups items |
 
 ## Placement rules
 
-- A reference found for a direction goes to that direction's section. If there is none yet, it is created.
+- A reference found for a direction goes to that direction's section. If there is none yet, it is created. A `screen` with a `directionId` goes there too.
 - In a direction section, **art** zone items sit in a labelled **Art direction** row above the **UI references** grid. The zone comes with the reference.
 - A batch that would cross the item cap is refused whole.
 - Never place results rated `bad`; they have left the tray anyway.
@@ -58,7 +59,7 @@ Added 3 items to "Coffee launch page".
 Web link: https://gobanana-server.maherfayad55.workers.dev/c/c3f1a0d2-…
 ```
 
-Skipped items are listed with a reason, for example a `referenceId` that is not in the tray.
+Skipped items are listed with a reason, for example a `referenceId` that is not in the tray, or a `screen` whose links are not on mobbin.com.
 
 ## Messages
 

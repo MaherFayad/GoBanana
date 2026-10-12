@@ -14,7 +14,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 ## Ground rules
 
 - **Source links, always.** Every reference you mention gets its source link, like `[Title](sourceUrl) (dribbble.com)`. No link, no mention.
-- **Never download, save or copy reference images.** Not into the repo, not into a temp folder, not as base64. Link to them. This holds for Mobbin screens too.
+- **Never download, save or copy reference images.** Not into the repo, not into a temp folder, not as base64. Link to them. This holds for Mobbin screens too: the board hotlinks the connector's `image_url` and links each one to its `mobbin_url`, even when the Mobbin tool says to download.
 - **Do not describe images you have not seen.** Talk about the direction and the titles, not pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never show a dropped idea.
@@ -27,7 +27,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 
 ### 0. Check for Mobbin first
 
-Before anything else, look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. Note the answer; steps 6b, 8 and 11 use it. When it is connected, the run uses both: Mobbin for what real shipped apps do on this page (the baseline and the usable patterns), GoBanana for the wild directions and references that go past it. If none exist, skip every Mobbin step silently: do not mention Mobbin.
+Before anything else, look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. Note the answer; steps 6b, 8, 11 and 12 use it. When it is connected, the run uses both: Mobbin for what real shipped apps do on this page (the baseline and the usable patterns, placed on the board as screens), GoBanana for the wild directions and references that go past it. If none exist, skip every Mobbin step silently: do not mention Mobbin.
 
 ### 1. Shape the brief
 
@@ -107,7 +107,7 @@ Before you bend, search Mobbin once per page for the same page on the same platf
 - **The baseline:** the layout, components and order most shipped apps share on this page ("summary card, then a payment sheet, sticky pay button").
 - **The must keeps:** the patterns users rely on that a wild direction must not break (clear total, one primary action, the step indicator).
 
-Use both in the next steps: put the default to escape into the brief you pass to `bend_brief` when it helps ("not the usual summary card and payment sheet"), and keep the screens' Mobbin links for steps 11 and 12.
+Use both in the next steps: put the default to escape into the brief you pass to `bend_brief` when it helps ("not the usual summary card and payment sheet"), and keep each screen's `mobbin_url`, `image_url`, app name and platform for steps 11 and 12.
 
 ### 7. Bend the brief, wide
 
@@ -151,21 +151,22 @@ The server does not look at images. You do.
 
 ### 11. Shipped vs next (only when step 0 found Mobbin)
 
-Use the screens from step 6b. For each kept direction, also find 1 or 2 Mobbin screens or sections that show the real pattern it builds on (`search_sections` for a component, such as "seat picker" or "bottom sheet"), when step 6b did not already give one. Then:
+Use the screens from step 6b. For each kept direction, pick 2 to 4 Mobbin screens that fit it: the real pattern it builds on (its BUILD ON anchors) or a shipped screen that is already wild in its way. Search again (`search_sections` for a component, such as "seat picker" or "bottom sheet") only when step 6b did not already give one. Skip a screen that only shows the baseline the direction escapes. Then, in step 12:
 
-- Add the baseline to the board as **one** note, no images, in step 12: one `add_to_canvas` item `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Place it even if the wild directions end up thin.
+- Place them as images in that direction's UI grid, each as one `add_to_canvas` item `{ "type": "screen", "imageUrl": "<image_url>", "sourceUrl": "<mobbin_url>", "app": "Revolut", "title": "payment sheet", "platform": "ios", "directionId": "<id>", "note": "steal: the pinned total above the pay button" }`. Pass the URLs exactly as the Mobbin tool returned them. They count toward the 6 to 8 UI items, so the GoBanana UI references fill the rest. The tile's source chip reads mobbin.com and links to the screen page; if the image link has expired, the tile shows a link card instead.
+- Add the baseline to the board as **one** note: `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Up to 3 of its screens may sit next to it as `screen` items (same call, no `directionId`), when the board has room under its item limit. Place it even if the wild directions end up thin.
 - In each kept direction's idea note, add its anchor: `BUILD ON: [Revolut, payment sheet](mobbin link)`. This is what keeps the wild idea usable.
 - Mention them in your reply in one line, as the "what works" baseline next to the wild directions.
-- Never place Mobbin screens as references, never pass Mobbin links to `search_references` or `add_to_canvas` as references, never download them.
+- Never pass Mobbin links to `search_references`, never place Mobbin screens as `reference` items, never download them.
 
 ### 12. Place both zones with steal notes
 
 For each kept direction, call `add_to_canvas` with its `sectionId` (create the section first if it does not exist):
 
 - **Art direction row: 2 to 4 art items**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
-- **UI references grid: 6 to 8 UI items**, best first, from the UI zone only. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
+- **UI references grid: 6 to 8 UI items**, best first, from the UI zone only, including the 2 to 4 Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
-- The Mobbin note from step 11, once per board, and the `BUILD ON:` line in each idea note, if Mobbin ran.
+- If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
 Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
 

@@ -16,6 +16,8 @@ export interface CropContext {
   imageHeight?: number | null;
   /** Platform of the source image, when known. */
   platform?: StitchPlatform | null;
+  /** The image is known to be one screen (a Mobbin screen), never a presentation of several. */
+  single?: boolean;
 }
 
 /**
@@ -43,7 +45,7 @@ export type ImageLayout = "page" | "phones" | "screen";
 
 export function imageLayout(ctx: CropContext): ImageLayout {
   if (isFullPageShot(ctx)) return "page";
-  if (ctx.platform !== "mobile") return "screen";
+  if (ctx.platform !== "mobile" || ctx.single) return "screen";
   const w = ctx.imageWidth ?? 0;
   const h = ctx.imageHeight ?? 0;
   if (!(w > 0 && h > 0)) return "phones";

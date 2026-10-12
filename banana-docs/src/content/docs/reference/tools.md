@@ -20,7 +20,7 @@ The GoBanana MCP server at `https://gobanana-server.maherfayad55.workers.dev/api
 | [`new_canvas`](/docs/reference/tools/new-canvas/) | Creates a board without showing it | All (Free: 3 boards) | No | Yes |
 | [`open_canvas`](/docs/reference/tools/open-canvas/) | Shows a board inline, or creates and shows one | All | No | Creates one without `canvasId` |
 | [`get_canvas`](/docs/reference/tools/get-canvas/) | Reads a board, or lists your 10 most recent | All | No | No |
-| [`add_to_canvas`](/docs/reference/tools/add-to-canvas/) | Places references, notes, swatches and sections | All (Free: 40 items) | No | Yes |
+| [`add_to_canvas`](/docs/reference/tools/add-to-canvas/) | Places references, Mobbin screens, notes, swatches and sections | All (Free: 40 items) | No | Yes |
 | [`arrange_canvas`](/docs/reference/tools/arrange-canvas/) | Lays out a board or one section | All | No | Yes |
 | [`delete_canvas`](/docs/reference/tools/delete-canvas/) | Deletes a board for good, with `confirm: true` | All | No | Yes, destructive |
 | **Frankenstein it** | | | | |

@@ -1,6 +1,7 @@
 /** cut_parts, frankenstein_page, remix_frankenstein, update_frankenstein and the get_canvas parts and pages, with in-memory repos. */
 import { describe, expect, it } from "vitest";
 import type { CanvasState, StoredNode } from "@/canvas/types";
+import { createAddToCanvasTool } from "@/lib/mcp/tools/add_to_canvas";
 import { createCutPartsTool, MAX_CUTS, TOOL_DESCRIPTION as CUT_DESC } from "@/lib/mcp/tools/cut_parts";
 import { createGetCanvasTool, type GetCanvasOutput } from "@/lib/mcp/tools/get_canvas";
 import { createRemixStitchTool, TOOL_DESCRIPTION as REMIX_DESC } from "@/lib/mcp/tools/remix_frankenstein";
@@ -91,6 +92,39 @@ describe("cut_parts", () => {
     const full = await withParts(Array.from({ length: MAX_PARTS }, (_, i) => part(`pt-${i}`, "cards", i)), [imageNode("img_1", 1)]);
     const res = await createCutPartsTool(full.deps)({ canvasId: full.id, cuts: [{ itemId: "img_1", role: "nav" }] }, ALICE);
     expect(text(res)).toContain(`holds up to ${MAX_PARTS} parts`);
+  });
+});
+
+describe("Mobbin screens as part sources", () => {
+  it("cuts parts from a placed Mobbin screen and stacks them with search parts, keeping the Mobbin link", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await repos.canvases.create({ userId: ALICE, title: "Board", brief: "mobile flight checkout", state: state([imageNode("pin_1", 1)]) });
+    const screen = {
+      type: "screen",
+      imageUrl: "https://mobbin.com/api/mcp/short/X5xl09N3",
+      sourceUrl: "https://mobbin.com/screens/469375d4-5ee8-450a-80ca-30582b5e7b38",
+      app: "Shop",
+      platform: "ios",
+    };
+    const added = await createAddToCanvasTool(deps)({ canvasId: c.id, items: [screen] }, ALICE);
+    const screenId = (added.structuredContent as { items: { id: string }[] }).items[0]!.id;
+    const cut = await createCutPartsTool(deps)(
+      { canvasId: c.id, cuts: [{ itemId: "pin_1", role: "hero" }, { itemId: screenId, role: "cta", note: "real pay bar" }] },
+      ALICE,
+    );
+    expect(cut.isError).toBeFalsy();
+    const parts = (await stored(repos, c.id)).parts!;
+    const pay = parts.find((p) => p.fromItemId === screenId)!;
+    const hero = parts.find((p) => p.fromItemId === "pin_1")!;
+    expect(pay).toMatchObject({ imageUrl: screen.imageUrl, sourceUrl: screen.sourceUrl, sourceSite: "mobbin.com", title: "Shop", fromItemId: screenId, guessedCrop: true });
+    // One screen, not a presentation of phones: the full width pay band, not the middle phone column.
+    expect(pay.crop).toEqual({ x: 0.06, y: 0.8, w: 0.88, h: 0.1 });
+    expect(text(cut)).toContain(`cta from mobbin.com ${screen.sourceUrl}`);
+
+    const page = await createStitchPageTool(deps)({ canvasId: c.id, rows: [{ slots: [{ partId: hero.id }] }, { slots: [{ partId: pay.id }] }], title: "Wild hero, real pay bar" }, ALICE);
+    expect(page.isError).toBeFalsy();
+    const slots = (page.structuredContent as StitchPageOutput).stitches[0]!.skeleton.flatMap((r) => r.slots);
+    expect(slots[1]).toMatchObject({ role: "cta", sourceSite: "mobbin.com", sourceUrl: screen.sourceUrl });
   });
 });
 

@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "search_screens",
-      "description": "Search real app screens on Mobbin by text. Returns app, screen and a Mobbin link.",
+      "description": "Search real app screens on Mobbin by text. Returns app, screen, a Mobbin link (mobbin_url) and an image link (image_url).",
       "inputSchema": {
         "type": "object",
         "required": ["query"],

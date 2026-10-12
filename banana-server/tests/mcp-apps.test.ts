@@ -42,8 +42,11 @@ import {
   type ToolCaller,
 } from "@/canvas/persistence-bridge";
 import { DEFAULT_IMAGE_HOSTS } from "@/lib/sources/allowlist";
+import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import type { CanvasState } from "@/canvas/types";
 import { ALICE, BOB, imageNode, makeDeps, seedCanvas, state, text } from "./tools-fixtures";
+
+const MOBBIN = MOBBIN_IMAGE_HOSTS.map((h) => `https://${h}`);
 
 /** The built view (`npm run build:ui`, checked in), served as a static asset in production. */
 const CANVAS_HTML = readFileSync(join(process.cwd(), "public", CANVAS_ASSET_PATH), "utf8");
@@ -91,6 +94,8 @@ describe("ui://banana/canvas resource", () => {
     const csp = canvas!._meta?.ui?.csp;
     for (const host of DEFAULT_IMAGE_HOSTS) expect(csp?.resourceDomains).toContain(`https://${host}`);
     for (const font of FONT_DOMAINS) expect(csp?.resourceDomains).toContain(font);
+    // Mobbin screens the agent places from the user's own connector load from these hosts.
+    for (const host of MOBBIN) expect(csp?.resourceDomains).toContain(host);
     expect(csp?.connectDomains ?? []).toEqual([]);
   });
 
@@ -119,13 +124,13 @@ describe("ui://banana/canvas resource", () => {
 
   it("builds the CSP from IMAGE_HOST_ALLOWLIST", () => {
     const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com, *.example-cdn.com", appUrl: "" });
-    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", "https://*.example-cdn.com", ...FONT_DOMAINS]);
+    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", "https://*.example-cdn.com", ...MOBBIN, ...FONT_DOMAINS]);
     expect(csp.connectDomains).toEqual([]);
   });
 
   it("allows our own origin (APP_URL) for the view's font files", () => {
     const csp = canvasCsp({ imageHostAllowlist: "i.pinimg.com", appUrl: "https://banana.example.com/some/path/" });
-    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", ...FONT_DOMAINS, "https://banana.example.com"]);
+    expect(csp.resourceDomains).toEqual(["https://i.pinimg.com", ...MOBBIN, ...FONT_DOMAINS, "https://banana.example.com"]);
     expect(appOrigin("https://banana-server.<your-subdomain>.workers.dev")).toBeUndefined();
     expect(appOrigin("ftp://example.com")).toBeUndefined();
     expect(appOrigin(undefined)).toBeUndefined();

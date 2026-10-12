@@ -17,6 +17,7 @@ This is for ideas over one page, not the product's design system. A Frankenstein
 - **Do not describe pixels you did not see.** Say what you saw, what the user told you, or what the title says, and say which.
 - **Right platform.** Mobile pages take mobile parts, websites take website parts, web apps take web app parts. Skip references for another platform.
 - **UI zone only.** Cut from UI references (placed board items or tray references in zone `ui`). Art direction images are mood, not page parts. Never cut a reference rated `bad`.
+- **Mobbin screens are parts too, as accents.** Mobbin screens on the board (source chip mobbin.com, placed from the user's Mobbin connector) are UI items: cut them by `itemId` like any other. Use one when it is wild or fits the direction, for example a real pay bar or tab bar under a wild hero, so the page keeps a pattern users know. Never build the whole page from Mobbin parts, and give each one its `[App, screen](mobbin link) (mobbin.com)` link like any part. Their crops are guessed as one screen, not a phone presentation.
 - Plain words, short sentences, no em dashes.
 
 ## Steps

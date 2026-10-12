@@ -14,7 +14,7 @@ This page summarizes. The binding texts are the [privacy notice](https://gobanan
 3. **Parts are crops in the browser.** Frankenstein it never cuts or saves pieces of an image.
 4. **No scraping.** References come from web image search results only, one `site:` scoped request per source.
 5. **Never in your repo.** The skills will not copy reference images into your project, and the files they write tell coding agents not to either.
-6. **Mobbin stays on your side.** Your own Mobbin connector, links only, never sent to GoBanana.
+6. **Mobbin through your own connector.** GoBanana never searches Mobbin. Screens your agent finds with your Mobbin connector can go on the board, shown straight from Mobbin's image link and linked to their Mobbin page, never downloaded or stored.
 7. **Palettes in memory.** Thumbnails are read for a moment to compute colors, then dropped.
 8. **No referrer.** Board images load with no referrer, so source sites do not see which board showed them.
 

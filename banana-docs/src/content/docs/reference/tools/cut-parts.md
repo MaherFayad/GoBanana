@@ -15,7 +15,7 @@ A part is a role, a crop rectangle over a hotlinked image, a light or dark tag a
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | Yes | 1 to 100 characters | The board |
 | `cuts` | object[] | Yes | 1 to 24 per call | The parts to cut |
-| `cuts[].itemId` | string | One of these two | up to 120 characters | A placed board image |
+| `cuts[].itemId` | string | One of these two | up to 120 characters | A placed board image, Mobbin screens included (guessed as one screen) |
 | `cuts[].referenceId` | string | One of these two | up to 100 characters | A search result in the tray |
 | `cuts[].role` | enum | Yes | see below | What the part is on a page |
 | `cuts[].crop` | object | No | `x`, `y` 0 to 1; `w`, `h` above 0 up to 1 | Fractions of the image, from the top left. Leave out and the server guesses a band by role |

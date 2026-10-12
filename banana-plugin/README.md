@@ -44,7 +44,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 1. **Pin the platform and the page.** Mobile, tablet, website or web app, from your words or one question. If you name the whole product, the agent asks "Where should the weirdness go?" and offers the spots where it pays off on that platform ([docs/WHERE-WEIRDNESS-PAYS.md](docs/WHERE-WEIRDNESS-PAYS.md)).
 2. **Bend.** 8 ideas, each with a spec: pattern, signature component, type, color, layout, motion, texture, icons, density, what to steal, what to avoid, why it fits. The agent drops the ones that cannot become UI for your page and keeps 3 or 4.
 3. **Search two zones.** Art direction: the wild idea as images (the weave, the receipt, the riso print). UI: screens and components for your platform only, never web dashboards on a phone brief. The agent rates every result and drops shops, listings and off idea pins.
-4. **Shipped vs next.** If you have a Mobbin connector, the agent adds a "Shipped today" note with links to real shipped screens for the same page. Links only, never images.
+4. **Shipped vs next.** If you have a Mobbin connector, the agent puts 2 to 4 real shipped screens that fit each direction in its UI grid and adds a "Shipped today" note with links to them. The board shows the images straight from Mobbin and links each one to its Mobbin page; nothing is downloaded.
 5. **Board.** Per direction: an "Art direction" row (2 to 4) above a "UI references" grid (6 to 8), each tile with a short "steal:" note and its source link.
 6. **Hand off.** Scoped files for your coding tools, under `design/explorations/<slug>/` ([docs/HARNESS.md](docs/HARNESS.md)).
 7. **Frankenstein it (optional).** Cut the best parts out of the references (a nav here, a hero there) and stitch new page variants from them, every part linked to its source. See [Frankenstein it](#frankenstein-it).
@@ -54,7 +54,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 
 | Skill | Say something like | What happens |
 | --- | --- | --- |
-| `gobanana-explore` | "go wild on our launch page", "crazy ideas for onboarding", "where can our app be weird" | Pins platform and pages, bends 8 ideas, keeps 3 or 4, searches art and UI zones, audits, adds Mobbin "shipped today" links when connected, places both zones with steal notes, shows compact spec cards |
+| `gobanana-explore` | "go wild on our launch page", "crazy ideas for onboarding", "where can our app be weird" | Pins platform and pages, bends 8 ideas, keeps 3 or 4, searches art and UI zones, audits, adds Mobbin screens and a "shipped today" note when connected, places both zones with steal notes, shows compact spec cards |
 | `gobanana-moodboard` | "make a moodboard", "arrange this", "put it in FigJam" | Sections per direction, art row above UI grid, steal notes, clean layout; optionally FigJam or an HTML board |
 | `gobanana-palette` | "palette", "colors from the art direction" | Extracts colors with roles and tags each pair `ship` or `explore` by WCAG 2.2 contrast |
 | `gobanana-design-md` | "DESIGN.md for this page" | Scoped DESIGN.md under `design/explorations/<slug>/`, linted with `@google/design.md` |
@@ -148,7 +148,7 @@ Nothing is cut out of an image file. A part is a rectangle the browser shows ove
 - **Every reference shows its source link**: on the canvas, in share links, in every export, and in every skill reply.
 - **Parts are crops in the browser, not files.** Frankenstein it never cuts or saves pieces of a reference; the crop is a rectangle over the hotlinked image.
 - **Never copy reference images into your repo.** The skills will not do it, and the files they write tell coding agents not to either.
-- **Mobbin stays on your side.** The agent uses your own Mobbin connector, adds links only, and never sends Mobbin to the GoBanana server.
+- **Mobbin through your own connector.** The agent searches with your own Mobbin connector; GoBanana never searches Mobbin. Screens it places are shown straight from Mobbin's image links and linked to their Mobbin pages, never downloaded or stored. Mobbin image links expire after about 30 days; then the tile shows a link to the screen instead.
 - **No scraping.** References come from web search results only.
 - Palette extraction reads thumbnails in memory on the server to compute colors, then drops them.
 

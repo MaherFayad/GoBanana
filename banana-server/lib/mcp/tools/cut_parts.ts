@@ -8,6 +8,7 @@ import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, mutateCanvas, newNodeId, parseState, siteFromUrl } from "@/lib/canvas/store";
 import type { ReferenceRecord } from "@/lib/db/types";
 import { detectPlatform } from "@/lib/platform";
+import { isMobbinSource } from "@/lib/sources/mobbin";
 import { defaultCrop, distinctCrop } from "@/lib/stitch/crop";
 import { MAX_PART_NOTE } from "@/lib/stitch/parse";
 import { clampCrop, MAX_PARTS, type Crop, type Part, type StitchPlatform } from "@/lib/stitch/types";
@@ -27,7 +28,7 @@ export const TOOL_NAME = "cut_parts";
 export const MAX_CUTS = 24;
 
 export const TOOL_DESCRIPTION =
-  "Frankenstein it, step 1: cut parts (nav, hero, cards, footer and more) out of board images (itemId) or search results (referenceId) into the canvas parts library. " +
+  "Frankenstein it, step 1: cut parts (nav, hero, cards, footer and more) out of board images (itemId, Mobbin screens too) or search results (referenceId) into the canvas parts library. " +
   "Pass a crop (fractions 0 to 1) only if your client shows you the image; else the server guesses one by role and image shape, marked guessed, for the user to adjust in the canvas. Never download images. Free.";
 
 const cut = z
@@ -130,9 +131,11 @@ export function createCutPartsTool(deps: CanvasToolDeps) {
           }
           const imageWidth = src.width ?? undefined;
           const imageHeight = src.height ?? undefined;
+          // A Mobbin screen is one screen, so a guess never looks for a middle phone in it.
+          const single = isMobbinSource(src);
           const crop = c.crop
             ? clampCrop(c.crop)
-            : distinctCrop(defaultCrop(c.role, { imageWidth, imageHeight, ...(platform ? { platform } : {}) }), cropsOf(src.imageUrl));
+            : distinctCrop(defaultCrop(c.role, { imageWidth, imageHeight, single, ...(platform ? { platform } : {}) }), cropsOf(src.imageUrl));
           fresh.push({
             id: newPartId(makeId, taken),
             role: c.role,

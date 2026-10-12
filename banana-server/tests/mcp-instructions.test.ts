@@ -3,12 +3,16 @@ import { describe, expect, it } from "vitest";
 import { SERVER_INSTRUCTIONS } from "@/lib/mcp/instructions";
 
 describe("server instructions", () => {
-  it("put the Mobbin check before the flow, links only", () => {
+  it("put the Mobbin check before the flow, with Mobbin screens hotlinked on the board", () => {
     const mobbin = SERVER_INSTRUCTIONS.indexOf("Mobbin connector");
     const flow = SERVER_INSTRUCTIONS.indexOf("Flow:");
     expect(mobbin).toBeGreaterThan(-1);
     expect(mobbin).toBeLessThan(flow);
-    expect(SERVER_INSTRUCTIONS).toMatch(/never place Mobbin images/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/type: 'screen', imageUrl: image_url, sourceUrl: mobbin_url/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/never download them/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/Frankenstein part/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/never the whole page/);
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/never place Mobbin images/);
     expect(SERVER_INSTRUCTIONS).toMatch(/do not mention Mobbin/);
     expect(SERVER_INSTRUCTIONS).toMatch(/6 to 8 UI and 2 to 4 art/);
   });

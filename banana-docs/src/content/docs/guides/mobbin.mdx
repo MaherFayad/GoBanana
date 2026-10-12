@@ -1,6 +1,6 @@
 ---
 title: Using Mobbin alongside
-description: Mobbin shows what works, GoBanana shows what's next. How the agent pairs your wild directions with real shipped screens, links only, through your own Mobbin connector.
+description: Mobbin shows what works, GoBanana shows what's next. How the agent pairs your wild directions with real shipped screens on the board, through your own Mobbin connector.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
@@ -16,15 +16,18 @@ If you have **your own Mobbin connector** in your client, the agent checks for i
 1. **Check.** The agent looks for tools named like `search_screens`, `search_flows` or `search_sections` from a Mobbin connector. None found: it skips every Mobbin step silently.
 2. **Baseline, before the bend.** It searches **once per page**, the same page on the same platform ("checkout" on iOS), and reads 3 to 6 shipped screens: the layout most apps share (the default to escape) and the patterns users rely on (the must keeps).
 3. **Pick better directions.** It drops ideas that only restyle the baseline and keeps ideas that change the page while keeping the must keeps.
-4. **Anchor each direction.** For each kept direction it finds 1 or 2 Mobbin screens or sections with the real pattern the idea builds on, and adds `BUILD ON: [Revolut, payment sheet](mobbin link)` to that direction's idea note.
-5. **One baseline note** on the board: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`, and one line in the reply.
+4. **Anchor each direction.** For each kept direction it picks 2 to 4 Mobbin screens that fit: the real pattern the idea builds on, or a shipped screen that is already wild in its way. It places them in that direction's UI references grid, each with a `steal:` note, and adds `BUILD ON: [Revolut, payment sheet](mobbin link)` to the direction's idea note.
+5. **One baseline note** on the board: `Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ...`, with a few of its screens beside it when the board has room, and one line in the reply.
+6. **Parts for Frankenstein pages.** A Mobbin screen on the board can be cut into a part like any UI reference. The agent uses one when it is wild or fits the direction, for example a real pay bar under a wild hero, never as the whole page.
 
 </Steps>
 
 ## The rules
 
-- **Links only.** Mobbin screens are never placed as images, never downloaded, never saved.
-- **Never sent to GoBanana.** Mobbin links are not passed to `search_references` or placed as references. The only trace on GoBanana's side is the text of your board note.
+- **Shown from Mobbin, never copied.** A Mobbin screen on the board is the image link your connector returned, loaded by your browser straight from Mobbin. GoBanana never downloads, stores or re-hosts it, and the server never fetches it.
+- **Always linked.** Each screen's source chip reads mobbin.com and opens the screen's page on Mobbin. Every export and share link keeps that link.
+- **Only what the agent places.** GoBanana's server never searches Mobbin. It keeps the two links the agent passes (the screen page and the image, both on mobbin.com) and refuses links from anywhere else. Mobbin links are never passed to `search_references`.
+- **Image links expire.** Mobbin's image links stop working after about 30 days. The tile then shows a card with the title and a link to the screen on Mobbin. Ask the agent to place it again to get a fresh image.
 - **Your account, your terms.** The agent uses your Mobbin connector under your Mobbin plan and terms.
 
 <Aside type="note" title="Connecting Mobbin">
@@ -33,4 +36,4 @@ How to add a Mobbin connector depends on Mobbin and your client; GoBanana does n
 
 ## Without a connector
 
-Open Mobbin in a browser next to your GoBanana board. Copy links to the shipped screens you want as a baseline and ask the agent to "add a Shipped today note with these links".
+Open Mobbin in a browser next to your GoBanana board. Copy links to the shipped screens you want as a baseline and ask the agent to "add a Shipped today note with these links". Without the connector there is no image link, so these stay links in a note.

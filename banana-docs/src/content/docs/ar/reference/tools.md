@@ -20,7 +20,7 @@ description: كل الأدوات الـ 17 التي يعطيها خادم GoBana
 | [`new_canvas`](/docs/ar/reference/tools/new-canvas/) | تنشئ لوحة دون عرضها | الكل (المجانية: 3 لوحات) | لا | نعم |
 | [`open_canvas`](/docs/ar/reference/tools/open-canvas/) | تعرض لوحة داخل المحادثة، أو تنشئ واحدة وتعرضها | الكل | لا | تنشئ لوحة إذا لم يُمرر `canvasId` |
 | [`get_canvas`](/docs/ar/reference/tools/get-canvas/) | تقرأ لوحة، أو تسرد آخر 10 لوحات لك | الكل | لا | لا |
-| [`add_to_canvas`](/docs/ar/reference/tools/add-to-canvas/) | تضع المراجع والملاحظات وعينات الألوان والأقسام | الكل (المجانية: 40 عنصرا) | لا | نعم |
+| [`add_to_canvas`](/docs/ar/reference/tools/add-to-canvas/) | تضع المراجع وشاشات Mobbin والملاحظات وعينات الألوان والأقسام | الكل (المجانية: 40 عنصرا) | لا | نعم |
 | [`arrange_canvas`](/docs/ar/reference/tools/arrange-canvas/) | ترتب اللوحة أو قسما واحدا منها | الكل | لا | نعم |
 | [`delete_canvas`](/docs/ar/reference/tools/delete-canvas/) | تحذف اللوحة نهائيا، مع `confirm: true` | الكل | لا | نعم، حذف نهائي |
 | **Frankenstein it** | | | | |

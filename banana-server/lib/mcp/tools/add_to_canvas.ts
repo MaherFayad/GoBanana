@@ -2,6 +2,8 @@
  * `add_to_canvas` (spec section 6): place references, notes, swatches and sections.
  * Item caps per plan, all or nothing per call. References are resolved from the
  * `references` table (search results saved for this canvas), then from the canvas tray.
+ * Screens are Mobbin screens the agent found with the user's own Mobbin connector
+ * (lib/sources/mobbin.ts): checked URLs only, hotlinked, never fetched here.
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
@@ -19,6 +21,7 @@ import {
 import type { ReferenceRecord } from "@/lib/db/types";
 import type { Zone } from "@/lib/direction-detail";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
+import { checkMobbinScreen, MAX_MOBBIN_IMAGE_URL, MAX_MOBBIN_SOURCE_URL, MOBBIN_SITE } from "@/lib/sources/mobbin";
 import { canAddItems } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -38,16 +41,25 @@ export const MAX_ITEMS_PER_CALL = 50;
 export const MAX_NOTE = 280;
 
 export const TOOL_DESCRIPTION =
-  "Place items on a canvas: references from search_references (by referenceId), notes, color swatches and sections. " +
-  "Pass sectionId to put items in that section; direction results go to that direction's section, art above UI. " +
-  "Per direction: 6 to 8 UI, 2 to 4 art. " +
-  `A reference can carry a note (up to ${MAX_NOTE} characters) on what to steal from it.`;
+  "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
+  "Direction results go to that direction's section, art above UI. Per direction: 6 to 8 UI, 2 to 4 art. " +
+  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal.`;
 
 const item = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("reference"),
     referenceId: z.string().min(1).max(100),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+  }),
+  z.object({
+    type: z.literal("screen"),
+    imageUrl: z.string().trim().min(1).max(MAX_MOBBIN_IMAGE_URL),
+    sourceUrl: z.string().trim().min(1).max(MAX_MOBBIN_SOURCE_URL),
+    title: z.string().trim().min(1).max(200).optional(),
+    app: z.string().trim().min(1).max(80).optional(),
+    platform: z.enum(["ios", "web"]).optional(),
+    note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+    directionId: z.string().min(1).max(100).optional(),
   }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
   z.object({
@@ -70,7 +82,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -159,6 +171,19 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
                 node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}) }),
                 ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
               };
+            }
+            case "screen": {
+              const check = checkMobbinScreen(it.sourceUrl, it.imageUrl);
+              if (!check.ok) return { skip: check.reason };
+              if (matcher.isReferenceBlocked(it)) return { skip: "that screen was removed after a takedown request." };
+              const title = it.app && it.title ? `${it.app}: ${it.title}` : (it.title ?? it.app ?? "Mobbin screen");
+              const node = referenceNode(
+                { imageUrl: it.imageUrl, sourceUrl: it.sourceUrl, sourceSite: MOBBIN_SITE, title },
+                { zone: "ui", ...(it.note ? { note: it.note } : {}) },
+              );
+              // Mobbin gives no image size: an iPhone screen gets a phone shaped tile.
+              if (it.platform === "ios") Object.assign(node, referenceSize(9, 19.5));
+              return { node, ...(it.directionId ? { directionId: it.directionId } : {}) };
             }
             case "note":
               return { node: { type: "note", data: { text: it.text, color: "yellow" } } };

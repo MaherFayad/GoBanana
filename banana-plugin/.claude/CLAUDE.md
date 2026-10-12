@@ -13,7 +13,7 @@ This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is no
 - The server returns text; the agent writes files to disk.
 - Page scope by default: exports apply only to the named pages and never replace the project's DESIGN.md, AGENTS.md or CLAUDE.md (merge a marked section).
 - Two zones: art direction and UI references are never mixed on a board.
-- Mobbin is used only through the user's own connector, links only, never images, never sent to the server.
+- Mobbin is used only through the user's own connector. Its screens may go on the board as `add_to_canvas` `screen` items (hotlinked image_url, linked to mobbin_url) and be Frankenstein parts when wild or fitting; never downloaded, never passed to `search_references`.
 - Never delete a canvas without the user's explicit yes.
 - Ship vs explore: only `ship` colors (WCAG 2.2 SC 1.4.3 at 4.5:1 for text, SC 1.4.11 at 3:1 for UI parts) become tokens.
 - Quota and plan messages are relayed once, as is. Never retry in a loop.
