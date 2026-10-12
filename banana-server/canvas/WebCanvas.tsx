@@ -14,7 +14,16 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { WarningIcon } from "@/components/studio/icons";
 import { ToastProvider } from "@/components/studio/Toast";
-import { CanvasApp } from "./CanvasApp";
+import dynamic from "next/dynamic";
+import { CanvasSkeletonWindow } from "./CanvasSkeleton";
+
+// The board only runs in the browser: rendered on the server it added React Flow and the whole
+// canvas to the Worker bundle (the size budget) for markup the client replaced at once.
+// The `typeof window` guard lets the server build drop the import (and its chunk) entirely.
+const CanvasApp = dynamic(
+  () => (typeof window === "undefined" ? Promise.resolve(() => null) : import("./CanvasApp").then((m) => m.CanvasApp)),
+  { ssr: false, loading: () => <CanvasSkeletonWindow /> },
+);
 import { CONFLICT_MESSAGE, createFetchPersistence, isConflict, type CanvasPersistence } from "./persistence";
 import type { CanvasState } from "./types";
 import type { Plan } from "@/lib/quota";

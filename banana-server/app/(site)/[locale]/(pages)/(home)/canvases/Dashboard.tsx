@@ -341,7 +341,9 @@ export function Dashboard({ locale, appName, cards: all, failed, email, links, t
   const canvasHref = (id: string) => `/c/${encodeURIComponent(id)}`;
   // Warm the canvas code while the dashboard is idle, so opening a canvas waits only for its data.
   useEffect(() => {
-    const warm = () => void import("@/canvas/WebCanvas").catch(() => {});
+    // The `typeof window` guard keeps the canvas code out of the server build.
+    const warm = () =>
+      void (typeof window === "undefined" ? Promise.resolve() : Promise.all([import("@/canvas/WebCanvas"), import("@/canvas/CanvasApp")])).catch(() => {});
     const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(warm, { timeout: 2000 }) : window.setTimeout(warm, 600);
     return () => (typeof window.cancelIdleCallback === "function" ? window.cancelIdleCallback(idle) : window.clearTimeout(idle));
   }, []);
