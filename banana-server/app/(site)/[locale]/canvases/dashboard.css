@@ -233,12 +233,6 @@
   line-height: 1.4;
 }
 
-.site .lab-count {
-  margin: var(--st-space-3xs) 0 0;
-  color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-}
-
 .site .dash-tools {
   display: flex;
   flex-wrap: nowrap;
@@ -375,56 +369,67 @@
 
 .site .lab-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-  gap: var(--st-space-xl);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr));
+  gap: var(--st-space-6xl) var(--st-space-3xl);
   margin: 0;
-  padding: var(--st-space-2xl);
+  padding: var(--st-space-6xl) var(--st-space-6xl) var(--st-space-9xl);
   list-style: none;
 }
 
+/* A card is a collage, a title and one quiet line. The title button stretches over it. */
 .site .lab-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--st-space-s);
+  gap: var(--st-space-l);
   min-inline-size: 0;
   margin: 0;
   padding: var(--st-space-s);
-  border: var(--st-border-width) solid transparent;
-  border-radius: 0.9rem;
-  background: transparent;
-  cursor: pointer;
+  border-radius: 1rem;
   transition:
     background-color var(--st-duration-base) var(--st-ease),
-    border-color var(--st-duration-base) var(--st-ease);
+    box-shadow var(--st-duration-base) var(--st-ease);
 }
 
 .site .lab-card:hover {
-  background: var(--st-desk-glass-hover);
+  background: var(--st-desk-titlebar);
 }
 
-/* The card in the Inspector: a ring, plus aria-pressed on its button. */
+/* Selected (in the Inspector): raised glass plus a quiet 2px ring (3:1 or more on the window),
+   and aria-pressed on the title button. */
 .site .lab-card[data-selected] {
-  border-color: var(--st-desk-heading);
   background: var(--st-desk-glass-hover);
-  box-shadow: 0 0 0 1px var(--st-desk-heading);
+  box-shadow: 0 0 0 2px var(--st-overlay-40), var(--st-desk-shadow-soft);
 }
 
-/* The card's ring is the non-color selected cue (SC 1.4.1), so the button drops the
-   studio toggle's ring. */
-.site .lab-details-btn[aria-pressed="true"]::after {
-  content: none;
+.site .lab-card-art {
+  position: relative;
+}
+
+.site .lab-card-badge {
+  position: absolute;
+  inset-block-start: var(--st-space-s);
+  inset-inline-end: var(--st-space-s);
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-desk-glass-strong);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-border);
+  color: var(--st-desk-heading);
 }
 
 .site .collage {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 2px;
+  gap: 1px;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: 0.7rem;
+  border-radius: 0.75rem;
   background: var(--st-desk-glass-solid);
-  box-shadow: var(--st-desk-shadow-soft);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-edge);
 }
 
 .site .collage img,
@@ -437,7 +442,7 @@
 }
 
 .site .collage-empty {
-  background: var(--st-desk-glass-hover);
+  background: var(--st-desk-titlebar);
 }
 
 /* No references yet: one glass tile with the Bend mark. */
@@ -445,7 +450,6 @@
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
   place-items: center;
-  border: var(--st-border-width) solid var(--st-desk-glass-edge);
   background:
     radial-gradient(circle at 50% 45%, var(--st-desk-mark-glow), transparent 65%),
     var(--st-desk-glass-solid);
@@ -469,11 +473,10 @@
 
 .site .lab-card-body {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: var(--st-space-2xs);
+  gap: var(--st-space-3xs);
   min-inline-size: 0;
-  padding: var(--st-space-2xs) var(--st-space-2xs) 0;
+  padding: 0 var(--st-space-2xs) var(--st-space-2xs);
 }
 
 .site .lab-card-body > * {
@@ -482,198 +485,142 @@
 }
 
 .site .lab-card-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  min-inline-size: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
   line-height: var(--st-leading-snug);
 }
 
-.site .lab-card-title a {
+.site .lab-card-hit {
+  display: block;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: none;
   color: var(--st-desk-heading);
-  text-decoration: none;
+  font: inherit;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.site .lab-card-title a:hover {
-  text-decoration: underline;
+/* The whole card is the hit area; the focus ring draws around the card. */
+.site .lab-card-hit::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  content: "";
+}
+
+.site .lab-card-hit:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.site .lab-card:has(.lab-card-hit:focus-visible) {
+  box-shadow: var(--st-focus-ring);
 }
 
 /* User text (titles, briefs) keeps its own direction with dir="auto", but still lines up with the
    page's start edge: match-parent resolves "start" against the parent's direction. */
-.site .lab-card-brief[dir="auto"],
-.site .lab-details-title[dir="auto"],
-.site .lab-details dd[dir="auto"],
-.site .dash-sheet dd[dir="auto"] {
+.site .lab-details-brief[dir="auto"] {
   text-align: match-parent;
 }
 
-.site .lab-card-brief {
-  overflow: hidden;
-  color: var(--st-desk-body);
-  font-size: 0.875rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .site .lab-card-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--st-space-xs);
-  color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-}
-
-.site .lab-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--st-space-xl);
-  margin: 0;
-}
-
-.site .lab-stats div {
-  display: flex;
-  align-items: baseline;
-  gap: var(--st-space-xs);
-}
-
-.site .lab-stats dt {
-  color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-}
-
-.site .lab-stats dd {
-  margin: 0;
-  color: var(--st-desk-heading);
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.site .lab-card-sites {
   overflow: hidden;
   color: var(--st-desk-meta);
   font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.site .lab-card-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--st-space-s);
-  margin-block-start: auto;
-  padding-block: var(--st-space-xs) 0;
-}
-
-.site .lab-details-btn {
-  margin-inline-start: auto;
 }
 
 /* ------------------------------------------------------------------ list view */
 
 .site .dash[data-view="list"] .lab-grid {
   grid-template-columns: minmax(0, 1fr);
-  gap: 2px;
+  gap: 0;
+  padding: var(--st-space-xl) var(--st-space-3xl) var(--st-space-9xl);
 }
 
 .site .dash[data-view="list"] .lab-card {
   flex-direction: row;
   align-items: center;
   gap: var(--st-space-xl);
+  padding: var(--st-space-s) var(--st-space-m);
+  border-radius: 0.75rem;
 }
 
-.site .dash[data-view="list"] .collage {
+.site .dash[data-view="list"] .lab-card + .lab-card::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--st-space-m);
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+  content: "";
+}
+
+.site .dash[data-view="list"] .lab-card[data-selected]::before,
+.site .dash[data-view="list"] .lab-card[data-selected] + .lab-card::before {
+  content: none;
+}
+
+.site .dash[data-view="list"] .lab-card .collage {
   flex: none;
-  inline-size: 4.5rem;
+  inline-size: 3.5rem;
   border-radius: 0.5rem;
 }
 
+.site .dash[data-view="list"] .lab-card-badge {
+  display: none;
+}
+
 .site .dash[data-view="list"] .lab-card-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(7rem, 10rem) auto auto;
-  grid-template-areas:
-    "title meta stats foot"
-    "brief sites stats foot";
-  align-items: center;
-  gap: var(--st-space-3xs) var(--st-space-2xl);
-  padding: 0;
-}
-
-.site .dash[data-view="list"] .lab-card-title {
-  grid-area: title;
-}
-
-.site .dash[data-view="list"] .lab-card-brief {
-  grid-area: brief;
-}
-
-.site .dash[data-view="list"] .lab-card-meta {
-  grid-area: meta;
-}
-
-.site .dash[data-view="list"] .lab-card-sites {
-  grid-area: sites;
-}
-
-.site .dash[data-view="list"] .lab-stats {
-  grid-area: stats;
-  flex-direction: column;
-  gap: var(--st-space-3xs);
-}
-
-.site .dash[data-view="list"] .lab-card-foot {
-  grid-area: foot;
-  flex-wrap: nowrap;
-  margin: 0;
+  flex: 1;
   padding: 0;
 }
 
 /* ------------------------------------------------------------------ Inspector */
 
+/* A flat pane at the window's end, set off by one hairline: no box in a box. */
 .site .dash-inspector {
   position: sticky;
   inset-block-start: var(--dash-top);
-  align-self: start;
+  align-self: stretch;
   max-block-size: calc(100svh - var(--dash-top) - var(--st-space-xl));
   min-inline-size: 0;
-  margin: var(--st-space-s);
-  margin-inline-start: 0;
   overflow: auto;
-  border: var(--st-border-width) solid var(--st-desk-glass-edge);
-  border-radius: calc(var(--st-desk-radius) - 0.4rem);
-  background: var(--st-desk-titlebar);
-}
-
-.site .lab-details-head {
-  display: flex;
-  align-items: center;
-  gap: var(--st-space-s);
-  margin: 0;
-  padding: var(--st-space-l) var(--st-space-xl);
-  border-block-end: var(--st-border-width) solid var(--st-desk-glass-edge);
-  color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  border-inline-start: var(--st-border-width) solid var(--st-desk-glass-edge);
 }
 
 .site .lab-details-body {
   display: flex;
   flex-direction: column;
-  gap: var(--st-space-l);
-  padding: var(--st-space-xl);
+  gap: var(--st-space-3xl);
+  padding: var(--st-space-6xl) var(--st-space-4xl);
 }
 
-.site .lab-details-body > * {
+.site .lab-details-body > *,
+.site .lab-details-titles > * {
   margin: 0;
   max-inline-size: none;
 }
 
+.site .lab-details-titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+}
+
 .site .lab-details-title {
   color: var(--st-desk-heading);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: -0.02em;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .site .lab-details-title:lang(ar) {
@@ -681,64 +628,103 @@
   line-height: 1.4;
 }
 
+.site .lab-details-brief {
+  color: var(--st-desk-body);
+  font-size: 0.875rem;
+  line-height: var(--st-leading-snug);
+}
+
+/* Label at the start, value at the end, hairlines between: a quiet two-column list. */
 .site .lab-facts {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--st-space-3xs);
+  display: flex;
+  flex-direction: column;
   margin: 0;
+  font-size: 0.8125rem;
+}
+
+.site .lab-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--st-space-l);
+  padding-block: var(--st-space-s);
+}
+
+.site .lab-facts > div + div {
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
 }
 
 .site .lab-facts dt {
-  margin-block-start: var(--st-space-s);
   color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-  font-weight: 600;
 }
 
 .site .lab-facts dd {
   margin: 0;
-  color: var(--st-text);
-  font-size: 0.9375rem;
+  color: var(--st-desk-heading);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
 }
 
-.site .lab-muted {
-  color: var(--st-desk-meta);
+.site .lab-sources-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
 }
 
 .site .lab-sources-title {
+  margin: 0;
   color: var(--st-desk-meta);
   font-size: 0.8125rem;
+  font-weight: 400;
 }
 
 .site .lab-sources {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: var(--st-space-xs);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.site .lab-sources li {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .site .lab-sources li + li {
   margin-block-start: 0;
 }
 
-.site .lab-sources a {
-  display: flex;
+/* Sources as small chips, each still a real link to its page (28px tall, SC 2.5.8). */
+.site .lab-source {
+  display: inline-flex;
   align-items: center;
-  gap: var(--st-space-xs);
-  min-block-size: 32px;
+  gap: var(--st-space-2xs);
+  max-inline-size: 100%;
+  min-block-size: 1.75rem;
+  padding-inline: var(--st-space-m);
   overflow: hidden;
-  font-size: 0.875rem;
+  border-radius: var(--st-radius-pill);
+  background: var(--st-desk-glass-hover);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-edge);
+  color: var(--st-desk-body);
+  font-size: 0.75rem;
+  text-decoration: none;
 }
 
-.site .lab-sources a span {
+.site .lab-source:hover {
+  background: var(--st-overlay-10);
+  color: var(--st-desk-heading);
+}
+
+.site .lab-source span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.site .lab-sources .st-icon {
+.site .lab-source .st-icon {
   flex: none;
 }
 
@@ -749,7 +735,7 @@
 
 .site .lab-details-none {
   margin: 0;
-  padding: var(--st-space-xl);
+  padding: var(--st-space-6xl) var(--st-space-4xl);
   color: var(--st-desk-meta);
 }
 
@@ -784,21 +770,8 @@
     position: static;
     grid-column: 2;
     max-block-size: none;
-    margin: var(--st-space-s) var(--st-space-2xl) var(--st-space-2xl);
-  }
-}
-
-@media (max-width: 60rem) {
-  .site .dash[data-view="list"] .lab-card-body {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "title foot"
-      "brief foot"
-      "meta foot";
-  }
-
-  .site .dash[data-view="list"] :is(.lab-stats, .lab-card-sites) {
-    display: none;
+    border-inline-start: 0;
+    border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
   }
 }
 
@@ -895,64 +868,51 @@
     margin: var(--st-space-s) var(--st-space-l) 0;
   }
 
-  /* Cards become rows with a small collage, in both views. */
+  /* Cards become rows with a small collage, in both views, split by hairlines. */
   .site .lab-grid,
   .site .dash[data-view="list"] .lab-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 2px;
-    padding: var(--st-space-s);
+    gap: 0;
+    padding: var(--st-space-xs) var(--st-space-s) var(--st-space-l);
   }
 
   .site .lab-card,
   .site .dash[data-view="list"] .lab-card {
     flex-direction: row;
     align-items: center;
-    gap: var(--st-space-l);
+    gap: var(--st-space-xl);
+    padding: var(--st-space-m);
+    border-radius: 0.75rem;
+  }
+
+  .site .lab-card + .lab-card::before {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: var(--st-space-m);
+    border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+    content: "";
   }
 
   .site .lab-card .collage,
   .site .dash[data-view="list"] .collage {
     flex: none;
-    inline-size: 4rem;
+    inline-size: 3.5rem;
     aspect-ratio: 1;
     border-radius: 0.6rem;
   }
 
-  .site .lab-card-body,
-  .site .dash[data-view="list"] .lab-card-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "title foot"
-      "brief foot"
-      "meta foot";
-    align-items: center;
-    gap: var(--st-space-3xs) var(--st-space-s);
-    padding: 0;
-  }
-
-  .site .lab-card-title {
-    grid-area: title;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .site .lab-card-brief {
-    grid-area: brief;
-  }
-
-  .site .lab-card-meta {
-    grid-area: meta;
-  }
-
-  .site .lab-card :is(.lab-stats, .lab-card-sites, .st-chip) {
+  .site .lab-card-badge {
     display: none;
   }
 
-  .site .lab-card-foot {
-    grid-area: foot;
-    margin: 0;
+  /* No Inspector here (a tap opens the sheet), so no card shows as selected. */
+  .site .lab-card[data-selected] {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .site .lab-card-body {
+    flex: 1;
     padding: 0;
   }
 

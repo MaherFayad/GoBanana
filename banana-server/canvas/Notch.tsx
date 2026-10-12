@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * The notch (spec section 3): a floating toolbar hanging from the top center of the board.
+ * The notch (spec section 3), now a dock: a floating glass pill at the bottom center of the
+ * board, clear of the title bar and of the board content under it (DECISIONS 2026-10-12).
  * Tools (select and hand), Add note, Add section, a divider, and Arrange (a menu button).
  *
  * `role="toolbar"` with one tab stop and arrow-key roving (Home and End too; arrows follow

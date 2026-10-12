@@ -147,8 +147,11 @@ test.describe("canvas window chrome", () => {
 
   test("shared canvas: read-only window and a dismissible Made with card", async ({ page }) => {
     await openShared(page);
-    await expect(page.getByTestId("view-only-banner")).toBeVisible();
-    await expect(page.getByRole("banner").getByRole("link")).toHaveCount(0);
+    // One bar: a "View only" chip in the title bar, no banner, and the site's call to action at its end.
+    await expect(page.getByTestId("view-only-banner")).toHaveCount(0);
+    await expect(page.getByRole("banner").getByTestId("save-status")).toHaveText("View only");
+    await expect(page.getByRole("banner").getByRole("link")).toHaveCount(1);
+    await expect(page.getByRole("banner").getByRole("link", { name: "Add to Claude" })).toHaveAttribute("href", "/en#install");
     const card = page.getByRole("complementary", { name: /^About / });
     await expect(card).toContainText("Made with");
     await expect(card.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "/en");
@@ -176,6 +179,19 @@ test.describe("iPhone 13", () => {
 
   test("web canvas", async ({ page }) => {
     await openCanvas(page);
+    // One row: the title bar is no taller than its controls, and More holds zoom, Upload, Share, help.
+    const bar = (await page.locator(".bn-toolbar").boundingBox())!;
+    expect(bar.height).toBeLessThan(60);
+    await expect(page.getByRole("button", { name: "Share", exact: true })).toBeHidden();
+    const more = page.getByRole("button", { name: "More" });
+    await more.click();
+    await expect(more).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByRole("button", { name: "Share", exact: true })).toBeVisible();
+    await expect(page.getByTestId("zoom-value")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Keyboard shortcuts" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(more).toHaveAttribute("aria-expanded", "false");
+    await expect(more).toBeFocused();
     await shot(page, "canvas-editor-iphone13");
   });
 

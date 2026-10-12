@@ -41,19 +41,30 @@ test.describe("canvases dashboard (Finder window)", () => {
     await expect(page.locator(".dash-side .dwin-lights")).toHaveAttribute("aria-hidden", "true");
     const cards = page.locator(".lab-card");
     await expect(cards).toHaveCount(4);
-    await expect(cards.first().getByRole("link", { name: "Cold checkout" })).toHaveAttribute("href", "/c/e2e-seed");
+    // A card is one quiet button (its title) plus one meta line; no per-card details button.
+    await expect(cards.first().getByRole("button", { name: "Cold checkout" })).toHaveAttribute("aria-pressed", "true");
+    await expect(cards.first().locator(".lab-card-meta")).toContainText("14 references · ");
+    await expect(page.getByRole("button", { name: "Show details" })).toHaveCount(0);
     await expect(cards.first().locator(".collage img")).toHaveCount(4);
     // A canvas with no references gets the designed tile with the Bend mark, not blank cells.
     await expect(cards.nth(3).locator(".collage.is-blank .brand-mark")).toHaveCount(1);
 
     const inspector = page.getByRole("complementary", { name: "Details" });
     await expect(inspector).toContainText("Cold checkout");
-    await cards.nth(2).getByRole("button", { name: "Show details" }).click();
+    await expect(inspector.getByRole("link", { name: "Open canvas" })).toHaveAttribute("href", "/c/e2e-seed");
+    // Keyboard: Enter on a card fills the Inspector.
+    await cards.nth(2).getByRole("button", { name: "Transit dashboard" }).focus();
+    await page.keyboard.press("Enter");
     await expect(inspector).toContainText("Transit dashboard");
     await expect(cards.nth(2)).toHaveAttribute("data-selected", "");
+    await expect(cards.nth(2).getByRole("button", { name: "Transit dashboard" })).toHaveAttribute("aria-pressed", "true");
     await expect(inspector.getByRole("link", { name: /pinterest\.com\/pin\// }).first()).toBeVisible();
-    // A second click on the same card opens it.
-    await expect(cards.nth(2).getByRole("link", { name: "Open canvas" })).toHaveAttribute("href", "/c/e2e-swiss");
+    await expect(inspector.getByRole("link", { name: "Open canvas" })).toHaveAttribute("href", "/c/e2e-swiss");
+    // A second press on the same card opens it.
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/c\/e2e-swiss$/);
+    await page.goBack();
+    await expect(page.locator(".dash-win")).toBeVisible();
 
     const sidebar = page.getByRole("complementary", { name: "Workspace navigation" });
     await expect(sidebar.getByRole("link", { name: "Setup guide" })).toHaveAttribute("href", "/docs/start/install/");
@@ -137,7 +148,7 @@ test.describe("canvases dashboard (Finder window)", () => {
       const collage = (await card.locator(".collage").boundingBox())!;
       expect(collage.width).toBeLessThan(80);
 
-      const opener = card.getByRole("button", { name: "Show details" });
+      const opener = card.getByRole("button", { name: "Transit dashboard" });
       await opener.click();
       const sheet = page.getByRole("dialog", { name: "Transit dashboard" });
       await expect(sheet).toBeVisible();
@@ -197,8 +208,8 @@ test.describe("account (System Settings window)", () => {
 
 test.describe("404 (Trash window)", () => {
   for (const [locale, title] of [
-    ["en", "This file has moved to the Trash"],
-    ["ar", "نُقل هذا الملف إلى سلة المهملات"],
+    ["en", "This file has moved to the Trash."],
+    ["ar", "نُقل هذا الملف إلى سلة المهملات."],
   ] as const) {
     test(`unknown pages answer 404 with the Trash window (${locale})`, async ({ page }) => {
       const res = await page.goto(`/${locale}/no-such-page`);

@@ -17,6 +17,7 @@ export type DeleteLabels = {
   confirmTitle: string;
   confirmDeleted: string;
   confirmKept: string;
+  confirmBilling: string;
   confirmCheck: string;
   confirmButton: string;
   cancel: string;
@@ -61,7 +62,7 @@ export function DeleteAccount({ labels, afterDeleteHref }: { labels: DeleteLabel
         type="button"
         className="st-btn"
         data-variant="destructive"
-        data-size="lg"
+        data-size="sm"
         onClick={() => {
           setMessage(null);
           setOpen(true);
@@ -108,6 +109,7 @@ export function DeleteAccount({ labels, afterDeleteHref }: { labels: DeleteLabel
       >
         <p>{labels.confirmDeleted}</p>
         <p>{labels.confirmKept}</p>
+        <p>{labels.confirmBilling}</p>
         <label className="choice top" htmlFor={checkId}>
           <input id={checkId} type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
           <span>{labels.confirmCheck}</span>

@@ -215,8 +215,14 @@
   display: none;
 }
 
-.bn-status[data-status="view"] .bn-status-dot {
-  background: var(--st-text-subtle);
+/* Read only: a quiet "View only" chip where the save status would be. */
+.bn-status[data-status="view"] {
+  min-block-size: 1.375rem;
+  padding-inline: var(--st-space-s);
+  border-radius: var(--st-radius-pill);
+  background: var(--st-overlay-10);
+  color: var(--st-text);
+  font-size: 0.75rem;
 }
 
 /* ------------------------------------------------------------------ notices */
@@ -354,20 +360,21 @@
 
 /* ------------------------------------------------------------------ notch (spec 3) */
 
-/* Floating insert toolbar near the top edge of the board: a glass bar in the GoBanana desktop
-   style (desk tokens, backdrop blur), on the web, shared and inline canvas alike. */
+/* The tool dock: a glass pill at the bottom center of the board, like the desktop's dock (desk
+   tokens, backdrop blur), on the web and inline canvas alike. At the bottom it never covers the
+   board content under the title bar; CanvasApp pans a focused item clear of it (SC 2.4.11). */
 .bn-notch {
   position: absolute;
-  inset-block-start: var(--st-space-s);
+  inset-block-end: var(--st-space-3xl);
   inset-inline-start: 50%;
   z-index: var(--st-z-canvas-notch);
   translate: -50% 0;
   display: flex;
   align-items: center;
   gap: var(--st-space-3xs);
-  padding: var(--st-space-3xs);
+  padding: var(--st-space-2xs);
   border: var(--st-border-width) solid var(--st-desk-glass-border);
-  border-radius: var(--st-desk-radius);
+  border-radius: calc(var(--st-desk-radius) + 0.25rem);
   background: var(--st-desk-glass-strong);
   backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
   box-shadow: var(--st-desk-shadow-soft);
@@ -1492,21 +1499,26 @@
    restyled on tokens so it passes 4.5:1 and is a 24px target. It sits in the board's bottom
    corner, away from the notch and every control. */
 .bn-canvas .react-flow__attribution {
-  margin: var(--st-space-2xs);
-  padding-block: 0;
-  padding-inline: var(--st-space-xs);
-  border-radius: var(--st-radius-pill);
-  background: var(--st-bg-surface);
-  font-size: var(--st-text-s);
+  margin: var(--st-space-3xs) var(--st-space-s);
+  padding: 0;
+  background: none;
+  font-size: 0.625rem;
   line-height: 1;
 }
 
+/* Tiny and quiet: 10px meta grey (4.5:1 or more on the board), no pill, no underline until
+   hover or focus. The link box keeps a 24px target. */
 .bn-canvas .react-flow__attribution a {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--st-target-min);
-  color: var(--st-text-muted);
-  font-size: var(--st-text-s);
+  color: var(--st-desk-meta);
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.bn-canvas .react-flow__attribution a:hover {
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -1597,13 +1609,84 @@
 
 /* ------------------------------------------------------------------ small screens */
 
-@media (max-width: 760px) {
+/* "More" (Toolbar.tsx) only shows on narrow screens; on wide ones its panel is invisible to
+   layout and its controls sit in the bar. */
+.bn-more-btn {
+  display: none;
+}
+
+.bn-toolbar-more {
+  display: contents;
+}
+
+/* Narrow screens: one row. Lights, the board name (truncated), the save dot, Results, More. */
+@media (max-width: 720px) {
   .bn-toolbar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
-  /* The bar wraps here, and a divider would start the second row. */
-  .bn-toolbar-sep {
+
+  .bn-toolbar-title {
+    flex: 0 1 auto;
+    margin-inline-end: 0;
+  }
+
+  .bn-toolbar-app,
+  .bn-status-text,
+  .bn-results-btn > span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bn-status {
+    padding-inline: var(--st-space-2xs);
+  }
+
+  .bn-results-btn {
+    flex: none;
+    padding-inline: var(--st-space-s);
+  }
+
+  .bn-more-btn {
+    display: inline-flex;
+    flex: none;
+  }
+
+  /* The panel: a small glass card under the bar's end. It stays drawn while a dialog it opened
+     is up (Share), so the dialog shows and focus can come back to its button. */
+  .bn-toolbar-more {
+    position: absolute;
+    inset-block-start: calc(100% + var(--st-space-2xs));
+    inset-inline-end: var(--st-space-s);
     display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--st-space-2xs);
+    max-inline-size: calc(100% - 2 * var(--st-space-s));
+    padding: var(--st-space-xs);
+    border: var(--st-border-width) solid var(--st-desk-glass-border);
+    border-radius: var(--st-desk-radius);
+    background: var(--st-desk-glass-strong);
+    backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
+    box-shadow: var(--st-desk-shadow-soft);
+  }
+
+  .bn-toolbar-more[data-open],
+  .bn-toolbar-more:has(dialog[open]) {
+    display: flex;
+  }
+
+  .bn-toolbar-more .bn-toolbar-sep {
+    display: none;
+  }
+
+  /* The dock rides above the React Flow attribution in the board's bottom corner. */
+  .bn-notch {
+    inset-block-end: calc(var(--st-space-3xl) + var(--st-target-min));
   }
 }
 
@@ -1919,6 +2002,12 @@
   font-weight: var(--st-weight-medium);
 }
 
+.bn-canvas[data-window] .bn-status[data-status="view"] {
+  background: var(--st-desk-glass-hover);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-edge);
+  color: var(--st-desk-body);
+}
+
 .bn-canvas[data-window] .bn-toolbar-sep {
   background: var(--st-desk-glass-border);
 }
@@ -1957,15 +2046,20 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--st-desk-light-close);
+  background: var(--st-desk-light-idle);
   color: var(--st-desk-light-ink);
 }
 
-.bn-light[data-light="min"] {
+/* Neutral dots like the site windows; mac colours only while the group is hovered or focused. */
+.bn-lights:is(:hover, :focus-within) .bn-light[data-light="close"] {
+  background: var(--st-desk-light-close);
+}
+
+.bn-lights:is(:hover, :focus-within) .bn-light[data-light="min"] {
   background: var(--st-desk-light-min);
 }
 
-.bn-light[data-light="zoom"] {
+.bn-lights:is(:hover, :focus-within) .bn-light[data-light="zoom"] {
   background: var(--st-desk-light-zoom);
 }
 

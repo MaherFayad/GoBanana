@@ -84,6 +84,7 @@ import { Toolbar, type ToolbarProps } from "./Toolbar";
 import { Tray, TRAY_DND_TYPE } from "./Tray";
 import { DEFAULT_SIZE, MIN_SIZE, type CanvasFlowNode, type CanvasState, type TrayReference } from "./types";
 import {
+  clearanceAbove,
   clearanceBelow,
   FIT_PADDING,
   MAX_ZOOM,
@@ -131,6 +132,8 @@ export interface CanvasAppProps {
    * bar with traffic lights, glass chrome). Leave unset inline, where the host frames the view.
    */
   windowChrome?: ToolbarProps["windowChrome"];
+  /** Extras at the end of the title bar (the shared canvas's "Add to Claude"). */
+  titleEnd?: ReactNode;
   /** A notice under the title bar, inside the window (the shared canvas's view-only alert). */
   notice?: ReactNode;
 }
@@ -321,6 +324,7 @@ function CanvasEditor({
   refreshRef,
   isBlocked,
   windowChrome,
+  titleEnd,
   notice,
 }: CanvasAppProps & { initial: Deserialized }) {
   const rf = useReactFlow<CanvasFlowNode>();
@@ -1013,15 +1017,19 @@ function CanvasEditor({
     freeMove.current = e.ctrlKey || e.metaKey;
   };
 
-  // Focus not obscured (SC 2.4.11): pan a focused item clear of the notch.
+  // Focus not obscured (SC 2.4.11): pan a focused item clear of the tool dock. The dock floats
+  // at the bottom of the board, so the item moves up; a dock at the top would move it down.
   const onBoardFocus = (e: FocusEvent<HTMLElement>) => {
     const t = e.target as HTMLElement;
     if (!t.classList.contains("react-flow__node")) return;
     requestAnimationFrame(() => {
       const bar = notchRef.current?.getBoundingClientRect();
-      if (!bar || document.activeElement !== t) return;
-      const d = clearanceBelow(t.getBoundingClientRect(), bar);
-      if (d > 0) {
+      const board = flowRef.current?.getBoundingClientRect();
+      if (!bar || !board || document.activeElement !== t) return;
+      const atBottom = bar.top > board.top + board.height / 2;
+      const item = t.getBoundingClientRect();
+      const d = atBottom ? -clearanceAbove(item, bar) : clearanceBelow(item, bar);
+      if (d !== 0) {
         const vp = rf.getViewport();
         void rf.setViewport({ ...vp, y: vp.y + d }, { duration: zoomDuration() });
       }
@@ -1156,6 +1164,7 @@ function CanvasEditor({
           }
           {...(web && !readOnly ? { canvasId, ...web } : {})}
           windowChrome={windowChrome}
+          end={titleEnd}
         />
         {notice && <div className="bn-notice">{notice}</div>}
         {initial.removed > 0 && (

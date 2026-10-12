@@ -58,7 +58,7 @@ for (const [size, use] of Object.entries(SIZES)) {
         await open(page, `/${locale}/canvases`);
         await shot(page, `canvases-${locale}-${size}`);
         if (size === "phone") {
-          await page.locator(".lab-card").nth(2).locator(".lab-details-btn").click();
+          await page.locator(".lab-card").nth(2).locator(".lab-card-hit").click();
           await expect(page.getByRole("dialog")).toBeVisible();
           await shot(page, `canvases-sheet-${locale}-${size}`);
         } else {

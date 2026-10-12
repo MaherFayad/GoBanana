@@ -13,13 +13,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { ArrowEndIcon, CardIcon, ChartIcon, InfoIcon, ShareIcon, SignOutIcon, WarningIcon } from "@/components/studio/icons";
+import { CardIcon, ChartIcon, ShareIcon, SignOutIcon } from "@/components/studio/icons";
 import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, isLocale } from "@/lib/site/i18n";
 import { getAccountUsage, getSiteUser, SIGN_IN_PATH, type AccountUsage } from "@/lib/site/session";
 import { e2eAuthBypass, SIGN_OUT_PATH } from "@/lib/web-auth";
-import { bidi, bt } from "../../../_components/Bidi";
+import { bidi } from "../../../_components/Bidi";
 import { TwoToneHeading } from "../../../_components/desktop/TwoToneHeading";
 import { Window } from "../../../_components/desktop/Window";
 import { DeleteAccount } from "./DeleteAccount";
@@ -172,21 +172,19 @@ export default async function AccountPage({ params }: Props) {
                 <span className="settings-row-end">
                   <span className="settings-row-value">{bidi(planName)}</span>
                   {onBeta ? null : (
-                    <Link className="st-btn" data-variant="secondary" data-size="md" href={href(locale, "pricing")}>
+                    <Link className="st-btn" data-variant="secondary" data-size="sm" href={href(locale, "pricing")}>
                       {t.upgrade}
                     </Link>
                   )}
                 </span>
               </div>
               {onBeta ? (
-                <div className="settings-row is-note" role="note">
-                  <InfoIcon size={16} />
-                  <span>
-                    <span className="settings-row-strong">{bidi(t.betaPlan)}</span> {bidi(t.betaBody)}
-                  </span>
+                <div className="settings-row">
+                  <span className="settings-row-label">{bidi(t.betaPlan)}</span>
+                  <span className="settings-row-note">{bidi(t.betaBody)}</span>
                 </div>
               ) : null}
-              <div className="settings-row is-stack">
+              <div className="settings-row">
                 <span className="settings-row-label">{t.manageBilling}</span>
                 {/* TODO(billing): link to the Paddle customer portal once a portal session endpoint exists. */}
                 <span className="settings-row-note">{bidi(t.manageBillingNote)}</span>
@@ -201,25 +199,29 @@ export default async function AccountPage({ params }: Props) {
             <div className="settings-group">
               {usage ? (
                 <>
-                  <div className="settings-row is-meter">
+                  <div className="settings-row">
                     <span className="settings-row-label">{t.searches}</span>
-                    <span className="settings-row-value">{ofLimit(usage.searches, limits.searchesPerMonth)}</span>
-                    <Meter
-                      used={usage.searches}
-                      limit={limits.searchesPerMonth}
-                      label={fmt(t.meterLabel, { name: t.searches })}
-                      text={ofLimit(usage.searches, limits.searchesPerMonth)}
-                    />
+                    <span className="settings-row-end">
+                      <Meter
+                        used={usage.searches}
+                        limit={limits.searchesPerMonth}
+                        label={fmt(t.meterLabel, { name: t.searches })}
+                        text={ofLimit(usage.searches, limits.searchesPerMonth)}
+                      />
+                      <span className="settings-row-value">{ofLimit(usage.searches, limits.searchesPerMonth)}</span>
+                    </span>
                   </div>
-                  <div className="settings-row is-meter">
+                  <div className="settings-row">
                     <span className="settings-row-label">{t.canvases}</span>
-                    <span className="settings-row-value">{ofLimit(usage.canvases, limits.canvases)}</span>
-                    <Meter
-                      used={usage.canvases}
-                      limit={limits.canvases}
-                      label={fmt(t.meterLabel, { name: t.canvases })}
-                      text={ofLimit(usage.canvases, limits.canvases)}
-                    />
+                    <span className="settings-row-end">
+                      <Meter
+                        used={usage.canvases}
+                        limit={limits.canvases}
+                        label={fmt(t.meterLabel, { name: t.canvases })}
+                        text={ofLimit(usage.canvases, limits.canvases)}
+                      />
+                      <span className="settings-row-value">{ofLimit(usage.canvases, limits.canvases)}</span>
+                    </span>
                   </div>
                 </>
               ) : (
@@ -235,52 +237,46 @@ export default async function AccountPage({ params }: Props) {
               {t.sharedTitle}
             </h2>
             <div className="settings-group">
-              <div className="settings-row is-stack">
-                <span className="settings-row-note">{bt(t.sharedBody)}</span>
-                <div className="settings-actions">
-                  <Link className="st-btn" data-variant="secondary" data-size="md" href={`${canvases}?view=shared`}>
-                    <ShareIcon size={16} />
-                    {t.sharedLink}
-                  </Link>
-                  <Link className="st-btn" data-variant="ghost" data-size="md" href={canvases}>
-                    {t.canvasesLink}
-                    <ArrowEndIcon size={16} />
-                  </Link>
-                </div>
+              <div className="settings-row">
+                <span className="settings-row-label">{bidi(t.sharedBody)}</span>
+                <Link className="st-btn" data-variant="secondary" data-size="sm" href={`${canvases}?view=shared`}>
+                  {t.sharedLink}
+                </Link>
               </div>
-              <div className="settings-row is-stack">
-                <span className="settings-row-note">{bt(t.canvasesBody)}</span>
+              <div className="settings-row">
+                <span className="settings-row-label">{bidi(t.canvasesBody)}</span>
+                <Link className="st-btn" data-variant="secondary" data-size="sm" href={canvases}>
+                  {t.canvasesLink}
+                </Link>
               </div>
             </div>
           </section>
 
-          <section className="settings-section is-danger" aria-labelledby="delete-title">
-            <h2 id="delete-title">
-              <WarningIcon size={16} />
+          <section className="settings-section" aria-labelledby="delete-title">
+            <h2 id="delete-title" className="st-visually-hidden">
               {t.deleteTitle}
             </h2>
             <div className="settings-group">
-              <div className="settings-row is-stack">
-                <span className="settings-row-note">{bidi(t.deleteBody)}</span>
-                <div className="settings-actions">
-                  <DeleteAccount
-                    afterDeleteHref={href(locale)}
-                    labels={{
-                      deleteButton: t.deleteButton,
-                      confirmEyebrow: t.confirmEyebrow,
-                      confirmTitle: t.confirmTitle,
-                      confirmDeleted: t.confirmDeleted,
-                      confirmKept: t.confirmKept,
-                      confirmCheck: t.confirmCheck,
-                      confirmButton: t.confirmButton,
-                      cancel: t.cancel,
-                      close: dict.common.close,
-                      deleting: t.deleting,
-                      deleteFailed: t.deleteFailed,
-                      deleteDone: t.deleteDone,
-                    }}
-                  />
-                </div>
+              <div className="settings-row">
+                <span className="settings-row-label">{bidi(t.deleteBody)}</span>
+                <DeleteAccount
+                  afterDeleteHref={href(locale)}
+                  labels={{
+                    deleteButton: t.deleteButton,
+                    confirmEyebrow: t.confirmEyebrow,
+                    confirmTitle: t.confirmTitle,
+                    confirmDeleted: t.confirmDeleted,
+                    confirmKept: t.confirmKept,
+                    confirmBilling: t.confirmBilling,
+                    confirmCheck: t.confirmCheck,
+                    confirmButton: t.confirmButton,
+                    cancel: t.cancel,
+                    close: dict.common.close,
+                    deleting: t.deleting,
+                    deleteFailed: t.deleteFailed,
+                    deleteDone: t.deleteDone,
+                  }}
+                />
               </div>
             </div>
           </section>

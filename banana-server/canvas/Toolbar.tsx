@@ -9,12 +9,20 @@
  * On the web and shared canvas (`windowChrome`) the bar is the title bar of an app window:
  * traffic lights first (canvas/WindowLights.tsx), then the same controls. Inline in chat the
  * host frames the view, so there are no lights.
+ *
+ * Narrow screens (720px and under) keep one row: lights, the board name, the save dot (its words
+ * stay for screen readers), Results, then "More", a disclosure that drops the zoom group,
+ * Upload, Share and the shortcut button into a small glass panel. The controls are the same
+ * elements in both layouts (the panel is `display: contents` on wide screens), so every
+ * shortcut, dialog and test hook keeps working. The panel stays open while a dialog it opened is
+ * up, so focus can return to its button.
  */
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { Plan } from "@/lib/quota";
 import { ShortcutKeys } from "@/components/studio/Kbd";
 import { Tooltip } from "@/components/studio/Tooltip";
 import type { SaveStatus } from "./autosave";
-import { HelpIcon, SearchIcon, WarningIcon } from "./icons";
+import { HelpIcon, MoreIcon, SearchIcon, WarningIcon } from "./icons";
 import { ShareButton } from "./ShareButton";
 import { UploadButton } from "./UploadButton";
 import { WindowLights, type WindowLightsProps } from "./WindowLights";
@@ -47,6 +55,8 @@ export interface ToolbarProps {
   pricingHref?: string;
   /** Web and shared canvas: draw the bar as a window title bar with traffic lights. */
   windowChrome?: WindowLightsProps;
+  /** Page extras at the bar's end, always visible (the shared canvas's "Add to Claude"). */
+  end?: ReactNode;
 }
 
 const STATUS_TEXT: Record<SaveStatus, string> = {
@@ -58,6 +68,24 @@ const STATUS_TEXT: Record<SaveStatus, string> = {
 };
 
 export function Toolbar(p: ToolbarProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
+
+  // Close the narrow-screen panel on a press outside it, unless a dialog it opened is up.
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (panelRef.current?.contains(target) || moreRef.current?.contains(target)) return;
+      if (document.querySelector("dialog[open]")) return;
+      setMoreOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [moreOpen]);
+
   return (
     <header className="bn-toolbar">
       {p.windowChrome && <WindowLights {...p.windowChrome} />}
@@ -65,10 +93,26 @@ export function Toolbar(p: ToolbarProps) {
         <span className="bn-toolbar-title-text">{p.title}</span> <span className="bn-toolbar-app">on {p.appName}</span>
       </h1>
 
+      {p.readOnly ? (
+        <span className="bn-status" data-status="view" data-testid="save-status">
+          View only
+        </span>
+      ) : (
+        <span className="bn-status" role="status" data-status={p.saveStatus} data-testid="save-status">
+          {p.saveStatus === "error" ? <WarningIcon size={16} /> : <span className="bn-status-dot" aria-hidden="true" />}
+          <span className="bn-status-text">{STATUS_TEXT[p.saveStatus]}</span>
+          {p.saveStatus === "error" && (
+            <button type="button" className="st-btn" data-variant="secondary" data-size="xs" onClick={p.onRetrySave}>
+              Try again
+            </button>
+          )}
+        </span>
+      )}
+
       {p.results && (
         <button
           type="button"
-          className="st-btn"
+          className="st-btn bn-results-btn"
           data-variant="ghost"
           aria-pressed={p.results.open}
           aria-controls={p.results.open ? p.results.controls : undefined}
@@ -81,48 +125,66 @@ export function Toolbar(p: ToolbarProps) {
 
       <span className="bn-toolbar-spacer" />
 
-      <ZoomMenu {...p.zoom} />
+      <button
+        ref={moreRef}
+        type="button"
+        className="st-btn bn-more-btn"
+        data-variant="ghost"
+        data-icon-only=""
+        aria-label="More"
+        aria-expanded={moreOpen}
+        aria-controls={panelId}
+        onClick={() => setMoreOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key !== "Escape" || !moreOpen) return;
+          e.stopPropagation();
+          setMoreOpen(false);
+        }}
+      >
+        <MoreIcon size={16} />
+      </button>
 
-      <span className="bn-toolbar-sep" aria-hidden="true" />
+      <div
+        ref={panelRef}
+        id={panelId}
+        className="bn-toolbar-more"
+        data-open={moreOpen ? "" : undefined}
+        onKeyDown={(e) => {
+          if (e.key !== "Escape" || document.querySelector("dialog[open], [role='menu']")) return;
+          e.stopPropagation();
+          setMoreOpen(false);
+          moreRef.current?.focus();
+        }}
+      >
+        <ZoomMenu {...p.zoom} />
 
-      {p.readOnly ? (
-        <span className="bn-status" data-status="view" data-testid="save-status">
-          <span className="bn-status-dot" aria-hidden="true" />
-          View only
-        </span>
-      ) : (
-        <span className="bn-status" role="status" data-status={p.saveStatus} data-testid="save-status">
-          {p.saveStatus === "error" ? <WarningIcon size={16} /> : <span className="bn-status-dot" aria-hidden="true" />}
-          {STATUS_TEXT[p.saveStatus]}
-          {p.saveStatus === "error" && (
-            <button type="button" className="st-btn" data-variant="secondary" data-size="xs" onClick={p.onRetrySave}>
-              Try again
-            </button>
-          )}
-        </span>
-      )}
+        {!p.readOnly && p.canvasId && (
+          <>
+            <span className="bn-toolbar-sep" aria-hidden="true" />
+            <div className="bn-toolbar-group" role="group" aria-label="Upload and share">
+              <UploadButton plan={p.plan} pricingHref={p.pricingHref} />
+              <ShareButton canvasId={p.canvasId} initialToken={p.shareToken ?? null} plan={p.plan} pricingHref={p.pricingHref} />
+            </div>
+          </>
+        )}
 
-      {!p.readOnly && p.canvasId && (
-        <div className="bn-toolbar-group" role="group" aria-label="Upload and share">
-          <UploadButton plan={p.plan} pricingHref={p.pricingHref} />
-          <ShareButton canvasId={p.canvasId} initialToken={p.shareToken ?? null} plan={p.plan} pricingHref={p.pricingHref} />
-        </div>
-      )}
+        <Tooltip content={<>Keyboard shortcuts <ShortcutKeys keys="?" /></>}>
+          <button
+            type="button"
+            className="st-btn"
+            data-variant="ghost"
+            data-icon-only=""
+            aria-label="Keyboard shortcuts"
+            aria-haspopup="dialog"
+            aria-keyshortcuts="?"
+            onClick={p.onHelp}
+          >
+            <HelpIcon size={16} />
+          </button>
+        </Tooltip>
+      </div>
 
-      <Tooltip content={<>Keyboard shortcuts <ShortcutKeys keys="?" /></>}>
-        <button
-          type="button"
-          className="st-btn"
-          data-variant="ghost"
-          data-icon-only=""
-          aria-label="Keyboard shortcuts"
-          aria-haspopup="dialog"
-          aria-keyshortcuts="?"
-          onClick={p.onHelp}
-        >
-          <HelpIcon size={16} />
-        </button>
-      </Tooltip>
+      {p.end}
     </header>
   );
 }

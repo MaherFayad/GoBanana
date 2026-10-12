@@ -9,8 +9,9 @@
  * - The lights are a picture (aria-hidden): the dashboard is a page, not a window that closes.
  * - Collapse keeps the sidebar to its icons; the choice and the Icons / List view are remembered
  *   in localStorage (wrapped in try/catch: private windows and blocked storage use the defaults).
- * - "Show details" on a card fills the Inspector (aria-pressed, plus a ring on the card). A second
- *   click on the same card opens it. Under 768px the Inspector is a bottom sheet instead (the
+ * - A card is one button (its title, stretched over the card): a click or Enter fills the Inspector
+ *   (aria-pressed, plus a ring on the card) and a second one opens the canvas; the Inspector leads
+ *   with Open canvas. Under 768px the Inspector is a bottom sheet instead (the
  *   Studio Dialog: native <dialog>, focus trapped, Escape closes, focus returns to the button),
  *   the sidebar's two views become a segmented control, and cards become rows.
  * - Collage images are plain <img> tags pointing at each reference's own thumbnail (never
@@ -27,7 +28,6 @@ import {
   AccountIcon,
   ArrowEndIcon,
   CanvasesIcon,
-  ClockIcon,
   CloseIcon,
   CollapseIcon,
   DocsIcon,
@@ -213,50 +213,63 @@ function Collage({ card, label, large = false }: { card: DashCard; label: string
   );
 }
 
-/** What the Inspector and the phone sheet show for one canvas. */
+/** What the Inspector and the phone sheet show for one canvas: Open first, then a quiet list. */
 function Details({ card, t, withTitle, bodyRef }: { card: DashCard; t: Labels; withTitle: boolean; bodyRef?: Ref<HTMLDivElement> }) {
   return (
     <div className="lab-details-body" ref={bodyRef} tabIndex={bodyRef ? -1 : undefined}>
+      <Link className="st-btn lab-open" data-variant="primary" data-size="md" href={`/c/${encodeURIComponent(card.id)}`}>
+        {t.open}
+        <ArrowEndIcon size={16} />
+      </Link>
       <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} large />
-      {withTitle ? (
-        <h3 className="lab-details-title" dir="auto">
-          {card.title}
-        </h3>
-      ) : null}
+      <div className="lab-details-titles">
+        {withTitle ? (
+          <h3 className="lab-details-title">
+            <bdi>{card.title}</bdi>
+          </h3>
+        ) : null}
+        <p className="lab-details-brief" dir={card.brief ? "auto" : undefined}>
+          <span className="st-visually-hidden">{t.brief}: </span>
+          {card.brief ?? t.noBrief}
+        </p>
+      </div>
       <dl className="lab-facts">
-        <dt>{t.brief}</dt>
-        <dd dir={card.brief ? "auto" : undefined}>{card.brief ?? t.noBrief}</dd>
-        <dt>{t.updated}</dt>
-        <dd>
-          <time dateTime={card.updatedAt}>{card.updatedLong}</time>
-          <span className="lab-muted"> ({card.updatedRelative})</span>
-        </dd>
-        <dt>{t.directions}</dt>
-        <dd>{card.directionCount}</dd>
-        <dt>{t.references}</dt>
-        <dd>{card.referenceCount === 0 ? t.noRefs : card.referenceCount}</dd>
-        <dt>{t.link}</dt>
-        <dd>{card.shared ? t.linkOn : t.linkOff}</dd>
+        <div>
+          <dt>{t.updated}</dt>
+          <dd>
+            <time dateTime={card.updatedAt}>
+              {card.updatedRelative}
+            </time>
+          </dd>
+        </div>
+        <div>
+          <dt>{t.directions}</dt>
+          <dd>{card.directionCount}</dd>
+        </div>
+        <div>
+          <dt>{t.references}</dt>
+          <dd>{card.referenceCount}</dd>
+        </div>
+        <div>
+          <dt>{t.link}</dt>
+          <dd>{card.shared ? t.linkOn : t.linkOff}</dd>
+        </div>
       </dl>
       {card.collage.length > 0 ? (
-        <>
+        <div className="lab-sources-wrap">
           <h4 className="lab-sources-title">{t.sources}</h4>
           <ul className="lab-sources">
             {card.collage.map((img, i) => (
               <li key={`${img.sourceUrl}-${i}`}>
-                <a href={img.sourceUrl} target="_blank" rel="noopener noreferrer" dir="ltr">
+                <a className="lab-source" href={img.sourceUrl} target="_blank" rel="noopener noreferrer" dir="ltr">
                   <ExternalIcon size={12} />
-                  <span>{img.sourceUrl.replace(/^https?:\/\/(www\.)?/, "")}</span>
+                  <span>{img.sourceUrl.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</span>
                 </a>
               </li>
             ))}
           </ul>
-        </>
+        </div>
       ) : null}
-      <Link className="st-btn lab-open" data-variant="primary" data-size="lg" href={`/c/${encodeURIComponent(card.id)}`}>
-        {t.open}
-        <ArrowEndIcon size={16} />
-      </Link>
     </div>
   );
 }
@@ -396,8 +409,9 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
           <header className="lab-head dash-toolbar">
             <div className="dash-titles">
               <h1 id="lab-title">{title}</h1>
+              {/* The live count stays for screen readers only. */}
               {!failed ? (
-                <p className="lab-count" role="status">
+                <p className="st-visually-hidden" role="status">
                   {t.count.replace("{n}", String(shown.length))}
                 </p>
               ) : null}
@@ -532,81 +546,36 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
             <ul className="lab-grid" aria-label={t.listLabel}>
               {shown.map((card) => {
                 const isSel = card.id === selected;
-                const titleId = `card-${card.id}`;
+                const refs =
+                  card.referenceCount === 0
+                    ? t.noRefs
+                    : card.referenceCount === 1
+                      ? t.refCountOne
+                      : t.refCount.replace("{n}", String(card.referenceCount));
                 return (
-                  <li
-                    key={card.id}
-                    className="lab-card"
-                    data-selected={isSel ? "" : undefined}
-                    data-armed={armed === card.id ? "" : undefined}
-                    // Pointer shortcut only: the title link and the details button below are the
-                    // keyboard routes to the same two actions.
-                    onClick={(e) => {
-                      if ((e.target as HTMLElement).closest("a, button")) return;
-                      pickCard(card.id);
-                    }}
-                  >
-                    <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
+                  // The whole card is the title button's hit area (a stretched ::after): a click or
+                  // Enter shows the canvas in the Inspector, a second one opens it.
+                  <li key={card.id} className="lab-card" data-selected={isSel ? "" : undefined}>
+                    <div className="lab-card-art">
+                      <Collage card={card} label={t.collageLabel.replace("{title}", card.title)} />
+                      {card.shared ? (
+                        <span className="lab-card-badge">
+                          <ShareIcon size={12} />
+                          <span className="st-visually-hidden">{t.sharedChip}</span>
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="lab-card-body">
-                      <h2 className="lab-card-title" id={titleId}>
-                        <Link href={canvasHref(card.id)} dir="auto">
-                          {card.title}
-                        </Link>
+                      <h2 className="lab-card-title">
+                        <button type="button" className="lab-card-hit" aria-pressed={isSel} onClick={() => pickCard(card.id)}>
+                          <bdi>{card.title}</bdi>
+                        </button>
                       </h2>
-                      {/* User text keeps its own direction (dir="auto"): a Latin brief on an Arabic page is cut at its end, not its start. */}
-                      <p className="lab-card-brief" dir={card.brief ? "auto" : undefined}>
-                        {card.brief ?? t.noBrief}
-                      </p>
                       <p className="lab-card-meta">
-                        <ClockIcon size={12} />
+                        <span>{refs}</span>
+                        <span aria-hidden="true"> · </span>
                         <time dateTime={card.updatedAt}>{card.updatedRelative}</time>
                       </p>
-                      <dl className="lab-stats">
-                        <div>
-                          <dt>{t.directions}</dt>
-                          <dd>{card.directionCount}</dd>
-                        </div>
-                        <div>
-                          <dt>{t.references}</dt>
-                          <dd>{card.referenceCount}</dd>
-                        </div>
-                      </dl>
-                      {card.sites.length > 0 ? (
-                        <p className="lab-card-sites">
-                          <bdi>{card.sites.join(", ")}</bdi>
-                        </p>
-                      ) : null}
-                      <div className="lab-card-foot">
-                        {card.shared ? (
-                          <span className="st-chip" data-tone="ship">
-                            <ShareIcon size={12} />
-                            <span>{t.sharedChip}</span>
-                          </span>
-                        ) : null}
-                        {armed === card.id ? (
-                          <Link
-                            className="st-btn lab-details-btn"
-                            data-variant="primary"
-                            data-size="sm"
-                            href={canvasHref(card.id)}
-                            aria-describedby={titleId}
-                          >
-                            {t.open}
-                          </Link>
-                        ) : (
-                          <button
-                            type="button"
-                            className="st-btn lab-details-btn"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-pressed={isSel}
-                            aria-describedby={titleId}
-                            onClick={() => pickCard(card.id)}
-                          >
-                            {t.showDetails}
-                          </button>
-                        )}
-                      </div>
                     </div>
                   </li>
                 );
@@ -617,8 +586,7 @@ export function Dashboard({ locale, appName, view, cards, total, sharedCount, fa
 
         {/* ------------------------------------------------------------ Inspector */}
         <aside className="lab-details dash-inspector" aria-labelledby="details-title">
-          <h2 id="details-title" className="lab-details-head">
-            <InfoIcon size={16} />
+          <h2 id="details-title" className="st-visually-hidden">
             {t.detailsTitle}
           </h2>
           {current ? (

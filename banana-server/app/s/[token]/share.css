@@ -95,6 +95,16 @@ body:has(> .share-shell) {
   font-size: 0.8125rem;
 }
 
+/* "Add to Claude" at the end of the canvas window's title bar: one compact pill. */
+.share-shell .share-cta.st-btn {
+  --st-btn-radius: var(--st-radius-pill);
+
+  flex: none;
+  min-block-size: 28px;
+  margin-inline-start: var(--st-space-s);
+  font-size: 0.8125rem;
+}
+
 /* "Made with" notification card: glass, bottom end corner of the board, above the React Flow
    attribution. It steps aside while a board item has focus, so it never hides one (SC 2.4.11). */
 .share-note {

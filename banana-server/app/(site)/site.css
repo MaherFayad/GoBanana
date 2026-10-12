@@ -796,7 +796,9 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
 /* One glass window (desktop.css .dwin): the list at the start, the settings pane beside it. */
 .site .settings-page {
-  max-inline-size: calc(64rem + 2 * var(--site-gutter));
+  max-inline-size: calc(56rem + 2 * var(--site-gutter));
+  /* Room under the window so nothing sits behind the fixed dock. */
+  padding-block-end: calc(var(--st-space-12xl) + var(--st-space-5xl));
 }
 
 .site .settings .dwin-body.settings-body {
@@ -913,18 +915,18 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 .site .settings-pane {
   display: flex;
   flex-direction: column;
-  gap: var(--st-space-5xl);
+  gap: var(--st-space-7xl);
   min-inline-size: 0;
-  padding: var(--st-space-5xl) var(--st-space-6xl) var(--st-space-6xl);
+  padding: var(--st-space-8xl) var(--st-space-9xl) var(--st-space-10xl);
 }
 
 .site .settings-title {
   margin: 0;
   color: var(--st-desk-heading);
-  font-size: 1.85rem;
+  font-size: 1.5rem;
   font-weight: 500;
-  letter-spacing: var(--st-desk-tracking);
-  line-height: 1;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .site .settings-title:lang(ar) {
@@ -932,109 +934,81 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   line-height: 1.4;
 }
 
+/* Group labels: small and quiet, like System Settings. */
 .site .settings-section > h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--st-space-s);
   margin: 0 0 var(--st-space-s);
-  padding-inline: var(--st-space-xs);
+  padding-inline: var(--st-space-xl);
   color: var(--st-desk-meta);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
-.site .settings-section.is-danger > h2 {
-  color: var(--st-danger-fg);
-}
-
-/* A macOS-style group: rows on one glass card, split by hairlines. */
+/* One rounded group per section: rows split by hairlines, label at the start, value or control
+   at the end. */
 .site .settings-group {
-  border: var(--st-border-width) solid var(--st-desk-glass-border);
-  border-radius: 0.8rem;
-  background: var(--st-desk-glass-hover);
+  border-radius: 0.75rem;
+  background: var(--st-desk-titlebar);
+  box-shadow: inset 0 0 0 1px var(--st-desk-glass-edge);
 }
 
 .site .settings-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--st-space-s) var(--st-space-2xl);
-  min-block-size: 3rem;
-  padding: var(--st-space-m) var(--st-space-xl);
+  gap: var(--st-space-xs) var(--st-space-2xl);
+  min-block-size: 2.75rem;
+  padding: var(--st-space-s) var(--st-space-xl);
+  font-size: 0.875rem;
 }
 
-.site .settings-row + .settings-row {
+.site .settings-row + .settings-row::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--st-space-xl);
   border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
-}
-
-.site .settings-row.is-stack {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.site .settings-row.is-note {
-  flex-wrap: nowrap;
-  align-items: flex-start;
-  justify-content: flex-start;
-  color: var(--st-desk-body);
-}
-
-.site .settings-row.is-note .st-icon {
-  flex: none;
-  margin-block-start: 0.25em;
-  color: var(--st-desk-heading);
-}
-
-.site .settings-row.is-meter {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--st-space-s) var(--st-space-xl);
+  content: "";
 }
 
 .site .settings-row-end {
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--st-space-l);
+  margin-inline-start: auto;
 }
 
 .site .settings-row-label {
+  min-inline-size: 0;
   color: var(--st-desk-heading);
-  font-weight: 500;
 }
 
 .site .settings-row-value {
-  color: var(--st-desk-heading);
-  font-weight: 600;
+  color: var(--st-desk-body);
   font-variant-numeric: tabular-nums;
 }
 
-.site .settings-row-strong {
-  color: var(--st-desk-heading);
-  font-weight: 600;
-}
-
 .site .settings-row-note {
-  max-inline-size: 60ch;
-  color: var(--st-desk-body);
-  font-size: 0.9375rem;
+  margin-inline-start: auto;
+  color: var(--st-desk-meta);
 }
 
-.site .settings-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--st-space-s);
-}
-
-.site .settings-actions .st-btn {
+.site .settings-row .st-btn {
+  margin-inline-start: auto;
   border-radius: var(--st-radius-pill);
 }
 
-.site .settings-actions .delete-status:empty {
+.site .settings-row-end .st-btn {
+  margin-inline-start: 0;
+}
+
+.site .settings-row .delete-status:empty {
   display: none;
 }
 
+.site .settings-row .delete-status {
+  flex-basis: 100%;
+}
 /* Signed out: the same window, a sign-in panel in the pane. */
 .site .settings-signin {
   align-items: center;
@@ -1200,10 +1174,10 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
 /* Usage meters on the account page (role="meter"; the numbers are also in the row). */
 .site .usage-meter {
-  grid-column: 1 / -1;
   display: block;
-  inline-size: 100%;
-  block-size: 6px;
+  flex: none;
+  inline-size: 6rem;
+  block-size: 4px;
   overflow: hidden;
   border-radius: var(--st-radius-pill);
   background: var(--st-overlay-10);
@@ -1470,24 +1444,24 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
 
 /* ------------------------------------------------------------------ 404 (NotFoundView) */
 
-/* The Trash window, centred on the desk. */
+/* The Trash window, centred in the first screen; the footer starts below the fold. */
 .site .nf {
   display: grid;
   place-items: center;
-  min-block-size: max(30rem, calc(100svh - 10rem));
-  padding: var(--st-space-7xl) var(--site-gutter);
+  min-block-size: calc(100svh - var(--desk-bar));
+  padding: var(--st-space-7xl) var(--site-gutter) var(--st-space-12xl);
 }
 
 .site .nf-window {
-  inline-size: min(100%, 34rem);
+  inline-size: min(100%, 30rem);
 }
 
 .site .dwin-body.nf-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--st-space-l);
-  padding: var(--st-space-6xl) var(--st-space-3xl) var(--st-space-5xl);
+  gap: var(--st-space-m);
+  padding: var(--st-space-9xl) var(--st-space-6xl) var(--st-space-8xl);
   text-align: center;
 }
 
@@ -1499,36 +1473,36 @@ html.reveal-on .site [data-reveal="blur"][data-reveal-armed]:not([data-revealed]
   font-variant-numeric: tabular-nums;
 }
 
+/* A bare glyph, no tile: one quiet mark above the heading. */
 .site .nf-icon {
   display: grid;
   place-items: center;
-  inline-size: 4.5rem;
-  block-size: 4.5rem;
-  margin-block-end: var(--st-space-s);
-  border-radius: 1.1rem;
-  background: var(--st-desk-glass-hover);
-  box-shadow:
-    inset 0 0 0 1px var(--st-desk-glass-border),
-    var(--st-desk-shadow-soft);
-  color: var(--st-desk-heading);
+  margin-block-end: var(--st-space-l);
+  color: var(--st-desk-heading-dim);
 }
 
 .site .nf-icon .st-icon {
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
+/* Smaller than the shared window heading, with its own line height, so the two tones never touch. */
+.site .tt.is-window.nf-title {
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.site .tt.is-window.nf-title:lang(ar) {
+  line-height: 1.5;
 }
 
 .site .nf-body {
   max-inline-size: 36ch;
   color: var(--st-desk-body);
+  font-size: 0.9375rem;
 }
 
 .site .nf-panel > .nf-actions {
   justify-content: center;
-  margin-block-start: var(--st-space-l);
-}
-
-.site .nf-more {
-  color: var(--st-desk-meta);
-  font-size: 0.875rem;
+  margin-block-start: var(--st-space-2xl);
 }

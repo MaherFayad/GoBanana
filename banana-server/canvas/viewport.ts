@@ -90,3 +90,14 @@ export function clearanceBelow(item: ScreenRect, bar: ScreenRect, gap = 8): numb
   if (!overlaps) return 0;
   return Math.ceil(bar.bottom - item.top + gap);
 }
+
+/**
+ * How far to pan the view up so a focused item clears a bar floating at the bottom of the board
+ * (the tool dock, SC 2.4.11). Returns 0 when they do not overlap. The item moves up by the
+ * overlap plus `gap`.
+ */
+export function clearanceAbove(item: ScreenRect, bar: ScreenRect, gap = 8): number {
+  const overlaps = item.left < bar.right && item.right > bar.left && item.top < bar.bottom && item.bottom > bar.top;
+  if (!overlaps) return 0;
+  return Math.ceil(item.bottom - bar.top + gap);
+}

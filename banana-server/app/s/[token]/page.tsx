@@ -9,11 +9,10 @@
  *   owner's plan allows share links (spec section 12).
  * - Every reference shows its source link (hard rule 3) and the takedown list is
  *   checked on load (hard rule 5), failing closed.
- * - The page says "View only" twice: an info alert above the board and the top bar label
- *   (canvas/SharedCanvas.tsx).
- * - Site chrome (share.css): a slim glass menu bar above the canvas with the brand and "Add to
- *   Claude", like the site's desktop menu bar. The canvas is a read-only app window on the
- *   desk, and a dismissible "Made with {app}" notification card links to the landing page.
+ * - One bar: the canvas window's title bar says "View only" (a chip) and ends with the site's
+ *   "Add to Claude" (canvas/SharedCanvas.tsx). The canvas is a read-only app window on the desk,
+ *   and a dismissible "Made with {app}" notification card links to the landing page. The slim
+ *   brand bar (share.css) is kept only for the page that could not load.
  * - Test-only: under the E2E sign-in bypass (never in a production build) the demo token
  *   renders lib/site/share-demo.ts, so the page can be screenshot without a database.
  */
@@ -101,8 +100,16 @@ export default async function SharedCanvasPage({ params }: Props) {
 
   return (
     <div className="share-shell">
-      <ShareBar />
-      <SharedCanvas appName={APP_NAME} title={shared.title} state={shared.state}>
+      <SharedCanvas
+        appName={APP_NAME}
+        title={shared.title}
+        state={shared.state}
+        titleEnd={
+          <a className="st-btn share-cta" data-variant="primary" data-size="sm" href={`${href("en")}#install`}>
+            {t.share.cta}
+          </a>
+        }
+      >
         <MadeWithCard
           appName={APP_NAME}
           label={fmt(t.share.noteLabel)}

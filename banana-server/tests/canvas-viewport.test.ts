@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampZoom,
+  clearanceAbove,
   clearanceBelow,
   FIT_PADDING,
   MAX_ZOOM,
@@ -66,5 +67,16 @@ describe("focus not obscured by the notch (SC 2.4.11)", () => {
   it("pans by the overlap plus 8 px", () => {
     expect(clearanceBelow({ left: 450, top: 10, right: 600, bottom: 200 }, bar)).toBe(38);
     expect(clearanceBelow({ left: 450, top: -50, right: 600, bottom: 20 }, bar)).toBe(98);
+  });
+});
+
+describe("focus not obscured by the bottom tool dock (SC 2.4.11)", () => {
+  const dock = { left: 400, top: 800, right: 700, bottom: 850 };
+  it("returns 0 when the item is clear", () => {
+    expect(clearanceAbove({ left: 0, top: 700, right: 100, bottom: 840 }, dock)).toBe(0);
+    expect(clearanceAbove({ left: 450, top: 600, right: 600, bottom: 780 }, dock)).toBe(0);
+  });
+  it("pans up by the overlap plus 8 px", () => {
+    expect(clearanceAbove({ left: 450, top: 700, right: 600, bottom: 820 }, dock)).toBe(28);
   });
 });
