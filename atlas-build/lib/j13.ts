@@ -115,7 +115,7 @@ export const CULTURE_RULES = `Culture rules (never break):
 - Borrow grammar (rhythm, repeat, proportion, color ratio, how it is made), never a copied artwork or a picture of an object or building.`;
 
 /** Words that must not be the idea of a record (flags, sacred text and symbols as decoration). */
-const BANNED = /\b(flags?|quran\w*|qur'an\w*|shahada|allah|scriptures?|verses?|national emblems?|crescents?|crosses)\b/i;
+const BANNED = /\b(flags?|quran\w*|qur'an\w*|shahada|allah|scriptures?|holy verses?|sacred text|national emblems?|crescent moons?|crucifix\w*)\b/i;
 
 type Tied = { id: string; name: string; idea: string; cardIds: string[]; families: string[]; lensIds: string[]; culturalNotes?: string };
 

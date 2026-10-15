@@ -87,7 +87,7 @@ export default defineJob<J13Input, MotionRecipe>({
   schema: MotionRecipeSchema,
   system: SYSTEM,
   maxTokens: 24000,
-  expectedOutputTokens: 9000,
+  expectedOutputTokens: 6000,
   effort: "high",
 
   loadInputs: () => j13Inputs(PER_GROUP, PER_LENS),

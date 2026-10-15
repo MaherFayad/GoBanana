@@ -97,8 +97,9 @@ export default defineJob<J13Input, ShaderRecipe>({
   mode: "batch",
   schema: ShaderRecipeSchema,
   system: SYSTEM,
-  maxTokens: 32000,
-  expectedOutputTokens: 14000,
+  // The trial used 20K to 25K thinking tokens for 3 to 5 shaders; 32K cut one reply off.
+  maxTokens: 64000,
+  expectedOutputTokens: 30000,
   effort: "high",
 
   loadInputs: () => j13Inputs(PER_GROUP, PER_LENS),
