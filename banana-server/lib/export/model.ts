@@ -25,7 +25,7 @@ import {
   type VisualSpec,
   type Zone,
 } from "../direction-detail";
-import { parseReconciled } from "../db/detail";
+import { parseDirectionAtlas, parseReconciled } from "../db/detail";
 import fontsData from "../kit/fonts.json";
 import { voiceFonts, voiceFontsUrl, type VoiceFonts } from "../kit/voice-fonts";
 import { cardColors, cardFonts, cardMotion, cardPairing, cardRounded, cardVoice, pairKey, voicesAfter, type KitMotion, type LeadCard } from "./card";
@@ -185,7 +185,7 @@ export interface KitOptions {
   pages?: readonly string[] | null;
   /**
    * Atlas ingredient cards by id (P1-I5), loaded by the caller. A direction whose saved
-   * `detail.cardIds` starts with a card here exports that card's fonts, radius, motion and palette.
+   * `detail.atlas.cardIds` starts with a card here exports that card's fonts, radius, motion and palette.
    */
   cards?: ReadonlyMap<string, LeadCard> | null;
 }
@@ -494,8 +494,8 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
   const rec = parseReconciled(r.reconciled);
   if (rec) d.reconciled = rec;
-  const cardIds = lines(r.cardIds, 80, 4);
-  if (cardIds.length) d.cardIds = cardIds;
+  const atlas = parseDirectionAtlas(r);
+  if (atlas) d.atlas = atlas;
   return d;
 }
 
@@ -524,7 +524,7 @@ function firstFontChoice(detail: DirectionDetail | null, card: LeadCard | undefi
 }
 
 const leadCardOf = (detail: DirectionDetail | null, cards: ReadonlyMap<string, LeadCard> | null | undefined) => {
-  const id = detail?.cardIds?.[0];
+  const id = detail?.atlas?.cardIds[0];
   return id ? cards?.get(id) : undefined;
 };
 

@@ -105,17 +105,17 @@ describe("feedback on Atlas ids", () => {
   it("rate_directions writes atlas rows for the direction's cards, mechanic and recipes", async () => {
     const { deps, repos } = makeDeps();
     const canvas = await seedCanvas(repos, ALICE);
-    // The saved detail keeps the Atlas ids (lib/db/detail.ts parseDirectionDetail).
+    // A row saved before W1 kept flat ids; parseDirectionDetail reads them into detail.atlas.
     await repos.directions.upsertMany(canvas.id, [
       {
         bendId: "bd-kraft",
         move: "material",
         title: "Checkout as kraft paper",
         searchQuery: "kraft paper ui",
-        detail: { cardIds: ["kraft-paper"], mechanicId: "total-stamp", recipeIds: ["checkout-mobile-concept-1"] },
+        detail: { cardIds: ["kraft-paper"], mechanicId: "total-stamp", recipeIds: ["checkout-mobile-concept-1"] } as never,
       },
     ]);
-    expect(repos.data.directions[0]!.detail).toMatchObject({ cardIds: ["kraft-paper"], mechanicId: "total-stamp" });
+    expect(repos.data.directions[0]!.detail).toMatchObject({ atlas: { cardIds: ["kraft-paper"], mechanicId: "total-stamp" } });
     const rate = createRateDirectionsTool(deps);
     const res = await rate({ canvasId: canvas.id, ratings: [{ directionId: "bd-kraft", verdict: "drop" }] }, ALICE);
     expect(res.isError).toBeFalsy();
