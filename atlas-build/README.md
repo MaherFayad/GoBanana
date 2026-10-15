@@ -54,6 +54,27 @@ Each run:
    sha256 for every shard.
 7. **Review.** `review/<job>.html`, a random 10% of the valid records.
 
+## J7 query recipes (Serper plus judge)
+
+`jobs/j7-recipes.ts` tests about 3,900 wordings: 6 for each J1 page and platform pair and the 3 art
+queries of each J3 card. Each wording costs 1 Serper credit (one image search, thumbnails fetched into
+memory only) and one judge call. Only wordings and scores are stored. It needs `out/v1/anatomy` and
+`out/v1/cards` (`npx tsx run.ts j1-anatomy --from-raw`, then `j3-cards`).
+
+- `npx tsx j7-taste.ts` writes `data/j7-taste-notes.md` from the exemplar picks (`picks.json`, else
+  `picks.default.json`) once, so the judge prompt carries notes instead of images. Rerun it after the
+  owner saves `picks.json`.
+- The key is read from `SERPER_API_KEY` or `banana-server/.dev.vars`. A real run checks the account
+  balance first and refuses a slice that would take it under 2,500 credits (the product's runtime
+  credits). Every search is logged to `serper.csv` next to `costs.csv`.
+- Inputs are ordered by value (bench pages, other pages, then art), so run it in chunks:
+  `--offset 0 --limit 250`, `--offset 250 --limit 250`, and so on. Each chunk resumes from its batch if
+  stopped. After the last chunk run `npx tsx run.ts j7-recipes --from-raw` to build the whole output
+  (a chunk's own output covers only that chunk). Keys with no wording at 0.5 or more are listed in
+  `review/j7-recipes-dropped.json`.
+- The full-job `--dry` estimate is high (the guard prices the cached prefix as a write on every
+  request); real spend is about a third of it. Chunks of 250 pass the guard.
+
 ## Owner review and upload
 
 1. Open `review/<job>.html` for every job you want to ship and read the sample. Look at

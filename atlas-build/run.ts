@@ -125,7 +125,7 @@ async function processReplies(job: AtlasJob<unknown, unknown>, inputs: Map<strin
 export async function main(argv: readonly string[]): Promise<number> {
   const args = parseArgs(argv);
   const job = await loadJob(args.job);
-  const ctx = defaultContext(console.log, args.dry);
+  const ctx: JobContext = { ...defaultContext(console.log, args.dry), run: { limit: args.limit, offset: args.offset, fromRaw: args.fromRaw } };
   const rawPath = join(PATHS.raw, `${job.id}.jsonl`);
   const statePath = join(PATHS.state, `${job.id}.json`);
 
@@ -155,7 +155,7 @@ export async function main(argv: readonly string[]): Promise<number> {
       const content = await job.buildPrompt(input, ctx);
       const params = buildParams({ model: job.model, system: job.system, content, maxTokens: job.maxTokens, effort: job.effort });
       const s = contentShape(content);
-      shapes.push({ systemChars: job.system.length, userChars: s.chars, images: s.images, outputTokens: job.expectedOutputTokens });
+      shapes.push({ systemChars: job.system.length, userChars: s.chars, images: s.images, outputTokens: job.expectedOutputTokens, imageTokens: job.imageTokens });
       requests.push({ custom_id: id, params });
     }
     const est = estimateCost(job.model, shapes, job.mode === "batch");
