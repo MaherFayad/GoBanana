@@ -31,6 +31,7 @@ import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, upg
 import { directionStates, reconcileDirection, type ReconcileDeps } from "./reconcile_direction";
 import { recordFunnel } from "@/lib/funnel";
 import { loadDirectionCards } from "@/lib/atlas/wiring";
+import type { SlopRule } from "@/lib/atlas/types";
 import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "export_kit";
@@ -139,7 +140,16 @@ export function createExportKitTool(deps: ExportKitDeps) {
       } catch {
         cards = null;
       }
-      const opts = { scope, pages: input.pages, cards } as const;
+      // Slop rules (Atlas J8) for REVIEW.md, read only when the review is exported.
+      let slop: SlopRule[] | null = null;
+      if (allowed.includes("review")) {
+        try {
+          slop = (await deps.atlasSource?.()?.slop()) ?? null;
+        } catch {
+          slop = null;
+        }
+      }
+      const opts = { scope, pages: input.pages, cards, slop } as const;
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
       if (!directionId && kept.length > 1) {

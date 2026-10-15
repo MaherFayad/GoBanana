@@ -2,6 +2,7 @@
  * Turns a CanvasSnapshot into one derived "kit model" that every export reads,
  * so DESIGN.md, tokens and Tailwind always agree on the same values.
  */
+import type { SlopRule } from "../atlas/types";
 import type {
   CanvasDirection,
   CanvasItem,
@@ -188,6 +189,8 @@ export interface KitOptions {
    * `detail.atlas.cardIds` starts with a card here exports that card's fonts, radius, motion and palette.
    */
   cards?: ReadonlyMap<string, LeadCard> | null;
+  /** Slop rules (Atlas J8 `slop/*` shards), loaded by the caller: REVIEW.md checks the page against them. */
+  slop?: readonly SlopRule[] | null;
 }
 
 export interface KitNote {
@@ -238,6 +241,8 @@ export interface KitModel {
   card: { id: string; name: string } | null;
   /** The lead card's motion, when there is one. */
   motion: KitMotion | null;
+  /** Default page features to stay away from (Atlas J8), most common first. Empty without an Atlas. */
+  slop: SlopRule[];
   scope: Scope;
   /** Directions this kit is about (see KitOptions.directionId). */
   focus: DirectionSummary[];
@@ -497,6 +502,15 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   const atlas = parseDirectionAtlas(r);
   if (atlas) d.atlas = atlas;
   return d;
+}
+
+/** Valid slop rules, most common first, at most 20, plain one line text. */
+export function cleanSlop(rules: readonly SlopRule[] | null | undefined): SlopRule[] {
+  return (rules ?? [])
+    .filter((r) => r && typeof r.value === "string" && r.value.trim() && Number.isFinite(r.share))
+    .map((r) => ({ feature: r.feature, value: oneLine(r.value, 120), share: Math.min(1, Math.max(0, r.share)) }))
+    .sort((a, b) => b.share - a.share || a.value.localeCompare(b.value))
+    .slice(0, 20);
 }
 
 // ---------- fonts per direction ----------
@@ -771,6 +785,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     pairingFrom,
     card: card ? { id: card.id, name: oneLine(card.name, 80) } : null,
     motion: cardMotion(card),
+    slop: cleanSlop(opts.slop),
     scope,
     focus,
     focusRefs,

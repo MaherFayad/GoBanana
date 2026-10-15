@@ -854,6 +854,7 @@ export function formatDirections(result: BendResult): string {
     lines.push(`${i + 1}. ${d.title}${twist} [${d.move}] query: ${d.searchQuery}`);
     lines.push(`   id: ${d.id}. Prompt: ${d.prompt}`);
     lines.push(`   Mechanic: build this direction around ${d.mechanic.element} = ${bare(d.mechanic.how)}. Search for UI that has this element.`);
+    if (d.story && d.cardIds?.[0]) lines.push(`   Card story (${d.cardIds[0]}): ${d.story} Tell it in the idea note.`);
     lines.push(
       `   Spec: type ${sp.typeVoice}: ${bare(sp.typography)} | color: ${bare(sp.color)} | layout: ${bare(sp.layout)} | imagery: ${bare(sp.imagery)} | motion: ${bare(sp.motion)} | texture: ${bare(sp.texture)} | icons: ${bare(sp.iconography)} | density: ${bare(sp.density)}`,
     );

@@ -19,7 +19,7 @@ import { createCutPartsTool } from "@/lib/mcp/tools/cut_parts";
 import { createExportKitTool } from "@/lib/mcp/tools/export_kit";
 import { defaultCrop, ROLE_BANDS } from "@/lib/stitch/crop";
 import { memorySwipeRepo } from "@/lib/swipe/repo";
-import type { BendInput } from "@/lib/bend";
+import { formatDirections, type BendInput } from "@/lib/bend";
 import { CARDS, PAGES } from "./fixtures/atlas";
 import { buildFixtureAtlas, countingFetcher, type ShardFiles } from "./fixtures/atlas-shards";
 import { ALICE, imageNode, makeDeps, sectionNode, seedCanvas, state, text } from "./tools-fixtures";
@@ -88,6 +88,15 @@ describe("the Atlas bend weights its draws", () => {
     expect(b).toEqual(a);
   });
 
+  it("each direction carries its lead card's story, and the text tells the agent to use it in the note", async () => {
+    const r = (await bendBriefAtlas(ESIM, source()))!;
+    const d = r.directions[0]!;
+    const lead = CARDS.find((c) => c.id === d.cardIds![0])!;
+    expect(d.story).toContain(lead.idea.replace(/\.$/, ""));
+    expect(formatDirections(r)).toContain(`Card story (${lead.id}): `);
+    expect(formatDirections({ ...r, directions: r.directions.map(({ story: _s, ...x }) => x) })).not.toContain("Card story");
+  });
+
   it("a dropped lead card sinks, so the next draw changes", async () => {
     const before = (await bendBriefAtlas(ESIM, source()))!;
     const lead = before.directions[0]!.cardIds![0]!;
@@ -120,6 +129,8 @@ describe("cut_parts guesses from the page anatomy", () => {
     ]);
     const res = await createCutPartsTool({ ...deps, ...(atlas ? { atlasSource: atlas } : {}) })({ canvasId: canvas.id, cuts: [{ itemId: "img_1", role: "cta" }] }, ALICE);
     expect(res.isError).toBeFalsy();
+    if (atlas === source) expect(text(res)).toContain("Guessed bands follow the checkout page anatomy (Banana Atlas). Its sections top to bottom: header, steps, total, cta.");
+    else expect(text(res)).not.toContain("page anatomy");
     return (res.structuredContent as { parts: { crop: { x: number; y: number; w: number; h: number } }[] }).parts[0]!.crop;
   }
 
@@ -172,6 +183,21 @@ describe("export_kit reads the direction's cards", () => {
 
   it("exports the lead card's fonts", async () => {
     expect(await exportDesign(source)).toContain("Poiret One");
+  });
+
+  it("REVIEW.md checks the page against the Atlas slop rules, and leaves the section out without them", async () => {
+    const { deps, repos } = makeDeps({ plans: { [ALICE]: "pro_monthly" } });
+    const canvas = await seedCanvas(repos, ALICE);
+    await repos.directions.upsertMany(canvas.id, [{ bendId: "bd-1", move: "era", title: "Deco", searchQuery: "deco", detail: { platform: "mobile", verdict: "keep" } }]);
+    const slop = [
+      { feature: "font" as const, value: "Inter everywhere", share: 0.8 },
+      { feature: "gradient" as const, value: "purple to blue hero gradient", share: 0.6 },
+    ];
+    const withSlop = await createExportKitTool({ ...deps, atlasSource: () => ({ ...source(), slop: async () => slop }) })({ canvasId: canvas.id, formats: ["review"] }, ALICE);
+    expect(text(withSlop)).toContain("## Distance from slop");
+    expect(text(withSlop)).toContain("The page does not use Inter everywhere (on 80% of default pages)");
+    const without = await createExportKitTool({ ...deps, atlasSource: source })({ canvasId: canvas.id, formats: ["review"] }, ALICE);
+    expect(text(without)).not.toContain("Distance from slop");
   });
 
   it("falls back to the type voice with no Atlas", async () => {

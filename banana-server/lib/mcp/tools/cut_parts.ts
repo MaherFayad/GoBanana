@@ -15,6 +15,7 @@ import { detectPlatform } from "@/lib/platform";
 import { isMobbinSource } from "@/lib/sources/mobbin";
 import { defaultCrop, distinctCrop } from "@/lib/stitch/crop";
 import { anatomyFor, loadCutAnatomy, type CutAnatomy } from "@/lib/atlas/wiring";
+import type { PageAnatomy } from "@/lib/atlas/types";
 import { MAX_PART_NOTE } from "@/lib/stitch/parse";
 import { MAX_SWIPE_ITEMS } from "@/lib/swipe";
 import { clampCrop, MAX_PARTS, type Crop, type Part, type StitchPlatform } from "@/lib/stitch/types";
@@ -150,6 +151,8 @@ export function createCutPartsTool(deps: CutPartsDeps) {
       let anatomy: CutAnatomy | null = null;
       /** The direction each cut's image belongs to, by cut index (swipe items take its lead card). */
       const cutDirection = new Map<number, string>();
+      /** Page anatomies the guessed crops used (P1-I7: the agent reads their roles). */
+      const usedPages = new Map<string, PageAnatomy>();
       if (cuts.some((c) => !c.crop) && deps.atlasSource) {
         try {
           const source = deps.atlasSource();
@@ -210,10 +213,12 @@ export function createCutPartsTool(deps: CutPartsDeps) {
           const imageHeight = src.height ?? undefined;
           // A Mobbin screen is one screen, so a guess never looks for a middle phone in it.
           const single = isMobbinSource(src);
+          const pageAnatomy = c.crop ? null : anatomyFor(anatomy, directionId);
+          if (pageAnatomy) usedPages.set(pageAnatomy.id, pageAnatomy);
           const crop = c.crop
             ? clampCrop(c.crop)
             : distinctCrop(
-                defaultCrop(c.role, { imageWidth, imageHeight, single, ...(platform ? { platform } : {}), anatomy: anatomyFor(anatomy, directionId) }),
+                defaultCrop(c.role, { imageWidth, imageHeight, single, ...(platform ? { platform } : {}), anatomy: pageAnatomy }),
                 cropsOf(src.imageUrl),
               );
           fresh.push({
@@ -310,6 +315,11 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         );
       }
       if (parts.some((p) => p.guessedCrop)) {
+        // The page anatomy behind the guesses: its section roles, top to bottom (P1-I7).
+        for (const page of usedPages.values()) {
+          const roles = [...new Set(page.sections.map((s) => s.role))];
+          lines.push(`Guessed bands follow the ${page.id} page anatomy (Banana Atlas). Its sections top to bottom: ${roles.join(", ")}. Use these roles, in this order, for the recipe.`);
+        }
         // Honest about what nobody saw: a guess is not a look.
         lines.push(
           "Guessed crops are a band picked by role and image shape; nobody looked at the image. To cut exactly, call cut_parts with look on that image, then set the crop from what you see (update_frankenstein op crop, or cut again), or tell the user they can adjust each one in the canvas crop editor (Edit crop on a part). Do not download the images to check.",

@@ -4,7 +4,7 @@
  * back to the current engine or the Phase 0 lanes.
  */
 import { bucketOf, recipeKeyString, type AtlasLoader } from "./loader";
-import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, PageAnatomy, QueryRecipe, UiElement } from "./types";
+import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, PageAnatomy, QueryRecipe, SlopRule, UiElement } from "./types";
 
 export interface AtlasSource {
   pages(): Promise<PageAnatomy[] | null>;
@@ -19,6 +19,8 @@ export interface AtlasSource {
   recipes(keys: readonly QueryRecipe["key"][]): Promise<QueryRecipe[] | null>;
   /** CC0 index items of these regions (shards that do not exist are skipped). */
   cc0(regions: readonly string[]): Promise<CC0Item[] | null>;
+  /** Slop rules (J8); an empty list when the Atlas has none. */
+  slop(): Promise<SlopRule[] | null>;
 }
 
 /** Load each bucket an id list touches, once, and keep the rows `keep` accepts. */
@@ -56,6 +58,10 @@ export function loaderSource(loader: AtlasLoader): AtlasSource {
     recipes(keys) {
       const want = new Set(keys.map(recipeKeyString));
       return fromBuckets<QueryRecipe>(loader, "recipes", [...want], (r) => want.has(recipeKeyString(r.key)));
+    },
+    async slop() {
+      if (loader.names("slop").length === 0) return [];
+      return loader.all<SlopRule>("slop");
     },
     async cc0(regions) {
       const names = new Set(loader.names("cc0"));

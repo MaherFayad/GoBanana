@@ -142,6 +142,8 @@ export interface Direction {
   mechanicId?: string;
   /** Atlas engine only: the query recipes its queries came from (lib/atlas/loader.ts recipeId). */
   recipeIds?: string[];
+  /** Atlas engine only (P1-I7): the lead card's story, its idea and why it surprises, for the idea note. */
+  story?: string;
 }
 
 /** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */

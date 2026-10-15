@@ -573,6 +573,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
         cardIds,
         ...(drawn.mech ? { mechanicId: drawn.mech.id } : {}),
         recipeIds: [],
+        story: fixCase(`${sentence(lead.idea)} ${sentence(lead.surprise)}${second ? ` ${second.name} adds its ${pick.adds}.` : ""}`),
       },
     });
   }
