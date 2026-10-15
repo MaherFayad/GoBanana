@@ -90,7 +90,7 @@ describe("cut_parts look", () => {
   it("is in the tool copy and the input schema", () => {
     expect(TOOL_DESCRIPTION).toContain("look { itemId }");
     expect(TOOL_DESCRIPTION.length).toBeLessThan(400);
-    expect(TOOL_DESCRIPTION).not.toMatch(/[–—]/);
+    expect(TOOL_DESCRIPTION).not.toMatch(new RegExp(`[${String.fromCharCode(0x2013, 0x2014)}]`));
     expect(inputSchema.safeParse({ canvasId: "c", look: { itemId: "img_1" } }).success).toBe(true);
     expect(inputSchema.safeParse({ canvasId: "c" }).success).toBe(false);
     expect(inputSchema.safeParse({ canvasId: "c", look: { itemId: "a", referenceId: "b" } }).success).toBe(false);

@@ -86,3 +86,19 @@ body {
 .bn-inline[data-compact] .bn-inline-bar {
   padding-inline: var(--st-space-2xs);
 }
+
+/* "Show in chat" picker: one button per Frankenstein page. */
+.bn-show-help {
+  margin-block: 0 var(--st-space-s);
+  color: var(--st-text-muted);
+}
+
+.bn-show-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--st-space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
