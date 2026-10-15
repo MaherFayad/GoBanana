@@ -68,6 +68,16 @@ export function planShards<T>(records: readonly T[], shardOf: (r: T) => string =
   return out;
 }
 
+/** Every record of one kind already written under outDir/<kind>/ (an earlier job's output), in shard order. */
+export function readKind<T>(outDir: string, kind: string): T[] {
+  const dir = join(outDir, kind);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .sort()
+    .flatMap((f) => JSON.parse(readFileSync(join(dir, f), "utf8")) as T[]);
+}
+
 export function readManifest(path: string): Manifest {
   if (!existsSync(path)) return { version: "v1", shards: [] };
   return JSON.parse(readFileSync(path, "utf8")) as Manifest;
