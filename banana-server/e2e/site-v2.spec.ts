@@ -37,6 +37,16 @@ async function open(page: Page, url: string) {
 }
 
 async function axe(page: Page, include: string, label: string) {
+  // Windows scale in on open. axe measures live boxes, so mid-motion the 24px light targets
+  // shrink and trip target-size; wait for finite animations to finish first.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => null)),
+    ),
+  );
   const results = await new AxeBuilder({ page }).include(include).withTags(TAGS).analyze();
   expect(results.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) })), label).toEqual([]);
 }
