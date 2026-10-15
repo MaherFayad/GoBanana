@@ -145,6 +145,33 @@ describe("wildness rules", () => {
   });
 });
 
+describe("P0-06 keeps the product noun in the subject", () => {
+  // Subjects as bend_brief shows them (result.subject, acronyms fixed).
+  const subjectOf = (brief: string, wildness: 1 | 2 | 3 | 4 | 5 = 3) => bendBrief({ brief, wildness, count: 1 }).subject;
+
+  it.each([
+    ["eSIM plan picker for a GCC travel app", "eSIM plan picker"],
+    ["eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy", "eSIM plan picker"],
+    ["flight checkout for a GCC OTA", "flight checkout"],
+    ["flight checkout screen for a GCC travel OTA", "flight checkout"],
+    ["eSIM data plan picker for travelers", "eSIM"],
+    ["VPN server picker for a privacy app", "VPN server picker"],
+    ["WhatsApp style chat for a dental clinic", "WhatsApp"],
+    ["loyalty points wallet for a coffee chain", "loyalty points wallet"],
+    ["Retail banking mobile app homepage: balance, quick actions, recent transactions", "retail banking"],
+    ["hotel booking calendar for a Dubai resort", "hotel booking calendar"],
+  ])("%s keeps %s", (brief, want) => {
+    expect(subjectOf(brief).toLowerCase()).toContain(want.toLowerCase());
+    expect(subjectOf(brief)).toContain(want);
+  });
+
+  it("keeps the old subjects when the thing chunk is short", () => {
+    expect(extractSubject("landing page for a coffee shop", 3).title).toBe("coffee shop");
+    expect(extractSubject("checkout for a coffee shop", 3).title).toBe("coffee shop checkout");
+    expect(extractSubject("eSIM data plan picker for travelers", 3).title).toBe("eSIM plan picker");
+  });
+});
+
 describe("count, moves and lens", () => {
   it("returns count directions, default 6, max 8", () => {
     expect(bendBrief({ brief: "podcast player", wildness: 2 }).directions).toHaveLength(6);

@@ -39,7 +39,8 @@ const ACRONYMS: Readonly<Record<string, string>> = {
   ota: "OTA", sms: "SMS", faq: "FAQ", faqs: "FAQs", pdf: "PDF", seo: "SEO", cms: "CMS", vr: "VR", uae: "UAE",
   ksa: "KSA", usa: "USA", uk: "UK", nyc: "NYC", qr: "QR", "3d": "3D", "2d": "2D", sdk: "SDK", llm: "LLM",
   llms: "LLMs", gpu: "GPU", esg: "ESG", roi: "ROI", okr: "OKR", okrs: "OKRs", tv: "TV", dj: "DJ", diy: "DIY",
-  hiit: "HIIT", gps: "GPS", nfc: "NFC", pos: "POS", rsvp: "RSVP", ar: "AR",
+  hiit: "HIIT", gps: "GPS", nfc: "NFC", pos: "POS", rsvp: "RSVP", ar: "AR", esim: "eSIM", esims: "eSIMs", vpn: "VPN",
+  bnpl: "BNPL",
 };
 
 const ACRONYM_RE = new RegExp(`(?<![\\p{L}\\p{N}'’-])(${Object.keys(ACRONYMS).join("|")})(?![\\p{L}\\p{N}'’-])`, "giu");
