@@ -9,7 +9,8 @@
  *
  * --kind takes server kinds (pages, domains, fit, cards, lines, mechanics, lenses, recipes, cc0,
  * slop) and only limits the printed commands; the manifest always lists every kind. Job kinds the
- * server does not read (example, bench, ...) are never uploaded.
+ * server does not read (example, bench, ...) and "work-" kinds (a job's intermediate output, such as
+ * the J8 briefs) are never uploaded.
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -24,7 +25,7 @@ export const PREFIX = "atlas/v1";
 export function shippable(manifest: Manifest, kinds?: readonly string[]): Manifest {
   return {
     version: manifest.version,
-    shards: manifest.shards.filter((s) => !s.kind.startsWith("example") && (!kinds || kinds.length === 0 || kinds.includes(s.kind))),
+    shards: manifest.shards.filter((s) => !s.kind.startsWith("example") && !s.kind.startsWith("work-") && (!kinds || kinds.length === 0 || kinds.includes(s.kind))),
   };
 }
 

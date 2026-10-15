@@ -121,6 +121,7 @@ export interface CC0Item {
   pageUrl: string;
   steal: string[];                              // what UI can take: rhythm, border, palette, layout
   motif: string[]; region?: string; paletteHint?: string[];
+  rights: { flag: string; value: string };      // added for J9: the API's own public domain or CC0 flag, as read per item
 }
 
 export interface SlopRule { feature: "font" | "accent-hue" | "radius" | "gradient" | "layout" | "shadow" | "copy"; value: string; share: number }
@@ -163,6 +164,14 @@ export interface MotionRecipe {
   families: string[];                           // COMPUTED from cardIds by the script
   lensIds: string[];
   culturalNotes?: string;
+// Added for P1-J12 (not in section 6.2): one bilingual type pair judged from a rendered specimen.
+export interface TypePair {
+  id: string;
+  voice: string;                                // a TypeVoice from lib/direction-detail.ts
+  latin: { display: string; body: string };     // must exist in Google Fonts metadata
+  arabic: { display: string; body: string };    // must exist in Google Fonts metadata, with the arabic subset
+  notes: string;                                // how the pair relates, where it fits, what to watch
+  scores: { harmony: 1 | 2 | 3 | 4 | 5; latinBody: 1 | 2 | 3 | 4 | 5; arabicBody: 1 | 2 | 3 | 4 | 5; hierarchy: 1 | 2 | 3 | 4 | 5 };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -326,6 +335,7 @@ export const CC0ItemSchema = z.object({
   motif: z.array(text),
   region: text.optional(),
   paletteHint: z.array(hex).optional(),
+  rights: z.object({ flag: text, value: text }),
 });
 
 export const SlopRuleSchema = z.object({
@@ -407,6 +417,13 @@ export const MotionRecipeSchema = z.object({
   css: text,
   reduced: z.object({ kind: z.enum(["static", "fade"]), ms: z.number().int().min(100).max(600).optional(), note: text }),
   ...ties,
+export const TypePairSchema = z.object({
+  id,
+  voice: typeSpec.shape.voice,
+  latin: fontPair,
+  arabic: fontPair,
+  notes: text,
+  scores: z.object({ harmony: buildability, latinBody: buildability, arabicBody: buildability, hierarchy: buildability }),
 });
 
 /** Every Atlas kind by name, for jobs and the runner. The name is the out/v1/<kind>/ folder. */
@@ -424,6 +441,7 @@ export const SCHEMAS = {
   bench: BenchBriefSchema,
   shaders: ShaderRecipeSchema,
   motion: MotionRecipeSchema,
+  "type-pairs": TypePairSchema,
 } as const;
 export type AtlasKind = keyof typeof SCHEMAS;
 
@@ -448,6 +466,7 @@ export type _SchemaChecks = [
   Assert<Same<z.infer<typeof ShaderRecipeSchema>, ShaderRecipe>>,
   Assert<Same<z.infer<typeof MotionKeyframeSchema>, MotionKeyframe>>,
   Assert<Same<z.infer<typeof MotionRecipeSchema>, MotionRecipe>>,
+  Assert<Same<z.infer<typeof TypePairSchema>, TypePair>>,
   Assert<Equals<z.infer<typeof PlatformSchema>, Platform>>,
   Assert<Equals<z.infer<typeof UiElementSchema>, UiElement>>,
 ];

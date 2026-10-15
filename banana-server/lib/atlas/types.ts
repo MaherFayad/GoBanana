@@ -100,8 +100,19 @@ export interface CC0Item {
   pageUrl: string;
   steal: string[];                              // what UI can take: rhythm, border, palette, layout
   motif: string[]; region?: string; paletteHint?: string[];
+  rights: { flag: string; value: string };      // added for J9: the API's own public domain or CC0 flag, as read per item
 }
 
 export interface SlopRule { feature: "font" | "accent-hue" | "radius" | "gradient" | "layout" | "shadow" | "copy"; value: string; share: number }
 
 export interface BenchBrief { id: string; brief: string; platform: Platform; pages: string[]; wildness: 1 | 2 | 3 | 4 | 5; lens?: string }
+
+// Added for P1-J12 (not in section 6.2): one bilingual type pair judged from a rendered specimen.
+export interface TypePair {
+  id: string;
+  voice: string;                                // a TypeVoice from lib/direction-detail.ts
+  latin: { display: string; body: string };     // must exist in Google Fonts metadata
+  arabic: { display: string; body: string };    // must exist in Google Fonts metadata, with the arabic subset
+  notes: string;                                // how the pair relates, where it fits, what to watch
+  scores: { harmony: 1 | 2 | 3 | 4 | 5; latinBody: 1 | 2 | 3 | 4 | 5; arabicBody: 1 | 2 | 3 | 4 | 5; hierarchy: 1 | 2 | 3 | 4 | 5 };
+}
