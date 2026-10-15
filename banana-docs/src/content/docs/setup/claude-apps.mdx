@@ -5,6 +5,7 @@ description: Add GoBanana as a custom connector, sign in with OAuth, and see the
 
 import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import ServerUrl from '../../../components/ServerUrl.astro';
+import { ADD_TO_CLAUDE_URL, ADD_TO_CLAUDE_ADMIN_URL } from '../../../consts';
 
 Claude.ai (web), Claude Desktop and Cowork share one list of connectors. Add GoBanana once and it works in all of them. Custom connectors work on the Free, Pro, Max, Team and Enterprise plans; the Free plan allows one custom connector.
 
@@ -13,6 +14,12 @@ This is the best place to **explore**: Claude shows the GoBanana canvas inline i
 <ServerUrl />
 
 ## Add the connector
+
+**One click:** <a href={ADD_TO_CLAUDE_URL} target="_blank" rel="noopener noreferrer">Add GoBanana to Claude</a>. It opens Claude with the custom connector form already filled in. Click **Add**, then **Connect** and sign in. Team and Enterprise owners can use <a href={ADD_TO_CLAUDE_ADMIN_URL} target="_blank" rel="noopener noreferrer">the admin version of the link</a> to add it for the whole organization.
+
+<Aside>This link is not in Anthropic's docs, so it may change. If the form opens empty or the page does not load, use the steps below, which always work.</Aside>
+
+Or add it by hand:
 
 <Tabs syncKey="claude-plan">
 <TabItem label="Free, Pro, Max">

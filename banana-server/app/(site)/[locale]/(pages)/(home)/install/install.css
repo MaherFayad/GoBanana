@@ -95,3 +95,10 @@
 .site .inst-docs {
   color: var(--st-desk-heading);
 }
+
+.site .inst-sub {
+  margin: var(--st-space-s) 0 0;
+  color: var(--st-desk-heading);
+  font-size: 1rem;
+  font-weight: 500;
+}

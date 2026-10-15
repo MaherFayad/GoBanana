@@ -26,6 +26,8 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
    /plugin install gobanana@gobanana
    ```
 
+   وتقدر تثبت الإضافة مرة وحدة على claude.ai وتظهر لك في Claude Code كمان (الإصدار 2.1.273 أو أحدث).
+
    من الطرفية، دون جلسة: `claude plugin install gobanana --marketplace MaherFayad/GoBanana` (الإصدار 2.1.292 أو أحدث)، أو `claude plugin marketplace add MaherFayad/GoBanana` ثم `claude plugin install gobanana@gobanana`.
 
 2. **اختر النطاق.** يفتح التثبيت تفاصيل الإضافة. راجع ما تضيفه (9 مهارات وخادم MCP باسم `gobanana`)، ثم اختر **Install for you** (لك، في كل المشاريع)، أو **Install for all collaborators on this repository** (للمشروع)، أو **Install for you, in this repo only** (محلي). إذا انتهى الملخص بالعبارة `Run /reload-plugins to apply.`، شغل `/reload-plugins`.
@@ -47,6 +49,10 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
    يستدعي Claude الأداة `ping` ويرد بـ "Connected to GoBanana as you@example.com."
 
 </Steps>
+
+### اعرض الإضافة على فريقك
+
+اطلب التسليم بصيغة `claude_settings` (مهارة `gobanana-handoff` تعرضها حين ترى Claude Code، وتسألك قبل ما تكتب). تدمج مفتاحين في ملف `.claude/settings.json` في مستودعك: `extraKnownMarketplaces` للمستودع `MaherFayad/GoBanana`، و`enabledPlugins` مع `gobanana@gobanana`. ارفع الملف مع المستودع. زملاؤك الذين يفتحون المستودع ويثقون بالمجلد يُضاف لهم المتجر، ويعرض Claude Code أمر التثبيت. كل واحد يثبت الإضافة ويسجل الدخول بحسابه.
 
 ## الخيار الثاني: الخادم فقط
 

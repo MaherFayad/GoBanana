@@ -7,6 +7,7 @@
  */
 import { WindowLayer } from "@/components/window/WindowLayer";
 import { APP_NAME, getConfig } from "@/lib/config";
+import { addToClaudeAdminUrl, addToClaudeUrl } from "@/lib/site/add-to-claude";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
 import { CodeBlock } from "../../../../_components/CodeBlock";
@@ -56,6 +57,14 @@ export function InstallWindow({ locale, mode }: { locale: Locale; mode: "overlay
               label: t.tabs.app,
               panel: (
                 <>
+                  <a className="st-btn" data-variant="primary" data-size="md" href={addToClaudeUrl(APP_NAME, url)} target="_blank" rel="noopener noreferrer" data-testid="add-to-claude">
+                    {fmt(t.app.addButton, { app: APP_NAME })}
+                  </a>
+                  <p className="inst-note">{fmt(t.app.addHint, { app: APP_NAME })}</p>
+                  <a className="inst-docs" href={addToClaudeAdminUrl(APP_NAME, url)} target="_blank" rel="noopener noreferrer" data-testid="add-to-claude-admin">
+                    {t.app.adminLink}
+                  </a>
+                  <h2 className="inst-sub">{t.app.manualTitle}</h2>
                   <p>{t.app.intro}</p>
                   {steps(t.app.steps)}
                   <CodeBlock code={PLUGIN_REPO} label={t.app.repoLabel} labelLang={locale} copyLabel={copy.address} labels={labels} testId="install-repo" variant="file" />

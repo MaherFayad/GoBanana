@@ -5,6 +5,7 @@ description: أضف GoBanana كموصل مخصص، وسجل الدخول عبر 
 
 import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import ServerUrl from '../../../../components/ServerUrl.astro';
+import { ADD_TO_CLAUDE_URL, ADD_TO_CLAUDE_ADMIN_URL } from '../../../../consts';
 
 يتشارك Claude.ai (على الويب) وClaude Desktop وCowork قائمة موصلات واحدة. أضف GoBanana مرة واحدة فيعمل فيها كلها. الموصلات المخصصة متاحة في خطط Free وPro وMax وTeam وEnterprise، وخطة Free تسمح بموصل مخصص واحد.
 
@@ -13,6 +14,12 @@ import ServerUrl from '../../../../components/ServerUrl.astro';
 <ServerUrl />
 
 ## أضف الموصل
+
+**بنقرة وحدة:** <a href={ADD_TO_CLAUDE_URL} target="_blank" rel="noopener noreferrer">أضف GoBanana إلى Claude</a>. يفتح Claude ونموذج الموصل المخصص معبأ جاهز. اضغط **Add** ثم **Connect** وسجل الدخول. مالكو حسابات Team وEnterprise يقدرون يستخدمون <a href={ADD_TO_CLAUDE_ADMIN_URL} target="_blank" rel="noopener noreferrer">رابط الإدارة</a> لإضافته لكل المؤسسة.
+
+<Aside>هذا الرابط مو موثق عند Anthropic، فممكن يتغير. إذا انفتح النموذج فاضي أو ما حمّلت الصفحة، استخدم الخطوات تحت، وهي تشتغل دايم.</Aside>
+
+أو أضفه بنفسك:
 
 <Tabs syncKey="claude-plan">
 <TabItem label="Free وPro وMax">
