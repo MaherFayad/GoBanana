@@ -13,7 +13,7 @@ import { MAIN_ATLAS, ROOT } from "../config.ts";
 export interface Page {
   setContent(html: string, opts?: { waitUntil?: "load" | "domcontentloaded" | "networkidle"; timeout?: number }): Promise<void>;
   goto(url: string, opts?: { waitUntil?: "load" | "domcontentloaded" | "networkidle"; timeout?: number }): Promise<unknown>;
-  evaluate<R, A = undefined>(fn: (arg: A) => R | Promise<R>, arg?: A): Promise<R>;
+  evaluate<R, A = undefined>(fn: ((arg: A) => R | Promise<R>) | string, arg?: A): Promise<R>;
   screenshot(opts?: { type?: "png" | "jpeg"; quality?: number; fullPage?: boolean; clip?: { x: number; y: number; width: number; height: number } }): Promise<Buffer>;
   close(): Promise<void>;
 }
