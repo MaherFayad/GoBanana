@@ -10,6 +10,8 @@ import { ingredientWeights } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
 import { inspirationFromQuery } from "@/lib/bend/queries";
 import { cleanTaste } from "@/lib/taste";
+import { EMPTY_TASTE, withProfileFallback, type UserTasteProfile } from "@/lib/taste-profile";
+import { createDbTasteStore } from "@/lib/taste-profile/store";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
@@ -41,6 +43,8 @@ const advertisedInput: StandardSchemaWithJSON<unknown, unknown> = lenient(inputS
 export type BendBriefDeps = Pick<CanvasToolDeps, "repos"> & {
   /** GLOBAL_LEARNING: false means only the user's own direction ratings steer their bends. Default true. */
   globalLearning?(): boolean;
+  /** The user's taste profile (P2-02). Only fills the taste lane when the call and the canvas gave no words. */
+  tasteProfile?(userId: string): Promise<UserTasteProfile>;
 };
 
 /**
@@ -167,7 +171,7 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
         reachable = false;
       }
     }
-    const taste = newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined);
+    const taste = await withProfileFallback((id) => getDeps().tasteProfile?.(id) ?? Promise.resolve(EMPTY_TASTE), userId, newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined));
 
     const ingredientWeights = await readWeights(getDeps, userId, canvasId);
     let result: BendResult;
@@ -204,6 +208,8 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
 }
 
 let liveTool: ReturnType<typeof createBendBriefTool> | undefined;
+let tasteStore: ReturnType<typeof createDbTasteStore> | undefined;
+const liveTasteStore = () => (tasteStore ??= createDbTasteStore());
 
 /** Live deps; `repos` stays lazy so a missing DATABASE_URL only fails the parts that need it. */
 function liveBendDeps(): BendBriefDeps {
@@ -213,6 +219,7 @@ function liveBendDeps(): BendBriefDeps {
       return canvas.repos;
     },
     globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
+    tasteProfile: (userId) => liveTasteStore().get(userId),
   };
 }
 
