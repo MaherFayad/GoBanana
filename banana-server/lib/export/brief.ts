@@ -53,7 +53,7 @@ export function briefMd(m: KitModel): string {
   out.push(
     `- Colors tagged ship: ${m.ship.length > 0 ? m.ship.map((c) => `${c.name} ${c.hex}`).join(", ") : "none"}.`,
     `- Colors to explore (concept only): ${m.explore.length > 0 ? m.explore.map((c) => c.hex).join(", ") : "none"}.`,
-    `- Type: ${m.pairing.name} (${m.pairing.licence})${m.pairingFrom === "canvas" ? "" : m.pairingFrom === "voice" ? ", picked for the direction's type voice" : ", default pairing"}.`,
+    `- Type: ${m.pairing.name} (${m.pairing.licence})${{ canvas: "", card: ", from the direction's card", voice: ", picked for the direction's type voice", distinct: ", its own pairing (another direction has the first pick)", default: ", default pairing" }[m.pairingFrom]}.`,
     `- Platform: ${m.platform.label}.`,
     "",
   );

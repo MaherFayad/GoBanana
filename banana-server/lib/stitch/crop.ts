@@ -8,7 +8,11 @@
  * (40% to 70% down), so a pay button and a fare summary cut from one shot were identical. Each role
  * now has its own band, and a phone shot laid out as a landscape presentation (Dribbble's 4:3
  * shots, several phones side by side) is cut from the middle phone, not across all of them.
+ *
+ * P1-I4: when the page is known, its Atlas anatomy (PageAnatomy.sections[].bands) gives the band
+ * for each role it names, in place of ROLE_BANDS. The image shape checks (phones, full page) stay.
  */
+import type { PageAnatomy } from "@/lib/atlas/types";
 import { clampCrop, type Crop, type PartRole, type StitchPlatform } from "./types";
 
 export interface CropContext {
@@ -18,6 +22,8 @@ export interface CropContext {
   platform?: StitchPlatform | null;
   /** The image is known to be one screen (a Mobbin screen), never a presentation of several. */
   single?: boolean;
+  /** The page the image shows, when known (Atlas page anatomy). Its bands win over ROLE_BANDS. */
+  anatomy?: Pick<PageAnatomy, "sections"> | null;
 }
 
 /**
@@ -100,11 +106,33 @@ const PAGE_BANDS: Partial<Record<PartRole, Crop>> = {
 /** The middle phone of a presentation shot: a center column with a little room above and below. */
 const PHONE = { x: 0.34, y: 0.05, w: 0.32, h: 0.9 };
 
+type YBand = { y0: number; y1: number };
+const usableBand = (b: YBand | undefined): b is YBand =>
+  !!b && Number.isFinite(b.y0) && Number.isFinite(b.y1) && b.y0 >= 0 && b.y1 <= 1 && b.y1 - b.y0 >= 0.02;
+
+/**
+ * A role's band of one screen from the page anatomy: the first section with that role and a usable
+ * band for the platform (any platform's band when the platform is unknown). The anatomy gives the
+ * rows only, so the role keeps its width (a pay button stays narrower than the screen). Null when
+ * the anatomy has no usable band for the role.
+ */
+export function anatomyBand(role: PartRole, ctx: CropContext = {}): Crop | null {
+  for (const s of ctx.anatomy?.sections ?? []) {
+    if (s.role !== role) continue;
+    const b = ctx.platform ? s.bands[ctx.platform] : Object.values(s.bands).find(usableBand);
+    if (!usableBand(b)) continue;
+    const base = ROLE_BANDS[role];
+    return { x: base.x, y: b.y0, w: base.w, h: b.y1 - b.y0 };
+  }
+  return null;
+}
+
 export function defaultCrop(role: PartRole, ctx: CropContext = {}): Crop {
-  const band = ROLE_BANDS[role];
+  const fromAnatomy = anatomyBand(role, ctx);
+  const band = fromAnatomy ?? ROLE_BANDS[role];
   switch (imageLayout(ctx)) {
     case "page":
-      return clampCrop(PAGE_BANDS[role] ?? { ...band, h: band.h * 0.6 });
+      return clampCrop((fromAnatomy ? undefined : PAGE_BANDS[role]) ?? { ...band, h: band.h * 0.6 });
     case "phones":
       return clampCrop({ x: PHONE.x + band.x * PHONE.w, y: PHONE.y + band.y * PHONE.h, w: band.w * PHONE.w, h: band.h * PHONE.h });
     default:

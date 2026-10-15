@@ -155,6 +155,9 @@ export type ReferenceRecord = {
   query: string | null;
   termKey: string | null;
   arm: string | null;
+  /** Atlas provenance (search plan v2, P1-I3): the recipe and card that found it. Missing on older rows. */
+  recipeId?: string | null;
+  cardId?: string | null;
 };
 
 /** A search result with how it was found, as search_references saves it. */
@@ -213,6 +216,11 @@ export interface FeedbackRepo {
    * or by this user. Never returns user ids.
    */
   directionStats(userId: string, k: number): Promise<IngredientStatRow[]>;
+  /**
+   * Atlas id ratings (lane "atlas", term keys `card|...`, `mechanic|...`, `recipe|...`), grouped
+   * like directionStats in one query, with the same `k` filter. Never returns user ids.
+   */
+  atlasStats(userId: string, k: number): Promise<IngredientStatRow[]>;
   /** This user's latest verdict per item key, for the given keys only (reconcile_direction weights). */
   verdictsFor(userId: string, itemKeys: readonly string[]): Promise<Map<string, FeedbackVerdict>>;
 }

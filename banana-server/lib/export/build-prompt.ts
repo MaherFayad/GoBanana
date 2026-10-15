@@ -93,6 +93,7 @@ export function buildPromptMd(m: KitModel): string {
     "### Motion",
     "",
     bullets([
+      ...(m.motion ? [mdText(`Card motion: ${m.motion.verb}, ${m.motion.ms} ms.${m.motion.reduced ? ` With reduced motion: ${m.motion.reduced}` : ""}`, 300)] : []),
       ...m.focus.flatMap((d) => (d.detail?.spec?.motion ? [mdText(d.detail.spec.motion, 300)] : [])),
       "Respect prefers-reduced-motion: swap movement for a fade or no animation, and stop parallax and auto play.",
       "Nothing flashes more than three times a second; anything that moves for more than 5 seconds can be paused (SC 2.3.1, 2.2.2).",

@@ -52,7 +52,7 @@ Give a developer everything to build one wild page in the direction's style: ove
 
      Use the stop with the lower ratio as the solid fallback.
    - If no pair qualifies, write the file with a comment saying so, and say it in your reply.
-6. **One font pairing.** If the scoped DESIGN.md exists, use its `typography` fonts. If the export names a pairing (picked from the direction's `spec.typeVoice`), use that. Otherwise pick one that fits the board's direction from GoBanana's curated list (all SIL Open Font License 1.1, on Google Fonts; the default is `space-grotesk-inter`). If the product is bilingual Arabic and English, pick a pairing with the `arabic` script.
+6. **One font pairing.** If the scoped DESIGN.md exists, use its `typography` fonts. If the export names a pairing (from the direction's card, else its `spec.typeVoice`), use that; each direction on a board gets its own pairing, so never copy one direction's fonts into another's kit. Otherwise pick one that fits the board's direction from GoBanana's curated list (all SIL Open Font License 1.1, on Google Fonts; the default is `space-grotesk-inter`). If the product is bilingual Arabic and English, pick a pairing with the `arabic` script.
 
    | Pairing id | Display | Body | Scripts | Mood |
    | --- | --- | --- | --- | --- |

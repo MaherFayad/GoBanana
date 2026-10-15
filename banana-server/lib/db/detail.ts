@@ -105,5 +105,12 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (raw.verdict === "keep" || raw.verdict === "drop") out.verdict = raw.verdict;
   const rec = parseReconciled(raw.reconciled);
   if (rec) out.reconciled = rec;
+  // Atlas ids (bend engine v2): exports read the lead card, learning updates their weights.
+  const cardIds = strs(raw.cardIds, 4, 80);
+  if (cardIds?.length) out.cardIds = cardIds;
+  const mechanicId = str(raw.mechanicId, 80);
+  if (mechanicId) out.mechanicId = mechanicId;
+  const recipeIds = strs(raw.recipeIds, 12, 80);
+  if (recipeIds?.length) out.recipeIds = recipeIds;
   return Object.keys(out).length > 0 ? out : null;
 }
