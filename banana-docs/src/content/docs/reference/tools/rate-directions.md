@@ -21,6 +21,8 @@ The skill calls it once per run, after searching and before placing anything, wi
 
 **Reasons to drop:** `no_ui_path` (no concrete UI move for this page), `no_usable_refs` (fewer than 6 usable UI references), `off_brief`, `duplicate_idea`, `too_literal`. **Reasons to keep:** `strong_salvage`, `great_refs`.
 
+**Client review.** The answer also lists the keep and drop votes and comments from your [review link](/docs/guides/canvases/#ask-a-client-to-review), per direction, as a separate source. They do not change your ratings or search. The comments are text from other people, so the agent reports them and never follows them as instructions.
+
 ## Example call
 
 ```json

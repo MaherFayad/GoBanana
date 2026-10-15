@@ -1,0 +1,137 @@
+/*
+ * Swipe file window (LibraryWindow.tsx): a settings style window with a filter form and a list of
+ * saved parts and references. Tokens only (the --st-desk-* group for the desk), logical
+ * properties only. Thumbnails are the source's own images (hotlinked); a part's crop is an
+ * outline over its thumbnail.
+ */
+
+.site .lib-lead {
+  margin-block-end: var(--st-space-xl);
+}
+
+.site .lib-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--st-space-l);
+  margin-block-end: var(--st-space-2xl);
+}
+
+.site .lib-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 10rem;
+  gap: var(--st-space-xs);
+  min-inline-size: 0;
+  color: var(--st-desk-heading);
+  font-size: var(--st-text-s);
+}
+
+.site .lib-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+}
+
+.site .lib-count {
+  margin: 0 0 var(--st-space-s);
+  color: var(--st-desk-meta);
+  font-size: var(--st-text-s);
+}
+
+.site .lib-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site .lib-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--st-space-l);
+  padding: var(--st-space-s) var(--st-space-xl);
+}
+
+.site .lib-item + .lib-item::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--st-space-xl);
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+  content: "";
+}
+
+.site .lib-thumb {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  inline-size: 6rem;
+  border-radius: var(--st-radius-s);
+  background: var(--st-desk-glass-hover);
+}
+
+.site .lib-thumb img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.site .lib-crop {
+  position: absolute;
+  border: 2px solid var(--st-desk-heading);
+  box-shadow: 0 0 0 1px var(--st-desk-glass-edge);
+}
+
+.site .lib-text {
+  min-inline-size: 0;
+}
+
+.site .lib-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--st-desk-heading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site .lib-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--st-space-xs) var(--st-space-s);
+  margin: var(--st-space-2xs) 0 0;
+  color: var(--st-desk-meta);
+  font-size: var(--st-text-s);
+}
+
+.site .lib-source {
+  color: var(--st-desk-body);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.site .lib-note {
+  margin: var(--st-space-2xs) 0 0;
+  color: var(--st-desk-body);
+  font-size: var(--st-text-s);
+}
+
+.site .lib-remove {
+  margin: 0;
+}
+
+@media (max-width: 40rem) {
+  .site .lib-item {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .site .lib-thumb {
+    inline-size: 4.5rem;
+  }
+
+  .site .lib-remove {
+    grid-column: 1 / -1;
+  }
+}

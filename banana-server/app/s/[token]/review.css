@@ -1,0 +1,129 @@
+/*
+ * Client review panel on the share page (ReviewPanel.tsx): a "Review" button over the board, top
+ * end corner under the title bar, and a glass side panel. It sets its own lang and dir, so every
+ * rule is logical. Tokens only. On a phone the panel fills the width as a sheet from the bottom.
+ */
+
+.rv-toggle.st-btn {
+  --st-btn-radius: var(--st-radius-pill);
+
+  position: absolute;
+  inset-block-start: 3.5rem;
+  inset-inline-end: var(--st-space-xl);
+  z-index: var(--st-z-sidebar);
+}
+
+.rv-panel {
+  position: absolute;
+  inset-block: 5.75rem var(--st-space-s);
+  inset-inline-end: var(--st-space-xl);
+  z-index: var(--st-z-sidebar);
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-s);
+  inline-size: min(24rem, calc(100% - 2 * var(--st-space-xl)));
+  overflow: auto;
+  padding: var(--st-space-l) var(--st-space-xl);
+  border: var(--st-border-width) solid var(--st-desk-glass-border);
+  border-radius: var(--st-desk-radius);
+  background: var(--st-desk-glass-strong);
+  backdrop-filter: blur(var(--st-desk-blur)) saturate(1.3);
+  box-shadow: var(--st-desk-shadow-soft);
+  color: var(--st-desk-heading);
+  font-family: var(--st-font-desk);
+}
+
+.rv-panel:lang(ar) {
+  font-family: var(--st-font-desk-arabic);
+}
+
+.rv-panel[hidden] {
+  display: none;
+}
+
+.rv-head {
+  display: flex;
+  align-items: center;
+  gap: var(--st-space-s);
+}
+
+.rv-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.rv-head h2:focus-visible {
+  outline: 2px solid transparent;
+  border-radius: var(--st-radius);
+  box-shadow: var(--st-focus-ring);
+}
+
+.rv-intro,
+.rv-hint,
+.rv-empty {
+  margin: 0;
+  color: var(--st-desk-body);
+  font-size: var(--st-text-s);
+}
+
+.rv-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xs);
+  font-size: var(--st-text-s);
+}
+
+.rv-status {
+  min-block-size: 1.25rem;
+  margin: 0;
+  color: var(--st-desk-body);
+  font-size: var(--st-text-s);
+}
+
+.rv-status[data-error] {
+  color: var(--st-danger-text, var(--st-desk-heading));
+  font-weight: var(--st-weight-semibold);
+}
+
+.rv-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--st-space-xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--st-space-s);
+  padding-block-start: var(--st-space-l);
+  border-block-start: var(--st-border-width) solid var(--st-desk-glass-edge);
+}
+
+.rv-item h3 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.rv-item textarea {
+  inline-size: 100%;
+  resize: vertical;
+}
+
+.rv-verdicts {
+  display: flex;
+  gap: var(--st-space-s);
+}
+
+@media (max-width: 40rem) {
+  .rv-panel {
+    inset-block: auto var(--st-space-s);
+    inset-inline: var(--st-space-s);
+    inline-size: auto;
+    max-block-size: 70%;
+  }
+}

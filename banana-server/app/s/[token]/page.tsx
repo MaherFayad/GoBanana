@@ -13,10 +13,15 @@
  *   "Add to Claude" (canvas/SharedCanvas.tsx). The canvas is a read-only app window on the desk,
  *   and a dismissible "Made with {app}" notification card links to the landing page. The slim
  *   brand bar (share.css) is kept only for the page that could not load.
+ * - Client review (VAL-04): a "Review" button opens a panel where the viewer keeps or drops each
+ *   direction and comments, with no sign in (ReviewPanel.tsx, POST /api/review/:token). English or
+ *   Arabic from `?lang=` or the browser language. If the directions cannot load, the page shows
+ *   without the panel.
  * - Test-only: under the E2E sign-in bypass (never in a production build) the demo token
  *   renders lib/site/share-demo.ts, so the page can be screenshot without a database.
  */
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { SharedCanvas } from "@/canvas/SharedCanvas";
 import { loadSharedCanvas, type SharedPageDeps } from "@/canvas/server-load";
@@ -24,6 +29,8 @@ import { APP_NAME } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { getShareRepo } from "@/lib/db/shares";
 import { memoTakedowns } from "@/lib/db/takedowns";
+import { reviewCopy, reviewLocale } from "@/lib/review/copy";
+import { liveReviewRepo } from "@/lib/review/live";
 import { isValidShareToken, noindexMetadata } from "@/lib/share";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href } from "@/lib/site/i18n";
@@ -31,8 +38,10 @@ import { compileTakedowns } from "@/lib/takedown";
 import { e2eAuthBypass } from "@/lib/web-auth";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { MadeWithCard } from "./MadeWithCard";
+import { ReviewPanel } from "./ReviewPanel";
 import "@/canvas/overlays.css";
 import "./share.css";
+import "./review.css";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +51,7 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-type Props = { params: Promise<{ token: string }> };
+type Props = { params: Promise<{ token: string }>; searchParams: Promise<{ lang?: string | string[] }> };
 
 /** The share page is English, like the shared canvas UI. */
 const t = getDict("en");
@@ -70,8 +79,9 @@ async function demoDeps(token: string): Promise<SharedPageDeps | null> {
   return { shares: () => ({ getShared: async () => demo.DEMO_SHARE }), loadMatcher: async () => compileTakedowns([]) };
 }
 
-export default async function SharedCanvasPage({ params }: Props) {
+export default async function SharedCanvasPage({ params, searchParams }: Props) {
   const { token } = await params;
+  const { lang } = await searchParams;
   if (!isValidShareToken(token)) notFound();
 
   let shared: Awaited<ReturnType<typeof loadSharedCanvas>>;
@@ -98,6 +108,15 @@ export default async function SharedCanvasPage({ params }: Props) {
   }
   if (!shared) notFound();
 
+  // Directions to review. Any failure leaves the page without the panel.
+  let reviewDirections: { key: string; title: string }[] = [];
+  try {
+    reviewDirections = (await liveReviewRepo().target(token))?.directions ?? [];
+  } catch {
+    console.error("[share] review directions could not load");
+  }
+  const locale = reviewLocale(Array.isArray(lang) ? lang[0] : lang, (await headers()).get("accept-language"));
+
   return (
     <div className="share-shell">
       <SharedCanvas
@@ -110,6 +129,15 @@ export default async function SharedCanvasPage({ params }: Props) {
           </a>
         }
       >
+        {reviewDirections.length > 0 ? (
+          <ReviewPanel
+            token={token}
+            directions={reviewDirections}
+            copy={reviewCopy(locale)}
+            locale={locale}
+            switchHref={`?lang=${locale === "ar" ? "en" : "ar"}`}
+          />
+        ) : null}
         <MadeWithCard
           appName={APP_NAME}
           label={fmt(t.share.noteLabel)}

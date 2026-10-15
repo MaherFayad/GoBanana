@@ -41,3 +41,13 @@ export const DEMO_SHARE = {
     tray: [],
   },
 };
+
+/** Directions of the demo share page, for the client review panel under the bypass. */
+export const DEMO_REVIEW_TARGET = {
+  canvasId: "3b2f6c1e-5d4a-4e8b-9a77-0c1d2e3f4a5b",
+  ownerPlan: "pro_monthly" as const,
+  directions: [
+    { key: "bd-demo0001", title: "Checkout as a frosted vinyl sleeve" },
+    { key: "bd-demo0002", title: "Checkout as a 1970s airline ticket" },
+  ],
+};

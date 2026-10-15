@@ -246,6 +246,10 @@
                 }
               }
             }
+          },
+          "save": {
+            "type": "boolean",
+            "description": "Also keep the great ones in the user's swipe file (links only), to reuse on other boards."
           }
         }
       }
@@ -517,6 +521,26 @@
         "properties": {
           "canvasId": {
             "type": "string"
+          },
+          "library": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "cardId": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              }
+            },
+            "description": "Search the user's swipe file (parts and great references saved across boards) instead of reading a canvas."
           }
         }
       }
@@ -758,6 +782,10 @@
                 "description": "Tray or search reference to look at."
               }
             }
+          },
+          "save": {
+            "type": "boolean",
+            "description": "Also keep the cut parts in the user's swipe file (links, roles and crops only), to reuse on other boards."
           }
         },
         "description": "Pass cuts, look or both."
