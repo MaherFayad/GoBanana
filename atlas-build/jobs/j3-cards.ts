@@ -238,12 +238,13 @@ function arabicFamilies(): string {
     .join(", ");
 }
 
-function catalog(): string {
-  const lines = LISTS.map(({ list, kind }) => `- ${kind} (${list}): ${readList(list).map(labelOf).join("; ")}`);
-  lines.push(`- tradition (Gulf, added): ${GULF_TRADITIONS.join("; ")}; Diwani calligraphy`);
-  lines.push(`- object (Gulf, added): ${GULF_OBJECTS.join("; ")}`);
-  lines.push(`- material (Gulf, added): ${GULF_MATERIALS.join("; ")}`);
-  return lines.join("\n");
+/** The existing words of one kind, sent with each request (not in the cached prefix, to keep it small). */
+function catalog(kind: Kind): string {
+  const words = LISTS.filter((l) => l.kind === kind).flatMap(({ list }) => readList(list).map(labelOf));
+  if (kind === "tradition") words.push(...GULF_TRADITIONS, "Diwani calligraphy");
+  if (kind === "object") words.push(...GULF_OBJECTS);
+  if (kind === "material") words.push(...GULF_MATERIALS);
+  return words.length ? `Catalog of existing ${kind} words: ${words.join("; ")}.` : `The catalog has no ${kind} words yet.`;
 }
 
 const SYSTEM = `You write ingredient cards for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. A card turns one surprising word into a complete visual system a designer can build from with no other card: palette, type, texture, imagery and motion that clearly belong to the same thing. A developer reads the card and ships it.
@@ -261,10 +262,11 @@ The quality bar (docs/taste-bar.md): the owner's references are shipped-grade pr
 - artQueries: 2 to 4 image search queries for art references of the real thing, each 1 to 4 words, the concrete noun only ("airport split flap board", "zellige tile"). No style suffixes like "graphic print close-up", "aesthetic" or "design".
 - idea: one plain sentence a designer could pitch. surprise: one sentence on why it is unexpected in UI and what it gives the interface (a mechanic, a structure, a feeling).
 - name: the word as a title, in English. nameAr: the natural Arabic name in white Saudi dialect or standard Arabic, no tashkeel.
+- Keep every text field tight: idea, surprise, texture, imagery and culturalNotes parts are one or two short sentences each. Concrete beats long.
 - radius and density follow the thing itself (a passport stamp is small radius and dense; a soap bubble is round and airy).
 
 Fonts:
-- latin.display and latin.body: Google Fonts families, spelled exactly (for example "Inter Tight", "Instrument Serif", "Space Grotesk", "IBM Plex Mono", "Fraunces", "Bricolage Grotesque", "DM Serif Display", "Archivo Narrow", "Big Shoulders Display", "Libre Caslon Text", "Work Sans", "Newsreader"). Prefer families with real craft over defaults; avoid Roboto, Open Sans, Lato, Montserrat and Poppins unless the word truly calls for them. Do not invent families or add weights to the name.
+- latin.display and latin.body: Google Fonts families, spelled exactly (for example "Inter Tight", "Instrument Serif", "Space Grotesk", "IBM Plex Mono", "Fraunces", "Bricolage Grotesque", "DM Serif Display", "Archivo Narrow", "Big Shoulders", "Libre Caslon Text", "Work Sans", "Newsreader"). Prefer families with real craft over defaults; avoid Roboto, Open Sans, Lato, Montserrat and Poppins unless the word truly calls for them. Do not invent families or add weights to the name.
 - arabic.display and arabic.body: only these Google Fonts families with Arabic support: ${arabicFamilies()}. Body Arabic must be very readable (for example IBM Plex Sans Arabic, Noto Sans Arabic, Noto Naskh Arabic, Readex Pro, Tajawal, Almarai, Cairo, Vazirmatn). Arabic display should echo the Latin display in spirit (Kufi or geometric for condensed and grotesk, Naskh for serif, Ruqaa or hand styles only for script).
 
 family: pick exactly one from the list for the card's kind:
@@ -283,12 +285,9 @@ Culture (gobanana-culture skill):
 - Region precision: the Gulf is not the Levant, the Maghreb, Turkey or Iran.
 - culturalNotes is required for every tradition card, and for any other card drawn from a specific living culture. Write it as four labelled sentences in one string: "Meaning: ... Steal: ... Credit: ... Care: <open|care|sacred tier> ...". Credit names the tradition and its people. Mention UNESCO or a museum only when you are sure it is true. When unsure of a fact, leave it out.
 
-Keep or drop (list words only): you get existing words from GoBanana's word lists. Keep a word when it yields a distinctive, coherent visual system a real product could ship. Drop it when it is weak: too vague to give a palette, type and motion of its own; a near duplicate of a stronger word in the catalog below (name that word); a cliché; or unsafe to use respectfully. Most words are worth keeping; expect to drop about one in eight. When you keep a word, fix its gaps: the list hints are a starting point, correct them where they are wrong.
+Keep or drop (list words only): you get existing words from GoBanana's word lists. Keep a word when it yields a distinctive, coherent visual system a real product could ship. Drop it when it is weak: too vague to give a palette, type and motion of its own; a near duplicate of a stronger word in the catalog given with the request (name that word); a cliché; or unsafe to use respectfully. Most words are worth keeping; expect to drop about one in eight. When you keep a word, fix its gaps: the list hints are a starting point, correct them where they are wrong.
 
 New words (gap requests): propose words not already in the catalog, concrete enough to picture and to search for. No near duplicates of catalog words.
-
-The catalog of existing words, by kind:
-${catalog()}
 
 Reply format: one \`\`\`json block holding {"cards": IngredientCard[], "dropped": [{"word": string, "why": string}]}. Every card also carries "word": the exact word it was written for (the list word or the given gap word, or your new word). Leave shipPairs as an empty array; the script computes it. Use the card's kind exactly as asked.
 
@@ -314,6 +313,12 @@ function wordLines(words: readonly Word[]): string {
 }
 
 function buildPrompt(input: Input): string {
+  return `${promptBody(input)}
+
+${catalog(input.kind)}`;
+}
+
+function promptBody(input: Input): string {
   if (input.mode === "list") {
     return `Kind: ${input.kind}. These ${input.words.length} words come from the ${input.list} list. For each, keep it as one full card or drop it with a reason.\n\n${wordLines(input.words)}`;
   }
@@ -327,11 +332,15 @@ function buildPrompt(input: Input): string {
 // ---------------------------------------------------------------------------------------------
 // Script-side fields.
 
+/** Old or display-only names the model reaches for, to their Google Fonts family. */
+const FONT_ALIASES: Record<string, string> = { "Big Shoulders Display": "Big Shoulders", "Big Shoulders Text": "Big Shoulders" };
+
 /** Fixes the case of a Google Fonts family name ("ibm plex mono" to "IBM Plex Mono"); unknown names stay as they are for the check to reject. */
 function canonicalFont(name: unknown, fonts: FontIndex): unknown {
   if (typeof name !== "string") return name;
   const hit = fonts.byName.get(name.trim().toLowerCase());
-  return hit ? hit.family : name;
+  if (hit) return hit.family;
+  return FONT_ALIASES[name.trim()] ?? name;
 }
 
 const dropped: Array<{ request: string; word: string; why: string }> = [];
@@ -383,8 +392,8 @@ export default defineJob<Input, IngredientCard>({
   schema: IngredientCardSchema,
   system: SYSTEM,
   maxTokens: 24000,
-  expectedOutputTokens: 6500,
-  effort: "medium",
+  expectedOutputTokens: 5500,
+  effort: "low",
 
   loadInputs: () => loadAll(),
   requestId: (input) => (input.mode === "list" ? `list-${input.list}-${input.n}` : `gap-${input.key}`),
