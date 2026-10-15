@@ -24,6 +24,8 @@ export const EXPORT_FORMATS = [
   "wireframe_html",
   "culture_md",
   "claude_settings",
+  "pitch_md",
+  "experiment_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 

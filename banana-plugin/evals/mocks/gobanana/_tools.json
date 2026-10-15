@@ -114,6 +114,28 @@
               }
             },
             "description": "The product's brand (DESIGN.md or tokens) and how far directions may stretch it."
+          },
+          "fromUpload": {
+            "type": "object",
+            "required": [
+              "uploadId"
+            ],
+            "properties": {
+              "uploadId": {
+                "type": "string",
+                "description": "The user's own screenshot, from their uploads."
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "maxItems": 12,
+                "description": "The page's parts, top to bottom, as stitch roles (nav, hero, features...). Read them from the screenshot."
+              }
+            },
+            "description": "Bend the user's own page: their uploaded screenshot becomes the baseline."
           }
         }
       }
@@ -251,6 +273,10 @@
                 }
               }
             }
+          },
+          "save": {
+            "type": "boolean",
+            "description": "Also keep the great ones in the user's swipe file (links only), to reuse on other boards."
           }
         }
       }
@@ -542,6 +568,26 @@
         "properties": {
           "canvasId": {
             "type": "string"
+          },
+          "library": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "cardId": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              }
+            },
+            "description": "Search the user's swipe file (parts and great references saved across boards) instead of reading a canvas."
           }
         }
       }
@@ -599,7 +645,7 @@
     {
       "name": "export_kit",
       "title": "Export kit",
-      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief, stitch_md (FRANKENSTEIN.md: a skeleton per Frankenstein page with roles, source links and notes), wireframe_html (frankenstein-wireframe.html: grey boxes with role labels, no reference images), culture_md (CULTURE.md: the Cultural brief, the culture items with meaning and credit, reviewer questions). DIRECTION.md opens with a Cultural brief when items carry culture or a lens is set. Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt, stitch_md, culture_md. You write the files.",
+      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief, stitch_md (FRANKENSTEIN.md: a skeleton per Frankenstein page with roles, source links and notes), wireframe_html (frankenstein-wireframe.html: grey boxes with role labels, no reference images), pitch_md (PITCH.md: the kept directions as a short deck), experiment_md (EXPERIMENT.md: two directions as flagged variants with events and a test plan), culture_md (CULTURE.md: the Cultural brief, the culture items with meaning and credit, reviewer questions). DIRECTION.md opens with a Cultural brief when items carry culture or a lens is set. Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt, stitch_md, culture_md. You write the files.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -631,7 +677,9 @@
                 "stitch_md",
                 "wireframe_html",
                 "culture_md",
-                "claude_settings"
+                "claude_settings",
+                "pitch_md",
+                "experiment_md"
               ]
             }
           },
@@ -783,6 +831,10 @@
                 "description": "Tray or search reference to look at."
               }
             }
+          },
+          "save": {
+            "type": "boolean",
+            "description": "Also keep the cut parts in the user's swipe file (links, roles and crops only), to reuse on other boards."
           }
         },
         "description": "Pass cuts, look or both."

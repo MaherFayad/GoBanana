@@ -27,6 +27,7 @@ import {
   type DirectionVerdict,
 } from "@/lib/learning/directions";
 import { directionTermKey, queryWords } from "@/lib/learning/terms";
+import { loadReviews, reviewLines, type DirectionReview } from "@/lib/review";
 import {
   CANVAS_BUSY,
   CANVAS_NOT_FOUND,
@@ -84,6 +85,8 @@ export type RateDirectionsOutput = {
   removedFromTray: number;
   /** Ids that are not directions of this canvas. */
   notFound: string[];
+  /** Client review from the share link: a separate source from these ratings (VAL-04). */
+  reviews?: DirectionReview[];
 };
 
 function text(out: RateDirectionsOutput): string {
@@ -225,7 +228,12 @@ export function createRateDirectionsTool(deps: CanvasToolDeps) {
         removedFromTray: removed.tray,
         notFound,
       };
-      return toolResult(text(out), out);
+      // Client review votes from the share link, shown as their own source (never mixed into the ratings).
+      const reviews = await loadReviews(deps.review, input.canvasId);
+      const titles = new Map(directions.map((d) => [keyOf(d), d.title]));
+      const review = reviewLines(reviews, (k) => titles.get(k));
+      if (reviews.length > 0) out.reviews = reviews;
+      return toolResult([text(out), ...review].join("\n"), out);
     } catch {
       console.error("[rate_directions] failed");
       return toolMessage(TRY_AGAIN);

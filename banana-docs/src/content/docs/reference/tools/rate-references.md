@@ -23,6 +23,7 @@ The server does not look at images. Your agent does, and this is how it teaches 
 | `ratings[].referenceId` | string | Yes | 1 to 100 characters | The id in brackets in the search output |
 | `ratings[].verdict` | enum | Yes | `great`, `bad` | |
 | `ratings[].reasons` | enum[] | No | see below | Why |
+| `save` | boolean | No | | Also keep the `great` ones in your [swipe file](/docs/guides/canvases/#your-swipe-file): links only, never the images |
 
 **Reasons for bad:** `off_topic`, `stock_or_shop`, `cluttered`, `duplicate`, `low_craft`, `wrong_style`, `not_ui` (UI zone only). **Reasons for great:** `great_craft`, `on_style`, `on_brief`.
 

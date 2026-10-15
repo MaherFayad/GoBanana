@@ -18,6 +18,7 @@ import { weightCountsSql } from "@/lib/learning/nightly";
 import { createCutPartsTool } from "@/lib/mcp/tools/cut_parts";
 import { createExportKitTool } from "@/lib/mcp/tools/export_kit";
 import { defaultCrop, ROLE_BANDS } from "@/lib/stitch/crop";
+import { memorySwipeRepo } from "@/lib/swipe/repo";
 import type { BendInput } from "@/lib/bend";
 import { CARDS, PAGES } from "./fixtures/atlas";
 import { buildFixtureAtlas, countingFetcher, type ShardFiles } from "./fixtures/atlas-shards";
@@ -133,6 +134,17 @@ describe("cut_parts guesses from the page anatomy", () => {
     expect((await cutCta(undefined)).y).toBeCloseTo(ROLE_BANDS.cta.y);
     expect((await cutCta(emptySource)).y).toBeCloseTo(ROLE_BANDS.cta.y);
     expect((await cutCta(() => null)).y).toBeCloseTo(ROLE_BANDS.cta.y);
+  });
+
+  it("a saved swipe part takes the direction's lead card when the agent gives none", async () => {
+    const { deps, repos } = makeDeps();
+    const swipe = memorySwipeRepo();
+    const canvas = await seedCanvas(repos, ALICE, state([sectionNode("sec_1", { directionId: "bd-1" }), imageNode("img_1", 1, { parentId: "sec_1" } as never)]));
+    await repos.directions.upsertMany(canvas.id, [
+      { bendId: "bd-1", move: "material", title: "Stone", searchQuery: "stone", detail: { atlas: { cardIds: ["limestone"], recipeIds: [] } } },
+    ]);
+    await createCutPartsTool({ ...deps, swipe: () => swipe })({ canvasId: canvas.id, save: true, cuts: [{ itemId: "img_1", role: "nav", crop: { x: 0, y: 0, w: 1, h: 0.1 } }] }, ALICE);
+    expect(swipe.rows[0]).toMatchObject({ cardId: "limestone" });
   });
 
   it("finds the page from the brief when no direction names one", async () => {

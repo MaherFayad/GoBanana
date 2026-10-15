@@ -16,6 +16,7 @@ import { isMobbinSource } from "@/lib/sources/mobbin";
 import { defaultCrop, distinctCrop } from "@/lib/stitch/crop";
 import { anatomyFor, loadCutAnatomy, type CutAnatomy } from "@/lib/atlas/wiring";
 import { MAX_PART_NOTE } from "@/lib/stitch/parse";
+import { MAX_SWIPE_ITEMS } from "@/lib/swipe";
 import { clampCrop, MAX_PARTS, type Crop, type Part, type StitchPlatform } from "@/lib/stitch/types";
 import {
   CANVAS_NOT_FOUND,
@@ -53,6 +54,7 @@ const cut = z
     crop: cropSchema.optional(),
     theme: z.enum(["light", "dark", "unknown"]).optional(),
     note: z.string().trim().min(1).max(MAX_PART_NOTE).optional().describe("What to take from this part."),
+    cardId: z.string().trim().min(1).max(60).optional().describe("Atlas card id, when the part came from one. Kept with the swipe file item."),
   })
   .refine((c) => Boolean(c.itemId) !== Boolean(c.referenceId), { message: "one source", path: ["cuts"] });
 
@@ -61,6 +63,7 @@ export const inputSchema = z
     canvasId: z.string().min(1).max(100),
     cuts: z.array(cut).min(1).max(MAX_CUTS).optional(),
     look: look.optional().describe(`One image to see before cutting, up to ${MAX_CUT_PX} px wide, with its pixel size. Never stored.`),
+    save: z.boolean().optional().describe("Also keep the cut parts in the user's swipe file (links, roles and crops only), to reuse on other boards."),
   })
   .refine((i) => Boolean(i.cuts) || Boolean(i.look), { message: "cuts or look", path: ["cuts"] });
 
@@ -77,6 +80,8 @@ export type CutPartsOutput = {
   parts: { id: string; role: string; crop: Crop; sourceSite: string; sourceUrl: string; guessedCrop: boolean }[];
   libraryCount: number;
   webUrl: string;
+  /** Parts newly kept in the swipe file (save: true). */
+  swipeSaved?: number;
 };
 
 type Source = {
@@ -143,6 +148,8 @@ export function createCutPartsTool(deps: CutPartsDeps) {
       // A guessed crop reads the page anatomy (P1-I4 bands) when the Atlas knows the page: the
       // image's direction's page, else the board's. No Atlas: ROLE_BANDS as before.
       let anatomy: CutAnatomy | null = null;
+      /** The direction each cut's image belongs to, by cut index (swipe items take its lead card). */
+      const cutDirection = new Map<number, string>();
       if (cuts.some((c) => !c.crop) && deps.atlasSource) {
         try {
           const source = deps.atlasSource();
@@ -193,6 +200,7 @@ export function createCutPartsTool(deps: CutPartsDeps) {
               return;
             }
           }
+          if (directionId) cutDirection.set(i, directionId);
           if (!src) return;
           if (matcher.isReferenceBlocked(src)) {
             problems.push(`Cut ${i + 1}: that image was removed after a takedown request.`);
@@ -238,6 +246,48 @@ export function createCutPartsTool(deps: CutPartsDeps) {
       libraryCount = outcome.state.parts?.length ?? parts.length;
       }
 
+      let swipeNote = "";
+      let swipeSaved: number | undefined;
+      if (input.save && parts.length > 0) {
+        try {
+          const repo = deps.swipe?.();
+          if (!repo) throw new Error("no swipe repo");
+          // The agent's cardId, else the lead Atlas card of the image's direction (W2).
+          const leadOf = new Map<string, string>();
+          if (cutDirection.size > 0 && cuts.some((c) => !c.cardId)) {
+            for (const d of await repos.directions.listForCanvas(input.canvasId)) {
+              const lead = d.detail?.atlas?.cardIds[0];
+              if (!lead) continue;
+              leadOf.set(d.id, lead);
+              if (d.bendId) leadOf.set(d.bendId, lead);
+            }
+          }
+          const cardOf = new Map(cuts.map((c, i) => [i, c.cardId ?? leadOf.get(cutDirection.get(i) ?? "")] as const));
+          const res = await repo.addMany(
+            userId,
+            parts.map((p, i) => ({
+              kind: "part" as const,
+              role: p.role,
+              cardId: cardOf.get(i) ?? null,
+              sourceSite: p.sourceSite,
+              sourceUrl: p.sourceUrl,
+              imageUrl: p.imageUrl,
+              thumbUrl: p.thumbUrl ?? null,
+              title: p.title ?? null,
+              crop: p.crop,
+              note: p.note ?? null,
+              fromCanvasId: input.canvasId,
+            })),
+          );
+          swipeSaved = res.added;
+          swipeNote = res.full
+            ? `Swipe file: saved ${res.added}; it is full (${MAX_SWIPE_ITEMS} items). Ask the user which items to remove on the library page.`
+            : `Swipe file: saved ${res.added} part${res.added === 1 ? "" : "s"}${res.skipped > 0 ? `, ${res.skipped} already there` : ""}.`;
+        } catch {
+          console.error("[cut_parts] swipe save failed");
+          swipeNote = "Swipe file: could not save the parts this time. The parts are on the canvas.";
+        }
+      }
       const lookResult = lookSrc
         ? await lookBlocks(
             { label: lookSrc.label, imageUrl: lookSrc.imageUrl, thumbUrl: lookSrc.thumbUrl ?? null },
@@ -249,6 +299,7 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         parts: parts.map((p) => ({ id: p.id, role: p.role, crop: p.crop, sourceSite: p.sourceSite, sourceUrl: p.sourceUrl, guessedCrop: p.guessedCrop === true })),
         libraryCount,
         webUrl: canvasWebUrl(deps.appUrl(), input.canvasId),
+        ...(swipeSaved !== undefined ? { swipeSaved } : {}),
         ...(lookResult?.ok && input.look ? { look: { ...input.look, width: lookResult.width, height: lookResult.height, size: lookResult.size } } : {}),
       };
       const pct = (n: number) => Math.round(n * 100);
@@ -265,6 +316,7 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         );
       }
       lines.push(cuts.length > 0 ? "Next: frankenstein_page with rows of part ids, or a recipe of roles." : "Next: cut_parts with cuts, each with a crop measured on the image below.");
+      if (swipeNote) lines.push(swipeNote);
       lines.push(`Web link: ${out.webUrl}`);
       const content: McpContent[] = [{ type: "text", text: lines.join("\n") }, ...(lookResult?.blocks ?? [])];
       return { content, structuredContent: out as unknown as Record<string, unknown> };

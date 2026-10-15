@@ -51,6 +51,8 @@ Work like a designer with a swipe file. For each reference, find the one or two 
 - **theme**: `light` or `dark`, as you saw it; `unknown` if you did not.
 - **note**: one line, up to 280 characters, starting with `steal:` and naming the move, not the look: `steal: the split nav with the search pill in the middle`, `steal: pricing cards where the middle plan breaks the grid`.
 
+Before cutting, look in the user's swipe file for roles you are short of: `get_canvas` with `library: { role: "pricing" }` and no canvasId. Items found there are links from earlier boards: add one to this board with `add_to_canvas` (image, with its source link), then cut it as below. When the user keeps a swipe file ("save these parts"), pass `save: true` to `cut_parts` so the new parts are kept for other boards; say how many were saved.
+
 Aim for **2 to 4 candidates per role** in the recipe (step 4), drawn from **at least 4 different sources** (sites or studios), so the variants can really differ. Skip a role rather than cut a weak part for it.
 
 Call `cut_parts` with `canvasId` and `cuts` (1 to 24 per call): `{ "itemId": "it_201", "role": "nav", "crop": {...}, "theme": "dark", "note": "steal: ..." }`. Use `itemId` for a placed board item, `referenceId` for a tray reference. The library holds 80 parts; if it is near full, reuse parts instead of cutting more. Parts the server cropped by guess come back with `guessedCrop`; keep that flag in mind when you present them.
