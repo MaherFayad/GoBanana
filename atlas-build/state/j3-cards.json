@@ -1,0 +1,10 @@
+{
+  "job": "j3-cards",
+  "created": "2026-10-15T18:13:07.123Z",
+  "batches": [
+    {
+      "id": "msgbatch_01MWHQBZZyzZQd47rQrjNc3c",
+      "requests": 5
+    }
+  ]
+}
