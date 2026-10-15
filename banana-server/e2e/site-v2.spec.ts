@@ -319,8 +319,8 @@ test.describe("real examples", () => {
     await stitch.getByRole("button", { name: "Wireframe" }).click();
     await expect(stitch).toHaveAttribute("data-mode", "wireframe");
     await expect(stitch.locator(".ex-role").first()).toBeVisible();
-    await stitch.getByRole("button", { name: "Even" }).click();
-    await expect(stitch.getByRole("button", { name: "Even" })).toHaveAttribute("aria-pressed", "true");
+    await stitch.getByRole("button", { name: "Harmonize" }).click();
+    await expect(stitch.getByRole("button", { name: "Harmonize" })).toHaveAttribute("aria-pressed", "true");
     await axe(page, ".s-stitch", "Frankenstein page");
   });
 
