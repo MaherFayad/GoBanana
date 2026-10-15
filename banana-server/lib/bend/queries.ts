@@ -32,7 +32,7 @@ import { DEFAULT_TASTE } from "@/lib/taste";
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53 } from "./prng";
-import { extractSubject } from "./subject";
+import { extractSubject, isProductWord } from "./subject";
 import { MOVES, type ListEntry, type MoveId } from "./types";
 
 /** Hard cap on any lane query, in words (before negatives and the site operator). */
@@ -142,7 +142,17 @@ const SCREEN_NOUNS = new Set([
   "checkout", "booking", "onboarding", "dashboard", "login", "signup", "registration", "profile", "cart", "search",
   "settings", "payment", "payments", "wallet", "tracker", "tracking", "player", "calendar", "inbox", "chat", "feed",
   "ticketing", "ordering", "menu", "paywall", "notification", "notifications", "widget", "widgets", "card", "cards",
-  "map", "stats", "camera", "timer", "footer", "pricing",
+  "map", "stats", "camera", "timer", "footer", "pricing", "picker", "pickers", "selector", "chooser", "list", "lists",
+  "form", "forms", "table", "item", "items",
+]);
+
+/**
+ * Words that are never a topic alone (P0-16): the live eSIM test searched galleries for "picker"
+ * and got calendar date pickers, task apps and a warehouse "picking" app.
+ */
+export const TOPIC_STOP: ReadonlySet<string> = new Set([
+  "picker", "selector", "chooser", "list", "card", "cards", "form", "screen", "screens", "page", "view", "app", "ui",
+  "flow", "menu", "table", "item", "items", "home", "widget", "sheet", "modal", "design", "interface",
 ]);
 
 /** Words too vague to name a domain. */
@@ -163,12 +173,13 @@ const LIST_END = new Set([...BOUNDARY, "into", "toward", "towards", "but", "whil
 
 const TOKEN = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 
-type Token = { word: string; acronym: boolean };
+type Token = { word: string; acronym: boolean; product: boolean };
 
 function tokens(text: string): Token[] {
   return (text.match(TOKEN) ?? []).map((raw) => ({
     word: raw.toLowerCase().replace(/['’-]+$/, ""),
     acronym: raw.length >= 2 && raw === raw.toUpperCase() && /\p{L}/u.test(raw),
+    product: isProductWord(raw),
   }));
 }
 
@@ -213,8 +224,10 @@ export function avoidWords(brief: string, platform: Platform): string[] {
 type BriefParts = {
   ui: boolean;
   surface: Surface;
-  /** Up to two domain words ("flight", "fleet management"). */
+  /** Up to two domain words ("flight", "fleet management"); a product word is always kept ("esim plan"). */
   domain: string[];
+  /** Domain words that are product nouns ("esim"): the core and the topic keep them (P0-16). */
+  product: ReadonlySet<string>;
   component: string;
   /** Components the brief names, in brief order (its list first), for the component lanes. */
   components: string[];
@@ -227,7 +240,7 @@ function domainWord(t: Token): boolean {
   const w = t.word;
   return (
     w.length > 1 &&
-    !t.acronym &&
+    (!t.acronym || t.product) &&
     !/\d/.test(w) &&
     !STOP_WORDS.has(w) &&
     !LAYOUT_WORDS.has(w) &&
@@ -281,20 +294,26 @@ function readBriefParts(brief: string, platform?: Platform): BriefParts {
     }
   }
   let domain: string[] = [];
+  const product = new Set<string>();
   for (const chunk of chunks) {
-    const found = [...new Set(chunk.filter(domainWord).map((t) => t.word))];
+    const kept = chunk.filter(domainWord);
+    const found = [...new Set(kept.map((t) => t.word))];
     if (found.length > 0) {
-      domain = found.slice(-2);
+      for (const t of kept) if (t.product) product.add(t.word);
+      // The last two words, unless that cuts a product word ("esim data plan" keeps "esim plan").
+      const lost = found.slice(0, -2).find((w) => product.has(w));
+      domain = lost ? [lost, found.at(-1)!] : found.slice(-2);
       break;
     }
   }
   if (domain.length === 0) {
-    domain = words(extractSubject(main, 2).title)
+    domain = words(extractSubject(main, 2).title.toLowerCase())
       .filter((w) => !SCREEN_NOUNS.has(w))
       .slice(-2);
   }
+  for (const w of [...product]) if (!domain.includes(w)) product.delete(w);
 
-  return { ui: isUiBrief(brief), surface, domain, component, components: briefComponents(main), arabic: isArabicBrief(brief), main };
+  return { ui: isUiBrief(brief), surface, domain, product, component, components: briefComponents(main), arabic: isArabicBrief(brief), main };
 }
 
 /** A known component at the start of `ws` (longest first), as its list form, or undefined. */
@@ -378,7 +397,7 @@ function styleWords(style: string): string {
 export function fidelityQuery(brief: string, platform?: Platform): string {
   const p = briefParts(brief, platform);
   if (!p.ui) return capWords(`${extractSubject(p.main, 1).full} app ui`, MAX_LANE_WORDS + 1);
-  return pageForm(p.domain, briefPage(p), SURFACE_WORDS[p.surface]);
+  return pageForm(p.domain, briefPage(p), SURFACE_WORDS[p.surface], p.product);
 }
 
 /**
@@ -413,10 +432,10 @@ const PAGE_NOUNS = [
 ];
 
 /** "{domain} {page} {surface}" within MAX_FOCUSED_QUERY_WORDS: the domain drops to its core noun, then the page goes. */
-function pageForm(domain: readonly string[], page: string, surface: string): string {
+function pageForm(domain: readonly string[], page: string, surface: string, product: ReadonlySet<string> = NO_PRODUCT): string {
   const fits = (d: string, pg: string) => words(`${d} ${pg} ${surface}`).length <= MAX_FOCUSED_QUERY_WORDS;
   const full = domain.join(" ");
-  const core = coreNoun(domain) ?? "";
+  const core = coreNoun(domain, product) ?? "";
   if (fits(full, page)) return capWords(`${full} ${page} ${surface}`);
   if (fits(core, page)) return capWords(`${core} ${page} ${surface}`);
   return capWords(`${full} ${surface}`);
@@ -425,16 +444,46 @@ function pageForm(domain: readonly string[], page: string, surface: string): str
 /** Last words that are not the core of a domain ("fleet management" is about fleets). */
 const NOT_CORE = new Set(["management", "system", "systems", "solutions", "services", "software", "tool", "tools", "times", "time", "tracking", "tracker"]);
 
-/** Core noun of the domain: its last word ("saudi fintech" to "fintech"), skipping NOT_CORE words. */
-function coreNoun(domain: readonly string[]): string | undefined {
+const NO_PRODUCT: ReadonlySet<string> = new Set();
+
+/**
+ * Core noun of the domain: its last word ("saudi fintech" to "fintech"), skipping NOT_CORE words.
+ * A domain with a product word stays whole ("esim plan"): cutting it lost the brief's nouns
+ * (P0-16, live test 2026-10-13).
+ */
+function coreNoun(domain: readonly string[], product: ReadonlySet<string> = NO_PRODUCT): string | undefined {
+  if (domain.some((w) => product.has(w))) return domain.join(" ");
   return [...domain].reverse().find((w) => !NOT_CORE.has(w)) ?? domain.at(-1);
 }
 
 /** Fidelity with the domain cut to its core noun ("saudi fintech app ui" to "fintech app ui"), or null. */
 export function fidelityCoreQuery(brief: string, platform?: Platform): string | null {
   const p = briefParts(brief, platform);
-  if (!p.ui || p.domain.length < 2) return null;
+  if (!p.ui || p.domain.length < 2 || p.product.size > 0) return null;
   return pageForm([coreNoun(p.domain)!], briefPage(p), SURFACE_WORDS[p.surface]);
+}
+
+/**
+ * The topic of a UI brief (P0-16): galleries search it and every UI lane carries it. A noun
+ * phrase that keeps the product noun ("esim plan"), else the core noun with the page ("flight
+ * checkout"), else the two domain words ("fleet management"), else the core noun alone when the
+ * brief gives nothing more ("fintech"). Never a lone generic word (TOPIC_STOP): "" then.
+ */
+function uiTopic(p: BriefParts): string {
+  const core = coreNoun(p.domain, p.product) ?? "";
+  const page = briefPage(p);
+  let topic = words(core);
+  if (topic.length < 2 && page && !topic.includes(page)) topic = [...topic, ...words(page)];
+  if (topic.length < 2 && p.domain.length > 1) topic = [...p.domain];
+  return topic.filter((w) => !TOPIC_STOP.has(w)).join(" ");
+}
+
+/** Topic of any brief: uiTopic for UI briefs, else the subject ("jazz festival"); never a lone generic word. */
+export function briefTopic(brief: string, platform?: Platform): string {
+  const p = briefParts(brief, platform);
+  if (p.ui) return uiTopic(p);
+  const subject = words(extractSubject(p.main, 1).title.toLowerCase()).filter((w) => !TOPIC_STOP.has(w));
+  return subject.join(" ");
 }
 
 /**
@@ -446,7 +495,7 @@ function tasteUiQuery(p: BriefParts, style: string, domain: readonly string[], t
   let s = words(styleWords(style));
   const build = () => words(`${s.join(" ")} ${dom.join(" ")} ${app ? "app " : ""}${p.component} ${tail}`);
   const fits = () => new Set(build()).size <= MAX_FOCUSED_QUERY_WORDS;
-  if (!fits() && dom.length > 1) dom.splice(0, dom.length, coreNoun(dom)!);
+  if (!fits() && dom.length > 1) dom.splice(0, dom.length, ...words(coreNoun(dom, p.product)!));
   while (!fits() && s.length > 1) s = s.slice(0, -1);
   return capWords(build().join(" "));
 }
@@ -478,7 +527,7 @@ export function tasteVariants(brief: string, style: string, platform?: Platform)
     if (app !== base) out.app = app;
   }
   if (p.domain.length > 1) {
-    const core = tasteUiQuery(p, style, [coreNoun(p.domain)!]);
+    const core = tasteUiQuery(p, style, words(coreNoun(p.domain, p.product)!));
     if (core !== base) out.core = core;
   }
   return out;
@@ -488,7 +537,7 @@ export function tasteVariants(brief: string, style: string, platform?: Platform)
 export function heroQuery(brief: string, style: string, platform?: Platform): string | null {
   const p = briefParts(brief, platform);
   if (!p.ui || p.surface !== "app" || p.domain.length === 0) return null;
-  return capWords(`${styleWords(style)} ${coreNoun(p.domain)} app single screen`);
+  return capWords(`${styleWords(style)} ${coreNoun(p.domain, p.product)} app single screen`);
 }
 
 /**
@@ -529,7 +578,7 @@ function pageComponents(pages: readonly string[] | undefined): string[] {
 export function componentQueries(brief: string, platform?: Platform, pages?: readonly string[]): string[] {
   const p = briefParts(brief, platform);
   if (!p.ui) return [];
-  const core = coreNoun(p.domain) ?? "";
+  const core = coreNoun(p.domain, p.product) ?? "";
   const page = briefPage(p);
   const surface = SURFACE_WORDS[p.surface];
   let named = [...pageComponents(pages), ...p.components].filter((c, i, all) => !SURFACE_COMPONENTS.has(c) && all.indexOf(c) === i);
@@ -561,19 +610,18 @@ export const ELEMENT_NOUN: Readonly<Record<string, string>> = {
 };
 
 /**
- * Mechanic lane (P0-05): "{core} {page} {element noun} {surface}" ("flight checkout progress bar
- * app ui"), the brief's page with the part this direction's idea becomes. Over the word cap the
- * page goes, then the core noun. Null for briefs that name no UI or an unknown element.
+ * Mechanic lane (P0-05): "{topic} {element noun} {surface}" ("flight checkout progress bar app
+ * ui"), the brief's page with the part this direction's idea becomes. Over the word cap the topic
+ * drops to the core noun, then goes. Null for briefs that name no UI or an unknown element.
  */
 export function mechanicQuery(brief: string, element: string, platform?: Platform): string | null {
   const noun = ELEMENT_NOUN[element];
   const p = briefParts(brief, platform);
   if (!noun || !p.ui) return null;
-  const core = coreNoun(p.domain) ?? "";
-  const page = briefPage(p);
+  const core = coreNoun(p.domain, p.product) ?? "";
   const surface = SURFACE_WORDS[p.surface];
-  const pg = page && !noun.split(" ").includes(page) ? page : "";
-  const options = [`${core} ${pg} ${noun} ${surface}`, `${core} ${noun} ${surface}`, `${noun} ${surface}`];
+  // The topic carries the product noun or the page ("esim plan", "flight checkout", "coffee shop").
+  const options = [`${uiTopic(p)} ${noun} ${surface}`, `${core} ${noun} ${surface}`, `${noun} ${surface}`];
   return capWords(options.find((o) => words(o).length <= MAX_FOCUSED_QUERY_WORDS) ?? options.at(-1)!);
 }
 
@@ -602,16 +650,17 @@ export function componentAppText(text: string): string {
  */
 export function localeQuery(brief: string, platform?: Platform): string | null {
   const p = briefParts(brief, platform);
-  const core = localeWord(brief, platform);
-  return p.ui && p.arabic && core ? capWords(`arabic ${core} ${SURFACE_WORDS[p.surface]}`) : null;
+  const word = localeWord(brief, platform);
+  return p.ui && p.arabic && word ? capWords(`arabic ${coreNoun(p.domain, p.product)} ${SURFACE_WORDS[p.surface]}`) : null;
 }
 
 /** Words that name the market or script, not the subject ("arabic app" has no subject). */
 const LOCALE_NOT_SUBJECT = /^(arabic|arab|rtl|bilingual|english|gcc|gulf|saudi|ksa|uae|emirati|qatari|kuwaiti|omani|bahraini|khaleeji)$/i;
 
-/** The subject the locale lane's titles must name ("flight"), or undefined. */
+/** The subject word the locale lane's titles must name ("flight"; the product word when there is one, "esim"), or undefined. */
 export function localeWord(brief: string, platform?: Platform): string | undefined {
-  const core = coreNoun(briefParts(brief, platform).domain);
+  const p = briefParts(brief, platform);
+  const core = p.domain.find((w) => p.product.has(w)) ?? coreNoun(p.domain);
   return core && !LOCALE_NOT_SUBJECT.test(core) ? core : undefined;
 }
 
@@ -701,9 +750,9 @@ export function laneTexts(
   lanes.platform = platform;
   const avoid = avoidWords(b, platform);
   if (avoid.length > 0) lanes.avoid = avoid;
-  const p = briefParts(b, platform);
-  // Galleries index short topics: the core domain noun ("personal finance" searches "finance").
-  const topic = isUiBrief(b) ? coreNoun(p.domain) ?? "" : extractSubject(p.main, 1).title;
+  // P0-16: the topic keeps the product noun and is never a lone generic word ("picker" pulled
+  // calendar date pickers). Galleries search it.
+  const topic = briefTopic(b, platform);
   if (topic) lanes.topic = topic;
   const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? [])], brief: b, key, artText: [idea] });
   if (picked.ui.length > 0) lanes.galleries = picked.ui;

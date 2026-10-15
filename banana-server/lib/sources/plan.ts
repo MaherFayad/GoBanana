@@ -278,20 +278,42 @@ export function artRequests(queries: readonly string[] | undefined, galleries: r
     const idea = ideaWord ? { ideaWord } : {};
     // A lens query also cuts the look-alike tradition ("talli" adds -tulle -assiut -egyptian).
     const neg = [lensNegatives(q), ART_NEG].filter(Boolean).join(" ");
-    out.push({ lane: "art", query: `${q} ${neg}`, site: "pinterest", ...idea });
-    out.push({ lane: "art", query: `${q} ${neg}`, site: "behance", ...idea });
+    // A thin answer retries once with the bare noun ("limestone texture" retries "limestone").
+    const bare = artBareNoun(q);
+    const fallback = bare ? { fallback: `${bare} ${neg}` } : {};
+    out.push({ lane: "art", query: `${q} ${neg}`, site: "pinterest", ...idea, ...fallback });
+    out.push({ lane: "art", query: `${q} ${neg}`, site: "behance", ...idea, ...fallback });
     if (i === 0) for (const site of galleries) out.push({ lane: "art", query: galleryWords(site, q), site, ...idea });
   });
   return out;
 }
 
-/** An art query's plain words: no site operators, no negatives, at most 8 words. */
+/**
+ * Stacked suffixes older bends added to art queries ("oversized ruler ticks graphic print
+ * close-up" returned 0 results live, 2026-10-13). Saved directions still carry them, so they are
+ * cut before searching (P0-16), with the "oversized" that came with them.
+ */
+const STACKED_ART = /\s+(?:graphic print close-up|design close-up)$/i;
+
+/** An art query's plain words: no site operators, no negatives, no stacked suffix, at most 8 words. */
 export function artWords(raw: string): string {
-  return cleanQuery(raw.replace(/(^|\s)-\S+/g, " "))
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 8)
-    .join(" ");
+  let q = cleanQuery(raw.replace(/(^|\s)-\S+/g, " "));
+  if (STACKED_ART.test(q)) q = q.replace(STACKED_ART, "").replace(/^oversized\s+/i, "");
+  return q.split(" ").filter(Boolean).slice(0, 8).join(" ");
+}
+
+/** Medium words an art query may end with; the bare noun is what is left. */
+const ART_MEDIUM = new Set(["texture", "textures", "pattern", "patterns", "poster", "posters", "graphic", "graphics", "print", "prints", "design", "close-up", "closeup", "illustration", "photo", "photography"]);
+
+/**
+ * The bare noun of an art query, for its one retry: the words left without medium words
+ * ("limestone texture" gives "limestone", "synthwave 1984 poster" gives "synthwave 1984"). Null when
+ * nothing would change ("ruler ticks", "exhibition catalog") or nothing is left.
+ */
+export function artBareNoun(query: string): string | null {
+  const ws = artWords(query).split(" ").filter(Boolean);
+  const bare = ws.filter((w) => !ART_MEDIUM.has(w.toLowerCase()));
+  return bare.length > 0 && bare.length < ws.length ? bare.join(" ") : null;
 }
 
 /**

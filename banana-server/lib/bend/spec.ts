@@ -372,21 +372,26 @@ function sentence(text: string): string {
 // ---------------------------------------------------------------------------
 // Art queries
 
+/**
+ * One medium word after the ingredient, never a stacked suffix (P0-16): "oversized ruler ticks
+ * graphic print close-up" returned 0 results live (2026-10-13), while concrete objects ("exhibition
+ * catalog") returned real spreads. Objects and scale elements go bare: the concrete noun only.
+ */
 const ART_TAIL: Record<MoveId, { tail: string; skip: RegExp }> = {
-  transplant: { tail: "design close-up", skip: /\b(poster|posters|cover|covers|label|labels|sign|signs|map|chart|card|cards|menu|ticket|tickets|stamp|stamps|board|page|manual|program|playbill|catalog)\b/i },
+  transplant: { tail: "", skip: /$^/ },
   material: { tail: "texture", skip: /\b(texture|paper|glass|print)\b/i },
   era: { tail: "poster", skip: /\b(poster|posters|graphics|design|art|aesthetic|cover|covers|flyer|flyers|ads|typography|zine|illustration|architecture|magazine|catalog|print)\b/i },
   lens: { tail: "pattern", skip: /\b(pattern|fabric|textile|print|art|weaving|braid|braiding|trim|mural|murals|majlis|house|interior|painted|painting|tiles?|rugs?|embroidery|knit|quilts?|posters?|neon|silver|mosaic|pottery|porcelain|doors?|windows?|screens|labels|curtains|crests|marquetry|enamel|craft|palette|sweater|woodcut|impression|miniature|cloth|seals?)\b/i },
-  // Subject, medium and composition, never an abstract word alone: "oversized stripes poster"
-  // returned White Stripes band posters (field report, 2026-10-12).
-  scale: { tail: "graphic print close-up", skip: /$^/ },
+  // A one word element alone is too abstract ("stripes" returned White Stripes band posters, field
+  // report 2026-10-12): it gets "graphic". Two words or more go bare ("ruler ticks").
+  scale: { tail: "graphic", skip: /\b(graphic|graphics|poster|posters|print)\b/i },
   constraint: { tail: "poster", skip: /\b(poster|print|art|typography|lettering)\b/i },
 };
 
 /**
- * 1 to 3 image queries of the direction's ingredients for the art zone, phrased as a visual
- * (subject, medium, composition): "korean bojagi pattern", "synthwave 1984 poster", "holographic
- * foil texture", "oversized stripes graphic print close-up". At most 6 words, never UI words.
+ * 1 to 3 image queries of the direction's ingredients for the art zone: the concrete noun, with at
+ * most one medium word ("korean bojagi pattern", "synthwave 1984 poster", "holographic foil
+ * texture", "ruler ticks", "exhibition catalog"). At most 6 words, never UI words.
  */
 export function artQueries(
   moves: readonly MoveId[],
@@ -401,9 +406,10 @@ export function artQueries(
   for (const m of order) {
     const e = entries[m];
     if (!e) continue;
-    const base = m === "scale" ? `oversized ${e.query}` : e.query;
+    // A verified concrete object wins and goes bare ("measuring ruler" for ruler ticks).
+    const base = e.hints.art ?? e.query;
     const { tail, skip } = ART_TAIL[m];
-    const q = words(tail && !skip.test(base) && words(base).length < 4 ? `${base} ${tail}` : base)
+    const q = words(tail && !e.hints.art && !skip.test(base) && words(base).length < (m === "scale" ? 2 : 4) ? `${base} ${tail}` : base)
       .slice(0, 6)
       .join(" ");
     if (UI_WORDS.test(q) || out.some((o) => o.toLowerCase() === q.toLowerCase())) continue;

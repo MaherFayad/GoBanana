@@ -211,3 +211,28 @@ Title gate on every result: keep only titles with a UI word (app, ui, ux, dashbo
 | vaporwave | 4 | 0 | 2 | 1 |
 
 All 60 sampled kept items were UI. Decision: remove the raw inspiration lane, gate every result, add component lanes from the brief, and force plain queries into UI forms. Wild ideas live in direction notes, not images.
+
+## Round 12: topic guard and concrete art queries (P0-16, 2026-10-15)
+
+Context: the live eSIM test (docs/next-step-plan.md, Appendix C) searched the topic "picker" and got calendar date pickers, task apps and a warehouse "picking" app; the art query "oversized ruler ticks graphic print close-up" returned 0 results.
+
+**Topic guard (no live credits).** The topic keeps the product noun and is never a lone generic word (`TOPIC_STOP` in lib/bend/queries.ts: picker, list, card, form, screen and others). The eSIM brief now searches "esim plan app ui", "minimal esim plan card ui design", "esim plan progress bar app ui", and galleries get "esim plan". Every brief lane holds the product noun or the page; the bridge lane is the idea lane and holds the idea instead (its titles must name the idea).
+
+**Art lane, live** (`npx tsx scripts/live-art-check.ts "<words>"`, art plan on Pinterest pins then Behance with the art junk gate):
+
+| Query | Requests | Kept | On topic by title |
+| --- | --- | --- | --- |
+| oversized ruler ticks graphic print close-up (Appendix C) | 2 | 0 | 0 |
+| ruler ticks | 2 | 9 | about 2 (the rest are insect ticks) |
+| ruler ticks graphic | 4 | 9 (thin, retried bare) | about 2 |
+| measuring ruler | 2 | 8 | 7 (rulers and scale rulers) |
+
+Decision: art queries are the concrete noun with at most one medium word (texture, pattern, poster, or "graphic" after a one word element). Stacked suffixes are cut, also from art queries saved before this change. A list entry whose label is ambiguous gets a verified `art` noun ("ruler ticks" searches "measuring ruler"); more of these belong in the Phase 1 recipes. A thin art answer retries once with its bare noun ("limestone texture" retries "limestone") when one exists.
+
+**Lane waste watch.** Every planned request logs one line: `[lane-drops] {lane} {site} {dropped}/{returned} dropped: {query words}` (read it with `npx wrangler tail`). A lane whose last two runs each dropped 70% or more of what came back (`wastefulLanes` in lib/sources/quality.ts) goes in the list below for a Phase 1 recipe.
+
+Flagged lanes (add rows as the log shows them):
+
+| Date | Lane | Site | Query words | Drops |
+| --- | --- | --- | --- | --- |
+| 2026-10-13 | fidelity and component (eSIM brief, before the topic guard) | dribbble, pinterest | plan picker app ui | 27 and 35 per call (whole calls) |

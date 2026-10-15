@@ -53,6 +53,11 @@ const PRODUCT_WORDS = new Set([
 /** True for a raw token in mixed case, with a capital after its first letter: "eSIM", "WhatsApp". */
 const mixedCase = (raw: string) => /\p{Ll}/u.test(raw) && /^.+\p{Lu}/u.test(raw);
 
+/** True when a raw brief token looks like a product noun: mixed case ("eSIM") or on PRODUCT_WORDS. */
+export function isProductWord(raw: string): boolean {
+  return mixedCase(raw) || PRODUCT_WORDS.has(raw.toLowerCase().replace(/['’-]+$/, ""));
+}
+
 /** Lowercase words of the brief that look like product nouns (mixed case or on PRODUCT_WORDS). */
 function productWords(rawTokens: readonly string[]): Set<string> {
   const out = new Set<string>();

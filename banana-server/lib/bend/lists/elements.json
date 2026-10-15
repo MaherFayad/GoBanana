@@ -62,7 +62,7 @@
   { "label": "tally marks", "tone": ["playful", "serious"], "w": 2 },
   { "label": "dotted leaders", "tone": ["serious", "calm"] },
   { "label": "crosshairs", "tone": ["serious", "cold"], "w": 2 },
-  { "label": "ruler ticks", "tone": ["serious"] },
+  { "label": "ruler ticks", "tone": ["serious"], "art": "measuring ruler" },
   { "label": "corner brackets", "tone": ["serious"] },
   { "label": "chevrons", "tone": ["energetic"] },
   { "label": "plus signs", "tone": ["serious", "calm"], "style": ["swiss style"] },

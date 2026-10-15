@@ -460,3 +460,43 @@ export function lensNegatives(query: string | undefined): string {
     .map((w) => `-${w}`)
     .join(" ");
 }
+
+// ---------------------------------------------------------------------------
+// Lane waste (P0-16): in the live eSIM test the filters dropped 27 and 35 results per call, so
+// most credits bought nothing. Each request logs dropped / returned; a lane that drops 70% or more
+// twice in a row is flagged in docs/search-quality-experiment.md for a Phase 1 recipe.
+
+/** A lane is wasteful when its filters drop at least this share of what came back. */
+export const WASTEFUL_DROP_SHARE = 0.7;
+
+/** One request's outcome: results the filters dropped and results kept. */
+export type LaneDrops = { lane: string; site: string; query: string; dropped: number; kept: number };
+
+/** Share of returned results the filters dropped (0 when nothing came back). */
+export function dropShare(row: Pick<LaneDrops, "dropped" | "kept">): number {
+  const returned = row.dropped + row.kept;
+  return returned > 0 ? row.dropped / returned : 0;
+}
+
+/** The log line for one request: "[lane-drops] taste dribbble 9/10 dropped: minimal esim plan card ui design". */
+export function laneDropLine(row: LaneDrops): string {
+  const words = row.query.replace(/(^|\s)-\S+/g, " ").replace(/\s+/g, " ").trim();
+  return `[lane-drops] ${row.lane} ${row.site} ${row.dropped}/${row.dropped + row.kept} dropped: ${words}`;
+}
+
+/**
+ * Lanes to flag: the lane, site and query words ("taste dribbble minimal esim plan card ui
+ * design") of every request whose last two runs, in order, each dropped WASTEFUL_DROP_SHARE or
+ * more. `runs` is oldest first, as the log lines come.
+ */
+export function wastefulLanes(runs: readonly LaneDrops[]): string[] {
+  const streak = new Map<string, number>();
+  const flagged = new Set<string>();
+  for (const run of runs) {
+    const key = laneDropLine(run).replace(/^\[lane-drops\] (\S+ \S+) \S+ dropped: /, "$1 ");
+    const n = dropShare(run) >= WASTEFUL_DROP_SHARE ? (streak.get(key) ?? 0) + 1 : 0;
+    streak.set(key, n);
+    if (n >= 2) flagged.add(key);
+  }
+  return [...flagged];
+}

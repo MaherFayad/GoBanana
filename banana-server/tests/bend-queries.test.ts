@@ -164,7 +164,8 @@ describe("brief lanes", () => {
       localeWord: "flight",
       // The brief says mobile: UI lanes drop web titles, and mobile galleries join.
       platform: "mobile",
-      topic: "flight",
+      // P0-16: a topic of two words that names the page, never a lone word.
+      topic: "flight checkout",
     });
     expect(lanes.avoid).toEqual(expect.arrayContaining(["web", "website", "dashboard", "landing", "desktop", "saas"]));
     expect(lanes.galleries?.length).toBeGreaterThan(0);

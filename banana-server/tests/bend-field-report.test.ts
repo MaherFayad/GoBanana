@@ -221,9 +221,11 @@ describe("P7 search queries", () => {
 
   it("art lanes phrase a visual and drop music and merch titles", () => {
     for (const d of bendBrief({ brief: BRIEF, wildness: 5, count: 8, moves: ["scale"] }).directions) {
-      expect(d.artQueries[0]).toMatch(/^oversized .+ graphic print close-up$/);
+      // P0-16: the concrete element, one word plus "graphic" or two and more bare; never stacked.
+      expect(d.artQueries[0]).not.toMatch(/oversized|close-up|graphic print/);
+      expect(d.artQueries[0]).toMatch(/^\S+ graphic$|^\S+ \S+/);
     }
-    const q = "oversized stripes graphic print close-up";
+    const q = "stripes graphic";
     for (const t of ["The White Stripes band poster", "White Stripes 2007 world tour", "Stripes merch drop", "Concert stripes poster"]) {
       expect(artDropReason(t, q), t).not.toBeNull();
     }
