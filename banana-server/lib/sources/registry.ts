@@ -19,6 +19,10 @@
  * - platforms: where a UI gallery is used by default ("any" = every platform).
  * - tags: style words that pull the gallery into a search ("bento", "dark mode", "motion").
  * - query: fixed words for a gallery whose items share one subject (Swissted is all posters).
+ * - baseline: searched only in the canvas baseline lane ("Shipped today", P0-03), in this rank
+ *   order, never as a direction's gallery (P0-17: shipped screens that never reach the taste bar).
+ * - oneWord: searched with the topic's one head word ("analytics", not "analytics dashboard").
+ * - pages: picked only when the brief names one of these pages (60fps: pay, card, checkout, wallet).
  */
 import type { Platform, Zone } from "../direction-detail";
 
@@ -59,6 +63,9 @@ export type SourceEntry = {
    * illustrations): their titles still have to pass the UI gate.
    */
   uiTitle?: boolean;
+  baseline?: number;
+  oneWord?: boolean;
+  pages?: readonly string[];
   measured: SourceMeasure;
 };
 
@@ -299,7 +306,9 @@ export const SOURCE_REGISTRY = [
     zone: "ui",
     platforms: ["webapp"],
     tags: [],
-    measured: gallery(5, 48, 48, 42),
+    baseline: 2,
+    oneWord: true,
+    measured: gallery(5, 48, 48, 42, "round 13: 0 of 32 great, 47% on page; baseline only"),
   },
   {
     id: "saasframe",
@@ -310,9 +319,12 @@ export const SOURCE_REGISTRY = [
     imageHosts: ["cdn.prod.website-files.com"],
     role: "gallery",
     zone: "ui",
-    platforms: ["webapp"],
+    // Off the default routing (P0-17, round 13): it indexes companies, not pages, so a page word
+    // matched landing pages, pricing, settings and emails (2 of 32 on page). Searched only when
+    // a call names it in `sources`.
+    platforms: [],
     tags: [],
-    measured: gallery(5, 50, 50, 36, "image host is Webflow's shared CDN (owner decision)"),
+    measured: gallery(5, 50, 50, 36, "image host is Webflow's shared CDN (owner decision); round 13: 2 of 32 on page"),
   },
   {
     id: "nicelydone",
@@ -325,7 +337,9 @@ export const SOURCE_REGISTRY = [
     zone: "ui",
     platforms: ["webapp"],
     tags: [],
-    measured: gallery(5, 50, 50, 49, "some titles are bare product names and fail the UI gate"),
+    baseline: 1,
+    oneWord: true,
+    measured: gallery(5, 50, 50, 49, "some titles are bare product names and fail the UI gate; round 13: one head word 94% on page, two words 56%, 0 great; baseline only"),
   },
   // Mobile galleries.
   {
@@ -337,7 +351,9 @@ export const SOURCE_REGISTRY = [
     imageHosts: ["media.screensdesign.com"],
     role: "gallery",
     zone: "ui",
-    platforms: ["mobile", "tablet"],
+    // Off the default mobile routing (P0-17, round 13: 0 of 32 great, 31% on page; its "UI
+    // Breakdown" pages show another screen of the app). Tablet keeps it (not measured there).
+    platforms: ["tablet"],
     tags: [],
     measured: gallery(5, 50, 48, 35),
   },
@@ -350,8 +366,11 @@ export const SOURCE_REGISTRY = [
     imageHosts: ["video.gumlet.io", "framerusercontent.com"],
     role: "gallery",
     zone: "ui",
-    platforms: [],
-    tags: ["motion", "animation", "micro-interaction"],
+    // Only for pay, card, checkout and wallet pages (P0-17, round 13: "pay" gave 4 of 8 great on
+    // checkout, other pages 12% great), searched as "pay" or "card" (galleryWords).
+    platforms: ["mobile"],
+    tags: [],
+    pages: ["checkout", "pay", "payment", "payments", "card", "cards", "wallet", "wallets"],
     measured: gallery(5, 50, 42, 26, "image hosts are shared CDNs (Gumlet, Framer): owner decision"),
   },
   {
@@ -527,15 +546,29 @@ export const MAX_UI_GALLERIES = 2;
 /** Most art gallery requests one direction search plans. */
 export const MAX_ART_GALLERIES = 1;
 
-export type GalleryPick = { ui: RegistrySite[]; art: RegistrySite[] };
+export type GalleryPick = {
+  ui: RegistrySite[];
+  art: RegistrySite[];
+  /** Baseline-only galleries for the platform, in rank order (P0-17: the "Shipped today" lane). */
+  baseline: RegistrySite[];
+};
+
+/** True when a gallery with `pages` may run for this brief: the brief names one of its pages. */
+export function pagesOk(entry: Pick<SourceEntry, "pages">, brief: string | undefined): boolean {
+  if (!entry.pages?.length) return true;
+  const words = ` ${(brief ?? "").toLowerCase().match(/[\p{L}\p{N}]+/gu)?.join(" ") ?? ""} `;
+  return entry.pages.some((p) => words.includes(` ${p} `));
+}
 
 /**
  * Galleries for one direction search (pure, deterministic):
  * - UI: galleries whose style tags the direction's style words (or the brief) name come first, in
  *   registry order ("bento grid" pulls Bento Grids, "dark mode" pulls Dark Design); then the
  *   galleries for the platform (website: Awwwards, Lapa Ninja, ...; webapp: Refero, ...; mobile:
- *   ScreensDesign; never Figma Community), rotated by the direction key so two directions on one
- *   canvas search different galleries. At most MAX_UI_GALLERIES.
+ *   60fps for pay, card, checkout and wallet pages; tablet: ScreensDesign; never Figma Community,
+ *   SaaSFrame or a baseline gallery), rotated by the direction key so two directions on one canvas
+ *   search different galleries. At most MAX_UI_GALLERIES.
+ * - Baseline: the platform's baseline galleries (web app: Nicelydone, then Refero), in rank order.
  * - Art: art galleries whose tags the art queries or the idea name ("swiss poster" pulls Swissted
  *   and typo/graphic posters), rotated by the key. At most MAX_ART_GALLERIES. Style words do not
  *   pick art galleries: live, "big typography" pulled Fonts In Use pages unrelated to the idea
@@ -556,10 +589,17 @@ export function pickGalleries(input: {
     const k = hash(`${salt}|${input.key}`) % list.length;
     return [...list.slice(k), ...list.slice(0, k)];
   };
-  const uiAll = galleries.filter((s) => s.zone === "ui");
-  const tagged = uiAll.filter((s) => matchesTags(s, words));
+  const uiAll = galleries.filter((s) => s.zone === "ui" && pagesOk(sourceEntry(s.id), input.brief));
+  const directionUi = uiAll.filter((s) => !("baseline" in s));
+  const tagged = directionUi.filter((s) => matchesTags(s, words));
   const platform = input.platform && input.platform !== "any" ? input.platform : undefined;
-  const forPlatform = platform ? uiAll.filter((s) => (s.platforms as readonly string[]).includes(platform)) : [];
+  const forPlatform = platform ? directionUi.filter((s) => (s.platforms as readonly string[]).includes(platform)) : [];
+  const baseline = platform
+    ? uiAll
+        .filter((s): s is Extract<(typeof uiAll)[number], { baseline: number }> => "baseline" in s && (s.platforms as readonly string[]).includes(platform))
+        .sort((a, b) => a.baseline - b.baseline)
+        .map((s) => s.id)
+    : [];
   // Tag matches only count when the gallery suits the platform or has no platform of its own.
   const taggedOk = tagged.filter((s) => s.platforms.length === 0 || !platform || (s.platforms as readonly string[]).includes(platform));
   const ui: RegistrySite[] = [];
@@ -573,5 +613,5 @@ export function pickGalleries(input: {
   )
     .slice(0, MAX_ART_GALLERIES)
     .map((s) => s.id);
-  return { ui, art };
+  return { ui, art, baseline };
 }

@@ -256,7 +256,7 @@ function resultText(out: SearchReferencesOutput): string {
   if (out.zones.art > 0 || directionUi > 0) {
     lines.push(
       directionUi < 6
-        ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${directionUi} UI came back for this direction: search a UI lane (component, bridge or hero) with other words first, so art does not outnumber UI.`
+        ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${directionUi} UI came back for this direction: search a UI lane (component, bridge or taste) with other words first, so art does not outnumber UI.`
         : "Place 6 to 8 UI references per direction and at most 4 art items: UI is the main grid, art is the accent row.",
     );
   }

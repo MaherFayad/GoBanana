@@ -10,13 +10,17 @@
  *   brief names. "{domain} {surface}" ("flight app ui") pulled tracking, search and seat screens
  *   for a checkout brief (field report, 2026-10-12).
  * - taste: "{style} {domain} {component} ui design" ("big typography flight checkout ui design").
- *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21.
+ *   Without the domain this lane went off topic (1 of 24 on topic); with it, 20 of 21. Mobile and
+ *   web app briefs use the taste bar wordings instead (P0-17, round 13): mobile "dark {phrase} ui
+ *   ios app" on Pinterest ("dark paywall subscription ui ios app"), web app "dark mode minimal
+ *   {domain} {page} ui" on Dribbble. The user's style words replace "dark".
+ * - light twin (mobile): "{phrase} ui ios app" on Pinterest, in the baseline lane in place of the
+ *   Pinterest fidelity page.
  * - component: "{core} {page} {component} {surface}" ("flight checkout fare summary app ui",
  *   "banking quick actions app ui"), up to 2, from the pages given to bend_brief and the components
  *   the brief names.
  * - bridge: "{ingredient} ui design" (UI briefs): the idea already applied to UI. Kept only when
  *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
- * - hero: "{style} {coreDomain} app single screen" (app briefs): one floating phone, uncluttered.
  * - locale: "arabic {core} {surface}" when the brief is Arabic or right to left and names a subject.
  *
  * A brief that names no UI ("a poster for a jazz festival") still gets UI forms: fidelity
@@ -482,10 +486,14 @@ export function fidelityCoreQuery(brief: string, platform?: Platform): string | 
  * brief gives nothing more ("fintech"). Never a lone generic word (TOPIC_STOP): "" then.
  */
 function uiTopic(p: BriefParts): string {
-  const core = coreNoun(p.domain, p.product) ?? "";
   const page = briefPage(p);
+  // A page word read as a domain word ("fitness app empty state" gave the domain "fitness empty")
+  // is left out of the core, so the topic is "fitness empty state", not "empty empty state".
+  const pageWords = new Set(words(page));
+  const domain = p.domain.filter((w) => !pageWords.has(w));
+  const core = coreNoun(domain.length > 0 ? domain : p.domain, p.product) ?? "";
   let topic = words(core);
-  if (topic.length < 2 && page && !topic.includes(page)) topic = [...topic, ...words(page)];
+  if (topic.length < 2 && page) topic = [...new Set([...topic, ...words(page)])];
   if (topic.length < 2 && p.domain.length > 1) topic = [...p.domain];
   return topic.filter((w) => !TOPIC_STOP.has(w)).join(" ");
 }
@@ -531,7 +539,8 @@ export function tasteQuery(brief: string, style: string, platform?: Platform): s
  */
 export function tasteVariants(brief: string, style: string, platform?: Platform): { app?: string; core?: string } {
   const p = briefParts(brief, platform);
-  if (!p.ui) return {};
+  // Mobile and web app taste lanes use the taste bar wording, which has no variants.
+  if (!p.ui || platform === "mobile" || platform === "webapp") return {};
   const base = tasteUiQuery(p, style, p.domain);
   const out: { app?: string; core?: string } = {};
   if (p.surface === "app") {
@@ -545,11 +554,97 @@ export function tasteVariants(brief: string, style: string, platform?: Platform)
   return out;
 }
 
-/** Hero lane (app surface only): "{style} {coreDomain} app single screen", or null. */
-export function heroQuery(brief: string, style: string, platform?: Platform): string | null {
+// ---------------------------------------------------------------------------
+// Taste bar lanes (P0-17, docs/search-quality-experiment.md round 13). The hero lane ("{style}
+// {domain} app single screen") is gone: it kept 0 and 1 of 10 for paywall and wallet.
+
+/** Words a taste lane never sends: they added nothing in round 13 ("2025", "product design", "saas", "single screen"). */
+const NEVER_SEND = /\b(?:20\d\d|product design|saas|single screen)\b/gi;
+
+/** The default taste word per platform when the user gave none: the owner's bar, not a house style. */
+export const BAR_STYLE: Readonly<Partial<Record<Platform, string>>> = { mobile: "dark", webapp: "dark mode minimal" };
+
+/**
+ * The phrase of the Pinterest series of shipped screens ("Paywall & Subscription UI from Flighty iOS
+ * App") for a mobile brief, or the brief's topic. A brief with a product noun keeps its topic
+ * ("esim plan", P0-16); paywall, plan picker, subscription and pricing give "paywall subscription";
+ * onboarding, welcome and sign up give "welcome screen"; wallet, balance and a finance home give
+ * "wallet balance"; anything else the topic ("flight checkout"), else the component.
+ */
+function seriesPhrase(p: BriefParts): string {
+  const topic = uiTopic(p);
+  if (p.product.size > 0 && topic) return topic;
+  const flat = ` ${tokens(p.main).map((t) => t.word).join(" ")} `;
+  const has = (...ws: string[]) => ws.some((w) => flat.includes(` ${w} `));
+  if (has("paywall", "paywalls", "subscription", "subscriptions", "plan picker", "pricing")) return "paywall subscription";
+  if (has("onboarding", "welcome", "sign up", "signup", "get started")) return "welcome screen";
+  if (has("wallet", "wallets", "balance") || (has("finance", "banking", "bank", "fintech") && has("home", "homepage", "home screen"))) return "wallet balance";
+  return topic || p.component;
+}
+
+/** "ios app", or "android app" when the brief says Android. */
+function mobileTail(p: BriefParts): string {
+  return tokens(p.main).some((t) => t.word === "android") ? "android app" : "ios app";
+}
+
+/** A taste lane's words without NEVER_SEND words, within MAX_FOCUSED_QUERY_WORDS. */
+function cleanTasteWords(text: string): string {
+  return capWords(text.replace(NEVER_SEND, " "));
+}
+
+/**
+ * The page a web app taste lane names: the brief's page ("settings"), else its component
+ * ("analytics dashboard", "data table"), else "dashboard".
+ */
+function webAppPage(p: BriefParts): string {
+  return briefPage(p) || (p.component && p.component !== "card" && p.component !== "widget" ? p.component : "dashboard");
+}
+
+/**
+ * Taste bar lane for mobile and web app briefs, or null for other platforms and briefs that name
+ * no UI. Mobile: "{style} {phrase} ui ios app" ("dark paywall subscription ui ios app"), searched on
+ * Pinterest pins. Web app: "{style} {domain} {page} ui" ("dark mode minimal fleet management
+ * dashboard ui") on Dribbble, with the fallback "{style} {page} web app ui" ("dark dashboard web app
+ * ui"; round 13 used "dark" there). `style` is the user's style word, else BAR_STYLE. Over the word
+ * cap the domain drops to its core noun, then style words drop from the end.
+ */
+export function barTasteQuery(
+  brief: string,
+  style: string | undefined,
+  platform: Platform | undefined,
+): { text: string; site: "pinterest" | "dribbble"; fallback?: string } | null {
+  if (platform !== "mobile" && platform !== "webapp") return null;
   const p = briefParts(brief, platform);
-  if (!p.ui || p.surface !== "app" || p.domain.length === 0) return null;
-  return capWords(`${styleWords(style)} ${coreNoun(p.domain, p.product)} app single screen`);
+  if (!p.ui) return null;
+  let s = words(styleWords(style?.trim() ? style : BAR_STYLE[platform]!).replace(NEVER_SEND, " "));
+  if (s.length === 0) s = words(BAR_STYLE[platform]!);
+  if (platform === "mobile") {
+    const phrase = words(seriesPhrase(p).replace(NEVER_SEND, " "));
+    const tail = ["ui", ...words(mobileTail(p))];
+    while (s.length > 1 && new Set([...s, ...phrase, ...tail]).size > MAX_FOCUSED_QUERY_WORDS) s = s.slice(0, -1);
+    return { text: cleanTasteWords([...s, ...phrase, ...tail].join(" ")), site: "pinterest" };
+  }
+  const page = webAppPage(p);
+  let dom = p.domain.filter((w) => !page.split(" ").includes(w));
+  const build = () => [...s, ...dom, ...words(page), "ui"];
+  const fits = () => new Set(build()).size <= MAX_FOCUSED_QUERY_WORDS;
+  if (!fits() && dom.length > 1) dom = words(coreNoun(dom, p.product) ?? "");
+  while (!fits() && s.length > 1) s = s.slice(0, -1);
+  const fallbackStyle = style?.trim() ? s : ["dark"];
+  const fallback = cleanTasteWords([...fallbackStyle, ...words(page), "web", "app", "ui"].join(" "));
+  return { text: cleanTasteWords(build().join(" ")), site: "dribbble", fallback };
+}
+
+/**
+ * The light twin of the mobile taste lane: "{phrase} ui ios app" ("paywall subscription ui ios
+ * app"), searched on Pinterest in the baseline lane in place of the Pinterest fidelity page. Null
+ * for other platforms and briefs that name no UI.
+ */
+export function lightTwinQuery(brief: string, platform: Platform | undefined): string | null {
+  if (platform !== "mobile") return null;
+  const p = briefParts(brief, platform);
+  if (!p.ui) return null;
+  return cleanTasteWords(`${seriesPhrase(p)} ui ${mobileTail(p)}`);
 }
 
 /**
@@ -720,10 +815,11 @@ export function directionTasteVariants(
 }
 
 /**
- * Every lane's words for one direction. `key` (the direction id) picks the styles: taste gets
- * one, hero the next, so a direction shows two looks from the list. The style list is the user's
- * taste, else `opts.styleWords` (the direction's spec); with neither there is no taste lane and
- * its places go to the other lanes (never the owner's DEFAULT_TASTE). The platform (`opts`, else
+ * Every lane's words for one direction. `key` (the direction id) picks the taste lane's style.
+ * Mobile and web app briefs get the taste bar wording (barTasteQuery: the user's style word, else
+ * "dark" or "dark mode minimal"). Other platforms use the user's taste, else `opts.styleWords` (the
+ * direction's spec); with neither there is no taste lane and its places go to the other lanes
+ * (never the owner's DEFAULT_TASTE). The platform (`opts`, else
  * detectPlatform) words the UI lanes ("ipad app ui", "dashboard ui"), sets the title words they
  * drop, and with the style words picks the curated galleries (lib/sources/registry.ts). Without a
  * brief there are no UI lanes, only the idea (search_references then searches it in UI forms).
@@ -740,9 +836,20 @@ export function laneTexts(
   if (!b) return lanes;
   const platform = opts.platform ?? detectPlatform(b);
   const styles = directionStyles(taste, opts.styleWords);
-  const style = pickFrom(styles, key);
-  if (style) lanes.taste = tasteQuery(b, style, platform);
+  // Mobile and web app: the taste bar wording (P0-17), styled by the user's own taste words only;
+  // without them, "dark" (mobile) or "dark mode minimal" (web app).
+  const bar = barTasteQuery(b, pickFrom(taste.map((w) => w.trim()).filter(Boolean), key) || undefined, platform);
+  if (bar) {
+    lanes.taste = bar.text;
+    lanes.tasteSite = bar.site;
+    if (bar.fallback) lanes.tasteFallback = bar.fallback;
+  } else {
+    const style = pickFrom(styles, key);
+    if (style) lanes.taste = tasteQuery(b, style, platform);
+  }
   lanes.fidelity = fidelityQuery(b, platform);
+  const twin = lightTwinQuery(b, platform);
+  if (twin) lanes.lightTwin = twin;
   const core = fidelityCoreQuery(b, platform);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
   const mechanic = opts.mechanic ? mechanicQuery(b, opts.mechanic, platform) : null;
@@ -752,8 +859,6 @@ export function laneTexts(
   if (components.length > 0) lanes.component = components;
   const bridge = bridgeQuery(b, idea);
   if (bridge) lanes.bridge = bridge;
-  const hero = heroQuery(b, pickFrom(styles, key, 1), platform);
-  if (hero) lanes.hero = hero;
   const locale = localeQuery(b, platform);
   if (locale) {
     lanes.locale = locale;
@@ -768,6 +873,7 @@ export function laneTexts(
   if (topic) lanes.topic = topic;
   const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? [])], brief: b, key, artText: [idea] });
   if (picked.ui.length > 0) lanes.galleries = picked.ui;
+  if (picked.baseline.length > 0) lanes.baselineGalleries = picked.baseline;
   if (picked.art.length > 0) lanes.artGalleries = picked.art;
   return lanes;
 }

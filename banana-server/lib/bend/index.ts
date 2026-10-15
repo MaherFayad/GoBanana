@@ -53,7 +53,8 @@ export {
   componentQueries,
   fidelityCoreQuery,
   fidelityQuery,
-  heroQuery,
+  barTasteQuery,
+  lightTwinQuery,
   ideaMechanicQuery,
   mechanicQuery,
   queryKey,
@@ -730,7 +731,6 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       lanes.bridge ?? `${searchQuery} interface`,
       lanes.taste,
       ...(lanes.component ?? []).slice(1),
-      lanes.hero,
       lanes.locale,
     ];
     const shared = new Set([lanes.fidelity, lanes.fidelityCore].filter(Boolean).map((q) => queryKey(q!)));

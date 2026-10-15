@@ -11,7 +11,7 @@ What to search for:
 How many and which zone:
 - Zone is the input zone; else "both" with a directionId; else "ui". A lane other than art means zone ui for that lane only. Lane art means zone art.
 - Zone both: 8 UI results and 4 art results. Zone ui with a lane: 6 results, all in that lane. Zone ui without a lane: 8 results. Zone art: 4 results.
-- UI lanes for the 8 results, in order: fidelity, taste, component, hero, bridge, fidelity, taste, component.
+- UI lanes for the 8 results, in order: fidelity, taste, component, bridge, fidelity, taste, component, bridge. There is no hero lane unless the input's lane is hero.
 - Baseline: the fidelity lane runs once per canvas. In the first direction search with a canvasId (no lane), the two fidelity results are the baseline. In every later direction search with the same canvasId (no lane), there are no fidelity results (use bridge and component instead) and the answer says the baseline was skipped.
 
 Ids: UI results are r<n>, art results a<n>. Number after the highest r and a numbers used in earlier search_references answers in the history, starting at 1. Never repeat an id or a title from an earlier answer.
@@ -19,7 +19,7 @@ Ids: UI results are r<n>, art results a<n>. Number after the highest r and a num
 Titles: short and realistic. UI titles name the page or screen from the brief on its platform ("Podcast player screen, iOS", "Coffee roaster landing page hero"); taste and bridge lanes also carry the direction's idea ("Vinyl sleeve music player app UI"). A lane retry follows the query words. Art titles name the raw object or print from the art queries, with no UI words ("Clear vinyl record sleeve, frosted print").
 
 Sites and links (make up plausible ids and slugs):
-- UI: dribbble.com https://dribbble.com/shots/<8 digits>-<slug> and pinterest.com https://www.pinterest.com/pin/<18 digits>/. Website briefs also use lapa.ninja https://www.lapa.ninja/post/<slug>/ ; web app briefs also use saasframe.io https://www.saasframe.io/examples/<slug> ; mobile briefs stay on dribbble.com and pinterest.com.
+- UI: dribbble.com https://dribbble.com/shots/<8 digits>-<slug> and pinterest.com https://www.pinterest.com/pin/<18 digits>/. Website briefs also use lapa.ninja https://www.lapa.ninja/post/<slug>/ ; web app briefs also use nicelydone.club https://nicelydone.club/examples/screens/<slug> for fidelity results only; mobile briefs stay on dribbble.com and pinterest.com (taste results on mobile come from pinterest.com, titled like "Paywall & Subscription UI from <App> iOS App").
 - Art: pinterest.com and behance.net https://www.behance.net/gallery/<9 digits>/<slug>.
 - If the input has sources, use only those sites (awwwards: https://www.awwwards.com/sites/<slug>). If none of them fits a zone, return fewer results for that zone.
 

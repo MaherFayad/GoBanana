@@ -5,7 +5,6 @@ import {
   componentQueries,
   fidelityCoreQuery,
   fidelityQuery,
-  heroQuery,
   inspirationFromQuery,
   inspirationQuery,
   isArabicBrief,
@@ -33,7 +32,7 @@ const words = (s: string) => s.split(/\s+/).filter(Boolean);
 const CANVAS_BRIEF = "Flight checkout screen for a GCC travel OTA (mobile, bilingual Arabic/English)";
 /** The searched lanes of a direction, in bend_brief's searchQueries order (the idea is never searched). */
 const uiLaneWords = (l: LaneTexts) =>
-  [l.fidelity, l.taste, ...(l.component ?? []), l.hero, l.bridge, l.locale].filter((q): q is string => Boolean(q));
+  [l.fidelity, l.taste, ...(l.component ?? []), l.bridge, l.locale].filter((q): q is string => Boolean(q));
 
 describe("inspiration lane", () => {
   it("is the raw ingredient, at most 5 words, never with UI words", () => {
@@ -139,11 +138,10 @@ describe("brief lanes", () => {
     expect(laneTexts("poster for a jazz festival", "vending machine", DEFAULT_TASTE, "bd-1").bridge).toBeUndefined();
   });
 
-  it("hero for app briefs only, locale for Arabic briefs only", () => {
-    expect(heroQuery(CANVAS_BRIEF, "dark mode")).toBe("dark mode flight app single screen");
-    expect(heroQuery("saudi fintech app", "luxury")).toBe("luxury fintech app single screen");
-    expect(heroQuery("luxury hotel website", "minimal")).toBeNull();
-    expect(heroQuery("logistics dashboard", "minimal")).toBeNull();
+  it("no hero lane (P0-17), locale for Arabic briefs only", () => {
+    for (const brief of [CANVAS_BRIEF, "saudi fintech app", "luxury hotel website", "logistics dashboard"]) {
+      expect(laneTexts(brief, "x", ["dark mode"], "bd-1").hero).toBeUndefined();
+    }
     expect(localeQuery(CANVAS_BRIEF)).toBe("arabic flight app ui");
     expect(localeQuery("arabic admin dashboard")).toBe("arabic admin dashboard ui");
     expect(localeQuery("banking app")).toBeNull();
@@ -151,15 +149,17 @@ describe("brief lanes", () => {
     expect(localeQuery("arabic app")).toBeNull();
   });
 
-  it("builds every lane for a direction, two styles per direction, only the idea without a brief", () => {
+  it("builds every lane for a direction, the user's style on the taste bar lane, only the idea without a brief", () => {
     const lanes = laneTexts(CANVAS_BRIEF, "crushed velvet", DEFAULT_TASTE, "bd-8dti7s7c");
+    const style = pickStyle(DEFAULT_TASTE, "bd-8dti7s7c").toLowerCase().split(" ").slice(0, 2).join(" ");
+    expect(lanes.taste).toMatch(new RegExp(`^${style}.* flight checkout ui ios app$`));
     expect(lanes).toMatchObject({
       idea: "crushed velvet",
-      taste: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c")} flight checkout ui design`,
+      tasteSite: "pinterest",
       fidelity: "flight checkout app ui",
+      lightTwin: "flight checkout ui ios app",
       component: ["flight checkout fare summary app ui", "flight checkout payment bottom sheet app ui"],
       bridge: "crushed velvet ui design",
-      hero: `${pickStyle(DEFAULT_TASTE, "bd-8dti7s7c", 1)} flight app single screen`,
       locale: "arabic flight app ui",
       localeWord: "flight",
       // The brief says mobile: UI lanes drop web titles, and mobile galleries join.
@@ -172,7 +172,7 @@ describe("brief lanes", () => {
     expect(laneTexts(null, "crushed velvet", DEFAULT_TASTE, "bd-1")).toEqual({ idea: "crushed velvet" });
     for (const brief of [CANVAS_BRIEF, "saudi fintech app", "Dashboard for a fleet management company", "pricing page for a saas tool"]) {
       const lanes = laneTexts(brief, "x", ["dark with one accent", "very soft studio 3d light"], "bd-2");
-      for (const q of [lanes.taste, lanes.fidelity, lanes.fidelityCore, lanes.hero, lanes.locale, lanes.bridge, ...(lanes.component ?? [])].filter(Boolean)) {
+      for (const q of [lanes.taste, lanes.tasteFallback, lanes.lightTwin, lanes.fidelity, lanes.fidelityCore, lanes.locale, lanes.bridge, ...(lanes.component ?? [])].filter(Boolean)) {
         expect(words(q!).length, q).toBeLessThanOrEqual(MAX_FOCUSED_QUERY_WORDS);
       }
     }
@@ -260,14 +260,20 @@ describe("bend output", () => {
     }
   });
 
-  it("uses the given taste for the taste and hero lanes without moving any id", () => {
+  it("uses the given taste for the taste lane without moving any id", () => {
     const base = bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8 });
     const tasted = bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8, taste: ["monochrome"] });
     expect(tasted.directions.map((d) => d.id)).toEqual(base.directions.map((d) => d.id));
     const all = tasted.directions.flatMap((d) => d.searchQueries);
     // The taste lane is the brief's, so only the first direction keeps it (P0-05: no shared queries).
     expect(all.filter((q) => q === "monochrome flight checkout ui design")).toHaveLength(1);
-    expect(all).toContain("monochrome flight app single screen");
+    expect(all.some((q) => / single screen$/.test(q))).toBe(false);
+    // Mobile: the user's style word replaces "dark" in the taste bar lane (P0-17).
+    const mobile = (taste?: string[]) =>
+      bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8, platform: "mobile", ...(taste ? { taste } : {}) }).directions.flatMap((d) => d.searchQueries);
+    expect(mobile(["monochrome"]).filter((q) => q === "monochrome flight checkout ui ios app")).toHaveLength(1);
+    expect(mobile(["monochrome"])).not.toContain("dark flight checkout ui ios app");
+    expect(mobile().filter((q) => q === "dark flight checkout ui ios app")).toHaveLength(1);
     expect(all).not.toContain("flight checkout app ui");
     // Every direction searches its own idea.
     for (const d of tasted.directions) expect(d.searchQueries.some((q) => q.toLowerCase().startsWith(d.searchQuery.toLowerCase()))).toBe(true);

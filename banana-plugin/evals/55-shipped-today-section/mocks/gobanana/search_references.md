@@ -5,10 +5,10 @@ UI references:
 3. [u3, component] GB and days stepper component, mobile (dribbble.com): https://dribbble.com/shots/31000003-gb-days-stepper
 4. [u4, bridge] Measuring tape value picker app UI (dribbble.com): https://dribbble.com/shots/31000004-tape-picker
 5. [u5, component] Data plan comparison table, iOS (dribbble.com): https://dribbble.com/shots/31000005-plan-compare
-6. [u6, hero] eSIM app single screen, destination plans (dribbble.com): https://dribbble.com/shots/31000006-destination-plans
+6. [u6, taste] Dark eSIM plan UI from Airalo iOS App, destination plans (pinterest.com): https://www.pinterest.com/pin/310000000000000006/
 7. [u7, taste] Travel data plan picker with big numerals (dribbble.com): https://dribbble.com/shots/31000007-big-numerals
 8. [u8, component] Country selector with flags, eSIM app (pinterest.com): https://www.pinterest.com/pin/310000000000000008/
-9. [u9, hero] eSIM checkout with plan summary, mobile (dribbble.com): https://dribbble.com/shots/31000009-esim-checkout
+9. [u9, component] eSIM checkout with plan summary, mobile (dribbble.com): https://dribbble.com/shots/31000009-esim-checkout
 Art direction (place these in the art row, not with the UI references):
 10. [a1, art] Engineer ruler close-up, black ticks on cream (pinterest.com): https://www.pinterest.com/pin/310000000000000010/
 11. [a2, art] Brutalist poster with giant ruler scale (behance.net): https://www.behance.net/gallery/310000011/ruler-poster

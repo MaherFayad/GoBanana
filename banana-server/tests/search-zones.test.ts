@@ -74,8 +74,11 @@ describe("UI lanes per platform", () => {
     const gallery = plan.find((r) => r.lane === "gallery")!;
     expect(sourceEntry(gallery.site).platforms).toContain("website");
     expect(plan.some((r) => r.lane === "fidelity" && r.site === "pinterest")).toBe(false);
+    // A web app's Pinterest page goes to its first baseline gallery (P0-17: Nicelydone, one head word).
     const app = planRequests(laneTexts("B2B analytics web app", "x", [], "k"), undefined, { zone: "ui" });
-    expect(["refero", "saasframe", "nicelydone"]).toContain(app.find((r) => r.lane === "gallery")!.site);
+    expect(app.find((r) => r.lane === "fidelity" && r.site !== "dribbble")).toMatchObject({ site: "nicelydone", query: "analytics" });
+    expect(app.some((r) => r.site === "saasframe")).toBe(false);
+    expect(app.some((r) => r.site === "pinterest")).toBe(false);
   });
 
   it("never routes a search to Figma Community files by platform or style (free kits, rated stock_or_shop)", () => {
@@ -106,12 +109,19 @@ describe("UI lanes per platform", () => {
 
 describe("no default taste for direction searches", () => {
   it("uses the user's taste, else the direction's style words, else no taste lane", () => {
-    expect(laneTexts(IPHONE, "x", ["monochrome"], "k").taste).toBe("monochrome personal finance card ui design");
-    expect(laneTexts(IPHONE, "x", [], "k", { styleWords: ["swiss style"] }).taste).toBe("swiss style personal finance card ui design");
-    const none = laneTexts(IPHONE, "x", [], "k");
+    const WEB = "Personal finance website for a savings bank";
+    expect(laneTexts(WEB, "x", ["monochrome"], "k").taste).toBe("monochrome personal finance hero section ui design");
+    expect(laneTexts(WEB, "x", [], "k", { styleWords: ["swiss style"] }).taste).toBe("swiss style finance hero section ui design");
+    const none = laneTexts(WEB, "x", [], "k");
     expect(none.taste).toBeUndefined();
     expect(JSON.stringify(none)).not.toMatch(new RegExp(DEFAULT_TASTE.join("|")));
     expect(planRequests(none).some((r) => r.lane === "taste")).toBe(false);
+  });
+
+  it("mobile: the taste bar lane, with the user's style word in place of dark, never the direction's style words (P0-17)", () => {
+    expect(laneTexts(IPHONE, "x", ["monochrome"], "k").taste).toBe("monochrome wallet balance ui ios app");
+    expect(laneTexts(IPHONE, "x", [], "k", { styleWords: ["swiss style"] }).taste).toBe("dark wallet balance ui ios app");
+    expect(laneTexts(IPHONE, "x", [], "k")).toMatchObject({ taste: "dark wallet balance ui ios app", tasteSite: "pinterest", lightTwin: "wallet balance ui ios app" });
   });
 
   it("a saved direction reads its platform, style words and art queries from its detail", () => {
@@ -126,7 +136,8 @@ describe("no default taste for direction searches", () => {
     );
     expect(lanes.platform).toBe("mobile");
     expect(lanes.art).toEqual(["korean bojagi", "bojagi patchwork"]);
-    expect(lanes.taste).toMatch(/^bento grid /);
+    // Mobile taste bar lane: the user gave no taste words, so "dark" (P0-17). Style words still pick galleries.
+    expect(lanes.taste).toBe("dark wallet balance ui ios app");
     expect(lanes.galleries).toContain("bentogrids");
     // No detail: the idea itself is the art query.
     expect(directionLanes({ id: "d2", searchQuery: "synthwave 1984", brief: "Finance app" }, []).art).toEqual(["synthwave 1984"]);
@@ -138,7 +149,8 @@ describe("art zone", () => {
     const lanes = { ...laneTexts(IPHONE, "Korean bojagi", [], "k"), art: ["korean bojagi", "bojagi patchwork"] };
     const both = planRequests(lanes);
     expect(both.length).toBeLessThanOrEqual(7);
-    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art"]);
+    // Mobile leads with the taste bar lane, then the bridge (P0-17).
+    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["taste", "art", "bridge", "art"]);
     expect(both.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
     expect(both.find((r) => r.lane === "art")!.query).toBe("korean bojagi -etsy -amazon -aliexpress -sale -buy");
     const art = planRequests(lanes, undefined, { zone: "art" });

@@ -43,7 +43,7 @@ export function badHint(lane: LaneName | null, reasons: readonly FeedbackReason[
     return `Try ${RETRY(lane)}: keep the idea's main word and name a screen, for example "vending machine checkout ui". Titles without the idea's main word are left out.`;
   }
   if (has("not_ui") || has("off_topic")) return `Try ${RETRY(lane)}: name the domain and the screen, for example "flight checkout ui design".`;
-  if (has("cluttered")) return `Try ${RETRY(lane)}: ask for one screen, for example add "single screen" or a component such as card or widget.`;
+  if (has("cluttered")) return `Try ${RETRY(lane)}: ask for one screen by naming a component such as card or widget.`;
   if (has("wrong_style")) return `Try ${RETRY(lane)} with the user's style words, or pass taste.`;
   if (has("stock_or_shop")) return `Try ${RETRY(lane)}: add "ui design" and avoid words like template or kit.`;
   if (has("low_craft")) return `Try ${RETRY(lane)}: add a style word that signals polish, such as minimal or editorial.`;
