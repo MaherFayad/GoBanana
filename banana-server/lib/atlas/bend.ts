@@ -25,6 +25,7 @@ import { cleanTaste } from "@/lib/taste";
 import { checkCoherence, MAX_COHERENCE_TRIES } from "@/lib/bend/coherence";
 import { cleanPages, clipTitle, joinList, MAX_TITLE_WORDS, MAX_TWIST_WORDS, phase0Queries, suggestLenses, takeQueries, TWIST_FROM_WILDNESS, wildSpotsFor, type BendOptions } from "@/lib/bend/index";
 import { BendInputError, parseBendInput } from "@/lib/bend/input";
+import { applyBrand } from "@/lib/bend/brand";
 import { getLens } from "@/lib/bend/lists";
 import { briefMarket, needsArabic, WIDER_REGION_FROM_WILDNESS } from "@/lib/bend/market";
 import { brokenMustKeep, protectedElements, type Mechanic as DirectionMechanic, type MechanicElement } from "@/lib/bend/mechanic";
@@ -591,7 +592,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     b.d.recipeIds = [...new Set(recipeIds)];
   }
 
-  return {
+  return applyBrand({
     brief: input.brief,
     subject: fixCase(subject.title),
     wildness,
@@ -603,5 +604,5 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     wildSpots: pagesIn.length > 0 ? [] : wildSpotsFor(platform),
     directions: built.map((b) => b.d).slice(0, input.count),
     atlas: { pageId: page.id, domainId: domain.id, productNoun },
-  };
+  }, input.brand);
 }

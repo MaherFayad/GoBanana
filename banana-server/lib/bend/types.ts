@@ -1,5 +1,6 @@
 import type { Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { Mechanic } from "./mechanic";
+import type { BrandInput, BrandRead } from "./brand";
 
 export type { Platform, VisualSpec } from "@/lib/direction-detail";
 
@@ -33,6 +34,11 @@ export interface BendInput {
    * Never changes ids: a direction that breaks one is dropped, and mechanics avoid them.
    */
   mustKeep?: string[];
+  /**
+   * The product's brand and how far directions may stretch it (VAL-07, lib/bend/brand.ts). Never
+   * changes ids or picks: it rewrites what each direction must keep.
+   */
+  brand?: BrandInput;
 }
 
 /** Tones a list entry can carry; subjects map to compatible tones (lib/bend/tone.ts). */
@@ -175,6 +181,8 @@ export interface BendResult {
   /** Top places for one wild page on this platform. Empty when pages were given. */
   wildSpots: WildSpot[];
   directions: Direction[];
+  /** What bend_brief read from `brand` (VAL-07): the primary, the logo rules and the stretch. */
+  brand?: BrandRead;
   /** Set when the Atlas engine made the directions (BEND_ENGINE=atlas); absent for the word lists. */
   atlas?: { pageId: string; domainId: string; productNoun: string };
 }

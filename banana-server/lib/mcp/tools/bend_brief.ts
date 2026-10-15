@@ -22,7 +22,7 @@ export const BEND_BRIEF_DESCRIPTION =
   "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
   "Without pages it returns wildSpots: where weirdness pays off. " +
   "Pass canvasId to save them, then call search_references with a direction id. " +
-  "Optional: taste (style words), mustKeep.";
+  "Optional: taste (style words), mustKeep, brand.";
 
 /** Advertised input: the bend schema plus an optional canvas to save the directions to. */
 export const inputSchema = bendInputSchema.extend({

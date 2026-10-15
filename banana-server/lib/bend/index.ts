@@ -39,6 +39,7 @@ import { familyOf } from "./families";
 import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS, type Market } from "./market";
 import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
 import { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
+import { applyBrand, brandLine } from "./brand";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -77,6 +78,8 @@ export { detectDomain } from "./tone";
 export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
 export type { Mechanic, MechanicElement } from "./mechanic";
 export { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
+export { applyBrand, brandLine, readBrand, BRAND_STRETCHES } from "./brand";
+export type { BrandInput, BrandRead, BrandStretch } from "./brand";
 
 /** How many wild spots a result suggests. */
 export const WILD_SPOTS_SHOWN = 5;
@@ -744,18 +747,21 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     });
   });
 
-  return {
-    brief: input.brief,
-    subject: fixCase(subject.title),
-    wildness,
-    wildnessLabel: rule.label,
-    lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont } : null,
-    suggestedLenses: lens ? [] : suggestLenses(input.brief),
-    platform,
-    pages,
-    wildSpots,
-    directions: directions.slice(0, input.count),
-  };
+  return applyBrand(
+    {
+      brief: input.brief,
+      subject: fixCase(subject.title),
+      wildness,
+      wildnessLabel: rule.label,
+      lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont } : null,
+      suggestedLenses: lens ? [] : suggestLenses(input.brief),
+      platform,
+      pages,
+      wildSpots,
+      directions: directions.slice(0, input.count),
+    },
+    input.brand,
+  );
 }
 
 /**
@@ -832,6 +838,8 @@ export function formatDirections(result: BendResult): string {
     `Platform: ${result.platform} (${profile.label}). Each direction is for one wild page or two, not the product's main design.`,
   ];
   if (lensLine) lines.push(lensLine);
+  const brand = brandLine(result.brand);
+  if (brand) lines.push(brand);
   if (result.pages.length > 0) lines.push(`Pages: ${result.pages.join(", ")}.`);
   else if (result.wildSpots.length > 0) {
     lines.push("Pages: none given. Where weirdness pays off (wildSpots):");
