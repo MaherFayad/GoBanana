@@ -34,9 +34,9 @@ import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } f
 export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
-  "Export a canvas as files for one wild page (default) or the design system. Formats: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
+  "Export a canvas as files for one wild page (default) or the design system: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
   "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, culture_md, claude_settings. " +
-  "Kept directions get a folder each. Big exports list files: fetch each with file. Pro formats come back as a plan message.";
+  "One folder per kept direction. Big exports list files: fetch each with file.";
 
 /** Inline output cap in characters (file contents plus headers), so results stay readable. */
 export const INLINE_CAP = 20_000;
