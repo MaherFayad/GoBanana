@@ -87,6 +87,28 @@
             "minItems": 1,
             "maxItems": 6,
             "description": "Patterns users rely on that no direction may break, like clear total or one primary action. Checkout briefs keep both by default."
+          },
+          "fromUpload": {
+            "type": "object",
+            "required": [
+              "uploadId"
+            ],
+            "properties": {
+              "uploadId": {
+                "type": "string",
+                "description": "The user's own screenshot, from their uploads."
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "maxItems": 12,
+                "description": "The page's parts, top to bottom, as stitch roles (nav, hero, features...). Read them from the screenshot."
+              }
+            },
+            "description": "Bend the user's own page: their uploaded screenshot becomes the baseline."
           }
         }
       }

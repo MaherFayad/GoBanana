@@ -1,6 +1,6 @@
 ---
 name: gobanana-explore
-description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
+description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", "bend my screen", "start from my page", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
 ---
 
 # GoBanana explore
@@ -112,6 +112,15 @@ Before you bend, search Mobbin once per page for the same page on the same platf
 - **The must keeps:** the patterns users rely on that a wild direction must not break (clear total, one primary action, the step indicator).
 
 Use both in the next steps: put the default to escape into the brief you pass to `bend_brief` when it helps ("not the usual summary card and payment sheet"), and keep each screen's `mobbin_url`, `image_url`, app name and platform for steps 11 and 12.
+
+### 6c. Bend my screen (only when the user has a screenshot of their own page)
+
+Trigger: "bend my screen", "start from my page", "here is our pricing page". The screenshot is the user's own file: they upload it on the canvas (Pro) or attach it to the chat. Never ask for a screenshot of anyone else's product, and never download one.
+
+1. Get the upload id (the id in the upload item's `/api/uploads/<id>` path, from `get_canvas`). If the user only attached it to the chat, read it from the chat and skip `fromUpload.uploadId`; write the baseline line yourself in step 3.
+2. Call `bend_brief` as in step 7 and add `fromUpload: { uploadId }`. The result shows you the screenshot (under 1.5 MB; larger, ask for it in the chat) and the Frankenstein part roles: nav, hero, logos, features, cards, gallery, stats, testimonial, pricing, cta, form, faq, content, footer, sidebar, toolbar, table, chart, filters, status-header, tabbar, list, detail, sheet, empty, other. There is no page anatomy data yet, so these are the roles to use.
+3. List the page's parts top to bottom with only those roles, then call `bend_brief` again with the same arguments plus `fromUpload: { uploadId, roles }`. The result carries the baseline line ("Baseline (the user's own page, top to bottom): nav, hero, ..."). Put it on the board as a note, and use it as the baseline in step 6b's place: bend away from this page, keep its must keeps, change one or two parts.
+4. If `bend_brief` says the upload was not found, relay it once. Do not guess another id.
 
 ### 7. Bend the brief, wide
 

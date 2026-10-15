@@ -9,7 +9,9 @@ import { globalLearningOn, K_ANON } from "@/lib/learning/arms";
 import { ingredientWeights } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
 import { inspirationFromQuery } from "@/lib/bend/queries";
+import { PART_ROLES, isPartRole, type PartRole } from "@/lib/stitch/types";
 import { cleanTaste } from "@/lib/taste";
+import { lookAtUpload, type UploadLookDeps } from "@/lib/uploads/look";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
@@ -19,7 +21,10 @@ export const BEND_BRIEF_DESCRIPTION =
   "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
   "Without pages it returns wildSpots: where weirdness pays off. " +
   "Pass canvasId to save them, then call search_references with a direction id. " +
-  "Optional: taste (style words), mustKeep.";
+  "Optional: taste (style words), mustKeep, fromUpload (a screenshot of their own page).";
+
+/** Parts a screenshot may list. */
+export const MAX_UPLOAD_ROLES = 12;
 
 /** Advertised input: the bend schema plus an optional canvas to save the directions to. */
 export const inputSchema = bendInputSchema.extend({
@@ -30,6 +35,13 @@ export const inputSchema = bendInputSchema.extend({
     .optional()
     .describe("Canvas from open_canvas. Saves the directions there so search_references can take a directionId."),
   taste: tasteInputSchema.optional(),
+  fromUpload: z
+    .object({
+      uploadId: z.string().min(1).max(100).describe("The user's own screenshot, from their uploads."),
+      roles: z.array(z.string().trim().min(1).max(30)).min(1).max(MAX_UPLOAD_ROLES).optional().describe("The page's parts, top to bottom, as stitch roles (nav, hero, features...). Read them from the screenshot."),
+    })
+    .optional()
+    .describe("Bend the user's own page: their uploaded screenshot becomes the baseline."),
 });
 
 /**
@@ -39,6 +51,8 @@ export const inputSchema = bendInputSchema.extend({
 const advertisedInput: StandardSchemaWithJSON<unknown, unknown> = lenient(inputSchema);
 
 export type BendBriefDeps = Pick<CanvasToolDeps, "repos"> & {
+  /** The user's uploads (VAL-02). Left out in tests that do not use fromUpload. */
+  uploads?(): Promise<UploadLookDeps>;
   /** GLOBAL_LEARNING: false means only the user's own direction ratings steer their bends. Default true. */
   globalLearning?(): boolean;
 };
@@ -102,6 +116,34 @@ export function directionDetail(d: BendResult["directions"][number], wildness: n
   };
 }
 
+export const UPLOAD_NOT_FOUND =
+  "That upload was not found in your uploads. Upload the screenshot on your canvas first (Pro), or attach it to the chat and list its parts yourself.";
+
+/** The baseline line for a screenshot of the user's own page. Roles are the stitch part roles. */
+export function baselineLine(roles: readonly PartRole[]): string {
+  return (
+    `Baseline (the user's own page, top to bottom): ${roles.join(", ")}. ` +
+    "Bend this page, not a generic one: keep these parts as the baseline and change one or two. Put this line on the board as a note."
+  );
+}
+
+type FromUpload = { uploadId: string; roles?: PartRole[]; unknownRoles: string[] };
+
+/** Validate fromUpload: an id, and roles that are stitch part roles (others are listed, not used). */
+function parseFromUpload(raw: unknown): { ok: true; value?: FromUpload } | { ok: false; message: string } {
+  if (raw === undefined) return { ok: true };
+  const bad = { ok: false as const, message: `fromUpload needs an uploadId, and up to ${MAX_UPLOAD_ROLES} roles from: ${PART_ROLES.join(", ")}.` };
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return bad;
+  const { uploadId, roles } = raw as { uploadId?: unknown; roles?: unknown };
+  if (typeof uploadId !== "string" || uploadId.length < 1 || uploadId.length > 100) return bad;
+  if (roles === undefined) return { ok: true, value: { uploadId, unknownRoles: [] } };
+  if (!Array.isArray(roles) || roles.length < 1 || roles.length > MAX_UPLOAD_ROLES || roles.some((r) => typeof r !== "string")) return bad;
+  const clean = (roles as string[]).map((r) => r.trim().toLowerCase());
+  const known = clean.filter(isPartRole);
+  const unknownRoles = [...new Set(clean.filter((r) => !isPartRole(r)))];
+  return { ok: true, value: { uploadId, ...(known.length > 0 ? { roles: known } : {}), unknownRoles } };
+}
+
 /** Save directions (and new taste words) on the user's canvas. */
 async function saveDirections(
   deps: BendBriefDeps,
@@ -155,6 +197,22 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
     }
     const newTaste = cleanTaste(rawTaste);
     if (canvasId && !userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
+    const fromUpload = parseFromUpload((args as { fromUpload?: unknown }).fromUpload);
+    if (!fromUpload.ok) return toolMessage(fromUpload.message);
+    if (fromUpload.value && !userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
+
+    // VAL-02: the screenshot must be the caller's own upload. The agent reads its parts (roles).
+    let look: Awaited<ReturnType<typeof lookAtUpload>> | undefined;
+    if (fromUpload.value && userId) {
+      try {
+        const uploads = await getDeps().uploads?.();
+        look = uploads ? await lookAtUpload(uploads, userId, fromUpload.value.uploadId) : { ok: false, reason: "unavailable" };
+      } catch {
+        console.error("[bend_brief] could not check the upload");
+        look = { ok: false, reason: "unavailable" };
+      }
+      if (!look.ok) return toolMessage(look.reason === "not_found" ? UPLOAD_NOT_FOUND : "Could not read your uploads right now. Try again in a minute.");
+    }
 
     // A saved canvas taste steers the taste lane when this call gives none.
     let canvas: CanvasRecord | null = null;
@@ -196,9 +254,34 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
         "\nNot saved: no canvasId was passed, so no board lists these directions and search_references cannot take their ids. " +
         "To keep them, call bend_brief again with the same brief and a canvasId. To find a board for this brief, call get_canvas without a canvasId and reuse it instead of starting a new one.";
     }
+    const blocks: ToolResult["content"] = [{ type: "text" as const, text }];
+    let baseline: Record<string, unknown> | undefined;
+    if (fromUpload.value && look?.ok) {
+      const { uploadId, roles, unknownRoles } = fromUpload.value;
+      if (roles) {
+        const line = baselineLine(roles);
+        baseline = { source: "upload", uploadId, roles, line };
+        blocks[0] = {
+          type: "text" as const,
+          text: `${text}\n${line}${unknownRoles.length > 0 ? `\nLeft out, not stitch roles: ${unknownRoles.join(", ")}. Use only: ${PART_ROLES.join(", ")}.` : ""}`,
+        };
+      } else {
+        baseline = { source: "upload", uploadId };
+        const seen = look.data
+          ? "The screenshot is the image below."
+          : "The screenshot is too big to show here (over 1.5 MB), so ask the user to attach it to the chat.";
+        blocks[0] = {
+          type: "text" as const,
+          text:
+            `${text}\nYour own page: ${seen} Read its parts top to bottom using only these roles: ${PART_ROLES.join(", ")} (the Frankenstein part roles; there is no page anatomy data yet). ` +
+            "Then call bend_brief again with the same arguments plus fromUpload.roles, which writes the baseline line. The screenshot is the user's own file; it is not stored or copied anywhere.",
+        };
+        if (look.data) (blocks as unknown[]).push({ type: "image", data: look.data, mimeType: look.mime });
+      }
+    }
     return {
-      content: [{ type: "text" as const, text }],
-      structuredContent: { ...result, ...(canvasId ? { canvasId, saved } : {}) },
+      content: blocks,
+      structuredContent: { ...result, ...(canvasId ? { canvasId, saved } : {}), ...(baseline ? { baseline } : {}) },
     };
   };
 }
@@ -213,6 +296,10 @@ function liveBendDeps(): BendBriefDeps {
       return canvas.repos;
     },
     globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
+    uploads: async () => {
+      const [{ createDbUploadRepo }, { getUploadsBucket }] = await Promise.all([import("@/lib/uploads/db"), import("@/lib/uploads/bucket")]);
+      return { repo: createDbUploadRepo(), bucket: getUploadsBucket };
+    },
   };
 }
 

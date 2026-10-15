@@ -22,6 +22,7 @@ Bending is deterministic: the same brief, wildness, platform, pages, moves and l
 | `lens` | enum | No | `sadu`, `najdi`, `kufic`, `mashrabiya`, `talli`, `qatt-asiri`, `desert-modern`, `memphis`, `swiss-international`, `japanese-ma` | Every direction pulls from that tradition |
 | `mustKeep` | string[] | No | 1 to 6, each up to 60 characters | Patterns users rely on ("clear total", "one primary action", "step indicator"). A direction that would break one is dropped. Checkout, cart and booking briefs keep a clear total and one primary action by default |
 | `taste` | string[] | No | 1 to 5 words, each up to 40 characters | Style words, saved on the canvas with `canvasId` |
+| `fromUpload` | object | No | `uploadId` (your own upload), optional `roles` (1 to 12 [part roles](/docs/reference/tools/cut-parts/)) | Bend your own page. Without `roles`, the answer shows your screenshot (up to 1.5 MB) and asks the agent to list its parts top to bottom. With `roles`, it writes the baseline line from them. Only your own uploads work |
 | `canvasId` | string | No | 1 to 100 characters | Saves the directions to that board, so `search_references` can take a `directionId` |
 
 ## Output

@@ -46,7 +46,7 @@ describe("bend_brief tool", () => {
     expect(config.description).toBe(BEND_BRIEF_DESCRIPTION);
     expect(BEND_BRIEF_DESCRIPTION).toContain("search_references");
     expect(BEND_BRIEF_DESCRIPTION).not.toMatch(/[\u2014\u2013]/);
-    expect(BEND_BRIEF_DESCRIPTION.length).toBeLessThan(450);
+    expect(BEND_BRIEF_DESCRIPTION.length).toBeLessThan(500);
     expect(BEND_BRIEF_DESCRIPTION).toContain("one wild page or two");
     expect(BEND_BRIEF_DESCRIPTION).toContain("wildSpots");
   });
@@ -58,7 +58,7 @@ describe("bend_brief tool", () => {
       properties: Record<string, Record<string, unknown>>;
       required: string[];
     };
-    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "lens", "moves", "mustKeep", "pages", "platform", "taste", "wildness"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["brief", "canvasId", "count", "fromUpload", "lens", "moves", "mustKeep", "pages", "platform", "taste", "wildness"]);
     expect(json.required.sort()).toEqual(["brief", "wildness"]);
     expect(json.properties.wildness?.maximum).toBe(5);
     expect(json.properties.count?.maximum).toBe(8);

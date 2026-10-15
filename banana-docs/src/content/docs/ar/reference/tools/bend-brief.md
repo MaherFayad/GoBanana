@@ -22,6 +22,7 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `lens` | enum | لا | `sadu`، `najdi`، `kufic`، `mashrabiya`، `talli`، `qatt-asiri`، `desert-modern`، `memphis`، `swiss-international`، `japanese-ma` | كل اتجاه يستلهم من هذا التقليد |
 | `mustKeep` | string[] | لا | من 1 إلى 6، وكل واحد حتى 60 حرفا | أنماط يعتمد عليها المستخدمون ("clear total"، "one primary action"، "step indicator"). يسقط أي اتجاه قد يكسر واحدا منها. موجزات الدفع والسلة والحجز تحافظ افتراضيا على إجمالي واضح وإجراء رئيسي واحد |
 | `taste` | string[] | لا | من 1 إلى 5 كلمات، وكل كلمة حتى 40 حرفا | كلمات الذوق، تحفظ على اللوحة مع `canvasId` |
+| `fromUpload` | object | لا | `uploadId` (من رفوعاتك أنت)، و`roles` اختيارية (من 1 إلى 12 دورا من [أدوار الأجزاء](/docs/ar/reference/tools/cut-parts/)) | حوّل صفحتك أنت. بدون `roles` تعرض الإجابة لقطة الشاشة (حتى 1.5 ميغابايت) وتطلب من الوكيل سرد أجزائها من الأعلى إلى الأسفل. ومع `roles` تكتب سطر الأساس منها. تعمل رفوعاتك أنت فقط |
 | `canvasId` | string | لا | من 1 إلى 100 حرف | يحفظ الاتجاهات على تلك اللوحة، فيقبل `search_references` معرف `directionId` |
 
 ## المخرجات
