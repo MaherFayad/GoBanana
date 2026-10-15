@@ -83,7 +83,9 @@ describe("MCP contract", () => {
     expect(byName.extract_palette!.inputSchema.required?.sort()).toEqual(["canvasId", "itemIds"]);
     expect(byName.export_kit!.inputSchema.required?.sort()).toEqual(["canvasId", "formats"]);
     expect(byName.arrange_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "layout"]);
-    expect(byName.cut_parts!.inputSchema.required?.sort()).toEqual(["canvasId", "cuts"]);
+    // P0-10: a call passes cuts, look or both, so only canvasId is required.
+    expect(byName.cut_parts!.inputSchema.required).toEqual(["canvasId"]);
+    expect(Object.keys(byName.cut_parts!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "cuts", "look"]);
     expect(byName.frankenstein_page!.inputSchema.required).toEqual(["canvasId"]);
     expect(byName.remix_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "count", "stitchId"]);
     expect(byName.update_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "ops", "stitchId"]);

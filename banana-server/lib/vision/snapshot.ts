@@ -8,7 +8,11 @@ import type { CanvasItem, CanvasSnapshot, StitchSnapshot } from "@/lib/canvas/ty
 import { roleName } from "@/lib/stitch/skeleton";
 import type { ThumbTarget } from "./thumbs";
 
-export const SNAPSHOT_END = "Build each row from what you see here; check your build against these images.";
+/** How the agent gets the composed page as one image (P0-12): the user sends it from the inline canvas. */
+export const SHOW_IN_CHAT_HINT =
+  'To see the page composed as one image, ask the user to press "Show in chat" in the inline canvas and pick this page; it reaches you with their next message (drawn in their browser, never stored).';
+
+export const SNAPSHOT_END ="Build each row from what you see here; check your build against these images.";
 
 export type SnapshotView = {
   head: string[];
@@ -112,6 +116,7 @@ export function stitchView(c: CanvasSnapshot, stitchId: string): SnapshotView | 
     head: [
       `Frankenstein page "${st.title}" (${st.id}, ${st.platform}, ${st.mode}), ${st.rows.length} rows top to bottom.${st.note ? ` Idea: ${st.note}` : ""}`,
       "This is a parts view, not a rendered composite: each part below is its full source image, and its crop rect says which band of it the page uses.",
+      SHOW_IN_CHAT_HINT,
       ...(st.rows.length === 0 ? ["The page has no rows yet."] : []),
     ],
     targets,

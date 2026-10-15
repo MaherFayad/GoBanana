@@ -31,6 +31,8 @@ Call `reconcile_direction({ canvasId, directionId })`. It updates the direction'
 
 Call `get_snapshot({ canvasId, stitchId })`. It is a parts view, not a rendered composite: rows in order, and for each part its full source image, its crop rect (fractions of the image: the band the page uses), role, theme and note.
 
+To see the whole page composed, ask the user once to press "Show in chat" in the inline canvas and pick this page. Their browser draws it as one image and it reaches you with their next message, with a row by row layout. If a part's host blocks drawing (Pinterest does), you get the parts view and a line saying why. Without the inline canvas, the parts view is enough.
+
 For each row, write one short line: role, what you see in the crop band (layout, density, type size and weight, color, radius, the one move worth taking), and the source link. If a row has 2 or 3 slots, note the width share.
 
 If the snapshot says a thumbnail was not shown (host not allowed, too large, over the cap), call `get_snapshot` again for that section, or ask the user to describe that part. Do not invent it.

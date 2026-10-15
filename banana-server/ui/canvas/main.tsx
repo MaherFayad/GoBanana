@@ -11,7 +11,8 @@
  * 3. CanvasApp renders it and auto-saves through `save_canvas_state` (canvas/persistence-bridge.ts).
  *
  * Never fetches image bytes: tiles are plain <img> tags that load from the source host,
- * which the resource CSP allows (lib/mcp/resources/canvas.ts).
+ * which the resource CSP allows (lib/mcp/resources/canvas.ts). "Show in chat" (ShowPage.tsx)
+ * draws a Frankenstein page onto a <canvas> in memory and sends it to the model context only.
  *
  * Look (plan WP-C step 7): Studio tokens and primitives, the host theme on `data-theme`, a
  * 36px top bar with "Open on the web", the conflict choice as a warning alert, toasts inside
@@ -51,6 +52,7 @@ import {
 } from "@/canvas/persistence-bridge";
 import type { CanvasState } from "@/canvas/types";
 import { APP_NAME } from "@/lib/config";
+import { ShowPage } from "./ShowPage";
 import "@/styles/fonts.css";
 import "@/styles/studio-tokens.css";
 import "@/styles/studio-components.css";
@@ -374,6 +376,7 @@ function InlineCanvas({
             <span>Open on the web</span>
           </a>
         )}
+        <ShowPage app={app} canvasId={canvas.id} persistence={persistence} />
         {canFullscreen && (
           <button type="button" className="st-btn" data-variant="ghost" data-size="sm" onClick={toggleFullscreen}>
             {isFullscreen ? "Exit full screen" : "Full screen"}

@@ -31,6 +31,16 @@ same `canvas/CanvasApp` as the web canvas at `/c/:id`, built into one HTML file.
 Images load in the browser from their source hosts. The view never fetches image bytes.
 Source links open through the host (`ui/open-link`).
 
+"Show in chat" (P0-12, `ui/canvas/ShowPage.tsx`, shown when the host advertises
+`updateModelContext`): the user picks a Frankenstein page, and the view draws it to one
+image in the browser (`canvas/vision/render-page.ts`, loaded with `import()` on click) and
+sends it with `ui/update-model-context`, after a text layout map with each part's source link
+(`canvas/vision/page-context.ts`). The parts load with CORS onto a `<canvas>` in memory;
+nothing is uploaded or stored. A host without a CORS header (Pinterest) would taint the
+canvas, so such a page is not drawn: the view sends the parts view from `get_snapshot`
+instead and says why. A host that takes text only gets the layout map. Tested in
+`e2e/mcp-apps-show-page.spec.ts`.
+
 ## Look
 
 Same Studio design language as the web canvas (docs/design-language.md): `main.tsx` imports
