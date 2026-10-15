@@ -71,16 +71,24 @@ artwork, and say where it comes from.
 5. **Color with care.** Take color ratios from the source, then check contrast with `gobanana-palette`
    (WCAG 2.2 SC 1.4.3 for text, SC 1.4.11 for UI parts). Flag any combination that reads as a national
    flag or a religious symbol, and do not use it as a casual accent.
-6. **Write notes** on every cultural item with `add_to_canvas`, as four short lines (pass the server's
-   `culture` object too when the tool supports it):
+6. **Write notes** on every cultural item with `add_to_canvas`, as four short lines, and pass the
+   `culture` object on the same item (a reference, screen or note):
+   `culture: { tradition, region, community?, tier: "open" | "care" | "sacred", meaning, credit, sourceUrl? }`.
+   It is plain text (no `<` or `>`), tradition, region and community up to 80 characters, meaning up to
+   600, credit up to 300, and `sourceUrl` an http or https page you opened. The board shows a "Culture"
+   chip that opens the meaning and credit, and `get_canvas` and the exports return it. When a lens is
+   set, `bend_brief` returns its meaning, UI mappings and care lines: use them as the starting point.
+   The four lines:
    - `meaning:` what it is and what it stands for
    - `steal:` the grammar you take
    - `credit:` tradition, people, source link
    - `care:` the tier and any limit
 7. **Rate.** Use `rate_references` with "bad" for stereotypes, fake script, sacred or national symbols
    used as decoration, and references with a wrong or unclear origin.
-8. **Hand off.** Run `export_kit` and make sure DIRECTION.md (or CULTURE.md, when the server exports it)
-   starts with a **Cultural brief**:
+8. **Hand off.** Run `export_kit` with `direction_md` and `culture_md`. DIRECTION.md starts with a
+   **Cultural brief** whenever an item carries `culture` or a lens is set, and CULTURE.md
+   (`design/explorations/<slug>/CULTURE.md`, Free) lists every cultural item with its meaning and credit.
+   Check that the brief has:
    - tradition
    - tier
    - what we use

@@ -24,6 +24,7 @@ import {
 } from "../note-layout";
 import { MIN_SIZE, NOTE_COLORS, type NoteColor, type NoteFlowNode } from "../types";
 import { NoteEditor } from "./ImageNode";
+import { CultureChip } from "./CultureChip";
 import { NodeMenu, type MenuItem } from "./NodeMenu";
 import { Resizer } from "./Resizer";
 
@@ -267,6 +268,11 @@ export function NoteNode({ id, data, selected, parentId, width, height, dragging
             />
           ) : (
             <NoteText text={data.text} />
+          )}
+          {data.culture && !editing && (
+            <div className="bn-note-culture">
+              <CultureChip culture={data.culture} />
+            </div>
           )}
         </div>
         {compact && (

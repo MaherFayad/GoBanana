@@ -115,7 +115,7 @@ export const LAYOUT_WORDS: ReadonlySet<string> = new Set(layoutWords);
 export const USABILITY_WORDS: ReadonlySet<string> = new Set(usabilityWords);
 export const STOP_WORDS: ReadonlySet<string> = new Set(stopWords);
 
-export const LENSES: readonly LensPreset[] = lensesJson;
+export const LENSES: readonly LensPreset[] = lensesJson as LensPreset[];
 export const LENS_IDS = LENSES.map((l) => l.id);
 
 export function getLens(id: string): LensPreset | undefined {

@@ -25,6 +25,7 @@ import type { ReferenceFlowNode } from "../types";
 import { chromeMode, isClick, isPlainClick, wantFullImage } from "../zoom-chrome";
 import { LinkedText } from "../linkify";
 import { ArtChip, LinkCard, SourceChip, TagChip } from "./chips";
+import { CultureChip } from "./CultureChip";
 import { NodeMenu, type MenuItem } from "./NodeMenu";
 import { Resizer } from "./Resizer";
 
@@ -184,6 +185,7 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
             </span>
           )}
           {data.tag && <TagChip tag={data.tag} />}
+          {data.culture && <CultureChip culture={data.culture} />}
           <span className="bn-grow" />
           {canPreview && (
             <Tooltip content={<>Preview <ShortcutKeys keys="Space" /></>} side="top">

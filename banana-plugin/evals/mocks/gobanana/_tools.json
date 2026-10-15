@@ -377,7 +377,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable.",
+      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference, screen or note can carry culture: { tradition, region, community?, tier open|care|sacred, meaning, credit, sourceUrl? } in plain text; the board shows a culture chip.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -449,6 +449,26 @@
                   "type": "string",
                   "maxLength": 280,
                   "description": "For reference and screen items: what to steal from it, for example steal: the stamped date as a section divider."
+                },
+                "culture": {
+                  "type": "object",
+                  "required": [
+                    "tradition",
+                    "region",
+                    "tier",
+                    "meaning",
+                    "credit"
+                  ],
+                  "properties": {
+                    "tradition": { "type": "string", "maxLength": 80 },
+                    "region": { "type": "string", "maxLength": 80 },
+                    "community": { "type": "string", "maxLength": 80 },
+                    "tier": { "type": "string", "enum": ["open", "care", "sacred"] },
+                    "meaning": { "type": "string", "maxLength": 600 },
+                    "credit": { "type": "string", "maxLength": 300 },
+                    "sourceUrl": { "type": "string", "description": "A museum, UNESCO or national institution page." }
+                  },
+                  "description": "For reference, screen and note items that show a cultural motif: where it comes from, what it means, who to credit and the care tier."
                 }
               }
             }
@@ -552,7 +572,7 @@
     {
       "name": "export_kit",
       "title": "Export kit",
-      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief, stitch_md (FRANKENSTEIN.md: a skeleton per Frankenstein page with roles, source links and notes), wireframe_html (frankenstein-wireframe.html: grey boxes with role labels, no reference images). Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt, stitch_md. You write the files.",
+      "description": "Export a kept direction as text files, each with a suggested path: design_md, direction_md, build_prompt, review, cursor_rules, copilot, agents_md, claude_md, tokens, tailwind, figjam_spec, html_board, brief, stitch_md (FRANKENSTEIN.md: a skeleton per Frankenstein page with roles, source links and notes), wireframe_html (frankenstein-wireframe.html: grey boxes with role labels, no reference images), culture_md (CULTURE.md: the Cultural brief, the culture items with meaning and credit, reviewer questions). DIRECTION.md opens with a Cultural brief when items carry culture or a lens is set. Default scope page: files apply only to the named pages, inherit the project's design system and do not change it; paths go under design/explorations/<slug>/ (or .cursor/rules, .github/instructions). Free plan: design_md, brief, direction_md, build_prompt, stitch_md, culture_md. You write the files.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -582,7 +602,8 @@
                 "copilot",
                 "claude_md",
                 "stitch_md",
-                "wireframe_html"
+                "wireframe_html",
+                "culture_md"
               ]
             }
           },

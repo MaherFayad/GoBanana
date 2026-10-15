@@ -6,6 +6,7 @@ import type { CanvasSnapshot } from "../canvas/types";
 import { agentsMd } from "./agents-md";
 import { briefMd } from "./brief";
 import { buildPromptMd } from "./build-prompt";
+import { CULTURE_FILE, cultureMd } from "./culture";
 import { designMd } from "./design-md";
 import { directionMd } from "./direction-md";
 import { figjamSpecJson } from "./figjam-spec";
@@ -35,6 +36,7 @@ export const EXPORT_FORMATS = [
   "claude_md",
   "stitch_md",
   "wireframe_html",
+  "culture_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -98,6 +100,7 @@ const GENERATORS: Record<ExportFormat, Generator> = {
   claude_md: { name: fixed("CLAUDE.md"), mime: "text/markdown", build: marked(claudeMdSection), path: fixed("CLAUDE.md"), append: () => true },
   stitch_md: { name: fixed(STITCH_MD_FILE), mime: "text/markdown", build: stitchMd, path: inDir(STITCH_MD_FILE) },
   wireframe_html: { name: fixed(WIREFRAME_FILE), mime: "text/html", build: wireframeHtml, path: inDir(WIREFRAME_FILE) },
+  culture_md: { name: fixed(CULTURE_FILE), mime: "text/markdown", build: cultureMd, path: inDir(CULTURE_FILE) },
 };
 
 export function isExportFormat(value: unknown): value is ExportFormat {

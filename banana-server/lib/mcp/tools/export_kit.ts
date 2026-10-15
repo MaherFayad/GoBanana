@@ -34,15 +34,15 @@ export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
   "Export a canvas as files for one wild page (default) or the design system. Formats: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
-  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html. " +
-  "Kept directions get a folder each. Big exports list files: fetch each with file. Free: design_md, brief, direction_md, build_prompt, stitch_md.";
+  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, culture_md. " +
+  "Big exports list files: fetch each with file. Free: design_md, brief, direction_md, build_prompt, stitch_md, culture_md.";
 
 /** Inline output cap in characters (file contents plus headers), so results stay readable. */
 export const INLINE_CAP = 20_000;
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),
-  formats: z.array(z.enum(EXPORT_FORMATS)).min(1).max(EXPORT_FORMATS.length),
+  formats: z.array(z.enum(EXPORT_FORMATS)).min(1).max(EXPORT_FORMATS.length).describe("culture_md writes CULTURE.md. DIRECTION.md opens with a Cultural brief when items carry culture or a lens is set."),
   directionId: z.string().min(1).max(100).optional(),
   pages: z.array(z.string().trim().min(1).max(80)).min(1).max(MAX_PAGES).optional(),
   scope: z.enum(SCOPES).optional(),

@@ -30,7 +30,38 @@
     "arabicFont": {
       "family": "Kufam",
       "url": "https://fonts.google.com/specimen/Kufam"
-    }
+    },
+    "tier": "care",
+    "meaning": "Sadu is the flat weaving of Bedouin women, made on a ground loom in bold bands and small geometric figures that repeat in strict order. It is a living craft that families and communities hand down, and UNESCO runs a safeguarding programme for it because fewer young people take it up.",
+    "uiMappings": [
+      {
+        "element": "Stacked bands",
+        "grammar": "Horizontal bands of different widths in a strict repeat",
+        "mechanic": "Section dividers, the edge of a tab bar, a progress bar split into bands"
+      },
+      {
+        "element": "Small triangles and diamonds",
+        "grammar": "Tiny figures repeated along a band, never scattered",
+        "mechanic": "Step markers, list bullets, the fill of a progress track"
+      },
+      {
+        "element": "Hand-woven unevenness",
+        "grammar": "Small shifts in width and tension that show a person made it",
+        "mechanic": "A slightly irregular rule line under a header, not a perfect vector line"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not trace, scan or reuse a photographed textile as a texture or background. Take the grammar (bands, repeat, color ratio), not the cloth.",
+      "Do not invent names or meanings for motifs. If the source does not state a meaning, write that it is not stated.",
+      "No camel, tent or dune scenes as shorthand for the craft."
+    ],
+    "sources": [
+      {
+        "title": "UNESCO: Al Sadu, traditional weaving skills in the United Arab Emirates (safeguarding programme)",
+        "url": "https://ich.unesco.org/en/RL/al-sadu-traditional-weaving-skills-in-the-united-arab-emirates-00517"
+      }
+    ],
+    "reviewerHint": "A Sadu weaver or a heritage practitioner from the Bedouin communities that keep the craft, in the country the brief is for."
   },
   {
     "id": "najdi",
@@ -65,7 +96,37 @@
     "arabicFont": {
       "family": "Reem Kufi",
       "url": "https://fonts.google.com/specimen/Reem+Kufi"
-    }
+    },
+    "tier": "open",
+    "meaning": "Najdi architecture is the mud-brick building tradition of central Arabia: thick walls, small high openings, triangular window cut-outs and crenellated rooflines that keep houses cool. At-Turaif in Diriyah is listed by UNESCO as a unique example of the Najdi architectural and decorative style.",
+    "uiMappings": [
+      {
+        "element": "Triangle window cut-outs",
+        "grammar": "Rows of small triangles cut through a solid wall",
+        "mechanic": "Image masks, a decorative edge on cards, an empty state frame"
+      },
+      {
+        "element": "Thick earth wall and crenellated top",
+        "grammar": "A heavy plain mass with a stepped, repeated top edge",
+        "mechanic": "Header silhouette, the top edge of a bottom sheet"
+      },
+      {
+        "element": "Painted door panels",
+        "grammar": "Geometry set into wooden panels",
+        "mechanic": "Entry screens, onboarding covers, card covers"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not use a real heritage site or door as a logo, and do not imply the site endorses the product.",
+      "Do not turn the national emblem or flag, which carry the shahada, into a texture or pattern."
+    ],
+    "sources": [
+      {
+        "title": "UNESCO World Heritage Committee decision: At-Turaif District in ad-Dir'iyah",
+        "url": "https://whc.unesco.org/en/decisions/3994"
+      }
+    ],
+    "reviewerHint": "An architect or heritage conservator who works on Najdi buildings."
   },
   {
     "id": "kufic",
@@ -96,7 +157,28 @@
     "arabicFont": {
       "family": "Qahiri",
       "url": "https://fonts.google.com/specimen/Qahiri"
-    }
+    },
+    "tier": "care",
+    "meaning": "Square Kufic builds letters from straight lines on a square grid, so words read as geometry. It has a long place in Islamic architecture and calligraphy, and it often carries sacred text, so how it is used matters as much as how it looks.",
+    "uiMappings": [
+      {
+        "element": "Words on a square grid",
+        "grammar": "Letters made of right angles that fill a square",
+        "mechanic": "Wordmarks and section titles, with words the user picks"
+      },
+      {
+        "element": "Grid maze rhythm",
+        "grammar": "Strokes that turn at right angles in a tight grid",
+        "mechanic": "Loading strip, empty state illustration, card corner detail"
+      }
+    ],
+    "sacredOrProtected": [
+      "Never set Quran verses, names of God or the shahada as a pattern, texture or decoration.",
+      "No fake or random letters used as pattern. Every word is real, readable and chosen with the user.",
+      "No sacred text on buttons, icons or anything people tap or throw away."
+    ],
+    "sources": [],
+    "reviewerHint": "A calligrapher or an Arabic typographer, and a speaker of the language for every word used."
   },
   {
     "id": "mashrabiya",
@@ -132,7 +214,27 @@
     "arabicFont": {
       "family": "El Messiri",
       "url": "https://fonts.google.com/specimen/El+Messiri"
-    }
+    },
+    "tier": "open",
+    "meaning": "Mashrabiya, called rawasheen in Hejaz, is turned or carved wooden lattice on a window or balcony. It lets air and light in, gives privacy to people inside, and throws a pattern of shadow.",
+    "uiMappings": [
+      {
+        "element": "Lattice that filters light",
+        "grammar": "A grid that shows some of what is behind it",
+        "mechanic": "Image overlays, modal backdrops, a frosted panel over content"
+      },
+      {
+        "element": "Pattern of shadow",
+        "grammar": "Light and dark cells that move as you move",
+        "mechanic": "Hover or scroll effects on cards, a loading state"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not carve or inlay sacred text into the lattice as ornament.",
+      "Do not use a photo of a real building as a texture."
+    ],
+    "sources": [],
+    "reviewerHint": "An architect or craftsperson from the region the brief is for (Hejaz for rawasheen)."
   },
   {
     "id": "desert-modern",
@@ -163,7 +265,26 @@
     "arabicFont": {
       "family": "Alexandria",
       "url": "https://fonts.google.com/specimen/Alexandria"
-    }
+    },
+    "tier": "open",
+    "meaning": "A contemporary style, not a tradition: warm earth tones, plain mass and quiet shadow, drawn from how people build and live in dry places today.",
+    "uiMappings": [
+      {
+        "element": "Earth tone planes",
+        "grammar": "Large flat areas of one warm tone with a single accent",
+        "mechanic": "Page backgrounds and section changes"
+      },
+      {
+        "element": "Hard shadow",
+        "grammar": "One strong light direction with long clean shadows",
+        "mechanic": "Card elevation, button press states"
+      }
+    ],
+    "sacredOrProtected": [
+      "No camels, dunes, lamps or oil imagery as shorthand for a whole region."
+    ],
+    "sources": [],
+    "reviewerHint": "A designer from the region, to check it does not read as a cliche."
   },
   {
     "id": "memphis",
@@ -199,7 +320,24 @@
     "arabicFont": {
       "family": "Lalezar",
       "url": "https://fonts.google.com/specimen/Lalezar"
-    }
+    },
+    "tier": "open",
+    "meaning": "Memphis is a design movement from Milan in the early 1980s: loud color, squiggles, confetti shapes and playful geometry that broke the plain good taste of its time.",
+    "uiMappings": [
+      {
+        "element": "Confetti shapes",
+        "grammar": "Small bright shapes scattered on a plain ground",
+        "mechanic": "Empty states, success screens, onboarding illustration"
+      },
+      {
+        "element": "Squiggle and stripe",
+        "grammar": "Thick wavy lines and stripes as edges",
+        "mechanic": "Dividers, progress, card borders"
+      }
+    ],
+    "sacredOrProtected": [],
+    "sources": [],
+    "reviewerHint": "Not needed for a lens in the open tier; ask the brand owner if the look fits the product."
   },
   {
     "id": "swiss-international",
@@ -237,7 +375,24 @@
     "arabicFont": {
       "family": "IBM Plex Sans Arabic",
       "url": "https://fonts.google.com/specimen/IBM+Plex+Sans+Arabic"
-    }
+    },
+    "tier": "open",
+    "meaning": "The Swiss or International Typographic Style uses a strict grid, one sans serif family, flush-left text and a lot of white space so that information leads.",
+    "uiMappings": [
+      {
+        "element": "Strict grid",
+        "grammar": "Every item sits on a visible column and baseline",
+        "mechanic": "Page layout, dashboards, pricing tables"
+      },
+      {
+        "element": "One typeface in few sizes",
+        "grammar": "Hierarchy from size and weight only",
+        "mechanic": "Headings, labels, numeric displays"
+      }
+    ],
+    "sacredOrProtected": [],
+    "sources": [],
+    "reviewerHint": "Not needed for a lens in the open tier; ask the brand owner if the look fits the product."
   },
   {
     "id": "japanese-ma",
@@ -272,7 +427,27 @@
     "arabicFont": {
       "family": "Tajawal",
       "url": "https://fonts.google.com/specimen/Tajawal"
-    }
+    },
+    "tier": "open",
+    "meaning": "Ma is the Japanese idea of the pause or empty space between things, treated as part of the design and not as leftover room.",
+    "uiMappings": [
+      {
+        "element": "Deliberate empty space",
+        "grammar": "Large gaps that give weight to what sits next to them",
+        "mechanic": "Hero spacing, single-focus screens, onboarding steps"
+      },
+      {
+        "element": "Asymmetric balance",
+        "grammar": "One small element set against a wide empty field",
+        "mechanic": "Cards, empty states, confirmation screens"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not use temple, shrine or religious symbols as decoration.",
+      "Do not use Japanese characters as a pattern. If text is used it is real and chosen with a speaker."
+    ],
+    "sources": [],
+    "reviewerHint": "A designer or reader of Japanese, if any Japanese text appears."
   },
   {
     "id": "talli",
@@ -307,7 +482,38 @@
     "arabicFont": {
       "family": "Amiri",
       "url": "https://fonts.google.com/specimen/Amiri"
-    }
+    },
+    "tier": "care",
+    "meaning": "Talli is a braided trim made mostly by women, usually six cotton threads divided by a silver thread, worked into colorful shapes linked to desert and sea life. Women braid it together at home, which builds ties between them, and it is made in large amounts before Eid and the wedding season.",
+    "uiMappings": [
+      {
+        "element": "Narrow braided strip",
+        "grammar": "Crossing strands that run along one edge",
+        "mechanic": "Step indicator, loading strip, progress bar"
+      },
+      {
+        "element": "Silver thread between color",
+        "grammar": "A thin bright line between color bands",
+        "mechanic": "Divider rule, selected tab underline"
+      },
+      {
+        "element": "Trim on a garment edge",
+        "grammar": "Decoration sits at the border, not across the body",
+        "mechanic": "Card edge, sheet edge, header trim"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not use a photo of a real piece as a texture or fill. Take the structure, not the cloth.",
+      "Do not give motifs meanings that the source does not state.",
+      "Do not mix it with Egyptian tulle-bi-telli or other embroidery under the same name."
+    ],
+    "sources": [
+      {
+        "title": "UNESCO: Al Talli, traditional embroidery skills in the United Arab Emirates",
+        "url": "https://ich.unesco.org/en/RL/al-talli-traditional-embroidery-skills-in-the-united-arab-emirates-01712"
+      }
+    ],
+    "reviewerHint": "A Talli braider or a heritage practitioner from the Emirati community that keeps the craft."
   },
   {
     "id": "qatt-asiri",
@@ -343,6 +549,37 @@
     "arabicFont": {
       "family": "Rakkas",
       "url": "https://fonts.google.com/specimen/Rakkas"
-    }
+    },
+    "tier": "care",
+    "meaning": "Al-Qatt Al-Asiri is the painted interior wall decoration of Asir in Saudi Arabia, done mostly by women. Guest rooms get bold geometric shapes and symbols, usually on a white gypsum base, and families pass the skill down together. UNESCO lists it as intangible cultural heritage.",
+    "uiMappings": [
+      {
+        "element": "Painted color bands",
+        "grammar": "Wide bands of strong color with fine lines between",
+        "mechanic": "Headers, card edges, section changes"
+      },
+      {
+        "element": "Triangles and geometric figures",
+        "grammar": "Repeated figures inside a framed panel",
+        "mechanic": "Empty states, onboarding covers, badges"
+      },
+      {
+        "element": "Hand-made unevenness",
+        "grammar": "Slight wobble in lines that shows the painter's hand",
+        "mechanic": "Dividers and borders that are not perfectly straight"
+      }
+    ],
+    "sacredOrProtected": [
+      "Do not copy a particular painter's wall or a named family's design as a pattern asset. Credit the women of Asir who keep the art.",
+      "Do not state what a motif means unless the source does.",
+      "No religious inscriptions as decoration."
+    ],
+    "sources": [
+      {
+        "title": "UNESCO: Al-Qatt Al-Asiri, female traditional interior wall decoration in Asir, Saudi Arabia",
+        "url": "https://ich.unesco.org/en/RL/al-qatt-al-asiri-female-traditional-interior-wall-decoration-in-asir-saudi-arabia-01261"
+      }
+    ],
+    "reviewerHint": "A Qatt Al-Asiri artist or a heritage practitioner from Asir, ideally a woman who paints."
   }
 ]

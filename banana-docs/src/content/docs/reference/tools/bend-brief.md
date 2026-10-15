@@ -44,7 +44,7 @@ Per direction: `id`, `title` (the idea in at most 4 words, never the brief), `tw
 | `steal[]`, `avoid[]` | How light sits on sandstone; text over sandstone without a solid backing |
 | `styleWords[]`, `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
-Plus `platform`, `pages`, `wildness`, `wildnessLabel`, `lens` (with its `arabicFont`, a Google Fonts display face), `suggestedLenses` (up to 3 lens ids when the brief names a Gulf or Arab market or Arabic and no lens is set) and `wildSpots` (5 spots, empty when `pages` was given). With `canvasId`: `canvasId` and `saved`.
+Plus `platform`, `pages`, `wildness`, `wildnessLabel`, `lens` (with its `arabicFont`, a Google Fonts display face, and its `culture`: `tier`, `meaning`, `uiMappings` as rows of element, grammar and UI mechanic, `care` lines and verified `sources`; they apply to every direction), `suggestedLenses` (up to 3 lens ids when the brief names a Gulf or Arab market or Arabic and no lens is set) and `wildSpots` (5 spots, empty when `pages` was given). With `canvasId`: `canvasId` and `saved`.
 
 ## Example call
 

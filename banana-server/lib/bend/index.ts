@@ -1,4 +1,5 @@
 import { BendInputError, parseBendInput } from "./input";
+import { lensCulture, lensCultureLines } from "../culture/lens";
 import { getLens, legacyPart, lensEntries, LISTS, STOP_WORDS } from "./lists";
 import { MOVE_DEFS } from "./moves";
 import { cyrb53, mulberry32, shuffle, stableId, type Rng } from "./prng";
@@ -766,7 +767,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     subject: fixCase(subject.title),
     wildness,
     wildnessLabel: rule.label,
-    lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont } : null,
+    lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont, culture: lensCulture(lens) } : null,
     suggestedLenses: lens ? [] : suggestLenses(input.brief),
     platform,
     pages,
@@ -796,6 +797,7 @@ export function formatDirections(result: BendResult): string {
     `Platform: ${result.platform} (${profile.label}). Each direction is for one wild page or two, not the product's main design.`,
   ];
   if (lensLine) lines.push(lensLine);
+  if (result.lens) lines.push(...lensCultureLines(result.lens.culture));
   if (result.pages.length > 0) lines.push(`Pages: ${result.pages.join(", ")}.`);
   else if (result.wildSpots.length > 0) {
     lines.push("Pages: none given. Where weirdness pays off (wildSpots):");

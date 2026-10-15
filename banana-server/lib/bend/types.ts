@@ -153,6 +153,28 @@ export interface LensPreset {
   exclude: string[];
   /** Arabic display font suggestion on Google Fonts. */
   arabicFont: { family: string; url: string };
+  /** Culture data (CULT-02): how much care the tradition needs. See lib/culture/lens.ts. */
+  tier: "open" | "care" | "sacred";
+  /** What it is and what it stands for, in plain words. */
+  meaning: string;
+  /** Element, grammar and the UI mechanic it becomes. */
+  uiMappings: { element: string; grammar: string; mechanic: string }[];
+  /** Things never to use as decoration or to copy. */
+  sacredOrProtected: string[];
+  /** Museum, UNESCO or institution pages that were opened and checked. Empty when none was verified. */
+  sources: { title: string; url: string }[];
+  /** Who should review work that uses this lens. */
+  reviewerHint: string;
+}
+
+/** The culture part of a lens as bend_brief returns it (lib/culture/lens.ts lensCulture). */
+export interface LensCulture {
+  tier: "open" | "care" | "sacred";
+  meaning: string;
+  uiMappings: { element: string; grammar: string; mechanic: string }[];
+  /** Care lines: the tier line, what never to use as decoration, and who should review. */
+  care: string[];
+  sources: { title: string; url: string }[];
 }
 
 export interface BendResult {
@@ -161,7 +183,13 @@ export interface BendResult {
   subject: string;
   wildness: Wildness;
   wildnessLabel: string;
-  lens: { id: string; name: { en: string; ar: string }; arabicFont: { family: string; url: string } } | null;
+  lens: {
+    id: string;
+    name: { en: string; ar: string };
+    arabicFont: { family: string; url: string };
+    /** Meaning, uiMappings and care lines of the lens. They apply to every direction (the lens move is forced into each). */
+    culture: LensCulture;
+  } | null;
   /** Lens ids that fit the brief's Gulf or Arab market when no lens is set, best first; else []. */
   suggestedLenses: string[];
   platform: Platform;

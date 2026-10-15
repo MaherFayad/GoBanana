@@ -18,6 +18,7 @@ import {
   TRY_AGAIN,
   type CanvasToolDeps,
 } from "./canvas-shared";
+import type { Culture } from "@/lib/culture";
 import { canvasWithThumbs } from "@/lib/vision/wrap";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
@@ -46,7 +47,7 @@ export type CanvasSummary = {
   webUrl: string | null;
   directions: { id: string; title: string; verdict: "keep" | "drop" | null; reconciled: boolean }[];
   sections: { id: string; title: string; directionId: string | null }[];
-  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string }[];
+  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string; culture?: string }[];
   parts: { id: string; role: string; note?: string }[];
   stitches: { id: string; title: string; directionId?: string }[];
 };
@@ -67,7 +68,8 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
     sections: c.sections.map((s) => ({ id: s.id, title: s.title, directionId: s.directionId ?? null })),
     items: c.items.map((it) => {
       const dir = it.sectionId ? sectionDir.get(it.sectionId) : null;
-      const base = { id: it.id, type: it.type, ...(dir ? { directionId: dir } : {}) };
+      const culture = it.type === "image" || it.type === "upload" || it.type === "note" ? it.culture : undefined;
+      const base = { id: it.id, type: it.type, ...(dir ? { directionId: dir } : {}), ...(culture ? { culture: `${culture.tradition} (${culture.tier})` } : {}) };
       switch (it.type) {
         case "image":
         case "upload":
@@ -96,12 +98,17 @@ export function summaryText(s: CanvasSummary): string {
   for (const it of s.items) byDir.set(it.directionId ?? null, [...(byDir.get(it.directionId ?? null) ?? []), it]);
   for (const [dir, items] of byDir) {
     lines.push(dir ? `Items of direction ${dir}:` : "Items with no direction:");
-    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}`);
+    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${it.culture}` : ""}`);
   }
   if (s.parts.length > 0) lines.push(`Parts: ${s.parts.map((p) => `${p.id} (${p.role})`).join(", ")}`);
   for (const st of s.stitches) lines.push(`Frankenstein page ${st.id}: ${st.title}${st.directionId ? ` (direction ${st.directionId})` : ""}`);
   lines.push("Call get_canvas without summary for specs, source links and palettes. Always show each reference's source link when you mention it.");
   return lines.join("\n");
+}
+
+/** One line for a culture object in the text view (the full object is in the structured result). */
+function cultureLine(c: Culture): string {
+  return `${c.tradition}, ${c.region}${c.community ? `, ${c.community}` : ""} [${c.tier}] meaning: ${c.meaning} credit: ${c.credit}${c.sourceUrl ? ` ${c.sourceUrl}` : ""}`;
 }
 
 /** Canvases the list shows, most recently updated first. */
@@ -176,9 +183,9 @@ function describeItem(it: CanvasItem): string {
   switch (it.type) {
     case "image":
     case "upload":
-      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}`;
+      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "note":
-      return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}`;
+      return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "swatch":
       return `swatch ${it.id}: ${it.hex}${it.role ? ` ${it.role}` : ""} [${it.tag}]`;
     case "typeSample":

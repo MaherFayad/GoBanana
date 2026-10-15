@@ -6,6 +6,7 @@
  * Coordinates: every `x`, `y`, `w`, `h` is in canvas pixels and absolute
  * (React Flow child positions must be converted from parent-relative first).
  */
+import type { Culture } from "@/lib/culture";
 import type { DirectionDetail, Zone } from "@/lib/direction-detail";
 import type { Crop, Part, PartRole, PartTheme, StitchMode, StitchPlatform } from "@/lib/stitch/types";
 
@@ -70,6 +71,8 @@ export interface ImageItem extends ItemBase {
   mobbinId?: string;
   /** When the image link was placed or last refreshed (ISO date). Mobbin image links expire after about 30 days. */
   placedAt?: string;
+  /** Cultural meaning, credit and care tier (add_to_canvas culture). Shown as the culture chip. */
+  culture?: Culture;
   /** "build": a screenshot of the user's own build, placed next to its Frankenstein page for review. */
   kind?: "build";
   /** The Frankenstein page (stitch) a build sits next to. */
@@ -85,6 +88,8 @@ export interface NoteItem extends ItemBase {
   type: "note";
   text: string;
   color?: string | null;
+  /** Cultural meaning, credit and care tier (add_to_canvas culture). Shown as the culture chip. */
+  culture?: Culture;
 }
 
 export interface SwatchItem extends ItemBase {

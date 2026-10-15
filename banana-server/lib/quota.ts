@@ -22,6 +22,7 @@ export const EXPORT_FORMATS = [
   "claude_md",
   "stitch_md",
   "wireframe_html",
+  "culture_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -53,7 +54,8 @@ export const PLAN_LIMITS: Readonly<Record<Plan, PlanLimits>> = {
     uploadBytes: 0,
     // Free keeps the scoped DESIGN.md and brief, plus the two files that make one wild page buildable.
     // stitch_md (FRANKENSTEIN.md) is Free; wireframe_html is Pro (owner to confirm, 2026-10-12).
-    exportFormats: ["design_md", "brief", "direction_md", "build_prompt", "stitch_md"],
+    // culture_md (CULTURE.md) is Free so credit and care are never behind a paywall (owner to confirm, CULT-02).
+    exportFormats: ["design_md", "brief", "direction_md", "build_prompt", "stitch_md", "culture_md"],
   },
   pro_monthly: {
     searchesPerMonth: 300,

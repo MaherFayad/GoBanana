@@ -14,6 +14,7 @@ import type {
   Tag,
 } from "../canvas/types";
 import { isReference } from "../canvas/types";
+import type { Culture } from "../culture";
 import {
   isPlatform,
   isTypeVoice,
@@ -187,6 +188,18 @@ export interface KitNote {
   referenceN: number | null;
 }
 
+/** One item on the board that carries culture data (add_to_canvas culture). */
+export interface CultureEntry {
+  culture: Culture;
+  kind: "reference" | "note";
+  /** Title of the reference, or the first words of the note. */
+  label: string;
+  /** Source link of a reference (safe http or https), else null. */
+  url: string | null;
+  sectionTitle: string | null;
+  directionId: string | null;
+}
+
 export interface KitModel {
   title: string;
   description: string;
@@ -199,6 +212,8 @@ export interface KitModel {
   unsorted: CanvasItem[];
   references: Reference[];
   notes: KitNote[];
+  /** Items with culture data in the focus directions, plus items outside any direction. */
+  cultureEntries: CultureEntry[];
   ship: ColorToken[];
   explore: ExploreColor[];
   contrast: ContrastResult[];
@@ -548,6 +563,25 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     }
   }
 
+  const directionOfItem = new Map<string, string>();
+  for (const s of sections) if (s.directionId) for (const i of s.items) directionOfItem.set(i.id, s.directionId);
+  const allCulture: CultureEntry[] = allItems.flatMap((item): CultureEntry[] => {
+    if (item.type !== "note" && !isReference(item)) return [];
+    const culture = item.culture;
+    if (!culture) return [];
+    const note = item.type === "note";
+    return [
+      {
+        culture,
+        kind: note ? "note" : "reference",
+        label: note ? oneLine(item.text, 80) : oneLine(item.title, 120) || oneLine(item.sourceSite, 60) || "Reference",
+        url: note ? null : safeUrl(item.sourceUrl),
+        sectionTitle: sectionTitle.get(item.id) ?? null,
+        directionId: directionOfItem.get(item.id) ?? null,
+      },
+    ];
+  });
+
   const directions: DirectionSummary[] = (snapshot.directions ?? []).map((d) => {
     const section = sections.find((s) => s.directionId === d.id);
     const referenceCount = section ? section.items.filter(isReference).length : 0;
@@ -570,6 +604,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const focusIds = new Set(focus.map((d) => d.direction.id));
   const knownIds = new Set(directions.map((d) => d.direction.id));
   const focusRefs = references.filter((r) => !r.directionId || !knownIds.has(r.directionId) || focusIds.has(r.directionId));
+  const cultureEntries = allCulture.filter((c) => !c.directionId || !knownIds.has(c.directionId) || focusIds.has(c.directionId));
   const lead = focus.find((d) => d.detail?.spec) ?? focus[0];
 
   // Colors: the focus directions' own board palettes (reconcile_direction) when they ran, so each
@@ -646,6 +681,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     unsorted,
     references,
     notes,
+    cultureEntries,
     ship,
     explore,
     contrast,
