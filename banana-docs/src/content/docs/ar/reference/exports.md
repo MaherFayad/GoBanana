@@ -14,6 +14,7 @@ description: كل صيغة في export_kit، والملف، ومكانه في م
 | `design_md` | `design/explorations/<slug>/DESIGN.md` (مع النطاق `system`: ملف `DESIGN.md` في الجذر) | المجانية | صيغة DESIGN.md من Google Labs. الرموز تأتي كتجاوزات على مستوى الصفحة، وألوان `ship` فقط في الواجهة الأمامية للملف |
 | `brief` | `design/explorations/<slug>/BRIEF.md` | المجانية | الموجز واللوحة مكتوبان نصا |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | المجانية | هيكل لكل صفحة فرانكنشتاين، مع الدور وملاحظة «خذ منه» ورابط المصدر لكل خانة، وإرشادات للبناء |
+| `culture_md` | `design/explorations/<slug>/CULTURE.md` | المجانية | الموجز الثقافي، ثم كل عنصر في اللوحة يحمل `culture` مع تقليده ومستواه ومعناه ونسبته، وثلاثة أسئلة لمراجع من المجتمع |
 | `review` | `design/explorations/<slug>/REVIEW.md` | Pro | قائمة التحقق لطريقة ابنِ ثم قيّم |
 | `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc` | Pro | قواعد مع `globs` للصفحات |
 | `copilot` | `.github/instructions/gobanana-<slug>.instructions.md` | Pro | قواعد مع `applyTo` للصفحات |
@@ -24,6 +25,10 @@ description: كل صيغة في export_kit، والملف، ومكانه في م
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | تخطيط اللوحة بصيغة JSON لإعادة بنائها في FigJam عبر Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | لوحة HTML مستقلة تعرض الصور من روابطها الأصلية وتسرد المصادر |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | مربعات رمادية لكل خانة مع تسميات الأدوار والملاحظات، وقائمة بالمصادر، بلا صور مراجع |
+
+## الموجز الثقافي
+
+إذا كان في اتجاه مُبقى عناصر تحمل كائن `culture`، أو كانت اللوحة فيها عدسة، يبدأ `DIRECTION.md` بـ **موجز ثقافي**: التقليد، والمستوى، وما نستخدمه، وما نتجنبه، والنسبة، والمصادر، والمراجع المقترح. راجع [الثقافة والتراث](/docs/ar/guides/culture/).
 
 ## كتلة النطاق
 

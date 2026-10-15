@@ -1,6 +1,6 @@
 ---
 name: gobanana-handoff
-description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
+description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, culture_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
 ---
 
 # GoBanana handoff
@@ -15,7 +15,7 @@ Turn one kept direction into the files a coding tool needs to build its page or 
 - **Files that GoBanana owns** (`design/explorations/<slug>/*`, `.cursor/rules/gobanana-<slug>.mdc`, `.github/instructions/gobanana-<slug>.instructions.md`): if one already exists from an earlier export, show what changes and ask before replacing it.
 - **No reference images in the repo.** The files link to sources; never download or save images.
 - **Arabic copy rules,** when the pages have Arabic: noun-form labels (الدفع, ملخص الرحلة), no diacritics, Western digits (0 to 9), Latin IATA codes (RUH, DXB). Put them in BUILD-PROMPT.md if the export does not already say so.
-- **Cultural brief.** When the direction has a lens or cultural items, DIRECTION.md (or CULTURE.md, when the server exports it) and BUILD-PROMPT.md start with a Cultural brief block: tradition, tier, what we use, what we avoid, credit line, sources and suggested reviewer (see gobanana-culture). If the export does not include it, add it by hand from the board notes before you write the file.
+- **Cultural brief.** When the direction has a lens or items with a `culture` object (`get_canvas` returns it), add `culture_md` to the formats. `export_kit` then writes CULTURE.md and starts DIRECTION.md with a Cultural brief block: tradition, tier, what we use, what we avoid, credit line, sources and suggested reviewer (see gobanana-culture). Expect it, and write both files. Put the same brief at the top of BUILD-PROMPT.md. If an item has cultural notes but no `culture` object, the brief will be thin: say so and offer to add the objects with `add_to_canvas`.
 - Plain words, no em dashes.
 
 ## Steps
@@ -55,6 +55,7 @@ Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and t
 | `copilot` | `.github/instructions/gobanana-<slug>.instructions.md`, with `applyTo` for the pages | Pro |
 | `agents_md` | a section for `AGENTS.md` | Pro |
 | `claude_md` | a section for `CLAUDE.md` | Pro |
+| `culture_md` | `design/explorations/<slug>/CULTURE.md`: the Cultural brief, each cultural item with meaning and credit, reviewer questions | Free |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md`: a skeleton per Frankenstein page with source links | Free |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html`: grey boxes, no reference images | Pro |
 

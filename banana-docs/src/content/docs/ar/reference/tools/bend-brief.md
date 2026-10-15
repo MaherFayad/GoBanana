@@ -44,7 +44,7 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `steal[]`، `avoid[]` | How light sits on sandstone; text over sandstone without a solid backing |
 | `styleWords[]`، `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
-ويضاف إليها `platform`، و`pages`، و`wildness`، و`wildnessLabel`، و`lens` (مع `arabicFont`، خط عرض عربي من Google Fonts)، و`suggestedLenses` (حتى 3 معرفات عدسات عندما يذكر الموجز سوقا خليجية أو عربية أو العربية ولم تحدد عدسة)، و`wildSpots` (خمسة مواضع، وتكون فارغة إذا مررت `pages`). ومع `canvasId`: يضاف `canvasId` و`saved`.
+ويضاف إليها `platform`، و`pages`، و`wildness`، و`wildnessLabel`، و`lens` (مع `arabicFont`، خط عرض عربي من Google Fonts، ومع `culture`: `tier` و`meaning` و`uiMappings` كصفوف من العنصر والقواعد وآلية الواجهة، وأسطر `care` و`sources` الموثقة، وتنطبق على كل اتجاه)، و`suggestedLenses` (حتى 3 معرفات عدسات عندما يذكر الموجز سوقا خليجية أو عربية أو العربية ولم تحدد عدسة)، و`wildSpots` (خمسة مواضع، وتكون فارغة إذا مررت `pages`). ومع `canvasId`: يضاف `canvasId` و`saved`.
 
 ## مثال على الاستدعاء
 

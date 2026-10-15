@@ -76,6 +76,7 @@ describe("exportKit", () => {
       ["CLAUDE.md", "text/markdown", "CLAUDE.md", true],
       ["FRANKENSTEIN.md", "text/markdown", `${dir}/FRANKENSTEIN.md`, false],
       ["frankenstein-wireframe.html", "text/html", `${dir}/frankenstein-wireframe.html`, false],
+      ["CULTURE.md", "text/markdown", `${dir}/CULTURE.md`, false],
     ]);
     for (const f of files) expect(f.content.length).toBeGreaterThan(100);
   });

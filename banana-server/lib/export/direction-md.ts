@@ -1,6 +1,7 @@
 /** DIRECTION.md: the full visual spec of the direction(s) this kit is about, with references. */
 import type { DirectionSummary, KitModel } from "./model";
 import { dimText, directionRefs } from "./model";
+import { culturalBriefSection } from "./culture";
 import { pairingSource } from "./design-md";
 import { globsText, pagesText, scopeBlock } from "./scope";
 import { SPEC_AXES, bullets, exploreLine, focusSources, fontsLine, kitTitle, refLine, shipLine, statusText } from "./scoped";
@@ -50,6 +51,7 @@ export function directionMd(m: KitModel): string {
   const out: string[] = [`# Wild direction: ${mdText(kitTitle(m))}`, ""];
   const scope = scopeBlock(m);
   if (scope.length > 0) out.push(...scope, "");
+  out.push(...culturalBriefSection(m));
   const platformNote =
     m.platformFrom === "direction" ? "set on the direction" : m.platformFrom === "brief" ? "guessed from the brief" : "not set, so responsive defaults";
   out.push(

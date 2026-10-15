@@ -136,6 +136,7 @@ export default defineConfig({
 						{ slug: 'guides/reading-a-board' },
 						{ slug: 'guides/frankenstein' },
 						{ slug: 'guides/palette' },
+						{ slug: 'guides/culture' },
 						{ slug: 'guides/handoff' },
 						{ slug: 'guides/critique' },
 						{ slug: 'guides/canvases' },

@@ -10,6 +10,7 @@
  * - Load runs a takedown predicate and hides blocked items and tray results (rule 5).
  */
 import type { CanvasItem } from "@/lib/canvas/types";
+import { cleanCulture } from "@/lib/culture";
 import type { Zone } from "@/lib/direction-detail";
 import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
 import type { Part } from "@/lib/stitch/types";
@@ -121,6 +122,7 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
     placedAt: typeof d.placedAt === "string" && Number.isFinite(Date.parse(d.placedAt)) ? d.placedAt.slice(0, 40) : undefined,
     kind: d.kind === "build" ? ("build" as const) : undefined,
     stitchId: str(d.stitchId, 120),
+    culture: cleanCulture(d.culture),
     width: positiveNum(d.width) ?? null,
     height: positiveNum(d.height) ?? null,
   });
@@ -137,6 +139,7 @@ export function cleanData<K extends CanvasNodeType>(type: K, raw: unknown): Node
       const out: NoteNodeData = compact({
         text: typeof d.text === "string" ? d.text.slice(0, 2000) : "",
         color: str(d.color, 32) ?? null,
+        culture: cleanCulture(d.culture),
         manualHeight: d.manualHeight === true ? true : undefined,
       });
       return out as NodeDataByType[K];

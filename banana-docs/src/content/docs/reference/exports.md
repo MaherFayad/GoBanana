@@ -14,6 +14,7 @@ description: Every export_kit format - the file, where it goes in your repo, wha
 | `design_md` | `design/explorations/<slug>/DESIGN.md` (scope `system`: root `DESIGN.md`) | Free | Google Labs DESIGN.md format. Tokens as page overrides, `ship` colors only in the front matter |
 | `brief` | `design/explorations/<slug>/BRIEF.md` | Free | The brief and the board in prose |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | Free | A skeleton per Frankenstein page with role, steal note and source link per slot, plus build guidance |
+| `culture_md` | `design/explorations/<slug>/CULTURE.md` | Free | The Cultural brief, then every board item that carries `culture` with its tradition, tier, meaning and credit, and three questions for a reviewer from the community |
 | `review` | `design/explorations/<slug>/REVIEW.md` | Pro | The build then critique checklist |
 | `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc` | Pro | Rules with `globs` for the pages |
 | `copilot` | `.github/instructions/gobanana-<slug>.instructions.md` | Pro | Rules with `applyTo` for the pages |
@@ -24,6 +25,10 @@ description: Every export_kit format - the file, where it goes in your repo, wha
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | Board layout as JSON for rebuilding in FigJam through the Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | A standalone HTML board that hotlinks images and lists sources |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | Grey boxes per slot with role labels and notes, a sources list, no reference images |
+
+## Cultural brief
+
+When a kept direction has items with a `culture` object, or the board has a lens, `DIRECTION.md` starts with a **Cultural brief**: tradition, tier, what we use, what we avoid, credit, sources and a suggested reviewer. See [Culture and heritage](/docs/guides/culture/).
 
 ## Scope block
 

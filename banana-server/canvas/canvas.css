@@ -2247,3 +2247,25 @@ button.bn-light[data-light="min"]::before {
   color: var(--st-text);
   font-size: var(--st-text-s);
 }
+
+/* Culture chip (CULT-02): a button chip on a tile or note, and its dialog. */
+.bn-note-culture {
+  margin-block-start: var(--st-space-2xs);
+}
+
+.bn-culture-list {
+  display: grid;
+  gap: var(--st-space-s);
+  margin: 0;
+}
+
+.bn-culture-list dt {
+  font-size: var(--st-text-s);
+  font-weight: var(--st-weight-semibold);
+}
+
+.bn-culture-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}

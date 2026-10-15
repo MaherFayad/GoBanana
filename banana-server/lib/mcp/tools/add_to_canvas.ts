@@ -20,6 +20,7 @@ import {
 } from "@/lib/canvas/store";
 import type { ReferenceRecord } from "@/lib/db/types";
 import type { Zone } from "@/lib/direction-detail";
+import { CULTURE_MESSAGE, cultureSchema, type Culture } from "@/lib/culture";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
 import { checkMobbinScreen, MAX_MOBBIN_IMAGE_URL, MAX_MOBBIN_SOURCE_URL, MOBBIN_SITE } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
@@ -59,6 +60,7 @@ const item = z.discriminatedUnion("type", [
     type: z.literal("reference"),
     referenceId: z.string().min(1).max(100),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+    culture: cultureSchema.optional(),
   }),
   z.object({
     type: z.literal("screen"),
@@ -70,6 +72,7 @@ const item = z.discriminatedUnion("type", [
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     directionId: z.string().min(1).max(100).optional(),
     screenId: z.string().trim().min(1).max(100).optional(),
+    culture: cultureSchema.optional(),
   }),
   z.object({
     type: z.literal("build"),
@@ -79,7 +82,7 @@ const item = z.discriminatedUnion("type", [
     title: z.string().trim().min(1).max(200).optional(),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
   }),
-  z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
+  z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000), culture: cultureSchema.optional() }),
   z.object({
     type: z.literal("swatch"),
     hex: z.string().regex(/^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i),
@@ -100,6 +103,7 @@ export const inputSchema = z.object({
     .max(MAX_ITEMS_PER_CALL)
     .describe(
       "A screen with the screenId of one already on the board refreshes its image in place (Mobbin image links expire). " +
+        "A reference, screen or note can carry culture { tradition, region, community?, tier: 'open' | 'care' | 'sacred', meaning, credit, sourceUrl? }: the board shows a culture chip and the exports carry it. " +
         "A build { type: 'build', imageUrl, url, stitchId } is an https screenshot link of the user's own build, placed next to its Frankenstein page for side by side review; never image bytes.",
     ),
   sectionId: z.string().min(1).max(120).optional().describe("Section to place the items in."),
@@ -108,7 +112,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, any of reference, screen and note can add culture (tradition, region, community?, tier, meaning, credit, sourceUrl?), { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -163,7 +167,7 @@ function referenceNode(ref: {
   title?: string | null;
   width?: number | null;
   height?: number | null;
-}, extra: { note?: string; zone: Zone }): NewNode {
+}, extra: { note?: string; zone: Zone; culture?: Culture }): NewNode {
   const size = referenceSize(ref.width, ref.height);
   return {
     type: "image",
@@ -178,6 +182,7 @@ function referenceNode(ref: {
       note: extra.note ?? null,
       tag: null,
       ...(extra.zone === "art" ? { zone: "art" as const } : {}),
+      ...(extra.culture ? { culture: extra.culture } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },
@@ -197,7 +202,12 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
   return async function addToCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
     const parsed = parseArgs(inputSchema, raw, MESSAGES, MESSAGES.items!);
-    if (!parsed.ok) return toolMessage(parsed.message);
+    if (!parsed.ok) {
+      // A bad culture object gets its own message (parseArgs only names the top field).
+      const bad = inputSchema.safeParse(raw ?? {});
+      const inCulture = !bad.success && bad.error.issues.some((i) => i.path.includes("culture"));
+      return toolMessage(inCulture ? CULTURE_MESSAGE : parsed.message);
+    }
     const input = parsed.data;
     if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
     try {
@@ -230,7 +240,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               // Zone: the tray's tag from the search, else the saved row's lane ("art" lane is art direction).
               const zone = fromTray?.zone ?? (row?.lane === "art" ? "art" : "ui");
               return {
-                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}) }),
+                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.culture ? { culture: it.culture } : {}) }),
                 ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
               };
             }
@@ -241,7 +251,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const title = it.app && it.title ? `${it.app}: ${it.title}` : (it.title ?? it.app ?? "Mobbin screen");
               const node = referenceNode(
                 { imageUrl: it.imageUrl, sourceUrl: it.sourceUrl, sourceSite: MOBBIN_SITE, title },
-                { zone: "ui", ...(it.note ? { note: it.note } : {}) },
+                { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.culture ? { culture: it.culture } : {}) },
               );
               if (node.type === "image") Object.assign(node.data, { placedAt, ...(it.screenId ? { mobbinId: it.screenId } : {}) });
               // The same screen already on the board: refresh its image link in place (Mobbin links expire).
@@ -273,7 +283,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               return { node, stitchId: it.stitchId };
             }
             case "note":
-              return { node: { type: "note", data: { text: it.text, color: "yellow" } } };
+              return { node: { type: "note", data: { text: it.text, color: "yellow", ...(it.culture ? { culture: it.culture } : {}) } } };
             case "swatch": {
               const hex = normalizeHex(it.hex.startsWith("#") ? it.hex : `#${it.hex}`);
               return { node: { type: "swatch", data: { hex, oklch: hexToOklch(hex), role: it.role ?? null, tag: "explore" } } };
@@ -300,6 +310,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
                 ...(fresh.placedAt ? { placedAt: fresh.placedAt } : {}),
                 ...(fresh.mobbinId ? { mobbinId: fresh.mobbinId } : {}),
                 ...(fresh.note ? { note: fresh.note } : {}),
+                ...(fresh.culture ? { culture: fresh.culture } : {}),
               };
               const abs = absolute(base.nodes, n);
               updated.push({ id: n.id, type: n.type, x: abs.x, y: abs.y, sectionId: n.parentId ?? null, ...imageOut({ ...n, data }) });

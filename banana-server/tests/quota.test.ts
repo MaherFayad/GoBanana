@@ -102,7 +102,7 @@ describe("canAddItems", () => {
 
 describe("export formats", () => {
   it("free gets design_md, brief, direction_md, build_prompt and stitch_md only", () => {
-    expect(allowedExportFormats("free")).toEqual(["design_md", "brief", "direction_md", "build_prompt", "stitch_md"]);
+    expect(allowedExportFormats("free")).toEqual(["design_md", "brief", "direction_md", "build_prompt", "stitch_md", "culture_md"]);
     expect(splitExportFormats("free", ["design_md", "tokens", "brief", "html_board", "direction_md", "build_prompt", "review", "cursor_rules", "copilot", "claude_md", "agents_md", "stitch_md", "wireframe_html"])).toEqual({
       allowed: ["design_md", "brief", "direction_md", "build_prompt", "stitch_md"],
       blocked: ["tokens", "html_board", "review", "cursor_rules", "copilot", "claude_md", "agents_md", "wireframe_html"],
