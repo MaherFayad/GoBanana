@@ -69,6 +69,14 @@ Each run:
    A named shard over 100 KB (one domain's fit, one element's mechanics, one region's CC0 items)
    stops the run. Run the printed commands yourself from `banana-server/`. Agents never run them.
 
+## Content ops without the API
+
+The owner's skill `.claude/skills/gobanana-atlas-ops` (repo root) adds records written in a Claude
+Code session. `npx tsx ops.ts validate <kind> <file>` checks them (schema, writing rules, fonts,
+shipPairs), `npx tsx ops.ts merge <kind> <file> --out out/candidate` adds them to a copy of the
+output, and `npx tsx ops.ts layout <jobOut> <serverOut>` writes the server layout for a Bench run
+(`node scripts/bench-run.mjs --atlas <serverOut>` in banana-server). No API calls, no upload.
+
 ## Add a job
 
 One file in `jobs/` that default-exports `defineJob({...})` (see `lib/job.ts` and
