@@ -345,6 +345,18 @@ function listWord(t: Token): boolean {
  * recent transactions.
  */
 export function briefComponents(main: string): string[] {
+  const hit = componentsCache.get(main);
+  if (hit) return [...hit];
+  const out = readBriefComponents(main);
+  if (componentsCache.size >= PARTS_CACHE_SIZE) componentsCache.delete(componentsCache.keys().next().value!);
+  componentsCache.set(main, out);
+  return [...out];
+}
+
+/** Recent briefComponents answers (pure; a bend reads the same brief many times). */
+const componentsCache = new Map<string, readonly string[]>();
+
+function readBriefComponents(main: string): string[] {
   const out: string[] = [];
   const push = (c: string) => {
     if (!out.includes(c)) out.push(c);

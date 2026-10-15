@@ -38,6 +38,7 @@ import { WILDNESS } from "./wildness";
 import { familyOf } from "./families";
 import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS, type Market } from "./market";
 import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
+import { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -74,6 +75,7 @@ export { fixCase, VERIFIED_STYLE_WORDS } from "./spec";
 export { detectDomain } from "./tone";
 export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
 export type { Mechanic, MechanicElement } from "./mechanic";
+export { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
 
 /** How many wild spots a result suggests. */
 export const WILD_SPOTS_SHOWN = 5;
@@ -567,6 +569,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   const mechanicUse = new Map<MechanicElement, number>();
   /** Query keys (queryKey) earlier directions already search: no two directions share one. */
   const usedQueries = new Set<string>();
+  const sigComponent = signatureComponent(input.brief, platform);
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -677,31 +680,46 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
     if (brokenMustKeep(ingredients, protect)) return;
     const leadEntry = picked[moves.indexOf(lead)]!;
-    const mechanic = pickMechanic({
-      lead,
-      entry: leadEntry,
-      others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
-      protect,
-      used: mechanicUse,
-    });
-    mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
     const byMove: Partial<Record<MoveId, ListEntry>> = {};
     moves.forEach((m, j) => {
       if (picked[j]) byMove[m] = picked[j];
     });
     if (garnishMove && twistEntry) byMove[garnishMove] = twistEntry;
-    const spec = buildSpec({
-      profile,
-      moves: promptMoves,
-      entries: byMove,
-      lead,
-      mood,
-      clash,
-      domain,
-      subject: subject.title,
-      component: signatureComponent(input.brief, platform),
-      arabic: locale.arabic,
-    });
+    // One spec engine (P0-08): the mechanic first, then the spec written on it. While the result
+    // fails checkCoherence (with the directions before it), the mechanic moves to the next part,
+    // at most MAX_COHERENCE_TRIES draws. Ingredients never change, so ids never move.
+    const draw = (attempt: number) => {
+      const mech = pickMechanic({
+        lead,
+        entry: leadEntry,
+        others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
+        protect,
+        used: mechanicUse,
+        attempt,
+      });
+      const sp = buildSpec({
+        profile,
+        moves: promptMoves,
+        entries: byMove,
+        lead,
+        mood,
+        clash,
+        domain,
+        subject: subject.title,
+        component: sigComponent,
+        arabic: locale.arabic,
+        mechanic: mech.element,
+        page: pages[0] ?? subject.title,
+      });
+      return { mechanic: mech, spec: sp };
+    };
+    let drawn = draw(0);
+    for (let attempt = 1; attempt < MAX_COHERENCE_TRIES; attempt++) {
+      if (checkCoherence({ id, moves, ingredients, searchQuery, ...drawn }, directions).length === 0) break;
+      drawn = draw(attempt);
+    }
+    const { mechanic, spec } = drawn;
+    mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
     const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages, mechanic: mechanic.element });
     // P0-05: a direction's queries are its own. The brief's page lanes (fidelity) run once per
     // canvas as the baseline, so they are left out; the mechanic and the ingredient lead; a query
