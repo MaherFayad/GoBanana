@@ -30,7 +30,7 @@ To make a new run: `node scripts/bench-run.mjs` (needs `SERPER_API_KEY` and `DAT
 | Query overlap | 23 shared UI queries (8 of 8 searched boards) | 0 |
 | Reference precision (top 8 UI) | 61.1% (88 of 144) | 75% or more |
 | Distance from slop | not measured by this bench | Fewer than 2 matches |
-| Crop accuracy | not measured (needs `bench/gold/`) | 0.8 or more |
+| Crop accuracy | ROLE_BANDS 0.141 mean IoU, 0.5% of parts at 0.8 or more (200 agent-made gold parts, `npx tsx scripts/crop-iou.ts`, 2026-10-16) | 0.8 or more |
 | Wow (median) | 3 | Median 4 |
 | Accessibility | not measured by this bench | 100% |
 | Cost (Serper credits per board) | about 24 (8 per direction search, 3 directions) | 15 or fewer |
@@ -96,3 +96,17 @@ Notes:
   5. Bend: relevance is unchanged at 13.3%. Twists unrelated to the title (film frames on mashrabiya,
      stitches on a slide mount), Frutiger Aero with Talavera, Egyptian cinema on a Gulf brief, a total
      frame on onboarding and a progress bar on a listing page all pass checkCoherence.
+
+## Gold sets and crop accuracy (2026-10-16)
+
+- Gold sets are agent-made at the owner's request (DECISIONS.md, 2026-10-16): `bench/gold/ratings-gold.json`
+  (100 J10 ratings) and `bench/gold/crops-gold.json` (200 J11 parts on 39 UI references).
+- Default crops (`npx tsx scripts/crop-iou.ts`): ROLE_BANDS 0.141 mean IoU, 0.5% of parts at 0.8 or more. The
+  unreviewed J1 page anatomies (`--anatomy`, 162 pages) do not help: 0.134 mean, 1.5% at 0.8 or more. Most
+  gold images are presentations (several phones or a window on a backdrop), where a fixed band cannot land.
+- Agent crops (J11, Sonnet 5.5 with vision at the cut size, `atlas-build/jobs/j11-crops.ts`, $0.28): the plain
+  cut_parts instruction scores 0.708 mean IoU, 55% at 0.8 or more, 81% at 0.5 or more (195 parts; one reply did
+  not parse); the tuned measuring rules score 0.698 on the same parts (0.69 on all 200), also 55% at 0.8. The
+  tuned prompt does not beat the plain one, so the cut_parts text stays as it is. Weakest roles: toolbar,
+  content, status-header and tabbar (about 0.3 to 0.6); strongest: sidebar, sheet, list, chart, cta (0.8 to 0.93).
+  Gate 3 asks 0.8 mean: agent crops are not there yet.

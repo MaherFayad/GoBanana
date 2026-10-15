@@ -1,0 +1,3622 @@
+{
+ "version": 1,
+ "kind": "crops-gold",
+ "madeBy": "Claude (agent), 2026-10-16, at the owner's request (banana-server/DECISIONS.md)",
+ "note": "J11 gold crop labels (docs/next-step-plan.md P1-J11, section 8). Agent-made, not owner labels. Each part is a box over a UI reference from the 2026-10-15 and 2026-10-15b Bench runs, read off a measured 5% grid drawn over the image at the CDN's cut size (lib/vision/look.ts cutVariant) in headless Chrome. Fractions are of the whole image, presentation background included. imageWidth and imageHeight are the cut size the labels were read at (the same shape as the original). page is the PageAnatomy id the image shows. imageUrl is the hotlinked cut size URL; no image bytes are stored. Shape: lib/stitch/crop-iou.ts.",
+ "parts": [
+  {
+   "id": "j11-2026-10-15-ref_4f07369788b01945-1",
+   "role": "nav",
+   "page": "gov-services-dashboard",
+   "platform": "webapp",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.04,
+    "y": 0.08,
+    "w": 0.43,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46350626/file/19588b1653d53af9bef336ab5bd6a47e.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26973048-Social-Security-Government-Services-Website-Redesign-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_4f07369788b01945"
+  },
+  {
+   "id": "j11-2026-10-15-ref_4f07369788b01945-2",
+   "role": "hero",
+   "page": "gov-services-dashboard",
+   "platform": "webapp",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.12,
+    "w": 0.4,
+    "h": 0.28
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46350626/file/19588b1653d53af9bef336ab5bd6a47e.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26973048-Social-Security-Government-Services-Website-Redesign-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_4f07369788b01945"
+  },
+  {
+   "id": "j11-2026-10-15-ref_4f07369788b01945-3",
+   "role": "cards",
+   "page": "gov-services-dashboard",
+   "platform": "webapp",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.405,
+    "w": 0.405,
+    "h": 0.09
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46350626/file/19588b1653d53af9bef336ab5bd6a47e.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26973048-Social-Security-Government-Services-Website-Redesign-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_4f07369788b01945"
+  },
+  {
+   "id": "j11-2026-10-15-ref_4f07369788b01945-4",
+   "role": "cards",
+   "page": "gov-services-dashboard",
+   "platform": "webapp",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.21,
+    "y": 0.62,
+    "w": 0.26,
+    "h": 0.195
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46350626/file/19588b1653d53af9bef336ab5bd6a47e.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26973048-Social-Security-Government-Services-Website-Redesign-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_4f07369788b01945"
+  },
+  {
+   "id": "j11-2026-10-15-ref_4f07369788b01945-5",
+   "role": "cards",
+   "page": "gov-services-dashboard",
+   "platform": "webapp",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.535,
+    "y": 0.64,
+    "w": 0.4,
+    "h": 0.29
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46350626/file/19588b1653d53af9bef336ab5bd6a47e.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26973048-Social-Security-Government-Services-Website-Redesign-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_4f07369788b01945"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7560ae31f8bc2ebe-1",
+   "role": "hero",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.23,
+    "y": 0.18,
+    "w": 0.21,
+    "h": 0.29
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/d8/5b/f6/d85bf621f53b21b792be47f8a91c6392.jpg",
+   "sourceUrl": "https://www.pinterest.com/pin/genuine-impact-fintech-app-onboarding-by-merixstudio--594404850805779350/",
+   "run": "2026-10-15",
+   "refId": "ref_7560ae31f8bc2ebe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7560ae31f8bc2ebe-2",
+   "role": "status-header",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.555,
+    "y": 0.235,
+    "w": 0.23,
+    "h": 0.175
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/d8/5b/f6/d85bf621f53b21b792be47f8a91c6392.jpg",
+   "sourceUrl": "https://www.pinterest.com/pin/genuine-impact-fintech-app-onboarding-by-merixstudio--594404850805779350/",
+   "run": "2026-10-15",
+   "refId": "ref_7560ae31f8bc2ebe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7560ae31f8bc2ebe-3",
+   "role": "form",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.565,
+    "y": 0.615,
+    "w": 0.21,
+    "h": 0.115
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/d8/5b/f6/d85bf621f53b21b792be47f8a91c6392.jpg",
+   "sourceUrl": "https://www.pinterest.com/pin/genuine-impact-fintech-app-onboarding-by-merixstudio--594404850805779350/",
+   "run": "2026-10-15",
+   "refId": "ref_7560ae31f8bc2ebe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7560ae31f8bc2ebe-4",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.565,
+    "y": 0.765,
+    "w": 0.205,
+    "h": 0.045
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/d8/5b/f6/d85bf621f53b21b792be47f8a91c6392.jpg",
+   "sourceUrl": "https://www.pinterest.com/pin/genuine-impact-fintech-app-onboarding-by-merixstudio--594404850805779350/",
+   "run": "2026-10-15",
+   "refId": "ref_7560ae31f8bc2ebe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-1",
+   "role": "hero",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.05,
+    "y": 0.1,
+    "w": 0.275,
+    "h": 0.5
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-2",
+   "role": "cta",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.785,
+    "w": 0.245,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-3",
+   "role": "status-header",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.15,
+    "w": 0.265,
+    "h": 0.065
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-4",
+   "role": "cards",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.315,
+    "w": 0.265,
+    "h": 0.165
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-5",
+   "role": "hero",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.1,
+    "w": 0.27,
+    "h": 0.38
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_13bc0617c7091f6a-6",
+   "role": "list",
+   "page": "prayer-times",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.69,
+    "y": 0.49,
+    "w": 0.26,
+    "h": 0.4
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48804451/file/016601a505ee680789bae263010ba383.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27672317-Islamic-Prayer-Times-App-Modern-Ramadan-Salah-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_13bc0617c7091f6a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_d00a99ebb8affeaa-1",
+   "role": "hero",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.11,
+    "y": 0.18,
+    "w": 0.23,
+    "h": 0.39
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43338336/file/original-775ce6f80d19b54469ec052d2d260da9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26032302-Flight-Booking-App-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_d00a99ebb8affeaa"
+  },
+  {
+   "id": "j11-2026-10-15-ref_d00a99ebb8affeaa-2",
+   "role": "hero",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.385,
+    "y": 0.15,
+    "w": 0.235,
+    "h": 0.4
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43338336/file/original-775ce6f80d19b54469ec052d2d260da9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26032302-Flight-Booking-App-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_d00a99ebb8affeaa"
+  },
+  {
+   "id": "j11-2026-10-15-ref_d00a99ebb8affeaa-3",
+   "role": "cta",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.12,
+    "y": 0.775,
+    "w": 0.215,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43338336/file/original-775ce6f80d19b54469ec052d2d260da9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26032302-Flight-Booking-App-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_d00a99ebb8affeaa"
+  },
+  {
+   "id": "j11-2026-10-15-ref_d00a99ebb8affeaa-4",
+   "role": "cta",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.395,
+    "y": 0.73,
+    "w": 0.215,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43338336/file/original-775ce6f80d19b54469ec052d2d260da9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26032302-Flight-Booking-App-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_d00a99ebb8affeaa"
+  },
+  {
+   "id": "j11-2026-10-15-ref_d00a99ebb8affeaa-5",
+   "role": "cta",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.67,
+    "y": 0.775,
+    "w": 0.215,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43338336/file/original-775ce6f80d19b54469ec052d2d260da9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26032302-Flight-Booking-App-UI-Design",
+   "run": "2026-10-15",
+   "refId": "ref_d00a99ebb8affeaa"
+  },
+  {
+   "id": "j11-2026-10-15-ref_07e7e27ab7d7b590-1",
+   "role": "status-header",
+   "page": "empty-state",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.37,
+    "y": 0.2,
+    "w": 0.33,
+    "h": 0.06
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/56/16/eb/5616eb0c3314bf8604dba0eb707f9258.jpg",
+   "sourceUrl": "https://br.pinterest.com/pin/9499849194986595/",
+   "run": "2026-10-15",
+   "refId": "ref_07e7e27ab7d7b590"
+  },
+  {
+   "id": "j11-2026-10-15-ref_07e7e27ab7d7b590-2",
+   "role": "empty",
+   "page": "empty-state",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.405,
+    "y": 0.375,
+    "w": 0.26,
+    "h": 0.49
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/56/16/eb/5616eb0c3314bf8604dba0eb707f9258.jpg",
+   "sourceUrl": "https://br.pinterest.com/pin/9499849194986595/",
+   "run": "2026-10-15",
+   "refId": "ref_07e7e27ab7d7b590"
+  },
+  {
+   "id": "j11-2026-10-15-ref_07e7e27ab7d7b590-3",
+   "role": "cta",
+   "page": "empty-state",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.44,
+    "y": 0.765,
+    "w": 0.19,
+    "h": 0.045
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/56/16/eb/5616eb0c3314bf8604dba0eb707f9258.jpg",
+   "sourceUrl": "https://br.pinterest.com/pin/9499849194986595/",
+   "run": "2026-10-15",
+   "refId": "ref_07e7e27ab7d7b590"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1a10141306fa5420-1",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.09,
+    "y": 0.24,
+    "w": 0.22,
+    "h": 0.13
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44474550/file/a792e331894a7d055b5b302703b50e96.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26392483-Global-eSIM-App-Travel-Smarter-with-Seamless-Connectivity-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_1a10141306fa5420"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1a10141306fa5420-2",
+   "role": "tabbar",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.11,
+    "y": 0.8,
+    "w": 0.2,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44474550/file/a792e331894a7d055b5b302703b50e96.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26392483-Global-eSIM-App-Travel-Smarter-with-Seamless-Connectivity-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_1a10141306fa5420"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1a10141306fa5420-3",
+   "role": "status-header",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.21,
+    "w": 0.26,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44474550/file/a792e331894a7d055b5b302703b50e96.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26392483-Global-eSIM-App-Travel-Smarter-with-Seamless-Connectivity-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_1a10141306fa5420"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1a10141306fa5420-4",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.38,
+    "y": 0.36,
+    "w": 0.24,
+    "h": 0.46
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44474550/file/a792e331894a7d055b5b302703b50e96.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26392483-Global-eSIM-App-Travel-Smarter-with-Seamless-Connectivity-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_1a10141306fa5420"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1a10141306fa5420-5",
+   "role": "tabbar",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.84,
+    "w": 0.26,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44474550/file/a792e331894a7d055b5b302703b50e96.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26392483-Global-eSIM-App-Travel-Smarter-with-Seamless-Connectivity-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_1a10141306fa5420"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-1",
+   "role": "filters",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.275,
+    "w": 0.265,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-2",
+   "role": "list",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.33,
+    "w": 0.255,
+    "h": 0.59
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-3",
+   "role": "form",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.255,
+    "w": 0.26,
+    "h": 0.17
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-4",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.385,
+    "y": 0.48,
+    "w": 0.23,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-5",
+   "role": "tabbar",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.36,
+    "y": 0.82,
+    "w": 0.28,
+    "h": 0.07
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-6",
+   "role": "detail",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.21,
+    "w": 0.27,
+    "h": 0.29
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_8559a021a6fa8af9-7",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.775,
+    "w": 0.255,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/42645461/file/original-91e00bcda18b2fb4bfe913f00f13941b.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15b",
+   "refId": "ref_8559a021a6fa8af9"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0f25911012bfebe8-1",
+   "role": "hero",
+   "page": "offers-page",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.235,
+    "y": 0.08,
+    "w": 0.235,
+    "h": 0.68
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31399800/file/original-bfdd548db89dd1528f21ab5d1966c8eb.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15495760-Ramadan-Reminder-Mobile-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0f25911012bfebe8"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0f25911012bfebe8-2",
+   "role": "cta",
+   "page": "offers-page",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.38,
+    "y": 0.665,
+    "w": 0.08,
+    "h": 0.075
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31399800/file/original-bfdd548db89dd1528f21ab5d1966c8eb.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15495760-Ramadan-Reminder-Mobile-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0f25911012bfebe8"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0f25911012bfebe8-3",
+   "role": "cards",
+   "page": "offers-page",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.535,
+    "y": 0.325,
+    "w": 0.22,
+    "h": 0.185
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31399800/file/original-bfdd548db89dd1528f21ab5d1966c8eb.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15495760-Ramadan-Reminder-Mobile-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0f25911012bfebe8"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0f25911012bfebe8-4",
+   "role": "cards",
+   "page": "offers-page",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.535,
+    "y": 0.52,
+    "w": 0.22,
+    "h": 0.35
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31399800/file/original-bfdd548db89dd1528f21ab5d1966c8eb.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15495760-Ramadan-Reminder-Mobile-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0f25911012bfebe8"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0f25911012bfebe8-5",
+   "role": "tabbar",
+   "page": "offers-page",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.535,
+    "y": 0.875,
+    "w": 0.22,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31399800/file/original-bfdd548db89dd1528f21ab5d1966c8eb.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15495760-Ramadan-Reminder-Mobile-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0f25911012bfebe8"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-1",
+   "role": "status-header",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.21,
+    "y": 0.15,
+    "w": 0.255,
+    "h": 0.16
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-2",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.34,
+    "w": 0.235,
+    "h": 0.14
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-3",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.52,
+    "w": 0.24,
+    "h": 0.2
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-4",
+   "role": "hero",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.55,
+    "y": 0.16,
+    "w": 0.24,
+    "h": 0.18
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-5",
+   "role": "filters",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.55,
+    "y": 0.36,
+    "w": 0.25,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_5c67bb4bdcc6faf4-6",
+   "role": "list",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.55,
+    "y": 0.43,
+    "w": 0.24,
+    "h": 0.37
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/31078139/file/original-18f8d9388b4df357c21db2e7ae755420.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/15335948-Insurance-Mobile-App",
+   "run": "2026-10-15b",
+   "refId": "ref_5c67bb4bdcc6faf4"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-1",
+   "role": "hero",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.18,
+    "w": 0.26,
+    "h": 0.48
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-2",
+   "role": "cta",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.08,
+    "y": 0.775,
+    "w": 0.23,
+    "h": 0.065
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-3",
+   "role": "status-header",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.375,
+    "y": 0.15,
+    "w": 0.245,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-4",
+   "role": "list",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.4,
+    "y": 0.48,
+    "w": 0.22,
+    "h": 0.35
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-5",
+   "role": "hero",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.12,
+    "w": 0.27,
+    "h": 0.31
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15-ref_9178ce8d2386a768-6",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.695,
+    "y": 0.5,
+    "w": 0.245,
+    "h": 0.3
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44453687/file/fec94a16de182a461a92245dfbda4168.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26385998-Destination-Picker-Travel-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_9178ce8d2386a768"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0e0b1a47db8719ac-1",
+   "role": "nav",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1920,
+   "imageHeight": 1200,
+   "crop": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.15
+   },
+   "imageUrl": "https://r2.siteinspire.com/cdn-cgi/image/width=1920,height=1200,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/kxmiDwDwA7ep.png",
+   "sourceUrl": "https://www.siteinspire.com/website/12683-base-habitation",
+   "run": "2026-10-15b",
+   "refId": "ref_0e0b1a47db8719ac"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0e0b1a47db8719ac-2",
+   "role": "hero",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1920,
+   "imageHeight": 1200,
+   "crop": {
+    "x": 0,
+    "y": 0.15,
+    "w": 1,
+    "h": 0.85
+   },
+   "imageUrl": "https://r2.siteinspire.com/cdn-cgi/image/width=1920,height=1200,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/kxmiDwDwA7ep.png",
+   "sourceUrl": "https://www.siteinspire.com/website/12683-base-habitation",
+   "run": "2026-10-15b",
+   "refId": "ref_0e0b1a47db8719ac"
+  },
+  {
+   "id": "j11-2026-10-15-ref_74c838c5c7c6f266-1",
+   "role": "hero",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.375,
+    "y": 0.22,
+    "w": 0.255,
+    "h": 0.33
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47960700/file/fa8d91b3f593aa596f877e50201a6240.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26627818-Daily-Expense-App-Onboarding-Screen",
+   "run": "2026-10-15",
+   "refId": "ref_74c838c5c7c6f266"
+  },
+  {
+   "id": "j11-2026-10-15-ref_74c838c5c7c6f266-2",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.385,
+    "y": 0.815,
+    "w": 0.235,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47960700/file/fa8d91b3f593aa596f877e50201a6240.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26627818-Daily-Expense-App-Onboarding-Screen",
+   "run": "2026-10-15",
+   "refId": "ref_74c838c5c7c6f266"
+  },
+  {
+   "id": "j11-2026-10-15-ref_74c838c5c7c6f266-3",
+   "role": "list",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.7,
+    "y": 0.26,
+    "w": 0.25,
+    "h": 0.26
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47960700/file/fa8d91b3f593aa596f877e50201a6240.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26627818-Daily-Expense-App-Onboarding-Screen",
+   "run": "2026-10-15",
+   "refId": "ref_74c838c5c7c6f266"
+  },
+  {
+   "id": "j11-2026-10-15-ref_74c838c5c7c6f266-4",
+   "role": "content",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.69,
+    "y": 0.6,
+    "w": 0.26,
+    "h": 0.08
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47960700/file/fa8d91b3f593aa596f877e50201a6240.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26627818-Daily-Expense-App-Onboarding-Screen",
+   "run": "2026-10-15",
+   "refId": "ref_74c838c5c7c6f266"
+  },
+  {
+   "id": "j11-2026-10-15-ref_74c838c5c7c6f266-5",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.695,
+    "y": 0.755,
+    "w": 0.235,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47960700/file/fa8d91b3f593aa596f877e50201a6240.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26627818-Daily-Expense-App-Onboarding-Screen",
+   "run": "2026-10-15",
+   "refId": "ref_74c838c5c7c6f266"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-1",
+   "role": "status-header",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.165,
+    "y": 0.1,
+    "w": 0.305,
+    "h": 0.14
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-2",
+   "role": "toolbar",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.165,
+    "y": 0.265,
+    "w": 0.305,
+    "h": 0.055
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-3",
+   "role": "filters",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.165,
+    "y": 0.38,
+    "w": 0.305,
+    "h": 0.075
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-4",
+   "role": "list",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.18,
+    "y": 0.53,
+    "w": 0.27,
+    "h": 0.41
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-5",
+   "role": "detail",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.53,
+    "y": 0.36,
+    "w": 0.3,
+    "h": 0.58
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ee6c4829f25035d8-6",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.75,
+    "y": 0.84,
+    "w": 0.055,
+    "h": 0.07
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/8c/84/b2/8c84b259b70ea37d0ca1f6d1a03cf396.jpg",
+   "sourceUrl": "https://kr.pinterest.com/pin/501095896049535585/",
+   "run": "2026-10-15",
+   "refId": "ref_ee6c4829f25035d8"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2f2cada5e9793888-1",
+   "role": "sidebar",
+   "page": "kids-home",
+   "platform": "tablet",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.105,
+    "y": 0.12,
+    "w": 0.235,
+    "h": 0.76
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/36961360/file/original-f9034d0a8725e9b40a416a417a7edba6.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/11614990-Kids-Book-Reading-iPad-App-WIP",
+   "run": "2026-10-15",
+   "refId": "ref_2f2cada5e9793888"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2f2cada5e9793888-2",
+   "role": "stats",
+   "page": "kids-home",
+   "platform": "tablet",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.115,
+    "y": 0.13,
+    "w": 0.22,
+    "h": 0.25
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/36961360/file/original-f9034d0a8725e9b40a416a417a7edba6.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/11614990-Kids-Book-Reading-iPad-App-WIP",
+   "run": "2026-10-15",
+   "refId": "ref_2f2cada5e9793888"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2f2cada5e9793888-3",
+   "role": "list",
+   "page": "kids-home",
+   "platform": "tablet",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.12,
+    "y": 0.51,
+    "w": 0.215,
+    "h": 0.36
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/36961360/file/original-f9034d0a8725e9b40a416a417a7edba6.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/11614990-Kids-Book-Reading-iPad-App-WIP",
+   "run": "2026-10-15",
+   "refId": "ref_2f2cada5e9793888"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2f2cada5e9793888-4",
+   "role": "cards",
+   "page": "kids-home",
+   "platform": "tablet",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.12,
+    "w": 0.58,
+    "h": 0.38
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/36961360/file/original-f9034d0a8725e9b40a416a417a7edba6.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/11614990-Kids-Book-Reading-iPad-App-WIP",
+   "run": "2026-10-15",
+   "refId": "ref_2f2cada5e9793888"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2f2cada5e9793888-5",
+   "role": "cards",
+   "page": "kids-home",
+   "platform": "tablet",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.54,
+    "w": 0.41,
+    "h": 0.35
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/36961360/file/original-f9034d0a8725e9b40a416a417a7edba6.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/11614990-Kids-Book-Reading-iPad-App-WIP",
+   "run": "2026-10-15",
+   "refId": "ref_2f2cada5e9793888"
+  },
+  {
+   "id": "j11-2026-10-15-ref_5491edefc3eb230b-1",
+   "role": "nav",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1920,
+   "imageHeight": 1200,
+   "crop": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.07
+   },
+   "imageUrl": "https://r2.siteinspire.com/cdn-cgi/image/width=1920,height=1200,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/016/806/original.png",
+   "sourceUrl": "https://www.siteinspire.com/website/11796-shop",
+   "run": "2026-10-15",
+   "refId": "ref_5491edefc3eb230b"
+  },
+  {
+   "id": "j11-2026-10-15-ref_5491edefc3eb230b-2",
+   "role": "hero",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1920,
+   "imageHeight": 1200,
+   "crop": {
+    "x": 0,
+    "y": 0.07,
+    "w": 1,
+    "h": 0.68
+   },
+   "imageUrl": "https://r2.siteinspire.com/cdn-cgi/image/width=1920,height=1200,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/016/806/original.png",
+   "sourceUrl": "https://www.siteinspire.com/website/11796-shop",
+   "run": "2026-10-15",
+   "refId": "ref_5491edefc3eb230b"
+  },
+  {
+   "id": "j11-2026-10-15-ref_5491edefc3eb230b-3",
+   "role": "logos",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1920,
+   "imageHeight": 1200,
+   "crop": {
+    "x": 0,
+    "y": 0.745,
+    "w": 1,
+    "h": 0.105
+   },
+   "imageUrl": "https://r2.siteinspire.com/cdn-cgi/image/width=1920,height=1200,quality=75,format=auto,metadata=none,gravity=top,fit=crop,compress=true/screengrabs/images/000/016/806/original.png",
+   "sourceUrl": "https://www.siteinspire.com/website/11796-shop",
+   "run": "2026-10-15",
+   "refId": "ref_5491edefc3eb230b"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-1",
+   "role": "status-header",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.17,
+    "y": 0.12,
+    "w": 0.3,
+    "h": 0.14
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-2",
+   "role": "list",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.19,
+    "y": 0.29,
+    "w": 0.26,
+    "h": 0.28
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-3",
+   "role": "cta",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.235,
+    "y": 0.835,
+    "w": 0.165,
+    "h": 0.065
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-4",
+   "role": "detail",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.54,
+    "y": 0.29,
+    "w": 0.31,
+    "h": 0.24
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-5",
+   "role": "list",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.55,
+    "y": 0.55,
+    "w": 0.28,
+    "h": 0.25
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_6005a54c76c5d64a-6",
+   "role": "tabbar",
+   "page": "cart",
+   "platform": "mobile",
+   "imageWidth": 1000,
+   "imageHeight": 750,
+   "crop": {
+    "x": 0.53,
+    "y": 0.83,
+    "w": 0.31,
+    "h": 0.06
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/e3/5a/6d/e35a6df21b82d31a6de8ffaab7aa9fcd.jpg",
+   "sourceUrl": "https://tr.pinterest.com/pin/763289836851262813/",
+   "run": "2026-10-15b",
+   "refId": "ref_6005a54c76c5d64a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_6615097f81cb0b54-1",
+   "role": "nav",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 759,
+   "crop": {
+    "x": 0.15,
+    "y": 0.065,
+    "w": 0.71,
+    "h": 0.08
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44859450/file/5a46924fe5287e293e115d15006847ed.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26509898-UI-Wiki-Elegant-Real-Estate-Hero-Section",
+   "run": "2026-10-15",
+   "refId": "ref_6615097f81cb0b54"
+  },
+  {
+   "id": "j11-2026-10-15-ref_6615097f81cb0b54-2",
+   "role": "hero",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 759,
+   "crop": {
+    "x": 0,
+    "y": 0.14,
+    "w": 1,
+    "h": 0.86
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44859450/file/5a46924fe5287e293e115d15006847ed.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26509898-UI-Wiki-Elegant-Real-Estate-Hero-Section",
+   "run": "2026-10-15",
+   "refId": "ref_6615097f81cb0b54"
+  },
+  {
+   "id": "j11-2026-10-15-ref_6615097f81cb0b54-3",
+   "role": "cta",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 759,
+   "crop": {
+    "x": 0,
+    "y": 0.78,
+    "w": 0.125,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44859450/file/5a46924fe5287e293e115d15006847ed.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26509898-UI-Wiki-Elegant-Real-Estate-Hero-Section",
+   "run": "2026-10-15",
+   "refId": "ref_6615097f81cb0b54"
+  },
+  {
+   "id": "j11-2026-10-15-ref_31ea51bad84839de-1",
+   "role": "nav",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.12,
+    "y": 0.085,
+    "w": 0.77,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6884062/file/original-4716303a67fc7ae9ffaa4f320ccda352.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27116464-Caffelio-Coffee-Shop-Website-Product-Page-Design",
+   "run": "2026-10-15",
+   "refId": "ref_31ea51bad84839de"
+  },
+  {
+   "id": "j11-2026-10-15-ref_31ea51bad84839de-2",
+   "role": "hero",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.18,
+    "w": 0.87,
+    "h": 0.54
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6884062/file/original-4716303a67fc7ae9ffaa4f320ccda352.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27116464-Caffelio-Coffee-Shop-Website-Product-Page-Design",
+   "run": "2026-10-15",
+   "refId": "ref_31ea51bad84839de"
+  },
+  {
+   "id": "j11-2026-10-15-ref_31ea51bad84839de-3",
+   "role": "cta",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.48,
+    "y": 0.52,
+    "w": 0.12,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6884062/file/original-4716303a67fc7ae9ffaa4f320ccda352.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27116464-Caffelio-Coffee-Shop-Website-Product-Page-Design",
+   "run": "2026-10-15",
+   "refId": "ref_31ea51bad84839de"
+  },
+  {
+   "id": "j11-2026-10-15-ref_31ea51bad84839de-4",
+   "role": "stats",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.12,
+    "y": 0.75,
+    "w": 0.36,
+    "h": 0.09
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6884062/file/original-4716303a67fc7ae9ffaa4f320ccda352.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27116464-Caffelio-Coffee-Shop-Website-Product-Page-Design",
+   "run": "2026-10-15",
+   "refId": "ref_31ea51bad84839de"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7fcf32d6051ef745-1",
+   "role": "status-header",
+   "page": "paywall",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.04
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/ec3f8ca4f6b3410cb52a840374e478bb.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/daily-yoga-yoga-for-fitness",
+   "run": "2026-10-15",
+   "refId": "ref_7fcf32d6051ef745"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7fcf32d6051ef745-2",
+   "role": "hero",
+   "page": "paywall",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.08,
+    "w": 0.92,
+    "h": 0.25
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/ec3f8ca4f6b3410cb52a840374e478bb.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/daily-yoga-yoga-for-fitness",
+   "run": "2026-10-15",
+   "refId": "ref_7fcf32d6051ef745"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7fcf32d6051ef745-3",
+   "role": "stats",
+   "page": "paywall",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.31,
+    "y": 0.47,
+    "w": 0.39,
+    "h": 0.05
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/ec3f8ca4f6b3410cb52a840374e478bb.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/daily-yoga-yoga-for-fitness",
+   "run": "2026-10-15",
+   "refId": "ref_7fcf32d6051ef745"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7fcf32d6051ef745-4",
+   "role": "pricing",
+   "page": "paywall",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.535,
+    "w": 0.92,
+    "h": 0.225
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/ec3f8ca4f6b3410cb52a840374e478bb.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/daily-yoga-yoga-for-fitness",
+   "run": "2026-10-15",
+   "refId": "ref_7fcf32d6051ef745"
+  },
+  {
+   "id": "j11-2026-10-15-ref_7fcf32d6051ef745-5",
+   "role": "cta",
+   "page": "paywall",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.85,
+    "w": 0.92,
+    "h": 0.055
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/ec3f8ca4f6b3410cb52a840374e478bb.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/daily-yoga-yoga-for-fitness",
+   "run": "2026-10-15",
+   "refId": "ref_7fcf32d6051ef745"
+  },
+  {
+   "id": "j11-2026-10-15-ref_49d7cdc83804093c-1",
+   "role": "hero",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.02,
+    "y": 0.25,
+    "w": 0.175,
+    "h": 0.17
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47942276/file/b023a5f463cee21fee2e8e004139615c.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27436546-PulseBoard-SaaS-Dashboard-and-Website-Design-System",
+   "run": "2026-10-15",
+   "refId": "ref_49d7cdc83804093c"
+  },
+  {
+   "id": "j11-2026-10-15-ref_49d7cdc83804093c-2",
+   "role": "nav",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.21,
+    "y": 0.175,
+    "w": 0.59,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47942276/file/b023a5f463cee21fee2e8e004139615c.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27436546-PulseBoard-SaaS-Dashboard-and-Website-Design-System",
+   "run": "2026-10-15",
+   "refId": "ref_49d7cdc83804093c"
+  },
+  {
+   "id": "j11-2026-10-15-ref_49d7cdc83804093c-3",
+   "role": "features",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.21,
+    "y": 0.22,
+    "w": 0.59,
+    "h": 0.46
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47942276/file/b023a5f463cee21fee2e8e004139615c.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27436546-PulseBoard-SaaS-Dashboard-and-Website-Design-System",
+   "run": "2026-10-15",
+   "refId": "ref_49d7cdc83804093c"
+  },
+  {
+   "id": "j11-2026-10-15-ref_49d7cdc83804093c-4",
+   "role": "pricing",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.84,
+    "y": 0.36,
+    "w": 0.15,
+    "h": 0.22
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47942276/file/b023a5f463cee21fee2e8e004139615c.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27436546-PulseBoard-SaaS-Dashboard-and-Website-Design-System",
+   "run": "2026-10-15",
+   "refId": "ref_49d7cdc83804093c"
+  },
+  {
+   "id": "j11-2026-10-15-ref_49d7cdc83804093c-5",
+   "role": "pricing",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.3,
+    "y": 0.77,
+    "w": 0.53,
+    "h": 0.23
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47942276/file/b023a5f463cee21fee2e8e004139615c.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27436546-PulseBoard-SaaS-Dashboard-and-Website-Design-System",
+   "run": "2026-10-15",
+   "refId": "ref_49d7cdc83804093c"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-1",
+   "role": "nav",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.06,
+    "y": 0.07,
+    "w": 0.52,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-2",
+   "role": "hero",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.06,
+    "y": 0.105,
+    "w": 0.52,
+    "h": 0.345
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-3",
+   "role": "stats",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.125,
+    "y": 0.745,
+    "w": 0.395,
+    "h": 0.055
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-4",
+   "role": "chart",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.12,
+    "y": 0.69,
+    "w": 0.41,
+    "h": 0.29
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-5",
+   "role": "features",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.65,
+    "y": 0.1,
+    "w": 0.27,
+    "h": 0.22
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_226dc4f894d325dc-6",
+   "role": "pricing",
+   "page": "pricing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.65,
+    "y": 0.6,
+    "w": 0.27,
+    "h": 0.23
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/48334190/file/5fa7e3664dcdda1e59851b094831fecd.webp?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27544882-SaaS-Analytics-Landing-Page-Privacy-First-Web-UI",
+   "run": "2026-10-15b",
+   "refId": "ref_226dc4f894d325dc"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-1",
+   "role": "sidebar",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.1,
+    "w": 0.14,
+    "h": 0.81
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-2",
+   "role": "toolbar",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.1,
+    "w": 0.72,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-3",
+   "role": "stats",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.18,
+    "w": 0.51,
+    "h": 0.12
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-4",
+   "role": "chart",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.31,
+    "w": 0.51,
+    "h": 0.32
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-5",
+   "role": "chart",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.74,
+    "y": 0.17,
+    "w": 0.2,
+    "h": 0.46
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_da845284af0d98e7-6",
+   "role": "cards",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.65,
+    "w": 0.72,
+    "h": 0.26
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46394566/file/5136d3cd384f3239e9abe9a2238e98b9.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26985439-RealEstate-Pro-Property-Management-Dashboard-UI-UX-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_da845284af0d98e7"
+  },
+  {
+   "id": "j11-2026-10-15-ref_0361589330587e18-1",
+   "role": "status-header",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0,
+    "y": 0,
+    "w": 1,
+    "h": 0.04
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/a087ac9e43d74d1ebb9c847d9d1670a9.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ai-video-generator-creator",
+   "run": "2026-10-15",
+   "refId": "ref_0361589330587e18"
+  },
+  {
+   "id": "j11-2026-10-15-ref_0361589330587e18-2",
+   "role": "hero",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0,
+    "y": 0.04,
+    "w": 1,
+    "h": 0.71
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/a087ac9e43d74d1ebb9c847d9d1670a9.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ai-video-generator-creator",
+   "run": "2026-10-15",
+   "refId": "ref_0361589330587e18"
+  },
+  {
+   "id": "j11-2026-10-15-ref_0361589330587e18-3",
+   "role": "content",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.08,
+    "y": 0.75,
+    "w": 0.84,
+    "h": 0.09
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/a087ac9e43d74d1ebb9c847d9d1670a9.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ai-video-generator-creator",
+   "run": "2026-10-15",
+   "refId": "ref_0361589330587e18"
+  },
+  {
+   "id": "j11-2026-10-15-ref_0361589330587e18-4",
+   "role": "cta",
+   "page": "onboarding",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.86,
+    "w": 0.92,
+    "h": 0.07
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/a087ac9e43d74d1ebb9c847d9d1670a9.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ai-video-generator-creator",
+   "run": "2026-10-15",
+   "refId": "ref_0361589330587e18"
+  },
+  {
+   "id": "j11-2026-10-15-ref_93b07fef18634c9d-1",
+   "role": "status-header",
+   "page": "calendar",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.18,
+    "y": 0.17,
+    "w": 0.28,
+    "h": 0.065
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/41898085/file/original-3ae75a05d10c60ae7b94b3030306034a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/3503488-Date-picker-UI",
+   "run": "2026-10-15",
+   "refId": "ref_93b07fef18634c9d"
+  },
+  {
+   "id": "j11-2026-10-15-ref_93b07fef18634c9d-2",
+   "role": "other",
+   "page": "calendar",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.18,
+    "y": 0.24,
+    "w": 0.28,
+    "h": 0.39
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/41898085/file/original-3ae75a05d10c60ae7b94b3030306034a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/3503488-Date-picker-UI",
+   "run": "2026-10-15",
+   "refId": "ref_93b07fef18634c9d"
+  },
+  {
+   "id": "j11-2026-10-15-ref_93b07fef18634c9d-3",
+   "role": "cta",
+   "page": "calendar",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.19,
+    "y": 0.775,
+    "w": 0.255,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/41898085/file/original-3ae75a05d10c60ae7b94b3030306034a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/3503488-Date-picker-UI",
+   "run": "2026-10-15",
+   "refId": "ref_93b07fef18634c9d"
+  },
+  {
+   "id": "j11-2026-10-15-ref_93b07fef18634c9d-4",
+   "role": "cta",
+   "page": "calendar",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 600,
+   "crop": {
+    "x": 0.555,
+    "y": 0.775,
+    "w": 0.255,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/41898085/file/original-3ae75a05d10c60ae7b94b3030306034a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/3503488-Date-picker-UI",
+   "run": "2026-10-15",
+   "refId": "ref_93b07fef18634c9d"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-1",
+   "role": "form",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.1,
+    "y": 0.37,
+    "w": 0.24,
+    "h": 0.24
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-2",
+   "role": "cta",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.1,
+    "y": 0.645,
+    "w": 0.235,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-3",
+   "role": "status-header",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.385,
+    "y": 0.07,
+    "w": 0.235,
+    "h": 0.09
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-4",
+   "role": "hero",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.39,
+    "y": 0.185,
+    "w": 0.225,
+    "h": 0.165
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-5",
+   "role": "cards",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.39,
+    "y": 0.4,
+    "w": 0.225,
+    "h": 0.22
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-6",
+   "role": "tabbar",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.385,
+    "y": 0.89,
+    "w": 0.235,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-7",
+   "role": "stats",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.39,
+    "w": 0.22,
+    "h": 0.14
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_0dee9b71de5a5806-8",
+   "role": "cta",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.59,
+    "w": 0.22,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47171531/file/682b7e53057535e4fc424a07dbdf1118.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27215772-Destination-Travel-Planning-eSIM-Management-App-UI-Design",
+   "run": "2026-10-15b",
+   "refId": "ref_0dee9b71de5a5806"
+  },
+  {
+   "id": "j11-2026-10-15-ref_25f0d545c6474397-1",
+   "role": "nav",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.08,
+    "w": 0.43,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47565330/file/31be10fa3941daa1aac016c6674ed2ef.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27330278-Coffee-Shop-Website-Design-Caf-Restaurant-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_25f0d545c6474397"
+  },
+  {
+   "id": "j11-2026-10-15-ref_25f0d545c6474397-2",
+   "role": "hero",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.27,
+    "w": 0.43,
+    "h": 0.38
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47565330/file/31be10fa3941daa1aac016c6674ed2ef.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27330278-Coffee-Shop-Website-Design-Caf-Restaurant-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_25f0d545c6474397"
+  },
+  {
+   "id": "j11-2026-10-15-ref_25f0d545c6474397-3",
+   "role": "cta",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.205,
+    "y": 0.58,
+    "w": 0.14,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47565330/file/31be10fa3941daa1aac016c6674ed2ef.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27330278-Coffee-Shop-Website-Design-Caf-Restaurant-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_25f0d545c6474397"
+  },
+  {
+   "id": "j11-2026-10-15-ref_25f0d545c6474397-4",
+   "role": "content",
+   "page": "landing-page",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.78,
+    "w": 0.43,
+    "h": 0.22
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/47565330/file/31be10fa3941daa1aac016c6674ed2ef.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27330278-Coffee-Shop-Website-Design-Caf-Restaurant-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_25f0d545c6474397"
+  },
+  {
+   "id": "j11-2026-10-15-ref_39b5200b90b64b8e-1",
+   "role": "nav",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.06,
+    "y": 0.155,
+    "w": 0.885,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44812758/file/0cdd979ff8b4edbe9dbf5028f009e917.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26775857-Real-Estate-Web-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_39b5200b90b64b8e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_39b5200b90b64b8e-2",
+   "role": "filters",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.315,
+    "w": 0.87,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44812758/file/0cdd979ff8b4edbe9dbf5028f009e917.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26775857-Real-Estate-Web-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_39b5200b90b64b8e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_39b5200b90b64b8e-3",
+   "role": "cards",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.09,
+    "y": 0.38,
+    "w": 0.39,
+    "h": 0.53
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44812758/file/0cdd979ff8b4edbe9dbf5028f009e917.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26775857-Real-Estate-Web-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_39b5200b90b64b8e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_39b5200b90b64b8e-4",
+   "role": "other",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.505,
+    "y": 0.37,
+    "w": 0.42,
+    "h": 0.515
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/44812758/file/0cdd979ff8b4edbe9dbf5028f009e917.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26775857-Real-Estate-Web-App-UI",
+   "run": "2026-10-15",
+   "refId": "ref_39b5200b90b64b8e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ccb81240fc4f9a60-1",
+   "role": "status-header",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.355,
+    "y": 0.135,
+    "w": 0.29,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6070120/file/original-6258114d97ab9037c1593e4c019130b3.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15",
+   "refId": "ref_ccb81240fc4f9a60"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ccb81240fc4f9a60-2",
+   "role": "cards",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.36,
+    "y": 0.225,
+    "w": 0.28,
+    "h": 0.215
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6070120/file/original-6258114d97ab9037c1593e4c019130b3.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15",
+   "refId": "ref_ccb81240fc4f9a60"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ccb81240fc4f9a60-3",
+   "role": "form",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.36,
+    "y": 0.48,
+    "w": 0.28,
+    "h": 0.25
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6070120/file/original-6258114d97ab9037c1593e4c019130b3.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15",
+   "refId": "ref_ccb81240fc4f9a60"
+  },
+  {
+   "id": "j11-2026-10-15-ref_ccb81240fc4f9a60-4",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.36,
+    "y": 0.84,
+    "w": 0.28,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/6070120/file/original-6258114d97ab9037c1593e4c019130b3.jpg?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/20894231-Flight-Booking-App",
+   "run": "2026-10-15",
+   "refId": "ref_ccb81240fc4f9a60"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-1",
+   "role": "list",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.1,
+    "y": 0.3,
+    "w": 0.19,
+    "h": 0.35
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-2",
+   "role": "sheet",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.335,
+    "y": 0.4,
+    "w": 0.2,
+    "h": 0.39
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-3",
+   "role": "content",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.59,
+    "y": 0.74,
+    "w": 0.18,
+    "h": 0.14
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-4",
+   "role": "cta",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.59,
+    "y": 0.92,
+    "w": 0.18,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-5",
+   "role": "list",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.82,
+    "y": 0.51,
+    "w": 0.18,
+    "h": 0.2
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_f88709c466c7fc1a-6",
+   "role": "cta",
+   "page": "plan-picker",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.82,
+    "y": 0.825,
+    "w": 0.18,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/13296321/file/original-be5af58ae8251919e6c079af67e16d37.png?format=webp&resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23668959-eSIM-Cards-Mobile-Experience",
+   "run": "2026-10-15b",
+   "refId": "ref_f88709c466c7fc1a"
+  },
+  {
+   "id": "j11-2026-10-15-ref_c138fd6a63aa606f-1",
+   "role": "status-header",
+   "page": "camera-capture",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.18,
+    "y": 0.11,
+    "w": 0.275,
+    "h": 0.08
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/37896334/file/original-37833e03f972fbaadda7b1de6344c53a.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/25713184-AI-Nutrition-App-Design-Diet-App-Smart-Diet-Calorie-Tracker",
+   "run": "2026-10-15",
+   "refId": "ref_c138fd6a63aa606f"
+  },
+  {
+   "id": "j11-2026-10-15-ref_c138fd6a63aa606f-2",
+   "role": "toolbar",
+   "page": "camera-capture",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.18,
+    "y": 0.78,
+    "w": 0.275,
+    "h": 0.08
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/37896334/file/original-37833e03f972fbaadda7b1de6344c53a.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/25713184-AI-Nutrition-App-Design-Diet-App-Smart-Diet-Calorie-Tracker",
+   "run": "2026-10-15",
+   "refId": "ref_c138fd6a63aa606f"
+  },
+  {
+   "id": "j11-2026-10-15-ref_c138fd6a63aa606f-3",
+   "role": "sheet",
+   "page": "camera-capture",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.555,
+    "y": 0.515,
+    "w": 0.28,
+    "h": 0.365
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/37896334/file/original-37833e03f972fbaadda7b1de6344c53a.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/25713184-AI-Nutrition-App-Design-Diet-App-Smart-Diet-Calorie-Tracker",
+   "run": "2026-10-15",
+   "refId": "ref_c138fd6a63aa606f"
+  },
+  {
+   "id": "j11-2026-10-15-ref_c138fd6a63aa606f-4",
+   "role": "stats",
+   "page": "camera-capture",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.565,
+    "y": 0.625,
+    "w": 0.26,
+    "h": 0.175
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/37896334/file/original-37833e03f972fbaadda7b1de6344c53a.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/25713184-AI-Nutrition-App-Design-Diet-App-Smart-Diet-Calorie-Tracker",
+   "run": "2026-10-15",
+   "refId": "ref_c138fd6a63aa606f"
+  },
+  {
+   "id": "j11-2026-10-15-ref_c138fd6a63aa606f-5",
+   "role": "cta",
+   "page": "camera-capture",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.56,
+    "y": 0.825,
+    "w": 0.265,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/37896334/file/original-37833e03f972fbaadda7b1de6344c53a.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/25713184-AI-Nutrition-App-Design-Diet-App-Smart-Diet-Calorie-Tracker",
+   "run": "2026-10-15",
+   "refId": "ref_c138fd6a63aa606f"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-1",
+   "role": "hero",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.18,
+    "w": 0.26,
+    "h": 0.44
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-2",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.19,
+    "y": 0.765,
+    "w": 0.125,
+    "h": 0.065
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-3",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.495,
+    "y": 0.84,
+    "w": 0.125,
+    "h": 0.06
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-4",
+   "role": "status-header",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.67,
+    "y": 0.13,
+    "w": 0.27,
+    "h": 0.2
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-5",
+   "role": "form",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.69,
+    "y": 0.37,
+    "w": 0.23,
+    "h": 0.22
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_3384fbf41ae77f98-6",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.8,
+    "y": 0.765,
+    "w": 0.125,
+    "h": 0.065
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/15497024/file/original-d7ab5dc6df2fa0d506975751ba99208a.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/24486642-Inclusive-bank-app-design-onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_3384fbf41ae77f98"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-1",
+   "role": "nav",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.05,
+    "y": 0.08,
+    "w": 0.67,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-2",
+   "role": "hero",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0,
+    "y": 0.13,
+    "w": 0.76,
+    "h": 0.62
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-3",
+   "role": "filters",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.105,
+    "y": 0.71,
+    "w": 0.48,
+    "h": 0.055
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-4",
+   "role": "cards",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.79,
+    "y": 0.02,
+    "w": 0.21,
+    "h": 0.23
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-5",
+   "role": "faq",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.79,
+    "y": 0.38,
+    "w": 0.21,
+    "h": 0.12
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-6",
+   "role": "testimonial",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.79,
+    "y": 0.52,
+    "w": 0.21,
+    "h": 0.11
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_2ef3ba22aa6cafff-7",
+   "role": "footer",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.79,
+    "y": 0.66,
+    "w": 0.21,
+    "h": 0.34
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45344378/file/827ecf284e6c4812257ee0ef23fb3dc6.jpg?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26660485-Elegant-Minimal-Real-Estate-Landing-Page-l-UI-UX",
+   "run": "2026-10-15",
+   "refId": "ref_2ef3ba22aa6cafff"
+  },
+  {
+   "id": "j11-2026-10-15-ref_8f69a631c0ee9250-1",
+   "role": "status-header",
+   "page": "transactions",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.085,
+    "w": 0.92,
+    "h": 0.04
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/c9c4743784ac41ac952b10a856f89356.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ynab",
+   "run": "2026-10-15",
+   "refId": "ref_8f69a631c0ee9250"
+  },
+  {
+   "id": "j11-2026-10-15-ref_8f69a631c0ee9250-2",
+   "role": "filters",
+   "page": "transactions",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.13,
+    "w": 0.92,
+    "h": 0.04
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/c9c4743784ac41ac952b10a856f89356.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ynab",
+   "run": "2026-10-15",
+   "refId": "ref_8f69a631c0ee9250"
+  },
+  {
+   "id": "j11-2026-10-15-ref_8f69a631c0ee9250-3",
+   "role": "stats",
+   "page": "transactions",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.3,
+    "y": 0.175,
+    "w": 0.4,
+    "h": 0.06
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/c9c4743784ac41ac952b10a856f89356.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ynab",
+   "run": "2026-10-15",
+   "refId": "ref_8f69a631c0ee9250"
+  },
+  {
+   "id": "j11-2026-10-15-ref_8f69a631c0ee9250-4",
+   "role": "form",
+   "page": "transactions",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.04,
+    "y": 0.255,
+    "w": 0.92,
+    "h": 0.61
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/c9c4743784ac41ac952b10a856f89356.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ynab",
+   "run": "2026-10-15",
+   "refId": "ref_8f69a631c0ee9250"
+  },
+  {
+   "id": "j11-2026-10-15-ref_8f69a631c0ee9250-5",
+   "role": "cta",
+   "page": "transactions",
+   "platform": "mobile",
+   "imageWidth": 2160,
+   "imageHeight": 4670,
+   "single": true,
+   "crop": {
+    "x": 0.65,
+    "y": 0.9,
+    "w": 0.32,
+    "h": 0.05
+   },
+   "imageUrl": "https://media.screensdesign.com/avs-pp/c9c4743784ac41ac952b10a856f89356.webp",
+   "sourceUrl": "https://screensdesign.com/showcase/ynab",
+   "run": "2026-10-15",
+   "refId": "ref_8f69a631c0ee9250"
+  },
+  {
+   "id": "j11-2026-10-15-ref_65b925132ce4439e-1",
+   "role": "nav",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.12,
+    "w": 0.52,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43480226/file/original-3ff14cc95756267d6ba23873b88cabf1.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26077431-Real-Estate-Website-UI-Landing-page",
+   "run": "2026-10-15",
+   "refId": "ref_65b925132ce4439e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_65b925132ce4439e-2",
+   "role": "hero",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.16,
+    "w": 0.52,
+    "h": 0.63
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43480226/file/original-3ff14cc95756267d6ba23873b88cabf1.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26077431-Real-Estate-Website-UI-Landing-page",
+   "run": "2026-10-15",
+   "refId": "ref_65b925132ce4439e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_65b925132ce4439e-3",
+   "role": "features",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.07,
+    "y": 0.8,
+    "w": 0.52,
+    "h": 0.2
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43480226/file/original-3ff14cc95756267d6ba23873b88cabf1.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26077431-Real-Estate-Website-UI-Landing-page",
+   "run": "2026-10-15",
+   "refId": "ref_65b925132ce4439e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_65b925132ce4439e-4",
+   "role": "filters",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.6,
+    "y": 0.3,
+    "w": 0.32,
+    "h": 0.11
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43480226/file/original-3ff14cc95756267d6ba23873b88cabf1.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26077431-Real-Estate-Website-UI-Landing-page",
+   "run": "2026-10-15",
+   "refId": "ref_65b925132ce4439e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_65b925132ce4439e-5",
+   "role": "cards",
+   "page": "property-listing",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.6,
+    "y": 0.43,
+    "w": 0.32,
+    "h": 0.51
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/43480226/file/original-3ff14cc95756267d6ba23873b88cabf1.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26077431-Real-Estate-Website-UI-Landing-page",
+   "run": "2026-10-15",
+   "refId": "ref_65b925132ce4439e"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-1",
+   "role": "status-header",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.055,
+    "y": 0.145,
+    "w": 0.275,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-2",
+   "role": "cards",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.255,
+    "w": 0.255,
+    "h": 0.205
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-3",
+   "role": "form",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.065,
+    "y": 0.54,
+    "w": 0.255,
+    "h": 0.26
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-4",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.215,
+    "y": 0.79,
+    "w": 0.1,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-5",
+   "role": "form",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.25,
+    "w": 0.26,
+    "h": 0.57
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-6",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.37,
+    "y": 0.82,
+    "w": 0.255,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-7",
+   "role": "list",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.69,
+    "y": 0.535,
+    "w": 0.25,
+    "h": 0.165
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_90e98e761259befe-8",
+   "role": "cta",
+   "page": "flight-checkout",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.69,
+    "y": 0.79,
+    "w": 0.24,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/11545422/file/original-d61c85104177741f3815bba3e79481c2.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/23106098-Travel-Mobile-App-Flight-Checkout",
+   "run": "2026-10-15",
+   "refId": "ref_90e98e761259befe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-1",
+   "role": "cards",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.09,
+    "y": 0.215,
+    "w": 0.24,
+    "h": 0.17
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-2",
+   "role": "list",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.09,
+    "y": 0.49,
+    "w": 0.22,
+    "h": 0.24
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-3",
+   "role": "tabbar",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.09,
+    "y": 0.735,
+    "w": 0.22,
+    "h": 0.045
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-4",
+   "role": "hero",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.38,
+    "y": 0.24,
+    "w": 0.24,
+    "h": 0.56
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-5",
+   "role": "cta",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.39,
+    "y": 0.835,
+    "w": 0.22,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-6",
+   "role": "list",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.41,
+    "w": 0.24,
+    "h": 0.44
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15-ref_67e877596549ccbe-7",
+   "role": "tabbar",
+   "page": "bank-onboarding",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.68,
+    "y": 0.855,
+    "w": 0.24,
+    "h": 0.04
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/45110207/file/d61a737bf28c7e854e858c6e7fdc3660.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/26589339-Fintech-Mobile-App-Onboarding",
+   "run": "2026-10-15",
+   "refId": "ref_67e877596549ccbe"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1e00b44a923ab398-1",
+   "role": "nav",
+   "page": "wallet",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 800,
+   "crop": {
+    "x": 0.34,
+    "y": 0.15,
+    "w": 0.34,
+    "h": 0.04
+   },
+   "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/69e48b4e64ae26b385ff218a/thumbnail-1-0.png?width=800",
+   "sourceUrl": "https://60fps.design/shots/cred-wallet-card-to-notes-spin-animation",
+   "run": "2026-10-15b",
+   "refId": "ref_1e00b44a923ab398"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1e00b44a923ab398-2",
+   "role": "hero",
+   "page": "wallet",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 800,
+   "crop": {
+    "x": 0.37,
+    "y": 0.28,
+    "w": 0.28,
+    "h": 0.23
+   },
+   "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/69e48b4e64ae26b385ff218a/thumbnail-1-0.png?width=800",
+   "sourceUrl": "https://60fps.design/shots/cred-wallet-card-to-notes-spin-animation",
+   "run": "2026-10-15b",
+   "refId": "ref_1e00b44a923ab398"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1e00b44a923ab398-3",
+   "role": "content",
+   "page": "wallet",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 800,
+   "crop": {
+    "x": 0.35,
+    "y": 0.54,
+    "w": 0.29,
+    "h": 0.18
+   },
+   "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/69e48b4e64ae26b385ff218a/thumbnail-1-0.png?width=800",
+   "sourceUrl": "https://60fps.design/shots/cred-wallet-card-to-notes-spin-animation",
+   "run": "2026-10-15b",
+   "refId": "ref_1e00b44a923ab398"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_1e00b44a923ab398-4",
+   "role": "tabbar",
+   "page": "wallet",
+   "platform": "mobile",
+   "imageWidth": 800,
+   "imageHeight": 800,
+   "crop": {
+    "x": 0.335,
+    "y": 0.835,
+    "w": 0.335,
+    "h": 0.055
+   },
+   "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/69e48b4e64ae26b385ff218a/thumbnail-1-0.png?width=800",
+   "sourceUrl": "https://60fps.design/shots/cred-wallet-card-to-notes-spin-animation",
+   "run": "2026-10-15b",
+   "refId": "ref_1e00b44a923ab398"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_e80a3546c0d14979-1",
+   "role": "status-header",
+   "page": "profile",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 1533,
+   "crop": {
+    "x": 0.25,
+    "y": 0.125,
+    "w": 0.5,
+    "h": 0.05
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/5b/58/fb/5b58fb19bb3af1705f8ba6e537c4f52c.jpg",
+   "sourceUrl": "https://in.pinterest.com/pin/profile-account-ui-from-district-ios-app--962151907929940679/",
+   "run": "2026-10-15b",
+   "refId": "ref_e80a3546c0d14979"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_e80a3546c0d14979-2",
+   "role": "cards",
+   "page": "profile",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 1533,
+   "crop": {
+    "x": 0.27,
+    "y": 0.185,
+    "w": 0.465,
+    "h": 0.165
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/5b/58/fb/5b58fb19bb3af1705f8ba6e537c4f52c.jpg",
+   "sourceUrl": "https://in.pinterest.com/pin/profile-account-ui-from-district-ios-app--962151907929940679/",
+   "run": "2026-10-15b",
+   "refId": "ref_e80a3546c0d14979"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_e80a3546c0d14979-3",
+   "role": "cta",
+   "page": "profile",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 1533,
+   "crop": {
+    "x": 0.27,
+    "y": 0.385,
+    "w": 0.465,
+    "h": 0.065
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/5b/58/fb/5b58fb19bb3af1705f8ba6e537c4f52c.jpg",
+   "sourceUrl": "https://in.pinterest.com/pin/profile-account-ui-from-district-ios-app--962151907929940679/",
+   "run": "2026-10-15b",
+   "refId": "ref_e80a3546c0d14979"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_e80a3546c0d14979-4",
+   "role": "cards",
+   "page": "profile",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 1533,
+   "crop": {
+    "x": 0.27,
+    "y": 0.53,
+    "w": 0.49,
+    "h": 0.085
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/5b/58/fb/5b58fb19bb3af1705f8ba6e537c4f52c.jpg",
+   "sourceUrl": "https://in.pinterest.com/pin/profile-account-ui-from-district-ios-app--962151907929940679/",
+   "run": "2026-10-15b",
+   "refId": "ref_e80a3546c0d14979"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_e80a3546c0d14979-5",
+   "role": "list",
+   "page": "profile",
+   "platform": "mobile",
+   "imageWidth": 1200,
+   "imageHeight": 1533,
+   "crop": {
+    "x": 0.27,
+    "y": 0.82,
+    "w": 0.465,
+    "h": 0.11
+   },
+   "imageUrl": "https://i.pinimg.com/1200x/5b/58/fb/5b58fb19bb3af1705f8ba6e537c4f52c.jpg",
+   "sourceUrl": "https://in.pinterest.com/pin/profile-account-ui-from-district-ios-app--962151907929940679/",
+   "run": "2026-10-15b",
+   "refId": "ref_e80a3546c0d14979"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-1",
+   "role": "sidebar",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.05,
+    "y": 0.14,
+    "w": 0.15,
+    "h": 0.78
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-2",
+   "role": "toolbar",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.2,
+    "y": 0.095,
+    "w": 0.75,
+    "h": 0.05
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-3",
+   "role": "filters",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.59,
+    "y": 0.175,
+    "w": 0.34,
+    "h": 0.035
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-4",
+   "role": "chart",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.22,
+    "y": 0.25,
+    "w": 0.48,
+    "h": 0.31
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-5",
+   "role": "stats",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.73,
+    "y": 0.25,
+    "w": 0.2,
+    "h": 0.66
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  },
+  {
+   "id": "j11-2026-10-15b-ref_181c072ac26ed49f-6",
+   "role": "chart",
+   "page": "analytics-dashboard",
+   "platform": "website",
+   "imageWidth": 1200,
+   "imageHeight": 900,
+   "crop": {
+    "x": 0.47,
+    "y": 0.6,
+    "w": 0.23,
+    "h": 0.31
+   },
+   "imageUrl": "https://cdn.dribbble.com/userupload/46625416/file/967ad61930dba9314b2b913e37eb7ad5.png?resize=1200x900",
+   "sourceUrl": "https://dribbble.com/shots/27053984-SaaS-Analytics-Overview-Dashboard",
+   "run": "2026-10-15b",
+   "refId": "ref_181c072ac26ed49f"
+  }
+ ]
+}
