@@ -4,7 +4,7 @@
  * fall back to the current engine.
  */
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import manifestJson from "./manifest.json";
+import manifestJson from "./manifest.json" with { type: "json" };
 import { atlasReady, createAtlasLoader, DEFAULT_SHARD_BUDGET, ShardLru, type AtlasLoader, type AtlasManifest, type CacheLike } from "./loader";
 
 type R2Text = { get(key: string): Promise<{ text(): Promise<string> } | null> };
