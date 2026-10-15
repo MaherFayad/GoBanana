@@ -82,3 +82,30 @@ export async function fetchThumbBlock(
   if (!mediaType) return { ok: false, reason: "format" };
   return { ok: true, url, block: { type: "image", source: { type: "base64", media_type: mediaType, data: Buffer.from(r.bytes).toString("base64") } } };
 }
+
+/** Same cap as banana-server/lib/vision/look.ts MAX_CUT_BYTES: the larger "cut" size for crop jobs. */
+export const MAX_CUT_BYTES = 1536 * 1024;
+export const CUT_TIMEOUT_MS = 5_000;
+
+/**
+ * Fetches one image at a size already chosen by the caller (the CDN's cut size, from
+ * banana-server/lib/vision/look.ts cutVariant) into memory, as an API image block. Allowlisted
+ * hosts only; the bytes exist only in the returned object.
+ */
+export async function fetchImageBlock(
+  url: string,
+  opts: { allowlist?: ImageHostAllowlist; fetchImpl?: FetchLike; maxBytes?: number; timeoutMs?: number } = {},
+): Promise<ThumbResult> {
+  const allowlist = opts.allowlist ?? thumbAllowlist();
+  if (!isAllowedImageUrl(url, allowlist)) return { ok: false, reason: "not_allowed" };
+  const r = await fetchThumbIntoMemory(url, {
+    allowedHosts: allowlist.entries,
+    fetchImpl: opts.fetchImpl,
+    maxBytes: opts.maxBytes ?? MAX_CUT_BYTES,
+    timeoutMs: opts.timeoutMs ?? CUT_TIMEOUT_MS,
+  });
+  if (!r.ok) return { ok: false, reason: r.reason };
+  const mediaType = sniffImageType(r.bytes);
+  if (!mediaType) return { ok: false, reason: "format" };
+  return { ok: true, url, block: { type: "image", source: { type: "base64", media_type: mediaType, data: Buffer.from(r.bytes).toString("base64") } } };
+}
