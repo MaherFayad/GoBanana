@@ -87,6 +87,33 @@
             "minItems": 1,
             "maxItems": 6,
             "description": "Patterns users rely on that no direction may break, like clear total or one primary action. Checkout briefs keep both by default."
+          },
+          "brand": {
+            "type": "object",
+            "required": [
+              "stretch"
+            ],
+            "properties": {
+              "designMd": {
+                "type": "string",
+                "maxLength": 20000,
+                "description": "The product's DESIGN.md as text."
+              },
+              "tokens": {
+                "type": "object",
+                "description": "The product's design tokens as JSON."
+              },
+              "stretch": {
+                "type": "string",
+                "enum": [
+                  "keep-logo-and-primary",
+                  "keep-primary",
+                  "free"
+                ],
+                "description": "keep-logo-and-primary, keep-primary or free: how far directions may stretch the brand."
+              }
+            },
+            "description": "The product's brand (DESIGN.md or tokens) and how far directions may stretch it."
           }
         }
       }

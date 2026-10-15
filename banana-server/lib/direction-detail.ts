@@ -82,6 +82,12 @@ export interface DirectionDetail {
   wildness?: number;
   /** The working UI part the wild idea becomes ("progress", "Sadu weaving as the progress bar ..."). */
   mechanic?: { element: string; how: string };
+  /**
+   * Atlas ids (P1-I2, BEND_ENGINE=atlas only): the cards (lead first), the mechanic and the query
+   * recipes the direction came from, with the page and domain the brief was parsed into. Search
+   * plan v2 (P1-I3) reads the recipes from here; learning credits the ids.
+   */
+  atlas?: { cardIds: string[]; mechanicId?: string; recipeIds: string[]; pageId?: string; domainId?: string; productNoun?: string };
   /** "keep" or "drop" from rate_directions; missing means not rated yet. */
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */

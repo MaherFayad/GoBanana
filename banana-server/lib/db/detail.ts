@@ -84,6 +84,21 @@ export function parseReconciled(v: unknown): Reconciled | undefined {
   return out;
 }
 
+/** Atlas ids of a direction (BEND_ENGINE=atlas): short id strings only, capped. */
+function parseAtlasIds(v: unknown): DirectionDetail["atlas"] | undefined {
+  if (!isObj(v)) return undefined;
+  const cardIds = strs(v.cardIds, 4, 80) ?? [];
+  if (cardIds.length === 0) return undefined;
+  const out: NonNullable<DirectionDetail["atlas"]> = { cardIds, recipeIds: strs(v.recipeIds, 12, 40) ?? [] };
+  const mechanicId = str(v.mechanicId, 80);
+  if (mechanicId) out.mechanicId = mechanicId;
+  for (const k of ["pageId", "domainId", "productNoun"] as const) {
+    const s = str(v[k], 80);
+    if (s) out[k] = s;
+  }
+  return out;
+}
+
 /** Clean detail, or null when `raw` is not an object or has nothing usable. */
 export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (!isObj(raw)) return null;
@@ -112,5 +127,12 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (mechanicId) out.mechanicId = mechanicId;
   const recipeIds = strs(raw.recipeIds, 12, 80);
   if (recipeIds?.length) out.recipeIds = recipeIds;
+  if (isObj(raw.mechanic)) {
+    const element = str(raw.mechanic.element, 40);
+    const how = str(raw.mechanic.how, 400);
+    if (element && how) out.mechanic = { element, how };
+  }
+  const atlas = parseAtlasIds(raw.atlas);
+  if (atlas) out.atlas = atlas;
   return Object.keys(out).length > 0 ? out : null;
 }

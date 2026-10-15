@@ -24,6 +24,8 @@ const columns = {
   query: references.query,
   termKey: references.termKey,
   arm: references.arm,
+  recipeId: references.recipeId,
+  cardId: references.cardId,
 };
 
 /** On conflict: keep the stored value unless the new search has one. */
@@ -51,6 +53,8 @@ export async function insertReferences(db: Db, canvasId: string, refs: readonly 
       query: r.query ?? null,
       termKey: r.termKey ?? null,
       arm: r.arm ?? null,
+      recipeId: r.recipeId ?? null,
+      cardId: r.cardId ?? null,
     })),
   );
   // URLs never change for a row id; the search details follow the latest search that found it.
@@ -65,6 +69,8 @@ export async function insertReferences(db: Db, canvasId: string, refs: readonly 
         query: newer("query"),
         termKey: newer("term_key"),
         arm: newer("arm"),
+        recipeId: newer("recipe_id"),
+        cardId: newer("card_id"),
       },
     });
 }

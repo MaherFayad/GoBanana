@@ -113,6 +113,10 @@ export type Reference = {
    * the type so stored or hand-made references without it stay valid (missing means "ui").
    */
   zone?: Zone;
+  /** Search plan v2 (P1-I3): the Atlas query recipe whose words found it (lib/atlas/loader.ts recipeId). */
+  recipeId?: string;
+  /** Search plan v2: the Atlas card of the direction it was found for. */
+  cardId?: string;
 };
 
 /** Search outcome with an optional plain note for the agent (for example when Serper fails). */

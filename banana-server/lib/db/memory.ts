@@ -252,6 +252,8 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
             existing.query = r.query ?? existing.query;
             existing.termKey = r.termKey ?? existing.termKey;
             existing.arm = r.arm ?? existing.arm;
+            existing.recipeId = r.recipeId ?? existing.recipeId ?? null;
+            existing.cardId = r.cardId ?? existing.cardId ?? null;
             continue;
           }
           data.references.set(id, {
@@ -269,6 +271,8 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
             query: r.query ?? null,
             termKey: r.termKey ?? null,
             arm: r.arm ?? null,
+            recipeId: r.recipeId ?? null,
+            cardId: r.cardId ?? null,
           });
           created.set(id, tick());
         }

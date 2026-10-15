@@ -106,6 +106,10 @@ export const references = pgTable(
     termKey: text("term_key"),
     /** lib/learning/arms.ts arm the lane used ("default", "raw@behance", "agent:..."). */
     arm: text("arm"),
+    /** Search plan v2 (P1-I3): the Atlas query recipe whose words found it ("rc-..."); null otherwise. */
+    recipeId: text("recipe_id"),
+    /** Search plan v2: the Atlas card of the direction it was found for; null otherwise. */
+    cardId: text("card_id"),
     createdAt: createdAt(),
   },
   (t) => [

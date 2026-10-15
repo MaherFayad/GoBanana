@@ -12,6 +12,9 @@ import { inspirationFromQuery } from "@/lib/bend/queries";
 import { cleanTaste } from "@/lib/taste";
 import { EMPTY_TASTE, withProfileFallback, type UserTasteProfile } from "@/lib/taste-profile";
 import { createDbTasteStore } from "@/lib/taste-profile/store";
+import { bendBriefAtlas, BEND_SHARD_BUDGET } from "@/lib/atlas/bend";
+import { liveAtlasLoader } from "@/lib/atlas/live";
+import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
@@ -21,7 +24,7 @@ export const BEND_BRIEF_DESCRIPTION =
   "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
   "Without pages it returns wildSpots: where weirdness pays off. " +
   "Pass canvasId to save them, then call search_references with a direction id. " +
-  "Optional: taste (style words), mustKeep.";
+  "Optional: taste (style words), mustKeep, brand.";
 
 /** Advertised input: the bend schema plus an optional canvas to save the directions to. */
 export const inputSchema = bendInputSchema.extend({
@@ -92,7 +95,7 @@ async function readWeights(
 }
 
 /** The detail saved with a direction (directions.detail). The verdict stays with rate_directions. */
-export function directionDetail(d: BendResult["directions"][number], wildness: number, brief?: string): DirectionDetail {
+export function directionDetail(d: BendResult["directions"][number], wildness: number, brief?: string, atlas?: BendResult["atlas"]): DirectionDetail {
   return {
     ...(brief ? { brief } : {}),
     platform: d.platform,
@@ -103,6 +106,16 @@ export function directionDetail(d: BendResult["directions"][number], wildness: n
     prompt: d.prompt,
     wildness,
     mechanic: d.mechanic,
+    ...(d.cardIds
+      ? {
+          atlas: {
+            cardIds: d.cardIds,
+            ...(d.mechanicId ? { mechanicId: d.mechanicId } : {}),
+            recipeIds: d.recipeIds ?? [],
+            ...(atlas ? { pageId: atlas.pageId, domainId: atlas.domainId, productNoun: atlas.productNoun } : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -122,7 +135,7 @@ async function saveDirections(
       move: d.move,
       title: d.title,
       searchQuery: d.searchQuery,
-      detail: directionDetail(d, result.wildness, result.brief),
+      detail: directionDetail(d, result.wildness, result.brief, result.atlas),
     })),
   );
   await deps.repos.canvases.update(userId, canvasId, {
@@ -140,11 +153,25 @@ async function saveDirections(
   return true;
 }
 
+/** Which bend engine runs (BEND_ENGINE) and where the Atlas engine reads its shards. */
+export type BendEngineDeps = {
+  /** "atlas" tries the Atlas engine first; anything else runs the word lists. */
+  mode(): string | undefined;
+  /** The Atlas for this call, or null when there is none (empty manifest, no binding). */
+  source(): AtlasSource | null;
+};
+
+/** BEND_ENGINE=atlas|lists (default lists until Gate 2). */
+export function bendEngineMode(value: string | undefined): "atlas" | "lists" {
+  return value?.trim().toLowerCase() === "atlas" ? "atlas" : "lists";
+}
+
 /**
  * Handler logic. `getDeps` is only called for a signed-in user (direction stats, and the canvas
- * when a canvasId is passed); anonymous bends never touch the database.
+ * when a canvasId is passed); anonymous bends never touch the database. With `engine` in atlas
+ * mode the Atlas engine runs first; whenever it cannot answer, the word lists do (same output shape).
  */
-export function createBendBriefTool(getDeps: () => BendBriefDeps) {
+export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendEngineDeps) {
   return async function bendBriefTool(args: unknown, userId: string | undefined): Promise<ToolResult> {
     const parsed = parseBendInput(args);
     if (!parsed.ok) return toolMessage(parsed.message);
@@ -174,11 +201,23 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps) {
     const taste = await withProfileFallback((id) => getDeps().tasteProfile?.(id) ?? Promise.resolve(EMPTY_TASTE), userId, newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined));
 
     const ingredientWeights = await readWeights(getDeps, userId, canvasId);
-    let result: BendResult;
-    try {
-      result = bendBrief({ ...parsed.input, ...(taste.length > 0 ? { taste } : {}) }, { ingredientWeights });
-    } catch {
-      return toolMessage("Could not bend that brief. Try a shorter brief in plain words.");
+    const bendInput = { ...parsed.input, ...(taste.length > 0 ? { taste } : {}) };
+    let result: BendResult | null = null;
+    if (engine && bendEngineMode(engine.mode()) === "atlas") {
+      try {
+        const source = engine.source();
+        result = source ? await bendBriefAtlas(bendInput, source, { ingredientWeights }) : null;
+      } catch {
+        console.error("[bend_brief] the Atlas engine failed, using the word lists");
+        result = null;
+      }
+    }
+    if (!result) {
+      try {
+        result = bendBrief(bendInput, { ingredientWeights });
+      } catch {
+        return toolMessage("Could not bend that brief. Try a shorter brief in plain words.");
+      }
     }
 
     let text = formatDirections(result);
@@ -223,6 +262,15 @@ function liveBendDeps(): BendBriefDeps {
   };
 }
 
+/** Live engine: BEND_ENGINE and the R2 Atlas, read per call. */
+const liveEngine: BendEngineDeps = {
+  mode: () => process.env.BEND_ENGINE,
+  source: () => {
+    const loader = liveAtlasLoader(BEND_SHARD_BUDGET);
+    return loader ? loaderSource(loader) : null;
+  },
+};
+
 export const register: RegisterTool = (server) => {
   server.registerTool(
     "bend_brief",
@@ -233,7 +281,7 @@ export const register: RegisterTool = (server) => {
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
     async (args, ctx) => {
-      liveTool ??= createBendBriefTool(liveBendDeps);
+      liveTool ??= createBendBriefTool(liveBendDeps, liveEngine);
       return liveTool(args, authExtra(ctx)?.userId);
     },
   );

@@ -155,7 +155,7 @@ export type ReferenceRecord = {
   query: string | null;
   termKey: string | null;
   arm: string | null;
-  /** Atlas provenance (search plan v2, P1-I3): the recipe and card that found it. Missing on older rows. */
+  /** Atlas provenance (search plan v2, migration 0006): recipe and card ids; null on other rows. */
   recipeId?: string | null;
   cardId?: string | null;
 };

@@ -21,6 +21,7 @@ Bending is deterministic: the same brief, wildness, platform, pages, moves and l
 | `moves` | enum[] | No | `transplant`, `material`, `era`, `constraint`, `scale`, `lens` | Limit which moves are used. Default all six |
 | `lens` | enum | No | `sadu`, `najdi`, `kufic`, `mashrabiya`, `talli`, `qatt-asiri`, `desert-modern`, `memphis`, `swiss-international`, `japanese-ma` | Every direction pulls from that tradition |
 | `mustKeep` | string[] | No | 1 to 6, each up to 60 characters | Patterns users rely on ("clear total", "one primary action", "step indicator"). A direction that would break one is dropped. Checkout, cart and booking briefs keep a clear total and one primary action by default |
+| `brand` | object | No | `designMd` up to 20,000 characters, `tokens` a JSON object up to 20,000 characters, `stretch` required | Your product's brand and how far directions may stretch it. See [Brand stretch](#brand-stretch) |
 | `taste` | string[] | No | 1 to 5 words, each up to 40 characters | Style words, saved on the canvas with `canvasId` |
 | `canvasId` | string | No | 1 to 100 characters | Saves the directions to that board, so `search_references` can take a `directionId` |
 
@@ -45,6 +46,37 @@ Per direction: `id`, `title` (the idea in at most 4 words, never the brief), `tw
 | `styleWords[]`, `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
 Plus `platform`, `pages`, `wildness`, `wildnessLabel`, `lens` (with its `arabicFont`, a Google Fonts display face, and its `culture`: `tier`, `meaning`, `uiMappings` as rows of element, grammar and UI mechanic, `care` lines and verified `sources`; they apply to every direction), `suggestedLenses` (up to 3 lens ids when the brief names a Gulf or Arab market or Arabic and no lens is set) and `wildSpots` (5 spots, empty when `pages` was given). With `canvasId`: `canvasId` and `saved`.
+
+## Brand stretch
+
+Wild work only ships when a brand team can approve it. Pass the product's DESIGN.md (`designMd`), its design tokens (`tokens`) or both, and a `stretch`:
+
+| `stretch` | What every direction keeps |
+| --- | --- |
+| `keep-logo-and-primary` | The brand primary stays the main action and accent color, and the logo stays as the brand ships it. The logo rules from your DESIGN.md go into each direction's `avoid` list and prompt. A direction whose mechanic is the header keeps the logo untouched in it |
+| `keep-primary` | The brand primary stays the main action and accent color. The logo and everything else may bend |
+| `free` | Nothing. The primary is named in the prompt as a reference, not a rule |
+
+The primary comes from a token named `primary` (for example `color.brand.primary` with a `$value`), else from the first DESIGN.md line that names "primary" and a hex color. The server never guesses one: when it finds none, the result says so, and you can pass the tokens or a line like `Primary: #1A56DB`. The color line then reads "Brand primary #1A56DB stays the main action and accent color, with #FFFFFF text on it (6.18 to 1); the idea's palette supports it: ...". The brand never changes direction ids or which ideas you get.
+
+```json
+{
+  "name": "bend_brief",
+  "arguments": {
+    "brief": "checkout for a payments app",
+    "wildness": 3,
+    "platform": "mobile",
+    "brand": {
+      "designMd": "## Colors\n- Primary: #1A56DB\n\n## Logo\n- Keep clear space of 16px around the logo.",
+      "stretch": "keep-logo-and-primary"
+    }
+  }
+}
+```
+
+```text
+Brand stretch keep-logo-and-primary: every direction keeps the brand primary and the logo as shipped. Read: primary #1A56DB, 1 logo rule.
+```
 
 ## Example call
 
@@ -110,6 +142,7 @@ Pages: none given. Where weirdness pays off (wildSpots):
 | "wildness must be a whole number from 1 (Fresh) to 5 (Bananas)." | Pass 1 to 5 |
 | "pages must be 1 to 3 page names, each up to 60 characters." | Fewer, shorter pages |
 | "mustKeep must be 1 to 6 short patterns, each up to 60 characters, like "clear total"." | Fewer, shorter must keeps |
+| "brand needs a stretch (keep-logo-and-primary, keep-primary, free), with designMd up to 20000 characters and tokens as a JSON object up to 20000 characters." | Add `stretch`, or trim the DESIGN.md or tokens to the colors and logo parts |
 | "canvasId must be an id from open_canvas." | Use a real canvas id |
 | "The directions were not saved: that canvas was not found or could not be reached..." | Directions still come back; search with their query text, or bend again with a valid id |
 
