@@ -40,6 +40,9 @@ export type PlanLimits = {
 
 const ONE_GB = 1024 * 1024 * 1024;
 
+/** Upload storage per user while BETA_PLAN lifts free users (owner decision D3, 2026-10-15). */
+export const BETA_UPLOAD_BYTES = 50 * 1024 * 1024;
+
 export const PLAN_LIMITS: Readonly<Record<Plan, PlanLimits>> = {
   free: {
     searchesPerMonth: 30,
@@ -105,7 +108,11 @@ export function effectivePlan(plan: Plan | string | null | undefined): Plan {
 }
 
 export function limitsFor(plan: Plan | string | null | undefined): PlanLimits {
-  return PLAN_LIMITS[effectivePlan(plan)];
+  const limits = PLAN_LIMITS[effectivePlan(plan)];
+  // A free user lifted by BETA_PLAN gets the plan's limits, but uploads stay at 50 MB: beta
+  // storage is paid by the owner. Paid plans keep their own limits.
+  if (planOf(plan) !== "free" || betaPlan() === null) return limits;
+  return { ...limits, uploadBytes: Math.min(limits.uploadBytes, BETA_UPLOAD_BYTES) };
 }
 
 export function isPaid(plan: Plan | string | null | undefined): boolean {
