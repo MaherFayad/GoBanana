@@ -34,7 +34,7 @@ Art direction (zone art) for art "<art query 1>", "<art query 2>":
 Shipped today (the page as apps ship it, found once per canvas): place these in one "Shipped today" section, never in a direction:
 <k>. [<id>, fidelity] <Title> (<site>): <link>
 In a direction search with a canvasId the fidelity results go under the Shipped today header, not under UI references. Leave out a header when it has no results. Number k from 1 across all headers.
-In a later direction search on the same canvas, add: The baseline lane (fidelity) already ran for this canvas, so it was skipped. Its results are in the tray with no direction; place the good ones once in the "Shipped today" section: <ids of the first search's fidelity results>.
+In a later direction search on the same canvas, never repeat a result of another direction, and add: The baseline lane (fidelity) already ran for this canvas, so it was skipped. Its results are in the tray with no direction; place the good ones once in the "Shipped today" section: <ids of the first search's fidelity results>.
 Then end with:
 Added to the tray of the canvas when a canvasId was given. Art items go to the Art direction row when placed.
 Rate standouts and misses with rate_references (ids in brackets).

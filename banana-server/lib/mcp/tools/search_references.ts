@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState, type CanvasState } from "@/lib/canvas/store";
+import { canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
 import { canSpendCredits, checkSearchQuota, serperCreditCap, type Plan, type UsageStore } from "@/lib/quota";
 import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts } from "@/lib/bend/queries";
@@ -25,8 +25,9 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
-import { BASELINE_LANE, baselineKey, isFreshBaseline, mergeBaseline, withoutBaselineLane, type CanvasBaseline } from "@/lib/sources/baseline";
-import { ART_SITES, artQuota, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
+import { BASELINE_LANE, baselineKey, isFreshBaseline, withoutBaselineLane, type CanvasBaseline } from "@/lib/sources/baseline";
+import { writeSearchTray } from "@/lib/sources/tray";
+import { ART_SITES, artQuota, artWords, bridgeHead, byZone, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import {
   DEFAULT_SOURCES,
@@ -129,7 +130,8 @@ export type SearchReferencesDeps = {
    * Save references (URLs and metadata only) and put them in the canvas tray, tagged with
    * the direction they were found for. Returns false when the canvas is not the user's.
    * With `opts.baseline`, the baseline's results go in with no direction and the baseline is
-   * saved on the canvas (lib/sources/baseline.ts).
+   * saved on the canvas (lib/sources/baseline.ts). With a directionId, results already on the
+   * canvas for anything else are not added; their ids come back in `dropped` (lib/sources/tray.ts).
    */
   addToTray(
     userId: string,
@@ -137,7 +139,7 @@ export type SearchReferencesDeps = {
     references: SavedReference[],
     directionId?: string,
     opts?: { baseline?: CanvasBaseline },
-  ): Promise<boolean>;
+  ): Promise<boolean | { dropped: string[] }>;
   /** The canvas's saved baseline search, or null. A failure runs the baseline lane again. */
   getBaseline?(userId: string, canvasId: string): Promise<CanvasBaseline | null>;
   /** Save style words on the user's canvas for later searches. Returns false when it is not theirs. */
@@ -192,6 +194,10 @@ export type SearchReferencesOutput = {
    * means it was skipped because it already ran; its results are in the tray with no direction.
    */
   baseline?: { referenceIds: string[]; at: string; reused: boolean };
+  /** Direction results not added because another direction (or the baseline) on the canvas has them. */
+  droppedShared?: number;
+  /** The one extra UI request run because the direction had fewer than MIN_DIRECTION_UI UI results left. */
+  extraLane?: { lane: LaneName; query: string };
   /** Style words given in this call, and whether they were saved on the canvas. */
   taste?: string[];
   tasteSaved?: boolean;
@@ -266,6 +272,10 @@ function resultText(out: SearchReferencesOutput): string {
         `For UI that carries the idea, redo the bridge lane with 2 or 3 words for its pattern or material and the screen, for example lane "bridge" and query "${retryExample(out.lanes)}", or a broader word for the same pattern or material ("islamic pattern app") if that finds nothing.`,
     );
   }
+  if (out.droppedShared) {
+    lines.push(`Left out ${out.droppedShared} results that another direction on this canvas already has: each result belongs to one direction.`);
+  }
+  if (out.extraLane) lines.push(`Searched one more UI request (${out.extraLane.lane} "${out.extraLane.query}") to fill this direction.`);
   if (out.note) lines.push(out.note);
   if (drops) lines.push(drops);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
@@ -320,7 +330,38 @@ type Searched = {
   arms?: Partial<Record<LaneName, string>>;
   learned?: boolean;
   termKeys?: Partial<Record<LaneName, string>>;
+  /** Direction searches: the next UI request not sent yet, and how to run it (P0-04 retry). */
+  extra?: { req: PlannedRequest; run(exclude: string[]): Promise<WebSearchResult> };
 };
+
+/** A direction search that keeps fewer UI results than this runs one extra UI request. */
+export const MIN_DIRECTION_UI = 6;
+
+/**
+ * The next UI request for a direction after `sent`: the first UI-only plan request not sent yet
+ * (never the baseline lane), else page 2 of the first UI request sent. Undefined when there is none.
+ */
+export function nextUiRequest(
+  lanes: LaneTexts,
+  sent: readonly PlannedRequest[],
+  sources?: readonly SourceSite[],
+): PlannedRequest | undefined {
+  const key = (r: PlannedRequest) => `${r.query}|${r.site}|${r.page ?? 1}`;
+  const done = new Set(sent.map(key));
+  const ui = withoutBaselineLane(planRequests(lanes, sources, { zone: "ui" }));
+  const fresh = ui.find((r) => !done.has(key(r)));
+  if (fresh) return fresh;
+  const first = sent.find((r) => r.lane !== "art" && r.lane !== BASELINE_LANE);
+  if (!first) return undefined;
+  const page2 = { ...first, page: (first.page ?? 1) + 1 };
+  delete page2.fallback;
+  return done.has(key(page2)) ? undefined : page2;
+}
+
+/** Results per zone. */
+function zoneCounts(refs: readonly Reference[]): Record<Zone, number> {
+  return { ui: refs.filter((r) => r.zone !== "art").length, art: refs.filter((r) => r.zone === "art").length };
+}
 
 /** Term key of every lane a direction has (the component lanes share one: their texts joined by " + "). */
 export function laneTermKeys(lanes: LaneTexts): Partial<Record<LaneName, string>> {
@@ -521,15 +562,19 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
         const excludeCanvas = input.canvasId ?? directionCanvasId;
         const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
-        const result = await deps.adapter.runPlan(plan, {
+        const runOpts = {
           count: input.count,
           userId,
-          exclude,
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
-        });
+        };
+        const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes, arms, learned, termKeys };
+        const next = input.lane ? undefined : nextUiRequest(lanes, plan, picked);
+        if (next) {
+          searched.extra = { req: next, run: (more) => deps.adapter.runPlan([next], { ...runOpts, exclude: [...exclude, ...more] }) };
+        }
       } else {
         const base = {
           query: query!,
@@ -574,11 +619,10 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (result.requests) await deps.usage.addCredits(userId, quota.period, result.requests);
 
       // Every result carries its zone ("art" for the art lane, "ui" otherwise).
-      const references = result.references.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
-      const zones: Record<Zone, number> = {
-        ui: references.filter((r) => r.zone !== "art").length,
-        art: references.filter((r) => r.zone === "art").length,
-      };
+      const withZone = (list: readonly Reference[]) =>
+        list.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
+      const references = withZone(result.references);
+      const zones = zoneCounts(references);
       const out: SearchReferencesOutput = {
         query: input.lane ? queryWords(laneUiWords!) : lanes ? lanes.idea : query!,
         queries: searched.queries,
@@ -616,26 +660,59 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       }
 
       if (input.canvasId && references.length > 0) {
-        out.canvasId = input.canvasId;
+        const canvasId = input.canvasId;
+        out.canvasId = canvasId;
         // Saved with how they were found (zone included), so rate_references can credit the lane wording.
-        const saved: SavedReference[] = references.map((r) => {
-          const lane = r.lane;
-          const tk = lane ? searched.termKeys?.[lane] : undefined;
-          const arm = lane ? searched.arms?.[lane] ?? defaultArm(lane) : undefined;
-          return {
-            ...r,
-            ...(r.query ? {} : { query: queryWords(query ?? "") || undefined }),
-            ...(tk ? { termKey: tk } : {}),
-            ...(tk && arm ? { arm } : {}),
-          };
-        });
-        const added = newBaseline
-          ? await deps.addToTray(userId, input.canvasId, saved, directionKey, { baseline: newBaseline })
-          : directionKey
-            ? await deps.addToTray(userId, input.canvasId, saved, directionKey)
-            : await deps.addToTray(userId, input.canvasId, saved);
-        if (added) out.addedToTray = true;
-        else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
+        const toSave = (list: readonly Reference[]): SavedReference[] =>
+          list.map((r) => {
+            const lane = r.lane;
+            const tk = lane ? searched.termKeys?.[lane] : undefined;
+            const arm = lane ? searched.arms?.[lane] ?? defaultArm(lane) : undefined;
+            return {
+              ...r,
+              ...(r.query ? {} : { query: queryWords(query ?? "") || undefined }),
+              ...(tk ? { termKey: tk } : {}),
+              ...(tk && arm ? { arm } : {}),
+            };
+          });
+        const write = async (list: readonly Reference[], baselineToSave?: CanvasBaseline) =>
+          baselineToSave
+            ? deps.addToTray(userId, canvasId, toSave(list), directionKey, { baseline: baselineToSave })
+            : directionKey
+              ? deps.addToTray(userId, canvasId, toSave(list), directionKey)
+              : deps.addToTray(userId, canvasId, toSave(list));
+        // Each result belongs to one direction: what another direction already has is left out.
+        const keep = (list: Reference[], added: boolean | { dropped: string[] }) => {
+          const dropped = new Set(typeof added === "object" ? added.dropped : []);
+          if (dropped.size > 0) out.droppedShared = (out.droppedShared ?? 0) + dropped.size;
+          return list.filter((r) => !dropped.has(r.id));
+        };
+        const added = await write(references, newBaseline);
+        if (added) {
+          out.addedToTray = true;
+          out.references = keep(references, added);
+          // Too few UI left for this direction: one extra UI request (cap 1), deduped the same way.
+          const shippedIds = new Set(newBaseline?.referenceIds ?? []);
+          const directionUi = () => out.references.filter((r) => r.zone !== "art" && !shippedIds.has(r.id)).length;
+          // Never past the per-call budget (SERPER_MAX_REQUESTS): the extra request uses a spare one.
+          const spare = (result.requests ?? 0) < SERPER_MAX_REQUESTS;
+          if (directionKey && searched.extra && spare && directionUi() < MIN_DIRECTION_UI) {
+            const { req } = searched.extra;
+            const more = await searched.extra.run(references.map((r) => r.sourceUrl));
+            if (more.requests) await deps.usage.addCredits(userId, quota.period, more.requests);
+            out.extraLane = { lane: req.lane, query: queryWords(req.query) };
+            out.queries = [...out.queries, buildSourceQuery(req.query, req.site)];
+            const seen = new Set(out.references.map((r) => r.id));
+            const fresh = withZone(more.ok ? more.references : [])
+              .filter((r) => r.zone !== "art" && !seen.has(r.id))
+              .slice(0, MIN_DIRECTION_UI - directionUi());
+            if (fresh.length > 0) {
+              const more2 = await write(fresh);
+              if (more2) out.references = byZone([...out.references, ...keep(fresh, more2)]);
+            }
+          }
+          out.zones = zoneCounts(out.references);
+        } else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
       }
 
       return {
@@ -714,11 +791,12 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
       const owned = await db.canvases.getOwned(userId, canvasId);
       if (!owned) return false;
       await db.references.insertMany(canvasId, references);
-      const outcome = await mutateCanvas(db, userId, canvasId, takedownLoader(canvasDeps), (state) => ({
-        state: trayWithBaseline(state, references, directionId, opts?.baseline),
-        value: true,
-      }));
-      return outcome.ok;
+      // The dedupe runs inside the mutation, so two directions searched at once never share a result.
+      const outcome = await mutateCanvas(db, userId, canvasId, takedownLoader(canvasDeps), (state) => {
+        const written = writeSearchTray(state, references, directionId, opts?.baseline);
+        return { state: written.state, value: written.dropped };
+      });
+      return outcome.ok ? { dropped: outcome.value } : false;
     },
     getBaseline: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
@@ -726,24 +804,6 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
     },
     upgradeUrl: () => upgradeUrl(canvasDeps),
   };
-}
-
-/**
- * Tray write for a search: the direction's results tagged with it, the baseline's results with no
- * direction (they belong to the "Shipped today" section), and the baseline saved on the canvas.
- */
-export function trayWithBaseline(
-  state: CanvasState,
-  references: readonly SavedReference[],
-  directionId: string | undefined,
-  baseline: CanvasBaseline | undefined,
-): CanvasState {
-  if (!baseline) return addToCanvasTray(state, references, directionId);
-  const shipped = new Set(baseline.referenceIds);
-  const own = references.filter((ref) => !shipped.has(ref.id));
-  const base = references.filter((ref) => shipped.has(ref.id));
-  const next = addToCanvasTray(addToCanvasTray(state, base), own, directionId);
-  return { ...next, baseline: mergeBaseline(state.baseline, baseline, new Date(baseline.at)) };
 }
 
 /** Live deps: the database is reached lazily, so input checks still run without it. */

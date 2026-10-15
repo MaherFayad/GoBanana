@@ -138,6 +138,8 @@ For each shortlisted direction call `search_references` once with `directionId`,
 - **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
 - The server keeps at most 2 results per studio, prefers newer work, and drops UI kits and templates.
 
+Each result belongs to one direction: with a `canvasId`, the server leaves out results another direction on the canvas already has (the reply says how many), and when fewer than 6 UI results are left it runs one extra UI request itself (the reply names it). That extra request is not one of your lane retries. Never place one reference in two directions.
+
 The `fidelity` lane (the page as apps ship it) runs once per canvas: the first direction search lists its results under "Shipped today", and later direction searches on that canvas skip it and name those ids again. They belong to no direction.
 
 Each result line shows `[referenceId, lane]` and its zone. Do not pass a direction's query as `query` when you have its id. Use `zone: "ui"` or `zone: "art"` only to search one zone again. Leave `sources` at the default (the server picks UI galleries by platform) unless the user asks for a specific source.

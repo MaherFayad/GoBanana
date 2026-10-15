@@ -7,12 +7,8 @@ import { describe, expect, it, vi } from "vitest";
 import { emptyState, parseState } from "@/canvas/state";
 import type { CanvasState } from "@/canvas/types";
 import { createMemoryRepos } from "@/lib/db/memory";
-import {
-  createSearchReferencesTool,
-  trayWithBaseline,
-  type Direction,
-  type SearchReferencesDeps,
-} from "@/lib/mcp/tools/search_references";
+import { createSearchReferencesTool, type Direction, type SearchReferencesDeps } from "@/lib/mcp/tools/search_references";
+import { writeSearchTray } from "@/lib/sources/tray";
 import { createMemoryUsageStore } from "@/lib/quota";
 import { BASELINE_TTL_MS, baselineKey, isFreshBaseline, mergeBaseline, withoutBaselineLane } from "@/lib/sources/baseline";
 import type { PlannedRequest } from "@/lib/sources/plan";
@@ -66,8 +62,9 @@ function board(clock: { now: Date } = { now: NOW }) {
     getPlan: async () => "free",
     getDirection: async (_u, id) => DIRECTIONS[id] ?? null,
     addToTray: async (_u, _c, refs, directionId, opts) => {
-      state = trayWithBaseline(state, refs, directionId, opts?.baseline);
-      return true;
+      const written = writeSearchTray(state, refs, directionId, opts?.baseline);
+      state = written.state;
+      return { dropped: written.dropped };
     },
     getBaseline: async () => parseState(JSON.parse(JSON.stringify(state))).baseline ?? null,
     upgradeUrl: () => "https://example.test/pricing",
