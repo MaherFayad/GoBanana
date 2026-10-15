@@ -21,8 +21,12 @@ import { bucketOf, recipeKeyString } from "../../banana-server/lib/atlas/loader.
 import { SHARD_MAX_BYTES } from "../config.ts";
 import { readManifest, sha256, shardText } from "./shards.ts";
 
-/** The kinds the server's loader reads (banana-server/lib/atlas/loader.ts ATLAS_KINDS). */
-export type ServerKind = "pages" | "domains" | "fit" | "cards" | "lines" | "mechanics" | "lenses" | "recipes" | "cc0" | "slop";
+/**
+ * The kinds the server's loader reads (banana-server/lib/atlas/loader.ts ATLAS_KINDS), plus the
+ * J13 stunning layer ("shaders", "motion": read whole, split by size), which the loader's
+ * ATLAS_KINDS does not list yet.
+ */
+export type ServerKind = "pages" | "domains" | "fit" | "cards" | "lines" | "mechanics" | "lenses" | "recipes" | "cc0" | "slop" | "shaders" | "motion";
 
 export type ServerShard = { kind: ServerKind; shard: string; sha256: string; bytes: number };
 export type ServerManifest = { version: string; hash: string; shards: ServerShard[] };
@@ -39,6 +43,8 @@ export const JOB_KINDS: Readonly<Record<string, Rule>> = {
   domains: { kind: "domains", by: "size" },
   lenses: { kind: "lenses", by: "size" },
   slop: { kind: "slop", by: "size" },
+  shaders: { kind: "shaders", by: "size" },
+  motion: { kind: "motion", by: "size" },
   fit: { kind: "fit", by: "name", nameOf: (r: { domainId: string }) => r.domainId },
   mechanics: { kind: "mechanics", by: "name", nameOf: (r: { element: string }) => r.element },
   cc0: { kind: "cc0", by: "name", nameOf: (r: { region?: string }) => r.region || "global" },

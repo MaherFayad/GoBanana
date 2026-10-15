@@ -120,6 +120,19 @@ One file in `jobs/` that default-exports `defineJob({...})` (see `lib/job.ts` an
 | `finalize?` | Cross-record work: dedupe, merge, sort. |
 | `shardOf?` | Shard name per record (lowercase-hyphen). Default one shard split by size. |
 | `renderReview?` | Custom HTML per record on the review page. Escape all text. |
+| `verify?` | Render or run check on the finalized records (J13: WebGL and WAAPI in headless Chrome). Returns problems by record id. |
+| `repairPrompt?` | With `verify`: each failing record gets one repair request carrying its problems (`fix-<id>`, replies in `raw/<job>-repair.jsonl`, same spend guard). A repair that fails again is dropped to rejects. `--from-raw` reuses saved repairs and never calls the API. |
+
+## Stunning layer (P1-J13)
+
+`j13-shaders` (GLSL ES 1.00 fragment shaders, uniforms `u_resolution`, `u_time`, `u_c0` to `u_c3`)
+and `j13-motion` (WAAPI keyframes plus timing; the script computes the CSS, including the
+`prefers-reduced-motion` rule, in `lib/motion-css.ts`). Inputs are the J3 cards and J6 lenses in
+`out/v1` (run `j3-cards` and `j6-lenses` with `--from-raw` first). The render checks are in
+`lib/render-stunning.ts`; `npx tsx tests/render-stunning.manual.ts` shows them passing and failing
+on known good and bad samples. Frame strips go to `review/j13-shaders/` and `review/j13-motion/`.
+The server layout puts them in `shaders/NN` and `motion/NN` (read whole); the loader's
+`ATLAS_KINDS` does not list these kinds yet.
 
 ## Tests
 

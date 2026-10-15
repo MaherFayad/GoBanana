@@ -30,7 +30,7 @@ type Page = {
   on(ev: "console" | "pageerror", cb: (m: { type?: () => string; text?: () => string; message?: string }) => void): void;
 };
 
-function loadPlaywright(): Pw {
+export function loadPlaywright(): Pw {
   const dirs = [resolve(ROOT, "..", "banana-server"), resolve(MAIN_ATLAS, "..", "banana-server")];
   for (const d of dirs) {
     if (existsSync(join(d, "node_modules", "playwright"))) return createRequire(join(d, "package.json"))("playwright") as Pw;
