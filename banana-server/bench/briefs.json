@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "note": "Banana Bench briefs (docs/next-step-plan.md P0-14 and section 8). Start with 10, grow to 40 in Phase 1. Never change an id: ratings are keyed by it.",
+  "directions": 3,
+  "briefs": [
+    {
+      "id": "esim-plan-picker",
+      "brief": "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy",
+      "platform": "mobile",
+      "wildness": 3,
+      "market": "gcc",
+      "mustKeep": ["clear price", "one primary action"],
+      "why": "Replay of the Appendix C live test."
+    },
+    {
+      "id": "flight-checkout-gcc-ota",
+      "brief": "flight checkout for a GCC OTA: review the itinerary, add bags and seats, pay",
+      "platform": "mobile",
+      "wildness": 2,
+      "market": "gcc",
+      "mustKeep": ["clear total", "one primary action"]
+    },
+    {
+      "id": "coffee-shop-landing",
+      "brief": "coffee shop landing page",
+      "platform": "website",
+      "wildness": 4,
+      "market": "global"
+    },
+    {
+      "id": "banking-onboarding",
+      "brief": "banking onboarding",
+      "platform": "mobile",
+      "wildness": 1,
+      "market": "global",
+      "mustKeep": ["clear progress"]
+    },
+    {
+      "id": "fitness-empty-state",
+      "brief": "fitness app empty state",
+      "platform": "mobile",
+      "wildness": 5,
+      "market": "global"
+    },
+    {
+      "id": "ramadan-food-delivery",
+      "brief": "Ramadan offers page for a Saudi food delivery app",
+      "platform": "mobile",
+      "wildness": 3,
+      "market": "gcc"
+    },
+    {
+      "id": "saas-pricing",
+      "brief": "pricing page for a B2B analytics SaaS",
+      "platform": "website",
+      "wildness": 2,
+      "market": "global",
+      "mustKeep": ["clear price"]
+    },
+    {
+      "id": "dubai-real-estate",
+      "brief": "luxury real estate listing page for Dubai apartments",
+      "platform": "website",
+      "wildness": 4,
+      "market": "gcc"
+    },
+    {
+      "id": "kids-reading-home",
+      "brief": "kids reading app home screen",
+      "platform": "tablet",
+      "wildness": 5,
+      "market": "global"
+    },
+    {
+      "id": "qatar-gov-services",
+      "brief": "government services dashboard for Qatar residents: renew ID, pay fines",
+      "platform": "webapp",
+      "wildness": 1,
+      "market": "gcc",
+      "mustKeep": ["clear status"]
+    }
+  ]
+}
