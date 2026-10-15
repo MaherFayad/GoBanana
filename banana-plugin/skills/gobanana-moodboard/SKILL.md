@@ -1,17 +1,17 @@
 ---
 name: gobanana-moodboard
-description: Build and arrange a GoBanana moodboard from references in the canvas tray - one section per direction, an "Art direction" row above the "UI references" grid, a "steal:" note on each placed reference, and an optional "Shipped today" note - and optionally rebuild it as a FigJam board through the Figma MCP or an HTML board. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "add steal notes", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use gobanana-explore; to stitch parts of them into new pages, use gobanana-frankenstein.
+description: Build and arrange a GoBanana moodboard from references in the canvas tray - one spread per direction (lead art large, the idea note beside it, the "UI references" grid on the right, swatches below), a "steal:" note on each placed reference, and an optional "Shipped today" note - and optionally rebuild it as a FigJam board through the Figma MCP or an HTML board. Use when the user says "make a moodboard", "arrange this", "lay these out", "put these on the board", "tidy the canvas", "group by direction", "add steal notes", "moodboard in FigJam", "send the board to Figma", or "make an HTML board". Runs get_canvas, add_to_canvas, arrange_canvas and export_kit (figjam_spec, html_board) from the GoBanana MCP server. Every tile keeps its source link. To find new references first, use gobanana-explore; to stitch parts of them into new pages, use gobanana-frankenstein.
 ---
 
 # GoBanana moodboard
 
-Turn the tray into a board people can read: one section per direction, the wild idea as images in the art row, real UI in the grid below, and a short note on each tile saying what to steal. Optionally rebuild it in FigJam.
+Turn the tray into a board people can read: one spread per direction, the wild idea as images on the left (the best one large), the idea note beside it, real UI in a 3 column grid on the right, swatches under it, and a short note on each tile saying what to steal. Optionally rebuild it in FigJam.
 
 ## Ground rules
 
 - **Every tile keeps its source link**, on the GoBanana canvas, in FigJam and in any HTML board.
 - **Never download, save or copy reference images** to the repo or to disk. Boards point at the source URLs.
-- **Two zones, never mixed.** Tray references carry a `zone`: `art` (the idea as raw images) or `ui` (screens and components). Art goes in the section's "Art direction" row; UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
+- **Two zones, never mixed.** Tray references carry a `zone`: `art` (the idea as raw images) or `ui` (screens and components). Art goes in the section's "Art direction" block; UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
 - **The server only returns text.** When a file is needed (HTML board), you write it.
 - **Trust write results.** The `add_to_canvas` and `arrange_canvas` answers are the record. Read the board once in step 1; do not call `get_canvas` again to check each write.
 - **Always arrange.** Every run that places or moves items ends with one `arrange_canvas` call, after the last `add_to_canvas`.
@@ -30,7 +30,7 @@ If the tray is empty, run the gobanana-explore flow first.
 Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 1. One `{ "type": "section", "title": "<direction title>" }` per kept direction, unless sections exist. Skip dropped directions.
-2. **Art row: 2 to 4** art references, best first: `{ "type": "reference", "referenceId": "...", "note": "steal: <what to take>" }`. The server puts art items in the "Art direction" row above the UI grid.
+2. **Art: 2 to 4** art references, best first: `{ "type": "reference", "referenceId": "...", "note": "steal: <what to take>" }`. The server keeps art items apart from the UI grid; with the `spread` layout the first one placed is the large lead image, so place the strongest first.
 3. **UI grid: 6 to 8** UI references, best first, each with a `steal:` note the same way.
 4. One idea note per section: `{ "type": "note", "text": "WILD: <twist>. PATTERN: <pattern>. SIGNATURE: <signature>." }`, from the direction's spec when you have it.
 5. If a palette exists, swatches as `{ "type": "swatch", "hex": "...", "role": "..." }`.
@@ -46,7 +46,8 @@ Right after the last `add_to_canvas`, call `arrange_canvas` once with a `layout`
 
 | Layout | Use when |
 | --- | --- |
-| `by_direction` | More than one section. Default. Keeps the art row above the UI grid |
+| `spread` | Default. Each direction is one row: lead art at double size, the idea note beside it, a 3 by 2 UI grid on the right, swatches and type under it; spreads stack top to bottom and Frankenstein pages come last |
+| `by_direction` | The user wants compact columns side by side (one column per section, art above UI) |
 | `masonry` | One mixed pile, keep aspect ratios |
 | `grid` | Comparing like with like, equal cells |
 | `hero` | One standout reference leads, others around it |

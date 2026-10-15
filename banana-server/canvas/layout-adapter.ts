@@ -3,6 +3,8 @@
  * (the same code `arrange_canvas` uses, spec section 9 "Arrange").
  *
  * - With `sectionId`: arranges that section's contents inside it and resizes the frame.
+ * - `spread` on the whole canvas: each section becomes one horizontal spread (lib/layout
+ *   `spread`), sections stack top to bottom with the Frankenstein pages last, loose items below.
  * - `by_direction` on the whole canvas: one column per section (sections ordered left
  *   to right), loose items in a last column.
  * - Other layouts on the whole canvas: each section's contents are arranged inside it,
@@ -23,6 +25,7 @@ export const SECTION_PAD = 16;
 export const BLOCK_GAP = 48;
 
 export const LAYOUT_LABELS: Record<LayoutKind, string> = {
+  spread: "Spread",
   by_direction: "By direction",
   masonry: "Masonry",
   grid: "Grid",
@@ -42,6 +45,7 @@ function toLayoutItem(n: CanvasFlowNode): LayoutItem {
   }
   if (n.parentId) item.sectionId = n.parentId;
   if (n.type === "image" && n.data.zone === "art") item.zone = "art";
+  if (n.type === "note" || n.type === "swatch" || n.type === "typeSample") item.kind = n.type;
   return item;
 }
 
@@ -113,11 +117,36 @@ export function arrangeNodes(
   layout: LayoutKind,
   opts: { sectionId?: string } = {},
 ): CanvasFlowNode[] {
+  const restack = layout === "spread" && !opts.sectionId;
   if (!nodes.some((n) => n.type === "stitch")) return arrangeCore(nodes, layout, opts);
   const stitches = nodes.filter((n) => n.type === "stitch" && (!opts.sectionId || n.parentId === opts.sectionId));
   const moving = new Set(stitches.map((n) => n.id));
-  const arranged = arrangeCore(nodes.filter((n) => !moving.has(n.id)), layout, opts);
-  return placeStitches(arranged, stitches, !opts.sectionId);
+  // Spread: the sections holding Frankenstein pages (and their builds) are the final spread.
+  const last = new Set(stitches.flatMap((n) => (n.parentId ? [n.parentId] : [])));
+  const arranged = arrangeCore(nodes.filter((n) => !moving.has(n.id)), layout, { ...opts, last });
+  const placed = placeStitches(arranged, stitches, !opts.sectionId);
+  return restack ? restackSpreads(placed) : placed;
+}
+
+/**
+ * Spread: sections stack top to bottom at x 0 in their current order, BLOCK_GAP apart (frames
+ * that grew around Frankenstein pages included), and loose items sit below them as one block.
+ */
+function restackSpreads(nodes: CanvasFlowNode[]): CanvasFlowNode[] {
+  const sections = nodes.filter((n) => n.type === "section" && !n.parentId).sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+  const moved = new Map<string, { x: number; y: number }>();
+  let y = 0;
+  for (const s of sections) {
+    moved.set(s.id, { x: 0, y });
+    y += nodeSize(s).h + BLOCK_GAP;
+  }
+  const loose = nodes.filter((n) => !n.parentId && n.type !== "section");
+  if (loose.length > 0) {
+    const minX = Math.min(...loose.map((n) => n.position.x));
+    const minY = Math.min(...loose.map((n) => n.position.y));
+    for (const n of loose) moved.set(n.id, { x: n.position.x - minX, y: n.position.y - minY + y });
+  }
+  return nodes.map((n) => (moved.has(n.id) ? { ...n, position: moved.get(n.id)! } : n));
 }
 
 /** Lay stitch frames in a row at the top of their section (or below all loose content), at full size. */
@@ -203,7 +232,7 @@ function placeStitches(nodes: CanvasFlowNode[], stitches: readonly CanvasFlowNod
 function arrangeCore(
   nodes: readonly CanvasFlowNode[],
   layout: LayoutKind,
-  opts: { sectionId?: string } = {},
+  opts: { sectionId?: string; last?: ReadonlySet<string> } = {},
 ): CanvasFlowNode[] {
   if (opts.sectionId) {
     const section = nodes.find((n) => n.id === opts.sectionId && n.type === "section");
@@ -215,6 +244,29 @@ function arrangeCore(
   }
 
   const sections = nodes.filter((n) => n.type === "section").sort(bySectionOrder);
+
+  if (layout === "spread") {
+    // One spread per section, stacked top to bottom; Frankenstein page sections go last.
+    const last = opts.last ?? new Set<string>();
+    const ordered = [...sections.filter((s) => !last.has(s.id)), ...sections.filter((s) => last.has(s.id))];
+    const patches = new Map<string, Patch>();
+    let out = [...nodes];
+    let y = 0;
+    for (const s of ordered) {
+      const inner = arrangeInside(nodes, s, layout);
+      for (const [id, p] of inner.patches) patches.set(id, p);
+      const hp = sectionHeightPatch(s, inner.size.h);
+      patches.set(s.id, { x: 0, y, w: inner.size.w, h: hp.h });
+      out = withExpandedHeight(out, s.id, hp.expandedHeight);
+      y += hp.h + BLOCK_GAP;
+    }
+    const loose = nodes.filter((n) => n.type !== "section" && !n.parentId);
+    if (loose.length > 0) {
+      const result = arrange("spread", loose.map(toLayoutItem), { origin: { x: 0, y } });
+      for (const r of result.items) patches.set(r.id, { x: r.x, y: r.y, w: r.w, h: r.h });
+    }
+    return applyPatches(out, patches);
+  }
 
   if (layout === "by_direction") {
     const items = nodes.filter((n) => n.type !== "section").map(toLayoutItem);

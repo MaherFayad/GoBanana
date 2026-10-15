@@ -174,7 +174,7 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
-Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `spread`: each direction becomes one row, its first art item large on the left, the idea note beside it and the UI grid on the right. Do not read the board back between these calls.
 
 If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its full 4 items and keep the UI grid UI only.
 

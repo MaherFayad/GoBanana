@@ -12,12 +12,13 @@ description: يرتب لوحة كاملة أو قسما واحدا بأحد أر
 | الاسم | النوع | مطلوب | الحدود | ماذا يفعل |
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | نعم | من 1 إلى 100 حرف | اللوحة |
-| `layout` | enum | نعم | `by_direction`، `masonry`، `grid`، `hero` | التخطيط |
+| `layout` | enum | نعم | `spread`، `by_direction`، `masonry`، `grid`، `hero` | التخطيط |
 | `sectionId` | string | لا | من 1 إلى 120 حرفا | يرتب هذا القسم فقط |
 
 | التخطيط | ماذا يفعل |
 | --- | --- |
-| `by_direction` | عمود لكل قسم. صف الاتجاه الفني يبقى فوق شبكة الواجهات. الافتراضي للوحات التي فيها عدة اتجاهات |
+| `spread` | صف لكل اتجاه: الصورة الفنية الرئيسية كبيرة، وملاحظة الفكرة بجانبها، وشبكة واجهات 3 في 2 بعدهما، والألوان ونموذج الخط تحتها. الصفوف تتتابع من الأعلى إلى الأسفل، وصفحات فرانكنشتاين في الآخر. الافتراضي للوحات المزاج |
+| `by_direction` | عمود لكل قسم. صف الاتجاه الفني يبقى فوق شبكة الواجهات |
 | `masonry` | 4 أعمدة تحافظ على أشكال الصور |
 | `grid` | خلايا متساوية |
 | `hero` | العنصر الأول كبير، والباقي تحته |
@@ -25,13 +26,13 @@ description: يرتب لوحة كاملة أو قسما واحدا بأحد أر
 ## مثال على الاستدعاء
 
 ```json
-{ "name": "arrange_canvas", "arguments": { "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f", "layout": "by_direction" } }
+{ "name": "arrange_canvas", "arguments": { "canvasId": "c3f1a0d2-6b1e-4d8a-9f4b-0a1b2c3d4e5f", "layout": "spread" } }
 ```
 
 ## مثال على المخرجات
 
 ```text
-Arranged 31 items in "Coffee launch page" with the by_direction layout.
+Arranged 31 items in "Coffee launch page" with the spread layout.
 Web link: https://gobanana-server.maherfayad55.workers.dev/c/c3f1a0d2-…
 ```
 
@@ -41,5 +42,5 @@ Web link: https://gobanana-server.maherfayad55.workers.dev/c/c3f1a0d2-…
 
 | الرسالة | الحل |
 | --- | --- |
-| "layout must be one of: by_direction, masonry, grid, hero." | اختر تخطيطا من القائمة |
+| "layout must be one of: spread, by_direction, masonry, grid, hero." | اختر تخطيطا من القائمة |
 | "That section was not found on this canvas…" | استخدم `sectionId` حاليا |

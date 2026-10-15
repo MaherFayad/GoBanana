@@ -459,7 +459,7 @@
     {
       "name": "arrange_canvas",
       "title": "Arrange canvas",
-      "description": "Lay out canvas items: by_direction, masonry, grid or hero.",
+      "description": "Lay out canvas items: spread (default for moodboards), by_direction, masonry, grid or hero.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -473,6 +473,7 @@
           "layout": {
             "type": "string",
             "enum": [
+              "spread",
               "by_direction",
               "masonry",
               "grid",

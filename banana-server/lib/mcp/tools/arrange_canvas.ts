@@ -20,7 +20,8 @@ import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type To
 export const TOOL_NAME = "arrange_canvas";
 
 export const TOOL_DESCRIPTION =
-  "Tidy a canvas or one section. Layouts: by_direction (one column per section), masonry (4 columns, keeps image shapes), " +
+  "Tidy a canvas or one section. Layouts: spread (best for moodboards: each direction one row, lead art large, notes, a 3 column UI grid, swatches below; Frankenstein pages last), " +
+  "by_direction (one column per section), masonry (4 columns, keeps image shapes), " +
   "grid (equal cells) and hero (first item large, the rest below). Use it after adding items, or when the user asks for a cleaner board.";
 
 export const inputSchema = z.object({
