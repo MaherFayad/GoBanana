@@ -252,7 +252,8 @@ describe("hints for bad ratings", () => {
     expect(badHint("taste", ["not_ui"])).toContain("ui design");
     expect(badHint("bridge", ["off_topic"])).toContain('lane "bridge"');
     expect(badHint("bridge", ["off_topic"])).toContain("main word");
-    expect(badHint("hero", ["cluttered"])).toContain("single screen");
+    expect(badHint("hero", ["cluttered"])).toContain("one screen");
+    expect(badHint("hero", ["cluttered"])).not.toContain("single screen");
     expect(badHint("fidelity", ["duplicate"])).toContain("blocked");
     expect(badHint(null, [])).toContain("will not come back");
     for (const h of [badHint("taste", []), badHint("fidelity", ["low_craft"]), badHint("locale", ["wrong_style"])]) {

@@ -137,10 +137,11 @@ describe("search_references tool", () => {
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
     expect(plan.length).toBeLessThanOrEqual(8);
     // Both zones: UI and art alternate at the top, then the rest of UI, cut to 7 (one spare request).
-    // The bridge (the direction's own idea as UI) comes right after fidelity, so the cut keeps it.
-    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art", "component", "locale", "gallery"]);
-    // No taste given and no style words stored: no taste lane (never the owner's default taste).
-    expect(plan.some((r) => r.lane === "taste")).toBe(false);
+    // Mobile leads with the taste bar lane (P0-17), then the bridge (the direction's own idea as UI),
+    // so the cut keeps both.
+    expect(plan.map((r) => r.lane)).toEqual(["taste", "art", "bridge", "art", "fidelity", "component", "locale"]);
+    // No taste given: the mobile taste bar lane says "dark" on Pinterest (never the owner's default taste list).
+    expect(plan[0]).toMatchObject({ site: "pinterest", query: "dark flight checkout ui ios app -template -kit -free -wireframe" });
     // The raw idea only goes to the art lane (Pinterest pins, Behance galleries); in UI it is only
     // the bridge lane's UI form ("crushed velvet ui design").
     expect(plan.filter((r) => r.lane !== "art" && r.lane !== "bridge").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
@@ -168,12 +169,13 @@ describe("search_references tool", () => {
       bridge: "crushed velvet ui design",
       locale: "arabic flight app ui",
     });
-    expect(out.lanes.taste).toBeUndefined();
-    expect(out.lanes.hero).toBe("flight app single screen");
+    expect(out.lanes.taste).toBe("dark flight checkout ui ios app");
+    expect(out.lanes.hero).toBeUndefined();
     expect(out.lanes.art).toEqual(["crushed velvet"]);
-    expect(out.queries[0]).toBe("flight checkout app ui -template -kit -free -wireframe site:dribbble.com/shots");
+    expect(out.queries[0]).toBe("dark flight checkout ui ios app -template -kit -free -wireframe site:pinterest.com/pin");
     expect(out.queries[2]).toBe("crushed velvet ui design -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[5]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    expect(out.queries[4]).toBe("flight checkout app ui -template -kit -free -wireframe site:dribbble.com/shots");
+    expect(out.queries[6]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain("UI references:");
     expect(text(res)).not.toContain("inspiration");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(2);
@@ -232,8 +234,8 @@ describe("search_references tool", () => {
     const res = await tool({ directionId: "bd-8dti7s7c", taste: ["Monochrome"] }, "u1");
     expect(saveTaste).toHaveBeenCalledWith("u1", "c1", ["monochrome"]);
     const out = res.structuredContent as { lanes: Record<string, string>; taste: string[]; tasteSaved: boolean };
-    expect(out.lanes.taste).toBe("monochrome flight checkout ui design");
-    expect(out.lanes.hero).toBe("monochrome flight app single screen");
+    expect(out.lanes.taste).toBe("monochrome flight checkout ui ios app");
+    expect(out.lanes.hero).toBeUndefined();
     expect(out).toMatchObject({ taste: ["monochrome"], tasteSaved: true });
     expect(runPlan).toHaveBeenCalledTimes(1);
   });
@@ -243,7 +245,7 @@ describe("search_references tool", () => {
       getDirection: async () => ({ id: "d", searchQuery: "crushed velvet", brief: "banking app", taste: ["luxury"] }),
     });
     const res = await tool({ directionId: "d" }, "u1");
-    expect((res.structuredContent as { lanes: Record<string, string> }).lanes.taste).toBe("luxury banking card ui design");
+    expect((res.structuredContent as { lanes: Record<string, string> }).lanes.taste).toBe("luxury banking ui ios app");
   });
 
   it("rejects too many taste words with a plain message", async () => {

@@ -49,6 +49,28 @@ const JUNK_PATTERNS: readonly RegExp[] = [
   /\bbrowse thousands of\b/i,
 ];
 
+/**
+ * Title-only junk (P0-17, round 13): listicles and promo pins. Matched against the title only,
+ * never the URL (gallery item paths such as /examples/ are fine).
+ */
+const TITLE_JUNK_PATTERNS: readonly RegExp[] = [
+  // Listicles: "40 Best Mobile App Onboarding UI Examples", "Data Table UI Design Guide & 30+ Examples".
+  /\b\d+\+?\s+(?:best|top)\b/i,
+  /\bexamples\b/i,
+  /\bdesign ideas\b/i,
+  /\bhow to\b/i,
+  /\bui design guide\b/i,
+  /\binspiration #\d+/i,
+  // Promo and resource pins: "Design Resource / Onboarding screens", "App Design Library & UI Inspiration from Top iOS Apps".
+  /\bdesign (?:resource|library)\b/i,
+  /\bui inspiration from\b/i,
+];
+
+/** True when a title is a listicle or a promo pin (P0-17). */
+export function isListicleTitle(title: string | undefined): boolean {
+  return Boolean(title) && TITLE_JUNK_PATTERNS.some((re) => re.test(title!));
+}
+
 export type JunkInput = {
   title?: unknown;
   source?: unknown;
@@ -63,6 +85,7 @@ export function isJunk(input: JunkInput): boolean {
   const texts = [input.title, input.source, input.domain, input.sourceUrl, input.imageUrl, input.thumbUrl].filter(
     (t): t is string => typeof t === "string" && t.length > 0,
   );
+  if (typeof input.title === "string" && isListicleTitle(input.title)) return true;
   return texts.some((t) => JUNK_PATTERNS.some((re) => re.test(t)));
 }
 
@@ -127,17 +150,31 @@ export function upgradeImage(url: URL, width?: number, height?: number): ImageUp
   return { url: url.toString(), width, height };
 }
 
-/** Title words that read like design work. */
+/** Title words that read like design work ("concept" left out in P0-17: concept comps sit below the bar). */
 const DESIGN_WORDS =
-  /\b(app|apps|ui|ux|dashboard|mobile|concept|case study|interface|redesign|branding|brand identity|identity|poster|typography|pattern|web design|website|landing page|design system|illustration|packaging|editorial|layout)\b/i;
+  /\b(app|apps|ui|ux|dashboard|mobile|case study|interface|redesign|branding|brand identity|identity|poster|typography|pattern|web design|website|landing page|design system|illustration|packaging|editorial|layout)\b/i;
 /** Title words that read like a product listing. */
 const LISTING_WORDS =
   /\b(sale|buy|price|sticker|stickers|mug|t-?shirt|shirt|hoodie|tee|gift|gifts|wall art|art print|invitation|invitations|wedding|bundle|amazon|ebay|aliexpress|wallpaper|decor)\b/i;
 
-/** Uncluttered work (a single card or widget, a clean concept) scores up a little. */
-const UNCLUTTERED_WORDS = /\b(card|cards|widget|widgets|component|components|minimal|minimalist|concept|clean)\b/i;
+/** Uncluttered work (a single card or widget, a clean shot) scores up a little. */
+const UNCLUTTERED_WORDS = /\b(card|cards|widget|widgets|component|components|minimal|minimalist|clean)\b/i;
 /** Busy multi-screen dumps and kits score down a little. */
 const CLUTTERED_WORDS = /\b(ui kit|app ui kit|screens|full app|templates?|complete)\b/i;
+/**
+ * Below the taste bar (P0-17, round 13): concept comps, explorations and challenge shots ("Wallet
+ * App Concept Design", "Daily UI #002", "Day 002 ( Credit Card Checkout )"). On page at best.
+ */
+const BELOW_BAR_WORDS = /\bconcept\b|\bexploration\b|\bdaily ?ui\b|#dailyui|\bday\s*#?\d{1,3}\b|\bchallenge\b/i;
+/** Ranked down by this much. */
+export const BELOW_BAR_PENALTY = 1.5;
+/**
+ * A shipped screen reposted as "{Page} UI from {App} iOS App" ("Wallet & Balance UI from Revolut iOS
+ * App"): most of round 13's great mobile results.
+ */
+const SHIPPED_TITLE = /\bui from [^|]{2,40}\b(?:ios|android) app\b/i;
+/** Ranked up by this much. */
+export const SHIPPED_BONUS = 2;
 
 function sizeScore(ref: Reference): number {
   if (!ref.width || !ref.height) return 1;
@@ -173,6 +210,8 @@ export function qualityScore(ref: Reference, opts: RankOptions = {}): number {
   if (LISTING_WORDS.test(title)) score -= 2;
   if (UNCLUTTERED_WORDS.test(title)) score += 1;
   if (CLUTTERED_WORDS.test(title)) score -= 1;
+  if (BELOW_BAR_WORDS.test(title)) score -= BELOW_BAR_PENALTY;
+  if (SHIPPED_TITLE.test(title)) score += SHIPPED_BONUS;
   return score;
 }
 
@@ -374,8 +413,9 @@ export function titleHasAny(title: string | undefined, words: readonly string[])
 
 // ---------------------------------------------------------------------------
 // Recency (metadata only): newer work ranks higher. Dribbble shot ids, Dribbble userupload ids,
-// Behance gallery ids and Awwwards asset paths all grow with time; Pinterest pins are older on
-// average (round 4) and carry no usable date, so they stay neutral.
+// Behance gallery ids and Awwwards asset paths all grow with time. Pinterest pins carry no usable
+// id date, and Pinterest UI results lean 2018 to 2020 (rounds 4 and 13), so for pins (and any
+// other site) the year in the title is the age check.
 
 /**
  * Rough age bands, checked against dated public items (approximate, used only to rank):
@@ -402,13 +442,17 @@ export function itemAge(ref: Pick<Reference, "sourceUrl" | "imageUrl">): { site:
   return undefined;
 }
 
-/** Title years: "2016" in a title is an old shot; the current or last year is a fresh one. */
+/**
+ * Title years: "2016" in a title is an old shot, "2022" an aging one; the current or last year is a
+ * fresh one. Pinterest pins have no other age signal, so this is their whole recency score.
+ */
 function titleYearScore(title: string, now: number): number {
   const years = (title.match(/\b(20[0-3]\d)\b/g) ?? []).map(Number).filter((y) => y <= now + 1);
   if (years.length === 0) return 0;
   const y = Math.max(...years);
   if (y >= now - 1) return 0.5;
   if (y <= now - 5) return -1.5;
+  if (y <= now - 3) return -0.5;
   return 0;
 }
 

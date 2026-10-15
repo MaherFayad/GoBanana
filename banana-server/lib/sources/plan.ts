@@ -10,8 +10,15 @@
  *   bridge       "{ingredient} ui design {UI_NEG}"         dribbble.com/shots, title must name the idea
  *   locale (ar)  "arabic {surface} {UI_NEG}"               replaces the fidelity Pinterest page
  *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
+ *                mobile: "dark {phrase} ui ios app {UI_NEG}" pinterest.com/pin (P0-17)
+ *                web app: "dark mode minimal {domain} {page} ui {UI_NEG}" dribbble.com/shots
+ *   light twin   "{phrase} ui ios app {UI_NEG}"             pinterest.com/pin, mobile, in the baseline
+ *                (fidelity) lane in place of the fidelity Pinterest page
  *   component    "{core} {page} {component} {surface} {UI_NEG}"  dribbble.com/shots, up to 2 from the brief and pages
- *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
+ *   baseline galleries  one head word on Nicelydone, then Refero (web app, baseline lane only)
+ *
+ * The hero lane ("{style} {domain} app single screen") is no longer planned (P0-17); an agent can
+ * still re-search the hero lane with its own words.
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
  * what the base plan leaves is spent on page 2 and fallbacks (fidelity retried with the core noun).
@@ -50,7 +57,16 @@ export type LaneTexts = {
    */
   idea: string;
   taste?: string;
+  /** Where the taste lane searches (P0-17: Pinterest pins for mobile). Default Dribbble shots. */
+  tasteSite?: SourceSite;
+  /** The taste lane's retry when it brings back too little (web app: "dark {page} web app ui"). */
+  tasteFallback?: string;
   fidelity?: string;
+  /**
+   * Mobile: the light twin of the taste lane ("paywall subscription ui ios app"), searched on
+   * Pinterest in the baseline (fidelity) lane in place of the fidelity Pinterest page.
+   */
+  lightTwin?: string;
   /** Fidelity with the domain cut to its core noun ("saudi fintech" to "fintech"), when different. */
   fidelityCore?: string;
   /** Component lanes from the brief and pages: "{core} {page} {component} {surface}" ("flight checkout fare summary app ui"), at most 2. */
@@ -68,6 +84,8 @@ export type LaneTexts = {
   topic?: string;
   /** UI galleries this direction searches (lib/sources/registry.ts pickGalleries), in order. */
   galleries?: SourceSite[];
+  /** Galleries searched only in the baseline (fidelity) lane, for "Shipped today" (web app: Nicelydone, Refero). */
+  baselineGalleries?: SourceSite[];
   /** Art galleries this direction searches (style tag matches only). */
   artGalleries?: SourceSite[];
   /** Platform the UI lanes were worded for (lib/platform.ts). */
@@ -108,8 +126,26 @@ export function galleryWords(site: SourceSite, topic: string): string {
     .replace(/\b(app ui|ui design|website ui|dashboard ui|ui ux|ui|ux|single screen|app|design)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
-  const words = plain || "design";
+  // A page gallery (60fps) is searched with its page word: "pay" for checkout and payment, "card"
+  // for card and wallet (round 13: "pay" gave CRED, Swiggy, Airbnb, Apple Pay).
+  if (entry.pages?.length) {
+    const t = ` ${plain.toLowerCase()} `;
+    if (/ (?:card|cards|wallet|wallets) /.test(t)) return "card";
+    if (/ (?:checkout|pay|payment|payments) /.test(t)) return "pay";
+  }
+  // One head word for galleries that match whole phrases badly (round 13: Nicelydone "analytics"
+  // 94% on page, "analytics dashboard" 56%).
+  const words = (entry.oneWord ? headWord(plain) : plain) || "design";
   return entry.suffix ? `${words} ${entry.suffix}` : words;
+}
+
+/** Words that are never a gallery's head word: the surface and page shells. */
+const GALLERY_SHELL = new Set(["dashboard", "dashboards", "page", "pages", "screen", "screens", "web", "website", "saas", "admin", "panel"]);
+
+/** The first word of a topic that is not a shell word ("analytics dashboard" gives "analytics"), else its first word. */
+function headWord(plain: string): string {
+  const ws = plain.split(" ").filter(Boolean);
+  return ws.find((w) => !GALLERY_SHELL.has(w.toLowerCase())) ?? ws[0] ?? "";
 }
 
 export type PlannedRequest = {
@@ -233,31 +269,53 @@ function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
     });
   };
   const galleries = lanes.galleries ?? [];
-  const addGallery = (site: SourceSite | undefined) => {
-    if (site) out.push({ lane: "gallery", query: galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
+  const addGallery = (site: SourceSite | undefined, lane: LaneName = "gallery") => {
+    if (site) out.push({ lane, query: galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
   };
+  const baseGalleries = lanes.baselineGalleries ?? [];
   // Website and web app briefs: a platform gallery replaces the Pinterest fidelity page (Pinterest
-  // is weak on web pages, round 4). Every other gallery follows the first component lane.
+  // is weak on web pages, round 4); for a web app it is the first baseline gallery (P0-17). Every
+  // other gallery follows the first component lane.
   const web = lanes.platform === "website" || lanes.platform === "webapp";
-  const first = web && !lanes.locale ? galleries[0] : undefined;
+  const first = web && !lanes.locale && baseGalleries.length === 0 ? galleries[0] : undefined;
   const components = (lanes.component ?? []).slice(0, MAX_COMPONENT_LANES);
-  add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
+  // P0-17: mobile and web app briefs lead with the taste bar lane (round 13: Pinterest "dark
+  // {phrase} ui ios app" 50% great, Dribbble "dark mode minimal" 48% great).
+  const tasteFirst = Boolean(lanes.tasteSite || lanes.tasteFallback);
+  const addTaste = () => add("taste", lanes.taste, lanes.tasteSite ?? "dribbble", true, lanes.tasteFallback);
   // The bridge is the only UI lane that differs between the directions of one brief, so it goes
   // second: planned last, the both-zones cut dropped it and every direction got the same generic
   // shots (field report, 2026-10-12). A thin answer retries as "{ingredient} app ui".
-  if (head && lanes.bridge) {
+  const addBridge = () => {
+    if (!head || !lanes.bridge) return;
     const alt = lanes.bridge.replace(/ ui design$/, " app ui");
     add("bridge", lanes.bridge, "dribbble", true, alt !== lanes.bridge ? alt : undefined, head);
+  };
+  if (tasteFirst) {
+    addTaste();
+    addBridge();
+    add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
+  } else {
+    add("fidelity", lanes.fidelity, "dribbble", true, lanes.fidelityCore);
+    addBridge();
+    addTaste();
   }
-  add("taste", lanes.taste, "dribbble", true);
   add("component", components[0], "dribbble", true);
-  if (lanes.locale) add("locale", lanes.locale, "pinterest", true, undefined, lanes.localeWord);
-  else if (first) addGallery(first);
-  else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
   const rest = first ? galleries.slice(1) : galleries;
-  addGallery(rest[0]);
+  // Mobile: a matched gallery (60fps on a pay page) goes before the light twin, which the
+  // both-zones cut then drops (round 13: checkout has no Pinterest series, 60fps "pay" 4 of 8 great).
+  const twinLast = Boolean(lanes.lightTwin && !lanes.locale && rest[0]);
+  if (twinLast) addGallery(rest[0]);
+  if (lanes.locale) add("locale", lanes.locale, "pinterest", true, undefined, lanes.localeWord);
+  else if (baseGalleries[0]) addGallery(baseGalleries[0], "fidelity");
+  else if (first) addGallery(first);
+  else if (lanes.lightTwin) add("fidelity", lanes.lightTwin, "pinterest", true);
+  else add("fidelity", lanes.fidelity, "pinterest", true, lanes.fidelityCore);
+  if (!twinLast) addGallery(rest[0]);
   add("component", components[1], "dribbble", true);
+  // Only an agent's own words fill the hero lane now (P0-17 dropped "{style} {domain} app single screen").
   add("hero", lanes.hero, "dribbble", false);
+  for (const site of baseGalleries.slice(1)) addGallery(site, "fidelity");
   for (const site of rest.slice(1)) addGallery(site);
   return out;
 }
@@ -321,7 +379,11 @@ export function artBareNoun(query: string): string | null {
  * UI: 1. fidelity on Dribbble, 2. bridge (only with a head word to filter its titles by), 3. taste,
  * 4. the first component lane, 5. fidelity on Pinterest (locale "arabic {core} {surface}" for
  * Arabic briefs, its titles filtered by the subject like the bridge lane's; website briefs search
- * Awwwards with the `web` words instead), 6. a gallery, 7. the second component lane, 8. hero.
+ * a website gallery with the topic words instead, mobile briefs the light twin, web app briefs
+ * their first baseline gallery), 6. a gallery, 7. the second component lane, 8. an agent's hero
+ * words, then the other baseline galleries. Mobile and web app briefs start with taste (the taste
+ * bar lane, P0-17), then the bridge, then fidelity; on mobile a matched gallery (60fps on a pay
+ * page) goes before the light twin.
  * Art: each art query on Pinterest, then Behance.
  * Both zones: UI and art alternate for the first two of each (fidelity, art, fidelity, art), then
  * the rest of UI, then the rest of art, cut to BASE_MAX_REQUESTS so one request is left for page 2

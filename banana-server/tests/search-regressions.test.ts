@@ -12,8 +12,10 @@ describe("domain comes from the opening clause", () => {
   it("long banking brief searches banking, not the last sentence", () => {
     expect(fidelityQuery(BANKING)).toBe("retail banking app ui");
     const lanes = laneTexts(BANKING, "city pop 1985", ["minimal"], "k");
-    expect(lanes.taste).toContain("banking");
-    expect(lanes.hero).toContain("banking");
+    // Mobile taste bar lane (P0-17): the brief names a balance, so the Pinterest series phrase.
+    expect(lanes.taste).toBe("minimal wallet balance ui ios app");
+    expect(lanes.component?.[0]).toContain("banking");
+    expect(lanes.hero).toBeUndefined();
     expect(JSON.stringify(lanes)).not.toContain("territory");
   });
 
