@@ -22,7 +22,8 @@
   "placement": { "mode": "smart" },
   // Daily at 03:17 UTC: purge references older than 30 days that are not on a canvas, and
   // search ratings older than 12 months.
-  "triggers": { "crons": ["17 3 * * *"] },
+  // Daily at 03:37 UTC: turn search_feedback into nightly weights (atlas_weights, P2-01).
+  "triggers": { "crons": ["17 3 * * *", "37 3 * * *"] },
   // User uploads and export files only (never third-party images).
   // Create first: npx wrangler r2 bucket create banana-uploads
   "r2_buckets": [

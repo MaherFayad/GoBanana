@@ -43,6 +43,13 @@
       "when": 1792077779181,
       "tag": "0005_usage_serper_credits",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792000000000,
+      "tag": "0007_taste_and_weights",
+      "breakpoints": true
     }
   ]
 }
