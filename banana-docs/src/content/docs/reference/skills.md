@@ -1,6 +1,6 @@
 ---
 title: Plugin skills
-description: The 9 skills in the GoBanana Claude plugin, what to say to trigger each one, which tools it calls and what you get.
+description: The 11 skills in the GoBanana Claude plugin, what to say to trigger each one, which tools it calls and what you get.
 ---
 
 The plugin (`gobanana`, version 0.1.3) adds these skills on top of the MCP server. Claude picks one from what you say; you can also name it (`/gobanana-explore` in Claude Code). Every skill follows the same ground rules: source link for every reference, never download or copy images, plain words, one question at most per turn, show a plan or quota message once and stop.
@@ -16,6 +16,7 @@ The plugin (`gobanana`, version 0.1.3) adds these skills on top of the MCP serve
 | `gobanana-design-md` | "DESIGN.md for this page", "lint my DESIGN.md" | `get_canvas`, `export_kit` (`design_md`, `direction_md`), `npx @google/design.md@0.4.0 lint` | A scoped DESIGN.md that lints clean (up to 3 fix rounds) |
 | `gobanana-agents-md` | "AGENTS.md", "rules for coding agents", "make my agents follow this direction" | `get_canvas`, `export_kit` (`agents_md`, `claude_md`) | A marked section in AGENTS.md (and CLAUDE.md) |
 | `gobanana-asset-kit` | "asset kit", "tokens for this page", "gradients from the palette", "which fonts and icons" | `get_canvas`, `extract_palette`, `export_kit` (`tokens`, `tailwind`) | `kit/00-readme.md` to `kit/06-sources.md` |
+| `gobanana-culture` | "make it feel Saudi", "use sadu", "Najdi doors", "Ramadan campaign", or any brief that names a culture, region, script or occasion | `get_canvas`, `get_snapshot`, `bend_brief`, `search_references`, `rate_references`, `add_to_canvas`, `export_kit` | Each cultural item named exactly, sorted by sensitivity, turned into a UI part, with meaning, steal, credit and care notes, and a Cultural brief in the hand-off |
 | `gobanana-critique` | "critique the build", "does this match the direction", "grade my page" | `get_canvas`, `export_kit` (`review`), a browser tool | A pass or fix table with evidence, the top 3 fixes, applied in page scope on yes |
 
 ## Font pairings in the asset kit

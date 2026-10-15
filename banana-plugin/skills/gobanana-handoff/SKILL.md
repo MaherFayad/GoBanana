@@ -15,6 +15,7 @@ Turn one kept direction into the files a coding tool needs to build its page or 
 - **Files that GoBanana owns** (`design/explorations/<slug>/*`, `.cursor/rules/gobanana-<slug>.mdc`, `.github/instructions/gobanana-<slug>.instructions.md`): if one already exists from an earlier export, show what changes and ask before replacing it.
 - **No reference images in the repo.** The files link to sources; never download or save images.
 - **Arabic copy rules,** when the pages have Arabic: noun-form labels (الدفع, ملخص الرحلة), no diacritics, Western digits (0 to 9), Latin IATA codes (RUH, DXB). Put them in BUILD-PROMPT.md if the export does not already say so.
+- **Cultural brief.** When the direction has a lens or cultural items, DIRECTION.md (or CULTURE.md, when the server exports it) and BUILD-PROMPT.md start with a Cultural brief block: tradition, tier, what we use, what we avoid, credit line, sources and suggested reviewer (see gobanana-culture). If the export does not include it, add it by hand from the board notes before you write the file.
 - Plain words, no em dashes.
 
 ## Steps

@@ -93,6 +93,8 @@ Keep the daily task screens (sign in, checkout steps, forms, tables, navigation)
 - **Moves** (`moves`): only when the user asks for a kind of bend: `transplant`, `material`, `era`, `constraint`, `scale`, `lens`.
 - **Taste:** use the 3 to 5 style words or the board the user gave in step 1. Never invent them. Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
 
+**Culture check.** When a lens is set, the brief names a culture, region, script or occasion, or a placed reference shows a cultural motif, follow gobanana-culture before you place any notes: name the tradition, give it a sensitivity tier, write the meaning, steal, credit and care lines, and keep sacred text, symbols and flags out of the board.
+
 ### 6. Pick the canvas: extend one, or create one (do not show it yet)
 
 1. **A canvas already in this conversation:** use its `canvasId`.
@@ -152,6 +154,7 @@ The server does not look at images. You do.
    - **Art zone, `bad`:** shops and product listings, prices, fashion and clothing listings, Etsy or Amazon pages, logo sheets, stock, and anything off the idea (a car air freshener on a weaving direction). Art does not have to be UI; it has to be the idea.
    - Reasons: `off_topic`, `stock_or_shop`, `not_ui` (UI zone only), `cluttered`, `duplicate`, `low_craft`, `wrong_style`.
    - **`great`** for standouts only, 1 to 3 per search: `great_craft`, `on_style`, `on_brief`.
+   - **Why it works:** for each `great` reference, write one plain line naming the design principle behind it (hierarchy, contrast or rhythm), from what you see in the thumbnail: `why: one huge price, small print around it, so the eye lands first on the total (hierarchy)`. Keep it for the note in step 12 and for the reply.
 3. **Retry a weak lane, only then.** If more than 40% of one lane's results are bad, you must search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: keep the idea's main word and name the screen or component ("film frame seat picker ui", not "oversized film frames"). A `bridge` retry filters titles by its own main word, so short words work ("islamic pattern app", "rawashin pattern app"). Art lane: `lane: "art"` with words for the raw thing, no UI words ("sadu weaving close up", "risograph two ink print"). Rate the retry's results too. At most 2 retries per lane; each counts toward the quota. If the lane is still bad after 2 retries, stop and say so in one line. When no lane is over 40% bad, do not retry anything: clean results need no second search.
 4. **Count** usable UI references per direction for test (b), and usable art references separately.
 
@@ -174,7 +177,7 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
-Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+A reference you rated `great` gets its `why:` line from step 10 after the `steal:` line, inside the 280 characters (shorten `steal:` first if needed). Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
 
 If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its full 4 items and keep the UI grid UI only.
 

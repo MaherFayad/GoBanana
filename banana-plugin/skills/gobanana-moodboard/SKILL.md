@@ -38,6 +38,8 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 **Steal notes:** up to 280 characters, start with `steal:`, name one concrete thing for the page: `steal: the stamped date as a section divider`, `steal: the tab bar that hides on scroll`. Draw them from the direction's `spec.steal` and from what the title says. Look at the returned thumbnails before rating or noting: `get_canvas` and `add_to_canvas` results carry a small image after each reference's line, so write the note from what you see in it. Links in notes are clickable on the board.
 
+**Why it works:** when a reference was rated `great`, add a one line `why:` after the steal note naming the design principle you see in it (hierarchy, contrast or rhythm), for example `why: tight type scale and one accent color keep the eye on the pay button (contrast)`. Write it from the thumbnail, never from the title, and keep the whole note within 280 characters.
+
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message and stop adding.
 
 ### 3. Arrange (always)
@@ -64,6 +66,10 @@ Say the board is ready. If the client shows the canvas inline, point to it. **Al
 - **Frankenstein it:** cut the best parts out of the UI references and stitch 3 or 4 new page variants from them, every part linked to its source (gobanana-frankenstein).
 - **FigJam or HTML board:** see below.
 - **Hand off** a kept direction to a coding tool (gobanana-handoff).
+
+## Cultural references
+
+When a lens is set, the brief names a culture, region, script or occasion, or a placed reference shows a cultural motif, follow gobanana-culture before you write the notes: each cultural item gets meaning, steal, credit and care lines, and sacred text, symbols and flags are never placed as decoration.
 
 ## FigJam board (optional)
 
