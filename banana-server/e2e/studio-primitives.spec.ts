@@ -201,7 +201,7 @@ test("every control in the gallery is at least 24 by 24 px", async ({ page }) =>
   expect(small).toEqual([]);
 });
 
-test("button states: sizes, pressed bar, loading keeps width, yellow primary", async ({ page }) => {
+test("button states: sizes, pressed ring, loading keeps width, yellow primary", async ({ page }) => {
   await open(page, "/__design?theme=light&dir=ltr");
   const heights = await page.evaluate(() =>
     ["xs", "sm", "md", "lg"].map((s) => document.querySelector<HTMLElement>(`.st-btn[data-size="${s}"]`)?.getBoundingClientRect().height),
@@ -215,8 +215,14 @@ test("button states: sizes, pressed bar, loading keeps width, yellow primary", a
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  const bar = await toggle.evaluate((el) => getComputedStyle(el, "::after").blockSize);
-  expect(bar).toBe("2px");
+  // The selected cue is a 1px ring over the whole button (owner decision, d8c7ece: no underline
+  // bars on any selected state), not a 2px bar.
+  const ring = await toggle.evaluate((el) => {
+    const s = getComputedStyle(el, "::after");
+    return { width: s.borderTopWidth, style: s.borderTopStyle, height: Number.parseFloat(s.blockSize), button: el.clientHeight };
+  });
+  // blockSize is the content box: the 1px border on each side brings the ring to the full button height.
+  expect({ width: ring.width, style: ring.style, covers: ring.height + 2 === ring.button }).toEqual({ width: "1px", style: "solid", covers: true });
 
   const primary = page.locator('.st-btn[data-variant="primary"]').first();
   const colors = await primary.evaluate((el) => {
