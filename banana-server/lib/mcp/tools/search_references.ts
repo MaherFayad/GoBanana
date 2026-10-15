@@ -49,12 +49,18 @@ import {
   capByCreator,
   countNote,
   createWebSearchAdapter,
+  itemKey,
   sumWhy,
   type DropWhy,
   type WebSearchAdapter,
   type WebSearchResult,
 } from "@/lib/sources/web-search";
-import { compileTakedowns } from "@/lib/takedown";
+import { compileTakedowns, type TakedownMatcher } from "@/lib/takedown";
+import { atlasSearchPlan, provenanceFor, SEARCH_SHARD_BUDGET, type AtlasIds, type AtlasPlan } from "@/lib/atlas/search";
+import { liveAtlasLoader } from "@/lib/atlas/live";
+import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
+import { briefMarket } from "@/lib/bend/market";
+import { allowlistFromEnv, isAllowedImageUrl } from "@/lib/sources/allowlist";
 import { getConfig } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { plausibleId, takedownLoader, tasteInputSchema, upgradeUrl } from "./canvas-shared";
@@ -162,7 +168,24 @@ export type SearchReferencesDeps = {
   creditCap?(): number | null;
   upgradeUrl(): string;
   now?(): Date;
+  /** Search plan v2 (P1-I3): the Atlas for this call, or null (no Atlas: the Phase 0 lanes run). */
+  atlasSource?(): AtlasSource | null;
+  /** Image host check for CC0 index results (the image host allowlist). Missing: none are shown. */
+  allowImage?(url: string): boolean;
+  /** Takedown list for results that skip the search adapter (CC0 index). Missing or failing: none are shown. */
+  loadTakedowns?(): Promise<TakedownMatcher>;
 };
+
+/**
+ * CC0 index results join the art zone: UI first, then CC0, then the web art results. Over `count`,
+ * web art results go first, then the tail.
+ */
+export function mergeCc0(refs: readonly Reference[], cc0: readonly Reference[], count: number): Reference[] {
+  const ui = refs.filter((r) => r.zone !== "art");
+  const art = refs.filter((r) => r.zone === "art");
+  const keepArt = Math.max(0, Math.min(art.length, count - ui.length - cc0.length));
+  return [...ui, ...cc0, ...art.slice(0, keepArt)].slice(0, Math.max(count, ui.length));
+}
 
 export type SearchReferencesOutput = {
   query: string;
@@ -454,6 +477,10 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let directionCanvasId: string | undefined;
       let lanes: LaneTexts | undefined;
       let variants: ArmVariants = {};
+      /** Atlas ids of a direction the Atlas engine made, its mechanic part and its brief (search plan v2). */
+      let atlasIds: AtlasIds | undefined;
+      let atlasMechanic: string | undefined;
+      let atlasBrief = "";
       if (!query && input.directionId) {
         const direction = await deps.getDirection(userId, input.directionId, input.canvasId);
         if (!direction) {
@@ -464,6 +491,9 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         // No DEFAULT_TASTE here: without the user's taste the direction's own style words lead.
         const taste = inputTaste.length > 0 ? inputTaste : cleanTaste(direction.taste);
         lanes = directionLanes(direction, taste);
+        atlasIds = direction.detail?.atlas;
+        atlasMechanic = direction.detail?.mechanic?.element;
+        atlasBrief = [direction.canvasBrief, direction.brief].filter(Boolean).join(" ");
         directionKey = direction.bendId ?? direction.id;
         directionCanvasId = direction.canvasId ?? undefined;
         const v = directionTasteVariants(direction.brief, taste, directionKey, {
@@ -525,6 +555,28 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       // What the user taught search: blocked items never come back, liked creators move up.
       const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
       const preferCreators = preferredCreators(learning.creatorRatings);
+      // Search plan v2 (P1-I3): a direction the Atlas engine made searches its query recipes; with
+      // no Atlas or no readable recipes its Phase 0 lanes run unchanged.
+      let atlasPlan: AtlasPlan | null = null;
+      if (lanes && !input.lane && atlasIds && deps.atlasSource) {
+        try {
+          const source = deps.atlasSource();
+          atlasPlan = source
+            ? await atlasSearchPlan(lanes, atlasIds, source, {
+                ...(atlasMechanic ? { mechanic: atlasMechanic } : {}),
+                market: briefMarket(atlasBrief),
+                allowImage: deps.allowImage ?? (() => false),
+                withArt: zone !== "ui",
+              })
+            : null;
+        } catch {
+          console.error("[search_references] could not read the Atlas recipes");
+          atlasPlan = null;
+        }
+        if (atlasPlan) lanes = atlasPlan.lanes;
+      }
+      /** Source links already on the canvas: CC0 results skip them too. */
+      let canvasUrls: readonly string[] = [];
       let searched: Searched;
       /** The baseline key of a direction search on a canvas, and the saved baseline when it was reused. */
       let baseline: { key: string; reused?: CanvasBaseline } | undefined;
@@ -563,6 +615,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
         const excludeCanvas = input.canvasId ?? directionCanvasId;
         const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
+        canvasUrls = exclude;
         const runOpts = {
           count: input.count,
           userId,
@@ -622,7 +675,30 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       // Every result carries its zone ("art" for the art lane, "ui" otherwise).
       const withZone = (list: readonly Reference[]) =>
         list.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
-      const references = withZone(result.references);
+      let references = withZone(result.references);
+      if (atlasPlan) {
+        // Provenance on every result (saved on the reference row): the recipe and the card.
+        const plan = atlasPlan;
+        const lead = atlasIds?.cardIds[0];
+        references = references.map((r) => ({ ...r, ...provenanceFor(r, plan, lead) }));
+        // CC0 index matches join the art zone, checked against the takedown list (fails closed).
+        if (plan.cc0.length > 0 && zone !== "ui" && deps.loadTakedowns) {
+          let takedowns: TakedownMatcher | null = null;
+          try {
+            takedowns = await deps.loadTakedowns();
+          } catch {
+            console.error("[search_references] could not load takedowns for CC0 results");
+          }
+          if (takedowns) {
+            const seen = new Set([...references.map((r) => r.sourceUrl), ...canvasUrls]);
+            const blocked = new Set(learning.blocked);
+            const fresh = plan.cc0
+              .filter((r) => !seen.has(r.sourceUrl) && !takedowns!.isReferenceBlocked(r) && !blocked.has(itemKey(r.sourceUrl)))
+              .map((r) => ({ ...r, ...(lead ? { cardId: lead } : {}) }));
+            references = mergeCc0(references, fresh, input.count);
+          }
+        }
+      }
       const zones = zoneCounts(references);
       const out: SearchReferencesOutput = {
         query: input.lane ? queryWords(laneUiWords!) : lanes ? lanes.idea : query!,
@@ -799,6 +875,12 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
       });
       return outcome.ok ? { dropped: outcome.value } : false;
     },
+    atlasSource: () => {
+      const loader = liveAtlasLoader(SEARCH_SHARD_BUDGET);
+      return loader ? loaderSource(loader) : null;
+    },
+    allowImage: (url) => isAllowedImageUrl(url, allowlistFromEnv()),
+    loadTakedowns: async () => compileTakedowns(await r().takedowns.list()),
     getBaseline: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? (parseState(canvas.state).baseline ?? null) : null;
