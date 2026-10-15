@@ -62,6 +62,16 @@ export interface AtlasJob<Input, Rec> {
   shardOf?(record: Rec): string;
   /** HTML for one record on the review page. Default: JSON with color chips. Escape all text. */
   renderReview?(record: Rec): string;
+
+  /**
+   * Render or run check on the finalized records (J13: WebGL and WAAPI in headless Chrome).
+   * Returns the problems of each failing record by its `id`; records not in the map pass.
+   * With `repairPrompt`, each failing record gets one repair request carrying its problems
+   * (custom id "fix-<id>", replies in raw/<job>-repair.jsonl); a repair that fails again is dropped.
+   */
+  verify?(records: Rec[], ctx: JobContext): Promise<Map<string, string[]>>;
+  /** The user message for one repair request: the failed record, its problems and its original input. */
+  repairPrompt?(record: Rec, problems: string[], input: Input): UserContent;
 }
 
 /** Identity helper for type inference in job files: `export default defineJob({...})`. */

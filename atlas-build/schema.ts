@@ -127,6 +127,44 @@ export interface SlopRule { feature: "font" | "accent-hue" | "radius" | "gradien
 
 export interface BenchBrief { id: string; brief: string; platform: Platform; pages: string[]; wildness: 1 | 2 | 3 | 4 | 5; lens?: string }
 
+// P1-J13 stunning layer (VAL-14). Not in section 6.2; the plan names the job and its rules only.
+
+export interface ShaderRecipe {
+  id: string;                                   // "sadu-band-drift"
+  name: string;                                 // 4 words max
+  idea: string;                                 // one plain sentence: what it looks like and how it moves
+  use: UiElement[];                             // where it belongs: hero, loading, empty-state, success, paywall-plan
+  frag: string;                                 // GLSL ES 1.00 fragment shader (WebGL 1 and 2), uniforms u_resolution, u_time, u_c0 to u_c3
+  colors: [string, string, string, string];     // default u_c0 (surface), u_c1 (ink), u_c2 (accent), u_c3 (support) as hex
+  reduced: { kind: "static" | "fade"; at: number; ms?: number; note: string }; // prefers-reduced-motion: one frame at `at` seconds, shown at once or faded in over ms
+  cardIds: string[];                            // J3 cards it fits
+  families: string[];                           // COMPUTED from cardIds by the script
+  lensIds: string[];                            // J6 lenses it follows
+  culturalNotes?: string;                       // required with a lens or a tradition card: name the tradition exactly
+}
+
+export interface MotionKeyframe { offset?: number; easing?: string; transform?: string; opacity?: number; clipPath?: string; filter?: string }
+
+export interface MotionRecipe {
+  id: string;                                   // "receipt-line-feed"
+  name: string;                                 // 4 words max
+  verb: string;                                 // the motion verb it builds ("unspools", "weave in")
+  idea: string;                                 // one plain sentence
+  use: UiElement[];
+  trigger: "enter" | "exit" | "loop" | "hover" | "press" | "change";
+  target: "self" | "children";                  // children: every child plays it, delayed by stagger
+  stagger: number;                              // ms between children (0 for self)
+  origin: string;                               // transform-origin, "50% 100%"
+  keyframes: MotionKeyframe[];                  // WAAPI keyframes: element.animate(keyframes, timing)
+  timing: { duration: number; delay: number; easing: string; iterations: number | "infinite"; direction: "normal" | "alternate"; fill: "none" | "forwards" | "backwards" | "both" };
+  css: string;                                  // COMPUTED by the script: @keyframes, the class rule and the reduced-motion rule
+  reduced: { kind: "static" | "fade"; ms?: number; note: string }; // static: no movement, end state at once; fade: opacity only
+  cardIds: string[];
+  families: string[];                           // COMPUTED from cardIds by the script
+  lensIds: string[];
+  culturalNotes?: string;
+}
+
 // ---------------------------------------------------------------------------------------------
 // zod schemas.
 
@@ -305,6 +343,72 @@ export const BenchBriefSchema = z.object({
   lens: id.optional(),
 });
 
+const ties = {
+  cardIds: z.array(id),
+  families: z.array(text),
+  lensIds: z.array(id),
+  culturalNotes: text.optional(),
+};
+const uses = z.array(UiElementSchema).min(1);
+
+export const ShaderRecipeSchema = z.object({
+  id,
+  name: words(4),
+  idea: text,
+  use: uses,
+  frag: z
+    .string()
+    .min(80)
+    .max(6000)
+    .refine((s) => /\bvoid\s+main\s*\(/.test(s), "frag needs void main()")
+    .refine((s) => !/#\s*(version|extension)\b|\btexture(2D|Cube)?\s*\(|\bsampler/.test(s), "frag must not use #version, #extension or textures"),
+  colors: z.tuple([hex, hex, hex, hex]),
+  reduced: z.object({
+    kind: z.enum(["static", "fade"]),
+    at: z.number().min(0).max(120),
+    ms: z.number().int().min(100).max(1200).optional(),
+    note: text,
+  }),
+  ...ties,
+});
+
+/** CSS lengths, numbers, percents and the functions a transform, clip-path or filter value may use. */
+const cssValue = z.string().max(300).regex(/^[a-zA-Z0-9\s.,%()+\-#/]*$/, "only plain CSS function values");
+export const MotionKeyframeSchema = z
+  .object({
+    offset: z.number().min(0).max(1).optional(),
+    easing: cssValue.optional(),
+    transform: cssValue.optional(),
+    opacity: z.number().min(0).max(1).optional(),
+    clipPath: cssValue.optional(),
+    filter: cssValue.optional(),
+  })
+  .strict();
+
+export const MotionRecipeSchema = z.object({
+  id,
+  name: words(4),
+  verb: words(3),
+  idea: text,
+  use: uses,
+  trigger: z.enum(["enter", "exit", "loop", "hover", "press", "change"]),
+  target: z.enum(["self", "children"]),
+  stagger: z.number().int().min(0).max(160),
+  origin: z.string().max(40).regex(/^[a-z0-9\s.%-]+$/, "a transform-origin like 50% 100%"),
+  keyframes: z.array(MotionKeyframeSchema).min(2).max(12),
+  timing: z.object({
+    duration: z.number().int().min(80).max(20_000),
+    delay: z.number().int().min(0).max(2000),
+    easing: cssValue,
+    iterations: z.union([z.number().int().min(1).max(10), z.literal("infinite")]),
+    direction: z.enum(["normal", "alternate"]),
+    fill: z.enum(["none", "forwards", "backwards", "both"]),
+  }),
+  css: text,
+  reduced: z.object({ kind: z.enum(["static", "fade"]), ms: z.number().int().min(100).max(600).optional(), note: text }),
+  ...ties,
+});
+
 /** Every Atlas kind by name, for jobs and the runner. The name is the out/v1/<kind>/ folder. */
 export const SCHEMAS = {
   anatomy: PageAnatomySchema,
@@ -318,6 +422,8 @@ export const SCHEMAS = {
   cc0: CC0ItemSchema,
   slop: SlopRuleSchema,
   bench: BenchBriefSchema,
+  shaders: ShaderRecipeSchema,
+  motion: MotionRecipeSchema,
 } as const;
 export type AtlasKind = keyof typeof SCHEMAS;
 
@@ -339,6 +445,9 @@ export type _SchemaChecks = [
   Assert<Same<z.infer<typeof CC0ItemSchema>, CC0Item>>,
   Assert<Same<z.infer<typeof SlopRuleSchema>, SlopRule>>,
   Assert<Same<z.infer<typeof BenchBriefSchema>, BenchBrief>>,
+  Assert<Same<z.infer<typeof ShaderRecipeSchema>, ShaderRecipe>>,
+  Assert<Same<z.infer<typeof MotionKeyframeSchema>, MotionKeyframe>>,
+  Assert<Same<z.infer<typeof MotionRecipeSchema>, MotionRecipe>>,
   Assert<Equals<z.infer<typeof PlatformSchema>, Platform>>,
   Assert<Equals<z.infer<typeof UiElementSchema>, UiElement>>,
 ];

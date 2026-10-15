@@ -78,37 +78,156 @@ function readRaw(path: string): Map<string, Reply> {
   return m;
 }
 
-/** Replies to records: parse, prepare, validate, check, finalize; then shards, review, rejects. */
-async function processReplies(job: AtlasJob<unknown, unknown>, inputs: Map<string, unknown>, replies: Map<string, Reply>, ctx: JobContext) {
+/** Sends requests (batch or direct), logs every reply's cost, merges the replies into rawPath. */
+type Sender = (requests: BatchRequest[], statePath: string, rawPath: string) => Promise<Map<string, Reply>>;
+
+function makeSender(job: AtlasJob<unknown, unknown>, pollMs: number, log: (line: string) => void): Sender {
+  return async (requests, statePath, rawPath) => {
+    loadEnv();
+    const client = new Anthropic();
+    mkdirSync(PATHS.raw, { recursive: true });
+    const rawLines: string[] = [];
+    let runUsd = 0;
+    const onReply = (r: Reply) => {
+      rawLines.push(JSON.stringify(r));
+      if (r.usage) {
+        const usd = usageCost(job.model, r.usage, job.mode === "batch");
+        runUsd += usd;
+        logUsage(PATHS.costs, {
+          job: job.id,
+          request: r.id,
+          model: r.model ?? job.model,
+          mode: job.mode,
+          input_tokens: r.usage.input_tokens,
+          cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
+          cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
+          output_tokens: r.usage.output_tokens,
+          usd,
+        });
+      }
+    };
+    const replies =
+      job.mode === "batch" ? await runBatches(client, job.id, requests, statePath, { pollMs, log, onReply }) : await runDirect(client, requests, { log, onReply });
+    // Keep earlier replies for requests this run did not send, so a partial rerun (--offset/--limit)
+    // followed by --from-raw rebuilds the whole job.
+    const sent = new Set(requests.map((r) => r.custom_id));
+    for (const id of replies.keys()) sent.add(id);
+    const kept = existsSync(rawPath) ? [...readRaw(rawPath).values()].filter((r) => !sent.has(r.id)).map((r) => JSON.stringify(r)) : [];
+    writeFileSync(rawPath, [...kept, ...rawLines].join("\n") + "\n");
+    clearState(statePath);
+    log(`Spent this run: $${runUsd.toFixed(4)} (logged to ${PATHS.costs}). Replies saved to ${rawPath}.`);
+    return replies;
+  };
+}
+
+/** Estimate and spend guard for a list of requests. Returns false (and logs why) when refused. */
+function guardRequests(job: AtlasJob<unknown, unknown>, requests: readonly BatchRequest[], log: (line: string) => void): boolean {
+  const shapes: RequestShape[] = requests.map((r) => {
+    const s = contentShape(r.params.messages[0]!.content);
+    return { systemChars: job.system.length, userChars: s.chars, images: s.images, outputTokens: job.expectedOutputTokens };
+  });
+  const est = estimateCost(job.model, shapes, job.mode === "batch");
+  const worst = estimateCost(job.model, shapes.map((s) => ({ ...s, outputTokens: job.maxTokens })), job.mode === "batch");
+  log(`Estimate: ${est.inputTokens} input tokens, ${est.outputTokens} output tokens, $${est.usd.toFixed(4)} (every reply at max_tokens: $${worst.usd.toFixed(4)}).`);
+  const guard = checkBudget(job.id, est.usd, readLedger(PATHS.costs));
+  for (const l of guard.lines) log(`  ${l}`);
+  if (!guard.ok) log(`REFUSED: ${guard.reason}. Lower --limit, trim the prompt, or ask the owner to raise the budget in config.ts.`);
+  return guard.ok;
+}
+
+/** One reply to validated records (parse, prepare, schema, writing rules, check), or a reject reason. */
+function recordsOf(job: AtlasJob<unknown, unknown>, id: string, input: unknown, reply: Reply | undefined, ctx: JobContext, fix?: (raw: unknown) => unknown): { ok: unknown[]; rejects: Reject[] } {
+  const no = (reason: string, record: unknown = null) => ({ ok: [], rejects: [{ job: job.id, request: id, reason: [reason], record }] });
+  if (!reply) return no("no reply");
+  if (reply.status !== "succeeded") return no(`request ${reply.status}${reply.error ? `: ${reply.error}` : ""}`);
+  if (reply.stop_reason !== "end_turn") return no(`stop_reason ${reply.stop_reason}`, reply.text ?? null);
+  let raw: unknown[];
+  try {
+    raw = job.parse ? job.parse(reply.text ?? "", input) : toRecords(extractJson(reply.text ?? ""));
+  } catch (e) {
+    return no(`unparseable reply: ${e instanceof Error ? e.message : String(e)}`, reply.text ?? null);
+  }
+  if (fix) raw = raw.map(fix);
+  const prepared = job.prepare ? raw.map((r) => job.prepare!(r, input, ctx)) : raw;
+  return validateRecords(job.id, id, prepared, job.schema, job.check ? (r) => job.check!(r, ctx) : undefined);
+}
+
+const keyOf = (r: unknown) => String((r as { id?: unknown }).id ?? "");
+
+/**
+ * The verify and repair step (AtlasJob.verify): failing records get one repair request each; a
+ * repaired record that passes replaces the failed one, anything else is dropped to rejects.
+ * With --from-raw, repairs come from raw/<job>-repair.jsonl only (no API calls).
+ */
+async function verifyAndRepair(
+  job: AtlasJob<unknown, unknown>,
+  records: unknown[],
+  inputOf: Map<unknown, unknown>,
+  ctx: JobContext,
+  rejects: Reject[],
+  opts: { fromRaw: boolean; send?: Sender },
+): Promise<unknown[]> {
+  const fails = await job.verify!(records, ctx);
+  const passed = records.filter((r) => !fails.has(keyOf(r)));
+  ctx.log(`Verify: ${passed.length} passed, ${fails.size} failed.`);
+  if (fails.size === 0) return records;
+  const failed = records.filter((r) => fails.has(keyOf(r)));
+  if (!job.repairPrompt) {
+    for (const r of failed) rejects.push({ job: job.id, request: keyOf(r), reason: fails.get(keyOf(r))!, record: r });
+    return passed;
+  }
+  const fixId = (key: string) => `fix-${key}`.slice(0, 64);
+  const requests: BatchRequest[] = [];
+  for (const r of failed) {
+    const content = await job.repairPrompt(r, fails.get(keyOf(r))!, inputOf.get(r));
+    requests.push({ custom_id: fixId(keyOf(r)), params: buildParams({ model: job.model, system: job.system, content, maxTokens: job.maxTokens, effort: job.effort }) });
+  }
+  const rawPath = join(PATHS.raw, `${job.id}-repair.jsonl`);
+  let replies: Map<string, Reply>;
+  if (opts.fromRaw) {
+    replies = existsSync(rawPath) ? readRaw(rawPath) : new Map();
+  } else if (opts.send && guardRequests(job, requests, ctx.log)) {
+    ctx.log(`Repair: ${requests.length} request(s), one retry each with the render problems.`);
+    replies = await opts.send(requests, join(PATHS.state, `${job.id}-repair.json`), rawPath);
+  } else {
+    replies = new Map();
+  }
+  const repaired: unknown[] = [];
+  for (const r of failed) {
+    const key = keyOf(r);
+    const got = recordsOf(job, fixId(key), inputOf.get(r), replies.get(fixId(key)), ctx, (raw) => (raw && typeof raw === "object" ? { ...(raw as object), id: key } : raw));
+    const fixed = got.ok[0];
+    if (!fixed) {
+      rejects.push({ job: job.id, request: key, reason: [...fails.get(key)!.map((p) => `render: ${p}`), ...got.rejects.flatMap((x) => x.reason.map((p) => `repair: ${p}`))], record: r });
+      continue;
+    }
+    repaired.push(fixed);
+  }
+  const again = repaired.length > 0 ? await job.verify!(repaired, ctx) : new Map<string, string[]>();
+  for (const r of repaired) {
+    const p = again.get(keyOf(r));
+    if (p) rejects.push({ job: job.id, request: keyOf(r), reason: [...fails.get(keyOf(r))!.map((x) => `render: ${x}`), ...p.map((x) => `after repair: ${x}`)], record: r });
+  }
+  const fixedOk = repaired.filter((r) => !again.has(keyOf(r)));
+  ctx.log(`Repair: ${fixedOk.length} of ${failed.length} fixed, ${failed.length - fixedOk.length} dropped.`);
+  const fixedBy = new Map(fixedOk.map((r) => [keyOf(r), r]));
+  // Keep the original order.
+  return records.flatMap((r) => (fails.has(keyOf(r)) ? (fixedBy.has(keyOf(r)) ? [fixedBy.get(keyOf(r))!] : []) : [r]));
+}
+
+/** Replies to records: parse, prepare, validate, check, finalize, verify; then shards, review, rejects. */
+async function processReplies(job: AtlasJob<unknown, unknown>, inputs: Map<string, unknown>, replies: Map<string, Reply>, ctx: JobContext, opts: { fromRaw: boolean; send?: Sender } = { fromRaw: true }) {
   const valid: unknown[] = [];
   const rejects: Reject[] = [];
+  const inputOf = new Map<unknown, unknown>(); // by record object: finalize may rename ids in place
   for (const [id, input] of inputs) {
-    const reply = replies.get(id);
-    if (!reply) {
-      rejects.push({ job: job.id, request: id, reason: ["no reply"], record: null });
-      continue;
-    }
-    if (reply.status !== "succeeded") {
-      rejects.push({ job: job.id, request: id, reason: [`request ${reply.status}${reply.error ? `: ${reply.error}` : ""}`], record: null });
-      continue;
-    }
-    if (reply.stop_reason !== "end_turn") {
-      rejects.push({ job: job.id, request: id, reason: [`stop_reason ${reply.stop_reason}`], record: reply.text ?? null });
-      continue;
-    }
-    let raw: unknown[];
-    try {
-      raw = job.parse ? job.parse(reply.text ?? "", input) : toRecords(extractJson(reply.text ?? ""));
-    } catch (e) {
-      rejects.push({ job: job.id, request: id, reason: [`unparseable reply: ${e instanceof Error ? e.message : String(e)}`], record: reply.text ?? null });
-      continue;
-    }
-    const prepared = job.prepare ? raw.map((r) => job.prepare!(r, input, ctx)) : raw;
-    const checked = validateRecords(job.id, id, prepared, job.schema, job.check ? (r) => job.check!(r, ctx) : undefined);
-    valid.push(...checked.ok);
-    rejects.push(...checked.rejects);
+    const got = recordsOf(job, id, input, replies.get(id), ctx);
+    for (const r of got.ok) inputOf.set(r, input);
+    valid.push(...got.ok);
+    rejects.push(...got.rejects);
   }
-  const final = job.finalize ? await job.finalize(valid, ctx) : valid;
+  let final = job.finalize ? await job.finalize(valid, ctx) : valid;
+  if (job.verify) final = await verifyAndRepair(job, final, inputOf, ctx, rejects, opts);
 
   const entries = writeKind(PATHS.out, job.kind, final, job.shardOf ? (r) => job.shardOf!(r) : undefined);
   const rejectsPath = writeRejects(PATHS.rejects, job.id, rejects, true);
@@ -149,24 +268,13 @@ export async function main(argv: readonly string[]): Promise<number> {
   const resuming = job.mode === "batch" && readState(statePath) !== null;
 
   const requests: BatchRequest[] = [];
-  const shapes: RequestShape[] = [];
   if (!resuming) {
     for (const [id, input] of inputs) {
       const content = await job.buildPrompt(input, ctx);
       const params = buildParams({ model: job.model, system: job.system, content, maxTokens: job.maxTokens, effort: job.effort });
-      const s = contentShape(content);
-      shapes.push({ systemChars: job.system.length, userChars: s.chars, images: s.images, outputTokens: job.expectedOutputTokens });
       requests.push({ custom_id: id, params });
     }
-    const est = estimateCost(job.model, shapes, job.mode === "batch");
-    const worst = estimateCost(job.model, shapes.map((s) => ({ ...s, outputTokens: job.maxTokens })), job.mode === "batch");
-    ctx.log(`Estimate: ${est.inputTokens} input tokens, ${est.outputTokens} output tokens, $${est.usd.toFixed(4)} (every reply at max_tokens: $${worst.usd.toFixed(4)}).`);
-    const guard = checkBudget(job.id, est.usd, readLedger(PATHS.costs));
-    for (const l of guard.lines) ctx.log(`  ${l}`);
-    if (!guard.ok) {
-      ctx.log(`REFUSED: ${guard.reason}. Lower --limit, trim the prompt, or ask the owner to raise the budget in config.ts.`);
-      return 2;
-    }
+    if (!guardRequests(job, requests, ctx.log)) return 2;
     if (args.dry) {
       ctx.log("Dry run: nothing sent.");
       return 0;
@@ -176,42 +284,9 @@ export async function main(argv: readonly string[]): Promise<number> {
     return 0;
   }
 
-  loadEnv();
-  const client = new Anthropic();
-  mkdirSync(PATHS.raw, { recursive: true });
-  const rawLines: string[] = [];
-  let runUsd = 0;
-  const onReply = (r: Reply) => {
-    rawLines.push(JSON.stringify(r));
-    if (r.usage) {
-      const usd = usageCost(job.model, r.usage, job.mode === "batch");
-      runUsd += usd;
-      logUsage(PATHS.costs, {
-        job: job.id,
-        request: r.id,
-        model: r.model ?? job.model,
-        mode: job.mode,
-        input_tokens: r.usage.input_tokens,
-        cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
-        cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
-        output_tokens: r.usage.output_tokens,
-        usd,
-      });
-    }
-  };
-  const replies =
-    job.mode === "batch"
-      ? await runBatches(client, job.id, requests, statePath, { pollMs: args.pollMs, log: ctx.log, onReply })
-      : await runDirect(client, requests, { log: ctx.log, onReply });
-  // Keep earlier replies for requests this run did not send, so a partial rerun (--offset/--limit)
-  // followed by --from-raw rebuilds the whole job.
-  const sent = new Set(inputs.keys());
-  const kept = existsSync(rawPath) ? [...readRaw(rawPath).values()].filter((r) => !sent.has(r.id)).map((r) => JSON.stringify(r)) : [];
-  writeFileSync(rawPath, [...kept, ...rawLines].join("\n") + "\n");
-  clearState(statePath);
-  ctx.log(`Spent this run: $${runUsd.toFixed(4)} (logged to ${PATHS.costs}). Replies saved to ${rawPath}.`);
-
-  await processReplies(job, inputs, replies, ctx);
+  const send = makeSender(job, args.pollMs, ctx.log);
+  const replies = await send(requests, statePath, rawPath);
+  await processReplies(job, inputs, replies, ctx, { fromRaw: false, send });
   return 0;
 }
 
