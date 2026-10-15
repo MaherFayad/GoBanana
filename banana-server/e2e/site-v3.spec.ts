@@ -183,7 +183,7 @@ test.describe("canvases dashboard (Finder window)", () => {
 });
 
 test.describe("account (System Settings window)", () => {
-  test("the list jumps to Plan, Usage and Shared links; usage shows as meters", async ({ page }) => {
+  test("the list jumps to Plan, Usage, Shared links and Taste profile; usage shows as meters", async ({ page }) => {
     await page.goto("/en/account");
     await expect(page.locator(".wl .settings.dwin")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Account" })).toBeVisible();
@@ -192,6 +192,7 @@ test.describe("account (System Settings window)", () => {
       "#plan-title",
       "#usage-title",
       "#shared-title",
+      "#taste-title",
     ]);
     await expect(list.getByRole("button", { name: "Sign out" })).toBeVisible();
     await list.getByRole("link", { name: "Usage this month" }).click();

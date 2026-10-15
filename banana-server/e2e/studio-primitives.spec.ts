@@ -9,6 +9,16 @@ import { expect, test, type Page } from "@playwright/test";
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function axe(page: Page, label: string) {
+  // axe reads colors from the live frame. Dialogs and toasts fade in, so wait for finite
+  // animations to settle or it reads blended mid-fade colors (3.3 to 4.0:1), not the tokens.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => null)),
+    ),
+  );
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(
     results.violations,
