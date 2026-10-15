@@ -130,6 +130,12 @@ export interface Direction {
   artQueries: string[];
   /** The working UI part the wild idea becomes (lib/bend/mechanic.ts): build the direction around it. */
   mechanic: Mechanic;
+  /** Atlas engine only (P1-I2): the lead card first, then the card that adds texture or motion. */
+  cardIds?: string[];
+  /** Atlas engine only: the Atlas mechanic the direction is built on. */
+  mechanicId?: string;
+  /** Atlas engine only: the query recipes its queries came from (lib/atlas/loader.ts recipeId). */
+  recipeIds?: string[];
 }
 
 /** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */
@@ -169,4 +175,6 @@ export interface BendResult {
   /** Top places for one wild page on this platform. Empty when pages were given. */
   wildSpots: WildSpot[];
   directions: Direction[];
+  /** Set when the Atlas engine made the directions (BEND_ENGINE=atlas); absent for the word lists. */
+  atlas?: { pageId: string; domainId: string; productNoun: string };
 }
