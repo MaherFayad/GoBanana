@@ -198,6 +198,14 @@ const THEMED_GAPS: Array<{ kind: Kind; theme: string; count: number }> = [
   { kind: "tradition", theme: "crafts of the Pacific, Oceania and the Arctic not yet in the catalog", count: 5 },
 ];
 
+const RESTORE: Array<[Kind, string[]]> = [
+  ["tradition", ["Hejazi rawashin windows", "Delft blue pottery"]],
+  ["material", ["woven rattan", "glazed ceramic"]],
+  ["constraint", ["only space separates groups", "each view one solid color"]],
+];
+const RESTORE_THEME =
+  "words restored after a first pass dropped both words of a near-duplicate pair (rawashin vs Hejazi coral stone houses, Delft vs gzhel, woven rattan vs cane webbing, glazed ceramic vs ceramic tile glaze, only space separates groups vs no cards no boxes, each view one solid color vs one color field per section); keep each one and make it clearly distinct from its partner";
+
 const slug = (s: string) =>
   s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -224,6 +232,13 @@ function loadAll(): Input[] {
     );
   }
   for (const g of THEMED_GAPS) inputs.push({ mode: "gap", key: slug(`${g.kind} ${g.theme}`).slice(0, 56), kind: g.kind, theme: g.theme, count: g.count });
+  // Second pass (appended so earlier request ids keep their order): in the first pass the model
+  // dropped both words of these near-duplicate pairs against each other, and Hejazi rawashin, a
+  // market.ts Gulf tradition, as a duplicate of Hejazi coral stone houses. One word of each pair
+  // comes back, written to stand apart from its partner.
+  for (const [kind, words] of RESTORE) {
+    inputs.push({ mode: "gap", key: `restore-${kind}`, kind, theme: RESTORE_THEME, count: words.length, words: words.map((w) => word(w)) });
+  }
   return inputs;
 }
 
@@ -369,6 +384,8 @@ function prepare(raw: unknown, input: Input, ctx: { fonts: () => FontIndex }): u
       slot.body = canonicalFont(slot.body, fonts);
     }
   }
+  if (typeof r.culturalNotes === "string" && !r.culturalNotes.trim()) delete r.culturalNotes;
+  if (r.region === "south-east-asia") r.region = "southeast-asia";
   return withShipPairs(r);
 }
 
