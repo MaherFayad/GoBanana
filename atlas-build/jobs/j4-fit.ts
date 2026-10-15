@@ -17,7 +17,7 @@ import { PROMPT_RULES } from "../lib/prompt.ts";
 import { extractJson } from "../lib/validate.ts";
 import { FitScoreSchema, type DomainEntry, type FitScore, type IngredientCard } from "../schema.ts";
 
-export const CARDS_PER_REQUEST = 8;
+export const CARDS_PER_REQUEST = 24;
 
 type Input = { n: number; cards: IngredientCard[] };
 
@@ -36,12 +36,15 @@ export function cardBrief(c: IngredientCard): string {
   ].join("\n");
 }
 
+/** The first sentence, so 60 domains fit a small cached prefix. */
+const firstSentence = (s: string) => (/^.*?[.!?](?=\s|$)/.exec(s.trim())?.[0] ?? s.trim());
+
 function domainLines(): string {
   return domains()
     .map((d) =>
       [
-        `- ${d.id}: ${d.names.en.join(", ")}. Products: ${d.productNouns.join(", ")}. Audience: ${d.audience}.`,
-        d.regionNotes ? ` Region: ${d.regionNotes}.` : "",
+        `- ${d.id}: ${d.names.en.slice(0, 2).join(", ")}. Products: ${d.productNouns.slice(0, 6).join(", ")}. Audience: ${firstSentence(d.audience)}`,
+        d.regionNotes ? ` Region: ${firstSentence(d.regionNotes)}` : "",
         d.fitsFamilies.length ? ` Fits: ${d.fitsFamilies.join("; ")}.` : "",
         d.clashFamilies.length ? ` Clashes on purpose: ${d.clashFamilies.join("; ")}.` : "",
       ].join(""),
@@ -60,7 +63,7 @@ Scores:
 - 0: wrong. It undermines the domain (playful kitsch for a cancer clinic, gambling cues for kids or finance, a sacred or care-tier tradition used where it would offend), or a culture card is out of place for the domain's region.
 Use the whole range. Most pairs are 1 or 2; give 3 and 0 when they are earned. A domain's "Fits" and "Clashes on purpose" family lists are hints, not rules.
 
-reason: 3 to 8 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). No em dashes.
+reason: 3 to 6 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). No em dashes.
 
 The domains:
 ${domainLines()}
@@ -76,8 +79,8 @@ export default defineJob<Input, FitScore>({
   get system() {
     return system();
   },
-  maxTokens: 20000,
-  expectedOutputTokens: 8000,
+  maxTokens: 48000,
+  expectedOutputTokens: 27000,
   effort: "low",
 
   loadInputs: () => {
