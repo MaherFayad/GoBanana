@@ -14,6 +14,7 @@ Turn the tray into a board people can read: one spread per direction, the wild i
 - **Two zones, never mixed.** Tray references carry a `zone`: `art` (the idea as raw images) or `ui` (screens and components). Art goes in the section's "Art direction" block; UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
 - **The server only returns text.** When a file is needed (HTML board), you write it.
 - **Trust write results.** The `add_to_canvas` and `arrange_canvas` answers are the record. Read the board once in step 1; do not call `get_canvas` again to check each write.
+- **Taste bar** (for picks and any `rate_references` call): `great` only when a screen looks shipped-grade (real data, tight type, one screen shown well) and is the brief's page. Generic concept comps (three pastel phones, flat illustrations) are good at best. UI kits and templates are `bad`; never place them.
 - **Always arrange.** Every run that places or moves items ends with one `arrange_canvas` call, after the last `add_to_canvas`.
 - Plain words, no em dashes.
 
