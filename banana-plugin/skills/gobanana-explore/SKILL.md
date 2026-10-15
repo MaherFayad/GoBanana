@@ -93,6 +93,8 @@ Keep the daily task screens (sign in, checkout steps, forms, tables, navigation)
 - **Moves** (`moves`): only when the user asks for a kind of bend: `transplant`, `material`, `era`, `constraint`, `scale`, `lens`.
 - **Taste:** use the 3 to 5 style words or the board the user gave in step 1. Never invent them. Words that search well: minimal, glassmorphism, liquid glass, dark mode, big typography, monochrome, luxury, swiss style, bento grid, editorial, grainy, skeuomorphic. If the user shares images you can see, describe them in those words; never download them. Pass `taste` to `new_canvas` or `bend_brief`. Without taste, each direction uses its own style words (`spec.styleWords`). There is no house style; do not invent one.
 
+**Culture check.** When a lens is set, the brief names a culture, region, script or occasion, or a placed reference shows a cultural motif, follow gobanana-culture before you place any notes: name the tradition, give it a sensitivity tier, write the meaning, steal, credit and care lines, and keep sacred text, symbols and flags out of the board.
+
 ### 6. Pick the canvas: extend one, or create one (do not show it yet)
 
 1. **A canvas already in this conversation:** use its `canvasId`.

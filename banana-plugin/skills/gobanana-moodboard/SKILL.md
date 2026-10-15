@@ -65,6 +65,10 @@ Say the board is ready. If the client shows the canvas inline, point to it. **Al
 - **FigJam or HTML board:** see below.
 - **Hand off** a kept direction to a coding tool (gobanana-handoff).
 
+## Cultural references
+
+When a lens is set, the brief names a culture, region, script or occasion, or a placed reference shows a cultural motif, follow gobanana-culture before you write the notes: each cultural item gets meaning, steal, credit and care lines, and sacred text, symbols and flags are never placed as decoration.
+
 ## FigJam board (optional)
 
 1. Call `export_kit` with `canvasId` and `formats: ["figjam_spec"]`. The spec is JSON: `{ sections: [{ title, x, y, w, h, items: [{ type, x, y, w, h, imageUrl?, text?, hex?, sourceUrl, zone?, note? }] }] }`.

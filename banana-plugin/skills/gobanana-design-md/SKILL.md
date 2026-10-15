@@ -13,6 +13,7 @@ Export a kept direction as a DESIGN.md (Google Labs DESIGN.md format, alpha) sco
 - **The server returns text; you write the file** at the returned `path`. Never ask the user to copy and paste.
 - **Ship vs explore.** Only colors tagged `ship` go in the front matter (WCAG 2.2: SC 1.4.3 at 4.5:1 for text, SC 1.4.11 at 3:1 for UI parts). `explore` colors stay in prose, marked "concept only". Never move an `explore` color into the front matter to fix a lint error.
 - **Sources stay linked.** Keep any Sources list. Never copy reference images into the repo.
+- **Cultural brief.** When the direction has a lens or cultural items, keep a Cultural brief block in the Overview prose (never in the front matter): tradition, tier, what we use, what we avoid, credit line, sources and suggested reviewer (see gobanana-culture). If the export lacks it, add it from the board notes. Check that the file still lints.
 - Plain words, no em dashes.
 
 ## Steps

@@ -6,7 +6,7 @@ GoBanana is a Claude plugin for one crazy idea over a page or two: a launch page
 
 Ask your agent to "go wild" on a page. GoBanana bends the brief into unexpected directions, each with a full visual spec, fills a moodboard canvas with two zones of linked references (the wild idea as images, and real UI for your platform), and hands the direction you keep to Claude Code, Cursor, Copilot, Codex, v0 or Lovable as scoped files. Then it can screenshot what you built and grade it against the direction.
 
-The plugin connects your agent to the GoBanana MCP server and adds 10 skills that tell the agent which tools to call, in which order, and how to present the results.
+The plugin connects your agent to the GoBanana MCP server and adds 11 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, beta. The server runs at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen. See [Placeholders](#placeholders).
 

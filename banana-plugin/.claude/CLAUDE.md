@@ -1,6 +1,6 @@
 # GoBanana plugin
 
-Claude plugin for the GoBanana MCP server: 10 skills that drive the server's 16 tools for one wild page or two: exploration, moodboards, Frankenstein pages, scoped exports, hand-off and critique. Design spec for the current behavior: `docs/wild-directions-v2-spec.md` in the monorepo. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
+Claude plugin for the GoBanana MCP server: 11 skills that drive the server's 16 tools for one wild page or two: exploration, moodboards, Frankenstein pages, scoped exports, hand-off and critique. Design spec for the current behavior: `docs/wild-directions-v2-spec.md` in the monorepo. Full spec: `docs/banana-build-spec.md` in the GoBanana monorepo (sections 1, 2, 6, 10, 13 and 14).
 
 This file lives in `.claude/` on purpose. A `CLAUDE.md` at the plugin root is not loaded for plugin users, and `claude plugin validate --strict` fails on it.
 
