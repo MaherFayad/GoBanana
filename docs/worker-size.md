@@ -1,8 +1,45 @@
 # Worker size (Cloudflare Workers Free)
 
-Workers Free rejects a Worker upload over **3 MiB gzipped**. The owner chose to stay on
-Free, so the Worker has a CI budget of **2.9 MiB** (`npm run worker:size -- --max-mb 2.9`
-in `.github/workflows/ci.yml`) and a working target of **2.7 MiB** or less.
+## 2026-10-15: the gate moves to the uncompressed size (P0-15, owner decision D5)
+
+The owner asked to verify the limit before relaxing the gate. What was checked:
+
+- **Cloudflare docs.** https://developers.cloudflare.com/workers/platform/limits/ (last
+  updated 2026-10-12, read 2026-10-15). The account plan table (`Feature | Workers Free |
+  Workers Paid`) lists "Worker size | 64 MiB | 64 MiB" and "Worker startup time | 1 second |
+  1 second". The Worker size section says: "There is no compressed size limit. Only the
+  uncompressed bundle size counts." and "The `gzip` value is shown for reference but is not a
+  limit." The page does not mention 3 MB or 10 MB anywhere. The Free column is the plan this
+  Worker deploys on, so the 3 MiB gzipped Free limit no longer applies.
+- **Dry run.** `npx opennextjs-cloudflare build`, then `npx wrangler deploy --dry-run --outdir
+  <scratch>` with wrangler 4.149.0 on Windows: `Total Upload: 10136.50 KiB / gzip: 2859.88
+  KiB` (9.90 MiB uncompressed, 2.79 MiB gzipped). No size or limit warning was printed.
+- **Startup.** The dry run does not report startup time (the docs say `startup_time_ms` comes
+  from a real `wrangler deploy` or `versions upload`, which we do not run). `wrangler check
+  startup` profiles the bundle locally with no login and no upload: 56 to 78 ms active CPU
+  over three runs, against the 1 second limit.
+
+New gates in `.github/workflows/ci.yml`:
+
+| Check | Command | Budget | Limit |
+| --- | --- | --- | --- |
+| Uncompressed size | `npm run worker:size -- --max-mib 60` | 60 MiB | 64 MiB |
+| Gzipped size | printed by `worker:size`, report only | none | none (was 3 MiB on Free) |
+| Startup CPU (local profile) | `npm run worker:startup -- --max-ms 400` | 400 ms | 1 s |
+
+`worker:size` reads wrangler's own "Total Upload" line (the number the docs say counts) and
+prints a note, without failing, when the gzipped size passes 3 MiB. The startup budget sits
+well under 1 second because a CI runner's CPU is not Cloudflare's. If the first real deploy
+over 3 MiB gzipped is rejected, put the old gate back (`--max-mb 2.9` on the gzipped size) and
+record it in DECISIONS.md.
+
+The history below was written under the old 3 MiB gzipped limit and is kept as a record.
+
+## Before 2026-10-15
+
+Workers Free rejected a Worker upload over **3 MiB gzipped**. The owner chose to stay on
+Free, so the Worker had a CI budget of **2.9 MiB** gzipped and a working target of
+**2.7 MiB** or less.
 
 | | gzipped | raw |
 | --- | --- | --- |
@@ -43,6 +80,7 @@ progress on 2026-10-11 (about +0.02 MiB).
 npx opennextjs-cloudflare build      # runs build:ui and next build first
 npm run worker:size                  # wrangler deploy --dry-run, gzips the output
 npm run worker:breakdown             # which packages the size is made of
+npm run worker:startup               # local startup profile (wrangler check startup)
 ```
 
 `worker:breakdown` (scripts/worker-breakdown.mjs) splits the two OpenNext bundles back
