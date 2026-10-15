@@ -15,6 +15,7 @@ import { createDbTasteStore } from "@/lib/taste-profile/store";
 import { bendBriefAtlas, BEND_SHARD_BUDGET } from "@/lib/atlas/bend";
 import { liveAtlasLoader } from "@/lib/atlas/live";
 import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
+import { readAtlasLearning } from "@/lib/atlas/learning";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
@@ -198,7 +199,13 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendE
         reachable = false;
       }
     }
-    const taste = await withProfileFallback((id) => getDeps().tasteProfile?.(id) ?? Promise.resolve(EMPTY_TASTE), userId, newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined));
+    // The profile is read once: the taste lane fallback and the Atlas tie breaker share it.
+    let profile: Promise<UserTasteProfile> | undefined;
+    const readProfile = (id: string) =>
+      (profile ??= Promise.resolve()
+        .then(() => getDeps().tasteProfile?.(id) ?? EMPTY_TASTE)
+        .catch(() => EMPTY_TASTE));
+    const taste = await withProfileFallback(readProfile, userId, newTaste.length > 0 ? newTaste : cleanTaste(canvas ? parseState(canvas.state).taste : undefined));
 
     const ingredientWeights = await readWeights(getDeps, userId, canvasId);
     const bendInput = { ...parsed.input, ...(taste.length > 0 ? { taste } : {}) };
@@ -206,7 +213,19 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendE
     if (engine && bendEngineMode(engine.mode()) === "atlas") {
       try {
         const source = engine.source();
-        result = source ? await bendBriefAtlas(bendInput, source, { ingredientWeights }) : null;
+        if (source) {
+          // Atlas learning (nightly weights plus the user's own ratings) and the taste profile as
+          // a tie breaker; both fail open, so a missing table or profile changes nothing.
+          const learning = userId
+            ? await Promise.resolve()
+                .then(() => readAtlasLearning(getDeps().repos.feedback, userId, getDeps().globalLearning?.() ?? true))
+                .catch(() => null)
+            : null;
+          const tasteTarget = userId ? await readProfile(userId) : null;
+          result = await bendBriefAtlas(bendInput, source, { ingredientWeights, learning, taste: tasteTarget });
+        } else {
+          result = null;
+        }
       } catch {
         console.error("[bend_brief] the Atlas engine failed, using the word lists");
         result = null;

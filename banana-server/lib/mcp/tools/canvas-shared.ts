@@ -5,6 +5,8 @@
  * Every tool takes `CanvasToolDeps`, so tests pass in-memory repos (lib/db/memory.ts)
  * and the live server passes the Drizzle ones, built lazily so env is read per request.
  */
+import { liveAtlasLoader } from "@/lib/atlas/live";
+import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
 import { z } from "zod";
 import { getConfig } from "@/lib/config";
 import { getRepos, memoTakedowns } from "@/lib/db";
@@ -20,6 +22,8 @@ export type CanvasToolDeps = {
   /** Node id maker, injectable for tests. */
   makeId?(prefix: string): string;
   now?(): Date;
+  /** The Banana Atlas for this call (W2: cut_parts anatomy, export_kit cards), or null when there is none. */
+  atlasSource?(): AtlasSource | null;
 };
 
 /** Live deps. `repos` is read lazily, so input checks run even when the database is not configured. */
@@ -29,6 +33,10 @@ export function liveCanvasDeps(): CanvasToolDeps {
       return getRepos();
     },
     appUrl: () => getConfig().appUrl,
+    atlasSource: () => {
+      const loader = liveAtlasLoader();
+      return loader ? loaderSource(loader) : null;
+    },
   };
 }
 

@@ -14,6 +14,7 @@ import type { ReferenceRecord } from "@/lib/db/types";
 import { detectPlatform } from "@/lib/platform";
 import { isMobbinSource } from "@/lib/sources/mobbin";
 import { defaultCrop, distinctCrop } from "@/lib/stitch/crop";
+import { anatomyFor, loadCutAnatomy, type CutAnatomy } from "@/lib/atlas/wiring";
 import { MAX_PART_NOTE } from "@/lib/stitch/parse";
 import { clampCrop, MAX_PARTS, type Crop, type Part, type StitchPlatform } from "@/lib/stitch/types";
 import {
@@ -139,6 +140,19 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         lookSrc = { ...src, label: `Look at ${itemId ? `item ${itemId}` : `reference ${referenceId}`}${src.title ? ` "${webTitle(src.title)}"` : ""} from ${site} ${src.sourceUrl}` };
       }
 
+      // A guessed crop reads the page anatomy (P1-I4 bands) when the Atlas knows the page: the
+      // image's direction's page, else the board's. No Atlas: ROLE_BANDS as before.
+      let anatomy: CutAnatomy | null = null;
+      if (cuts.some((c) => !c.crop) && deps.atlasSource) {
+        try {
+          const source = deps.atlasSource();
+          if (source) anatomy = await loadCutAnatomy(source, await repos.directions.listForCanvas(input.canvasId), owned.brief);
+        } catch {
+          console.error("[cut_parts] could not read the page anatomy");
+          anatomy = null;
+        }
+      }
+
       let parts: Part[] = [];
       let libraryCount = (parseState(owned.state).parts ?? []).length;
       if (cuts.length > 0) {
@@ -152,12 +166,17 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         const tray = new Map(state.tray.map((r) => [r.id, r]));
         const nodes = new Map(state.nodes.map((n) => [n.id, n]));
         const taken = new Set(library.map((p) => p.id));
+        // The direction of an image: its section's direction (board items) or the tray result's.
+        const sectionDirection = new Map(
+          state.nodes.filter((n) => n.type === "section").map((n) => [n.id, ((n.data as { directionId?: unknown }).directionId as string | undefined) ?? null]),
+        );
         const problems: string[] = [];
         const fresh: Part[] = [];
         // Crops already cut per image: a guess never repeats one (two roles, one band).
         const cropsOf = (url: string) => [...library, ...fresh].filter((p) => p.imageUrl === url).map((p) => p.crop);
         cuts.forEach((c, i) => {
           let src: Source | undefined;
+          let directionId: string | null = null;
           if (c.itemId) {
             const node = nodes.get(c.itemId);
             if (!node || (node.type !== "image" && node.type !== "upload")) {
@@ -165,8 +184,10 @@ export function createCutPartsTool(deps: CutPartsDeps) {
               return;
             }
             src = node.data;
+            directionId = node.parentId ? (sectionDirection.get(node.parentId) ?? null) : null;
           } else if (c.referenceId) {
             src = saved.get(c.referenceId) ?? tray.get(c.referenceId);
+            directionId = tray.get(c.referenceId)?.directionId ?? null;
             if (!src) {
               problems.push(`Cut ${i + 1}: reference ${c.referenceId} was not found for this canvas. Search with this canvasId first.`);
               return;
@@ -183,7 +204,10 @@ export function createCutPartsTool(deps: CutPartsDeps) {
           const single = isMobbinSource(src);
           const crop = c.crop
             ? clampCrop(c.crop)
-            : distinctCrop(defaultCrop(c.role, { imageWidth, imageHeight, single, ...(platform ? { platform } : {}) }), cropsOf(src.imageUrl));
+            : distinctCrop(
+                defaultCrop(c.role, { imageWidth, imageHeight, single, ...(platform ? { platform } : {}), anatomy: anatomyFor(anatomy, directionId) }),
+                cropsOf(src.imageUrl),
+              );
           fresh.push({
             id: newPartId(makeId, taken),
             role: c.role,

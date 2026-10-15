@@ -9,8 +9,10 @@
  *
  * Each lane keeps its Phase 0 words (P0-17 taste lanes included) when no recipe fits, so a
  * missing recipe never loses a lane. Every reference a recipe found carries `recipeId` and
- * `cardId` (provenance, saved on the reference row). Pure: the Atlas source and the image host
- * check are injected.
+ * `cardId` (provenance, saved on the reference row). Learning (W2, lib/atlas/learning.ts): a lane
+ * the bend did not choose a recipe for draws one with `pickRecipe` when ratings exist, and art
+ * recipes are ordered by precision times their weight. Pure: the Atlas source, the learning and
+ * the image host check are injected.
  */
 import type { Market } from "@/lib/bend/market";
 import type { DirectionDetail } from "@/lib/direction-detail";
@@ -19,6 +21,8 @@ import { artWords, type LaneTexts } from "@/lib/sources/plan";
 import { SOURCE_SITES, type LaneName, type Reference, type SourceSite } from "@/lib/sources/types";
 import { referenceId } from "@/lib/sources/web-search";
 import { ELEMENT_TO_MECHANIC } from "./bend";
+import { atlasTermKey } from "@/lib/learning/arms";
+import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import type { AtlasSource } from "./source";
 import type { CC0Item, QueryRecipe, UiElement } from "./types";
@@ -61,19 +65,22 @@ function keyFields(key: QueryRecipe["key"]): QueryRecipe["key"] {
   };
 }
 
-/** Best recipe: one the bend chose, then precision, then judged. */
-function best(list: readonly QueryRecipe[], chosen: ReadonlySet<string>, ok: (r: QueryRecipe) => boolean): QueryRecipe | null {
-  return (
-    [...list]
-      .filter(ok)
-      .sort(
-        (a, b) =>
-          Number(chosen.has(recipeId(b))) - Number(chosen.has(recipeId(a))) ||
-          b.precision - a.precision ||
-          b.judged - a.judged ||
-          a.query.localeCompare(b.query),
-      )[0] ?? null
-  );
+/**
+ * Best recipe: one the bend chose, else the best judged (precision, then judged), or a Thompson
+ * draw among them when the learning has ratings for one (chooseRecipe).
+ */
+function best(list: readonly QueryRecipe[], chosen: ReadonlySet<string>, ok: (r: QueryRecipe) => boolean, learning: AtlasLearning | null | undefined, seed: string): QueryRecipe | null {
+  const ranked = [...list]
+    .filter(ok)
+    .sort(
+      (a, b) =>
+        Number(chosen.has(recipeId(b))) - Number(chosen.has(recipeId(a))) ||
+        b.precision - a.precision ||
+        b.judged - a.judged ||
+        a.query.localeCompare(b.query),
+    );
+  if (ranked[0] && chosen.has(recipeId(ranked[0]))) return ranked[0];
+  return chooseRecipe(ranked, learning, seed);
 }
 
 const asSite = (source: string): SourceSite | undefined => (SOURCE_SITES as readonly string[]).includes(source) ? (source as SourceSite) : undefined;
@@ -125,7 +132,7 @@ export async function atlasSearchPlan(
   base: LaneTexts,
   atlas: AtlasIds,
   source: AtlasSource,
-  opts: { mechanic?: string; market: Market | null; allowImage: (url: string) => boolean; withArt: boolean },
+  opts: { mechanic?: string; market: Market | null; allowImage: (url: string) => boolean; withArt: boolean; learning?: AtlasLearning | null },
 ): Promise<AtlasPlan | null> {
   const cardId = atlas.cardIds[0];
   if (!cardId) return null;
@@ -157,25 +164,28 @@ export async function atlasSearchPlan(
     if (site && lane !== "art") lanes.recipeSites![lane] = site;
   };
 
-  const baseline = best(ofLane("baseline"), chosen, uiOk);
+  const learning = opts.learning ?? null;
+  const seed = (lane: string) => `${cardId}|${page ?? "-"}|${lane}`;
+  const baseline = best(ofLane("baseline"), chosen, uiOk, learning, seed("baseline"));
   if (baseline) {
     lanes.fidelity = baseline.query;
     record("fidelity", baseline, false);
   }
-  const concept = best(ofLane("concept"), chosen, uiOk);
+  const concept = best(ofLane("concept"), chosen, uiOk, learning, seed("concept"));
   if (concept) {
     lanes.bridge = concept.query;
     lanes.bridgeTitleFilter = false;
     record("bridge", concept, true);
   }
-  const component = best(ofLane("component"), chosen, uiOk);
+  const component = best(ofLane("component"), chosen, uiOk, learning, seed("component"));
   if (component) {
     lanes.component = [component.query, ...(base.component ?? []).filter((q) => q !== component.query)].slice(0, 2);
     record("component", component, true);
   }
+  const artScore = (r: QueryRecipe) => r.precision * idWeight(learning, atlasTermKey("recipe", recipeId(r)));
   const art = ofLane("art")
     .filter((r) => artWords(r.query))
-    .sort((a, b) => Number(chosen.has(recipeId(b))) - Number(chosen.has(recipeId(a))) || b.precision - a.precision)
+    .sort((a, b) => Number(chosen.has(recipeId(b))) - Number(chosen.has(recipeId(a))) || artScore(b) - artScore(a))
     .slice(0, 2);
   if (art.length > 0) {
     const words = art.map((r) => artWords(r.query));

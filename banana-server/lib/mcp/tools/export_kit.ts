@@ -29,6 +29,7 @@ import { exportLimitMessage, splitExportFormats } from "@/lib/quota";
 import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, upgradeUrl } from "./canvas-shared";
 import { directionStates, reconcileDirection, type ReconcileDeps } from "./reconcile_direction";
 import { recordFunnel } from "@/lib/funnel";
+import { loadDirectionCards } from "@/lib/atlas/wiring";
 import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "export_kit";
@@ -128,7 +129,16 @@ export function createExportKitTool(deps: ExportKitDeps) {
       }
 
       if (allowed.length > 0) await recordFunnel(userId, "export");
-      const opts = { scope, pages: input.pages } as const;
+      // The lead and second Atlas cards of the exported directions (P1-I5 fonts, radii, motion and
+      // palette). No Atlas, or cards that cannot be read: the type voice exports as before.
+      const exportedRows = directions.filter((d) => (exported.length > 0 ? exported.includes(d.bendId ?? d.id) : true));
+      let cards: Awaited<ReturnType<typeof loadDirectionCards>> = null;
+      try {
+        cards = await loadDirectionCards(deps.atlasSource?.() ?? null, exportedRows);
+      } catch {
+        cards = null;
+      }
+      const opts = { scope, pages: input.pages, cards } as const;
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
       if (!directionId && kept.length > 1) {
