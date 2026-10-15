@@ -5,8 +5,9 @@
  * a frame drawn for the platform (phone, tablet, browser). Spec: docs/stitch-spec.md.
  *
  * Every slot shows a crop of its part's hotlinked image with CSS only, a source chip (hard rule
- * 3) and its role. Views: collage (as is), wireframe (grey, softened, big role labels) and even
- * (dark parts inverted so the page reads as one theme).
+ * 3) and its role. Views: collage (as is), wireframe (grey, softened, big role labels) and
+ * harmonize (a duotone in the direction's ink and surface colors, one inline SVG filter per page,
+ * so parts from different sources read as one palette).
  *
  * Keys on a focused slot (one tab stop for the page, arrows move between slots):
  * Alt + arrows move the slot, Enter recrops it, Delete removes it, F2 edits its note, M opens
@@ -22,6 +23,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type DragEvent,
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
@@ -35,6 +37,8 @@ import { chromeMode, type ChromeMode } from "../zoom-chrome";
 import { LinkedText } from "../linkify";
 import { FALLBACK_IMAGE_ASPECT, slotFilter } from "../stitch/crop";
 import { CroppedImage } from "../stitch/CroppedImage";
+import { HarmonizeFilter } from "../stitch/HarmonizeFilter";
+import { harmonizeFilterId } from "@/lib/stitch/harmonize";
 import { PART_DND_TYPE, SLOT_DND_TYPE, useStitch } from "../stitch/context";
 import {
   appendPart,
@@ -55,7 +59,7 @@ import { NoteEditor } from "./ImageNode";
 import { NodeMenu, PopupMenu, type MenuCloseReason, type MenuItem } from "./NodeMenu";
 import { Resizer } from "./Resizer";
 
-export const MODE_LABELS: Record<StitchMode, string> = { collage: "Collage", wireframe: "Wireframe", even: "Even" };
+export const MODE_LABELS: Record<StitchMode, string> = { collage: "Collage", wireframe: "Wireframe", harmonize: "Harmonize" };
 
 const PLATFORM_LABELS = { mobile: "Phone", tablet: "Tablet", website: "Website", webapp: "Web app" } as const;
 
@@ -144,6 +148,7 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
   const [dropOn, setDropOn] = useState<string | null>(null);
   // Slots are found in the DOM by id (not refs), so menu items built in render can focus them.
   const pageId = `bn-stitch-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const filterId = harmonizeFilterId(pageId);
   const slotEl = (slotId: string) =>
     document.getElementById(pageId)?.querySelector<HTMLElement>(`[data-slot-id="${CSS.escape(slotId)}"]`) ?? null;
   const [menuTrigger, setMenuTrigger] = useState<HTMLElement | null>(null);
@@ -446,7 +451,7 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
             width={part.imageWidth}
             height={part.imageHeight}
             fallbackAspect={fallback}
-            filter={slotFilter(mode, part.theme)}
+            filter={slotFilter(mode, filterId)}
           />
         ) : (
           <div className="bn-crop bn-crop-placeholder">
@@ -493,7 +498,15 @@ export function StitchNode({ id, data, selected, parentId, height, width }: Node
   return (
     <>
       <Resizer type="stitch" selected={selected} />
-      <div className="bn-node bn-stitch" data-platform={data.platform} data-mode={mode} data-chrome={zoomedOut ? "tiny" : undefined}>
+      <div
+        className="bn-node bn-stitch"
+        data-platform={data.platform}
+        data-mode={mode}
+        data-harmonize={mode === "harmonize" ? (data.harmonize ? "direction" : "neutral") : undefined}
+        data-chrome={zoomedOut ? "tiny" : undefined}
+        style={mode === "harmonize" && data.harmonize ? ({ "--bn-harmonize-surface": data.harmonize.surface } as CSSProperties) : undefined}
+      >
+        {mode === "harmonize" && <HarmonizeFilter id={filterId} colors={data.harmonize} />}
         <div ref={measureRef} className="bn-stitch-measure">
           <div className="bn-stitch-head">
             <div className="bn-stitch-heading">

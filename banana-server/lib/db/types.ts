@@ -66,6 +66,8 @@ export interface CanvasRepo {
   create(input: NewCanvas): Promise<CanvasRecord>;
   /** The canvas when it exists and belongs to `userId`, else null. Never tells the two apart. */
   getOwned(userId: string, canvasId: string): Promise<CanvasRecord | null>;
+  /** `updated_at` of the user's canvas without reading its state, or null (missing and not yours look the same). */
+  getVersion(userId: string, canvasId: string): Promise<Date | null>;
   countOwned(userId: string): Promise<number>;
   /** The user's canvases, most recently updated first, at most `limit` (default 48, max 200). */
   listOwned(userId: string, opts?: { limit?: number }): Promise<CanvasSummary[]>;
@@ -236,6 +238,8 @@ export interface UsageRepo extends UsageStore {
 export interface TakedownRepo {
   /** Every `takedowns.url_or_domain` value. */
   list(): Promise<string[]>;
+  /** Short version of the whole list; changes when any entry is added or removed. Sends no entries. */
+  hash(): Promise<string>;
 }
 
 export interface UserRepo {

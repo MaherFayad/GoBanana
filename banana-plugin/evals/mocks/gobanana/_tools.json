@@ -459,7 +459,7 @@
     {
       "name": "arrange_canvas",
       "title": "Arrange canvas",
-      "description": "Lay out canvas items: by_direction, masonry, grid or hero.",
+      "description": "Lay out canvas items: spread (default for moodboards), by_direction, masonry, grid or hero.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -473,6 +473,7 @@
           "layout": {
             "type": "string",
             "enum": [
+              "spread",
               "by_direction",
               "masonry",
               "grid",
@@ -769,6 +770,7 @@
             "enum": [
               "collage",
               "wireframe",
+              "harmonize",
               "even"
             ],
             "default": "collage"
@@ -966,7 +968,7 @@
     {
       "name": "update_frankenstein",
       "title": "Edit a Frankenstein page",
-      "description": "Edit one Frankenstein page with ops: swap (slotId, partId), move (slotId, rowId, index), moveRow (rowId, index), remove (slotId or rowId), insert (index, slots, widths), crop (slotId, crop), widths (rowId, widths), mode (collage, wireframe, even), note (note, optional slotId), title (title).",
+      "description": "Edit one Frankenstein page with ops: swap (slotId, partId), move (slotId, rowId, index), moveRow (rowId, index), remove (slotId or rowId), insert (index, slots, widths), crop (slotId, crop), widths (rowId, widths), mode (collage, wireframe, harmonize), note (note, optional slotId), title (title).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -1113,6 +1115,7 @@
                   "enum": [
                     "collage",
                     "wireframe",
+                    "harmonize",
                     "even"
                   ]
                 },

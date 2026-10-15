@@ -6,13 +6,14 @@ import { MAX_PART_NOTE, MAX_STITCH_NOTE, MAX_STITCH_TITLE } from "./parse";
 import {
   clampCrop,
   slotWithPart,
+  toStitchMode,
   MAX_SLOTS_PER_ROW,
   MAX_STITCH_ROWS,
   type Crop,
   type Part,
   type PartRole,
   type StitchData,
-  type StitchMode,
+  type StitchModeInput,
   type StitchRow,
   type StitchSlot,
 } from "./types";
@@ -33,7 +34,8 @@ export type StitchOp =
     }
   | { op: "crop"; slotId: string; crop: Crop }
   | { op: "widths"; rowId: string; widths: number[] }
-  | { op: "mode"; mode: StitchMode }
+  /** "even" (legacy alias) is saved as harmonize. */
+  | { op: "mode"; mode: StitchModeInput }
   /** Without slotId, the page's idea note. Empty text clears it. */
   | { op: "note"; slotId?: string; note: string }
   | { op: "title"; title: string };
@@ -177,7 +179,7 @@ export function applyOps(stitch: StitchData, ops: readonly StitchOp[], parts: re
         break;
       }
       case "mode":
-        s.mode = op.mode;
+        s.mode = toStitchMode(op.mode) ?? s.mode;
         break;
       case "note": {
         const text = op.note.trim();

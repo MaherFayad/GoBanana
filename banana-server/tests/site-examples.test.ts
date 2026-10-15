@@ -83,7 +83,7 @@ describe("examples copy", () => {
     for (const d of [en, ar]) {
       const x = d.landing.examples;
       for (const p of ["mobile", "website", "webapp"] as const) expect(x.platforms[p].trim()).not.toBe("");
-      for (const m of ["collage", "wireframe", "even"] as const) expect(x.modes[m].trim()).not.toBe("");
+      for (const m of ["collage", "wireframe", "harmonize"] as const) expect(x.modes[m].trim()).not.toBe("");
       expect(x.gallery.title.trim()).not.toBe("");
       expect(JSON.stringify(x)).not.toContain("—");
     }

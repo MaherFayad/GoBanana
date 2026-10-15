@@ -780,13 +780,9 @@
   transform-origin: top right;
 }
 
-.bn-image .bn-node-bar-source:dir(rtl) {
-  transform-origin: bottom right;
-}
-
-.bn-image .bn-node-bar-top:dir(rtl) {
-  transform-origin: top left;
-}
+/* No right to left origins: React Flow sets `direction: ltr` on the board, so the bars above sit
+   at the physical left and right even on Arabic pages, and an origin flipped by :dir(rtl) (which
+   reads the dir attribute, not the CSS direction) pushed a full source chip out of its tile. */
 
 /* Small on screen: the source chip shows its icon only; the site name stays its accessible name. */
 .bn-image:is([data-chrome="icon"], [data-chrome="tiny"]) .bn-source > span:not(.st-visually-hidden) {

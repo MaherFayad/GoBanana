@@ -54,7 +54,7 @@ export interface Crop {
   h: number;
 }
 
-/** Light or dark, as the agent judged it by looking. Used by the "even" view to unify a stitch. */
+/** Light or dark, as the agent judged it by looking. */
 export type PartTheme = "light" | "dark" | "unknown";
 
 /** One part in the canvas parts library (CanvasState.parts). */
@@ -116,13 +116,36 @@ export interface StitchRow {
   widths?: number[];
 }
 
-export const STITCH_MODES = ["collage", "wireframe", "even"] as const;
+export const STITCH_MODES = ["collage", "wireframe", "harmonize"] as const;
 /**
  * collage: the parts as they are (light next to dark is fine, it is for ideas).
  * wireframe: grayscale, softened, with role labels: reads as a low fi wireframe.
- * even: dark parts are inverted and everything desaturated a little so the page reads as one theme.
+ * harmonize: a duotone of every part (luminance mapped from the direction's ink to its surface
+ * color), so parts from different sources read as one palette.
  */
 export type StitchMode = (typeof STITCH_MODES)[number];
+
+/**
+ * Older names still accepted on input and in saved state, for one release (P0-11, 2026-10-15):
+ * "even" was the invert hack that "harmonize" replaced.
+ */
+export const LEGACY_STITCH_MODES: Readonly<Record<string, StitchMode>> = { even: "harmonize" };
+/** Modes tools accept: the current ones plus the legacy aliases. */
+export const STITCH_MODE_INPUTS = [...STITCH_MODES, "even"] as const;
+export type StitchModeInput = (typeof STITCH_MODE_INPUTS)[number];
+
+/** The current mode for a mode or a legacy alias, or undefined. */
+export function toStitchMode(v: unknown): StitchMode | undefined {
+  if (typeof v !== "string") return undefined;
+  if ((STITCH_MODES as readonly string[]).includes(v)) return v as StitchMode;
+  return Object.hasOwn(LEGACY_STITCH_MODES, v) ? LEGACY_STITCH_MODES[v] : undefined;
+}
+
+/** Duotone colors for the harmonize view (hex): dark tones map to ink, light tones to surface. */
+export interface HarmonizeColors {
+  ink: string;
+  surface: string;
+}
 
 export type StitchPlatform = "mobile" | "tablet" | "website" | "webapp";
 
@@ -147,6 +170,11 @@ export interface StitchData {
   directionId?: string;
   /** The idea in one line ("Editorial nav over a dashboard hero, cards from a game store"). */
   note?: string;
+  /**
+   * Duotone colors for the harmonize view, from the direction's reconciled palette
+   * (reconcile_direction, frankenstein_page). Missing: neutral ink and surface tokens.
+   */
+  harmonize?: HarmonizeColors;
 }
 
 /** Most parts kept in one canvas's library. */

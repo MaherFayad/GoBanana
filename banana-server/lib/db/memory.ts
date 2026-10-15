@@ -96,6 +96,10 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         const c = owned(userId, canvasId);
         return c ? { ...c, state: clone(c.state) } : null;
       },
+      async getVersion(userId, canvasId) {
+        const c = owned(userId, canvasId);
+        return c ? new Date(c.updatedAt) : null;
+      },
       async countOwned(userId) {
         return [...data.canvases.values()].filter((c) => c.userId === userId).length;
       },
@@ -296,6 +300,13 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     takedowns: {
       async list() {
         return [...data.takedowns];
+      },
+      async hash() {
+        // Same contract as the Postgres one (count plus a digest of the sorted entries), not the same digest.
+        const sorted = [...data.takedowns].sort();
+        let h = 0x811c9dc5;
+        for (const ch of sorted.join("\n")) h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193) >>> 0;
+        return `${sorted.length}-${h.toString(16)}`;
       },
     },
     users: {

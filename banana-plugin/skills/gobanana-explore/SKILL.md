@@ -183,7 +183,7 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 
 **Shipped today section, once per board:** `{ "type": "section", "title": "Shipped today" }`, then 3 to 6 of the good "Shipped today" results from the search (no `directionId`), each with a short `steal:` or `keep:` note. If Mobbin ran, its "Shipped today" note and screens go in this section too. Never put these results in a direction's section, and never count them toward a direction's 6 to 8 UI items.
 
-A reference you rated `great` gets its `why:` line from step 10 after the `steal:` line, inside the 280 characters (shorten `steal:` first if needed). Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+A reference you rated `great` gets its `why:` line from step 10 after the `steal:` line, inside the 280 characters (shorten `steal:` first if needed). Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `spread`: each direction becomes one row, its first art item large on the left, the idea note beside it and the UI grid on the right. Do not read the board back between these calls.
 
 If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its full 4 items and keep the UI grid UI only.
 

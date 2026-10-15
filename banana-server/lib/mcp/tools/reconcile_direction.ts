@@ -11,7 +11,9 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { canvasWebUrl, loadCanvas, toSnapshot, type CanvasState } from "@/lib/canvas/store";
+import { canvasWebUrl, loadCanvas, mutateCanvas, toSnapshot, type CanvasState } from "@/lib/canvas/store";
+import { harmonizeFromPalette } from "@/lib/stitch/harmonize";
+import { withHarmonize } from "./stitch-shared";
 import type { CanvasSnapshot, ReferenceItem } from "@/lib/canvas/types";
 import type { CanvasRecord, DirectionRecord, Repos } from "@/lib/db/types";
 import type { Reconciled } from "@/lib/direction-detail";
@@ -271,6 +273,28 @@ export function reconcileText(out: ReconcileOutcome): string {
   return lines.join("\n");
 }
 
+/**
+ * The direction's Frankenstein pages take their harmonize duotone (ink and surface) from the new
+ * palette (P0-11). Best effort: the reconcile is already saved, so a failed write is only logged.
+ */
+async function saveHarmonize(
+  deps: ReconcileDeps,
+  userId: string,
+  canvasId: string,
+  state: CanvasState,
+  row: DirectionRecord,
+  reconciled: Reconciled,
+): Promise<void> {
+  const ids = new Set([row.id, ...(row.bendId ? [row.bendId] : [])]);
+  const colors = harmonizeFromPalette(reconciled.palette);
+  if (!withHarmonize(state, ids, colors)) return;
+  try {
+    await mutateCanvas(deps.repos, userId, canvasId, takedownLoader(deps), (s) => ({ state: withHarmonize(s, ids, colors) ?? s, value: null }));
+  } catch {
+    console.error("[reconcile_direction] harmonize colors not saved");
+  }
+}
+
 export function createReconcileDirectionTool(deps: ReconcileDeps) {
   return async function reconcileDirectionTool(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
@@ -287,6 +311,7 @@ export function createReconcileDirectionTool(deps: ReconcileDeps) {
       if (!row) return toolMessage(DIRECTION_NOT_FOUND);
       const snapshot = toSnapshot({ canvas: loaded.canvas, state: loaded.state, directions, webUrl: canvasWebUrl(deps.appUrl(), input.canvasId) });
       const out = await reconcileDirection(deps, userId, snapshot, row);
+      await saveHarmonize(deps, userId, input.canvasId, loaded.state, row, out.reconciled);
       return toolResult(`${reconcileText(out)}\nWeb link: ${canvasWebUrl(deps.appUrl(), input.canvasId)}`, { canvasId: input.canvasId, ...out });
     } catch {
       console.error("[reconcile_direction] failed");

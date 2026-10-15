@@ -288,7 +288,8 @@ describe("update_frankenstein", () => {
     );
     expect(res.isError).toBeFalsy();
     const after = await frame(repos, id, stitchId);
-    expect(after.data).toMatchObject({ title: "Renamed", mode: "even", note: "the idea" });
+    // "even" is the legacy alias of harmonize: accepted, saved as harmonize.
+    expect(after.data).toMatchObject({ title: "Renamed", mode: "harmonize", note: "the idea" });
     // Insert put rw-3 between rw-1 and rw-2; moveRow then took rw-2 to the top.
     expect(after.data.rows.map((r) => r.id)).toEqual(["rw-2", "rw-1", "rw-3"]);
     expect(after.data.rows[2]!.widths).toEqual([1, 3]);

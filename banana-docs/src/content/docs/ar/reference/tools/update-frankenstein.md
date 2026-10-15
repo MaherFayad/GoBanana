@@ -26,7 +26,7 @@ description: يعدل صفحة فرانكنشتاين واحدة بقائمة ع
 | `insert` | `slots` (من 1 إلى 3: `partId`، `role?`، `crop?`، `note?`)، `index?` أو `afterRowId?`، `widths?` | تضيف صفا جديدا. الافتراضي في النهاية |
 | `crop` | `slotId`، `crop` `{x, y, w, h}` | تعيد قص خانة دون جزء جديد |
 | `widths` | `rowId`، `widths` (من 1 إلى 3 أرقام، وكل رقم حتى 12) | عروض الخانات النسبية |
-| `mode` | `mode`: `collage`، `wireframe`، `even` | تبدل طريقة العرض |
+| `mode` | `mode`: `collage`، `wireframe`، `harmonize` (ما زال `even` يعمل لإصدار واحد) | تبدل طريقة العرض |
 | `note` | `note` (حتى 280)، `slotId?` | مع `slotId`: ملاحظة «خذ منه» للخانة. وبدونه: فكرة الصفحة في سطر واحد. القيمة الفارغة تمسحها |
 | `title` | `title` (من 1 إلى 120) | تعيد تسمية الصفحة |
 

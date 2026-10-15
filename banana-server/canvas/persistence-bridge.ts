@@ -108,13 +108,26 @@ export interface BridgePersistence extends CanvasPersistence {
   /** Overwrite the newer version with `state` (by default the one that failed). Resolves when saved. */
   keepMine(state?: CanvasState): Promise<void>;
   /**
-   * Live refresh: the latest saved state through `load_canvas_state`, without changing the
-   * base version. Rejects on a transport or tool error (the poller backs off).
+   * Live refresh through `load_canvas_state`, polled by version: sends the base version and
+   * the takedown hash this view holds. Answers `unchanged` (with the takedown list only when
+   * the view's copy is out of date) or the latest saved state. Does not change the base
+   * version. Rejects on a transport or tool error (the poller backs off).
    */
-  fetchLatest(): Promise<{ state: unknown; updatedAt: string }>;
+  fetchLatest(): Promise<LatestResult>;
+  /** The full saved state, for readers that need the whole board (Show in chat). Does not change the base version. */
+  fetchState(): Promise<unknown>;
   /** The view now shows the version saved at `updatedAt`; later saves build on it. */
-  adopt(updatedAt: string): void;
+  adopt(updatedAt: string, takedownHash?: string): void;
+  /** The view's board is filtered with the takedown list of this hash. */
+  adoptTakedowns(hash: string): void;
+  /** Takedown hash this view holds, for tests. */
+  readonly takedownHash: string | undefined;
 }
+
+/** What one poll returns. */
+export type LatestResult =
+  | { unchanged: true; updatedAt: string; takedowns?: { hash: string; entries: string[] } }
+  | { unchanged?: false; state: unknown; updatedAt: string; takedownHash?: string };
 
 export interface BridgePersistenceOptions {
   app: ToolCaller;
@@ -132,6 +145,8 @@ export interface BridgePersistenceOptions {
 export function createBridgePersistence(opts: BridgePersistenceOptions): BridgePersistence {
   let base = opts.updatedAt || undefined;
   let conflict: ConflictInfo | null = null;
+  /** Hash of the takedown list this view's board was filtered with (unknown until the first poll). */
+  let takedownHash: string | undefined;
 
   async function send(state: CanvasState, baseUpdatedAt: string | undefined): Promise<void> {
     let result: ToolCallResult;
@@ -183,6 +198,7 @@ export function createBridgePersistence(opts: BridgePersistenceOptions): BridgeP
         throw new PersistenceError(resultText(result) || "Could not load this canvas.", out.reason === "not_found" ? 404 : undefined);
       }
       if (typeof out.updatedAt === "string") base = out.updatedAt;
+      if (typeof out.takedownHash === "string") takedownHash = out.takedownHash;
       return out.state;
     },
     async save(state) {
@@ -193,21 +209,61 @@ export function createBridgePersistence(opts: BridgePersistenceOptions): BridgeP
       }
       await send(state, base);
     },
-    async fetchLatest() {
+    async fetchState() {
       let result: ToolCallResult;
       try {
         result = await opts.app.callServerTool({ name: LOAD_TOOL, arguments: { canvasId: opts.canvasId } });
       } catch {
+        throw new PersistenceError("Could not reach the server to load this canvas.");
+      }
+      const out: Record<string, unknown> = isObj(result.structuredContent) ? result.structuredContent : {};
+      if (result.isError || out.ok !== true || !isObj(out.state)) {
+        throw new PersistenceError(resultText(result) || "Could not load this canvas.", out.reason === "not_found" ? 404 : undefined);
+      }
+      return out.state;
+    },
+    async fetchLatest(): Promise<LatestResult> {
+      let result: ToolCallResult;
+      try {
+        result = await opts.app.callServerTool({
+          name: LOAD_TOOL,
+          arguments: {
+            canvasId: opts.canvasId,
+            ...(base ? { sinceUpdatedAt: base } : {}),
+            ...(takedownHash ? { takedownHash } : {}),
+          },
+        });
+      } catch {
         throw new PersistenceError("Could not reach the server to refresh this canvas.");
       }
       const out: Record<string, unknown> = isObj(result.structuredContent) ? result.structuredContent : {};
-      if (result.isError || out.ok !== true || !isObj(out.state) || typeof out.updatedAt !== "string") {
-        throw new PersistenceError(resultText(result) || "Could not refresh this canvas.", out.reason === "not_found" ? 404 : undefined);
+      const fail = () =>
+        new PersistenceError(resultText(result) || "Could not refresh this canvas.", out.reason === "not_found" ? 404 : undefined);
+      if (result.isError || out.ok !== true || typeof out.updatedAt !== "string") throw fail();
+      if (out.unchanged === true) {
+        const t = out.takedowns;
+        const takedowns =
+          isObj(t) && typeof t.hash === "string" && Array.isArray(t.entries)
+            ? { hash: t.hash, entries: t.entries.filter((e): e is string => typeof e === "string") }
+            : undefined;
+        return { unchanged: true, updatedAt: out.updatedAt, ...(takedowns ? { takedowns } : {}) };
       }
-      return { state: out.state, updatedAt: out.updatedAt };
+      if (!isObj(out.state)) throw fail();
+      return {
+        state: out.state,
+        updatedAt: out.updatedAt,
+        ...(typeof out.takedownHash === "string" ? { takedownHash: out.takedownHash } : {}),
+      };
     },
-    adopt(updatedAt) {
+    adopt(updatedAt, hash) {
       base = updatedAt;
+      if (hash) takedownHash = hash;
+    },
+    adoptTakedowns(hash) {
+      takedownHash = hash;
+    },
+    get takedownHash() {
+      return takedownHash;
     },
     acceptLatest() {
       if (!conflict) return;

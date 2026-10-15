@@ -7,6 +7,8 @@ import {
   initialTrayOpen,
   isNewer,
   pollDelay,
+  pollOnce,
+  type RefreshDecision,
   POLL_BLURRED_MS,
   POLL_FOCUSED_MS,
   POLL_MAX_MS,
@@ -15,6 +17,9 @@ import {
   TRAY_OPEN_KEY,
   writeTrayPreference,
 } from "@/canvas/refresh";
+import type { CanvasState } from "@/canvas/types";
+import { createLoadCanvasStateTool } from "@/lib/mcp/tools/load_canvas_state";
+import { ALICE, BOB, imageNode, makeDeps, seedCanvas, state } from "./tools-fixtures";
 
 describe("pollDelay", () => {
   it("polls every 4 s with focus, 15 s without, never while hidden", () => {
@@ -162,21 +167,37 @@ describe("merge decision", () => {
 describe("bridge refresh calls", () => {
   const T0 = "2026-10-15T12:00:00.000Z";
   const T1 = "2026-10-15T12:00:05.000Z";
-  it("fetchLatest calls load_canvas_state without moving the base; adopt moves it", async () => {
-    const calls: string[] = [];
+  it("fetchLatest calls load_canvas_state by version without moving the base; adopt moves it", async () => {
+    const calls: { name: string; arguments?: Record<string, unknown> }[] = [];
     const app: ToolCaller = {
       async callServerTool(p) {
-        calls.push(p.name);
-        return { structuredContent: { ok: true, state: { nodes: [] }, updatedAt: T1 } };
+        calls.push(p);
+        return { structuredContent: { ok: true, state: { nodes: [] }, updatedAt: T1, takedownHash: "1-a" } };
       },
     };
     const p = createBridgePersistence({ app, canvasId: "c", initialState: {}, updatedAt: T0 });
     const latest = await p.fetchLatest();
-    expect(calls).toEqual([LOAD_TOOL]);
-    expect(latest).toEqual({ state: { nodes: [] }, updatedAt: T1 });
+    expect(calls).toEqual([{ name: LOAD_TOOL, arguments: { canvasId: "c", sinceUpdatedAt: T0 } }]);
+    expect(latest).toEqual({ state: { nodes: [] }, updatedAt: T1, takedownHash: "1-a" });
     expect(p.baseUpdatedAt).toBe(T0);
-    p.adopt(T1);
+    p.adopt(T1, "1-a");
     expect(p.baseUpdatedAt).toBe(T1);
+    expect(p.takedownHash).toBe("1-a");
+    await p.fetchLatest();
+    expect(calls[1]!.arguments).toEqual({ canvasId: "c", sinceUpdatedAt: T1, takedownHash: "1-a" });
+  });
+
+  it("reads an unchanged answer, with the takedown list only when it came", async () => {
+    let answer: Record<string, unknown> = { ok: true, unchanged: true, updatedAt: T0, takedownHash: "0-x" };
+    const p = createBridgePersistence({
+      app: { callServerTool: async () => ({ structuredContent: answer }) },
+      canvasId: "c",
+      initialState: {},
+      updatedAt: T0,
+    });
+    expect(await p.fetchLatest()).toEqual({ unchanged: true, updatedAt: T0 });
+    answer = { ...answer, takedowns: { hash: "1-y", entries: ["example.com", 3] } };
+    expect(await p.fetchLatest()).toEqual({ unchanged: true, updatedAt: T0, takedowns: { hash: "1-y", entries: ["example.com"] } });
   });
 
   it("fetchLatest rejects on tool and transport errors (the poller backs off)", async () => {
@@ -240,5 +261,133 @@ describe("results panel default", () => {
     expect(readTrayPreference(throwing)).toBeNull();
     writeTrayPreference(false, throwing);
     expect(readTrayPreference(throwing)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------------- poll by version (P0-09)
+
+describe("load_canvas_state polled by version", () => {
+  async function setup(takedowns: string[] = []) {
+    const { deps, repos } = makeDeps({ takedowns });
+    const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1), imageNode("img_b", 3)]));
+    const spies = {
+      getOwned: vi.spyOn(repos.canvases, "getOwned"),
+      getVersion: vi.spyOn(repos.canvases, "getVersion"),
+      list: vi.spyOn(repos.takedowns, "list"),
+      hash: vi.spyOn(repos.takedowns, "hash"),
+    };
+    const load = createLoadCanvasStateTool(deps);
+    return { deps, repos, c, spies, load };
+  }
+
+  it("an unchanged poll reads no state blob and no full takedown list, but still checks the list", async () => {
+    const { c, spies, load, repos } = await setup(["example.org"]);
+    const hash = await repos.takedowns.hash();
+    spies.hash.mockClear();
+    const res = await load({ canvasId: c.id, sinceUpdatedAt: c.updatedAt.toISOString(), takedownHash: hash }, ALICE);
+    expect(res.isError).toBeFalsy();
+    expect(res.structuredContent).toEqual({ ok: true, unchanged: true, updatedAt: c.updatedAt.toISOString(), takedownHash: hash });
+    expect(spies.getOwned).not.toHaveBeenCalled();
+    expect(spies.list).not.toHaveBeenCalled();
+    expect(spies.getVersion).toHaveBeenCalledTimes(1);
+    expect(spies.hash).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(res)).not.toContain("img_a");
+  });
+
+  it("sends the takedown list, and only it, when the view's hash is out of date", async () => {
+    const { c, spies, load, repos } = await setup();
+    const before = await repos.takedowns.hash();
+    repos.data.takedowns.push("https://www.pinterest.com/pin/3/");
+    const res = await load({ canvasId: c.id, sinceUpdatedAt: c.updatedAt.toISOString(), takedownHash: before }, ALICE);
+    const out = res.structuredContent as { unchanged: true; takedownHash: string; takedowns: { hash: string; entries: string[] } };
+    expect(out.unchanged).toBe(true);
+    expect(out.takedowns.entries).toEqual(["https://www.pinterest.com/pin/3/"]);
+    expect(out.takedowns.hash).not.toBe(before);
+    expect(out.takedownHash).toBe(out.takedowns.hash);
+    expect(spies.getOwned).not.toHaveBeenCalled();
+  });
+
+  it("loads the filtered board with its hash when the canvas changed, and refuses other users", async () => {
+    const { c, load, repos, spies } = await setup(["https://www.pinterest.com/pin/3/"]);
+    const stale = new Date(c.updatedAt.getTime() - 1000).toISOString();
+    const res = await load({ canvasId: c.id, sinceUpdatedAt: stale, takedownHash: "x" }, ALICE);
+    const out = res.structuredContent as { state: CanvasState; takedownHash: string; removed: number };
+    expect(out.state.nodes.map((n) => n.id)).toEqual(["img_a"]);
+    expect(out.removed).toBe(1);
+    expect(out.takedownHash).toBe(await repos.takedowns.hash());
+    expect(spies.getOwned).toHaveBeenCalledTimes(1);
+    const bob = await load({ canvasId: c.id, sinceUpdatedAt: c.updatedAt.toISOString() }, BOB);
+    expect(bob.structuredContent).toMatchObject({ ok: false, reason: "not_found" });
+  });
+
+  it("fails closed when the takedown hash cannot be read", async () => {
+    const { c, spies, load } = await setup();
+    spies.hash.mockRejectedValueOnce(new Error("db"));
+    const res = await load({ canvasId: c.id, sinceUpdatedAt: c.updatedAt.toISOString() }, ALICE);
+    expect(res.isError).toBe(true);
+    expect(res.structuredContent).toMatchObject({ ok: false, reason: "error" });
+  });
+});
+
+describe("pollOnce", () => {
+  const T0 = "2026-10-15T12:00:00.000Z";
+  const T1 = "2026-10-15T12:00:05.000Z";
+  function view(prune: number | null = 0, decision: RefreshDecision = "apply") {
+    return { offer: vi.fn(() => decision), prune: vi.fn((_: (url: string) => boolean) => prune) };
+  }
+
+  it("end to end: an unchanged board is not offered; a new takedown prunes it once", async () => {
+    const { deps, repos } = makeDeps();
+    const c = await seedCanvas(repos, ALICE, state([imageNode("img_a", 1), imageNode("img_b", 3)]));
+    const load = createLoadCanvasStateTool(deps);
+    const p = createBridgePersistence({
+      app: { callServerTool: async (q) => load(q.arguments, ALICE) },
+      canvasId: c.id,
+      initialState: {},
+      updatedAt: c.updatedAt.toISOString(),
+    });
+    const getOwned = vi.spyOn(repos.canvases, "getOwned");
+    const v = view(0);
+    await pollOnce(p, v);
+    // First poll: the view had no hash yet, so it gets the list once and keeps the hash.
+    expect(v.prune).toHaveBeenCalledTimes(1);
+    expect(p.takedownHash).toBe(await repos.takedowns.hash());
+    await pollOnce(p, v);
+    expect(v.prune).toHaveBeenCalledTimes(1);
+    expect(v.offer).not.toHaveBeenCalled();
+    expect(getOwned).not.toHaveBeenCalled();
+
+    repos.data.takedowns.push("https://www.pinterest.com/pin/3/");
+    await pollOnce(p, v);
+    expect(v.prune).toHaveBeenCalledTimes(2);
+    const isBlocked = v.prune.mock.calls[1]![0];
+    expect(isBlocked("https://www.pinterest.com/pin/3/")).toBe(true);
+    expect(isBlocked("https://www.pinterest.com/pin/1/")).toBe(false);
+    expect(getOwned).not.toHaveBeenCalled();
+  });
+
+  it("keeps the old hash when the board is busy, so the next poll prunes again", async () => {
+    const fetchLatest = vi.fn(async () => ({ unchanged: true as const, updatedAt: T0, takedowns: { hash: "1-a", entries: ["example.com"] } }));
+    const p = { conflict: null, baseUpdatedAt: T0, fetchLatest, adopt: vi.fn(), adoptTakedowns: vi.fn() };
+    await pollOnce(p, view(null));
+    expect(p.adoptTakedowns).not.toHaveBeenCalled();
+    await pollOnce(p, view(2));
+    expect(p.adoptTakedowns).toHaveBeenCalledWith("1-a");
+  });
+
+  it("offers a newer save and adopts its version and hash only when applied", async () => {
+    const fetchLatest = vi.fn(async () => ({ state: { nodes: [] }, updatedAt: T1, takedownHash: "2-b" }));
+    const p = { conflict: null, baseUpdatedAt: T0, fetchLatest, adopt: vi.fn(), adoptTakedowns: vi.fn() };
+    await pollOnce(p, view(0, "defer"));
+    expect(p.adopt).not.toHaveBeenCalled();
+    await pollOnce(p, view(0, "apply"));
+    expect(p.adopt).toHaveBeenCalledWith(T1, "2-b");
+  });
+
+  it("does not poll during a conflict", async () => {
+    const fetchLatest = vi.fn();
+    const p = { conflict: {} as never, baseUpdatedAt: T0, fetchLatest, adopt: vi.fn(), adoptTakedowns: vi.fn() };
+    await pollOnce(p, view());
+    expect(fetchLatest).not.toHaveBeenCalled();
   });
 });

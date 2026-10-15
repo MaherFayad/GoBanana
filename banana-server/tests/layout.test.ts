@@ -4,7 +4,9 @@ import {
   GAP,
   LAYOUTS,
   SECTION_HEADER,
+  ZONE_LABEL_SPACE,
   arrange,
+  arrangeZoned,
   aspectOf,
   byDirection,
   grid,
@@ -208,5 +210,74 @@ describe("hero", () => {
 
   it("works with a single item", () => {
     expect(hero([{ id: "only" }]).items).toEqual([{ id: "only", x: 0, y: 0, w: 576, h: 576 }]);
+  });
+});
+
+describe("spread", () => {
+  /** One direction: 3 art (first is the lead), 2 notes, 6 UI, 2 swatches and a type sample. */
+  function direction(): LayoutItem[] {
+    return [
+      { id: "ui1", aspectRatio: 0.5 },
+      { id: "art1", zone: "art", aspectRatio: 1.5 },
+      { id: "note1", kind: "note", aspectRatio: 280 / 120 },
+      { id: "ui2", aspectRatio: 0.6 },
+      { id: "art2", zone: "art", aspectRatio: 1 },
+      { id: "ui3", aspectRatio: 1 },
+      { id: "sw1", kind: "swatch", w: 220, h: 250 },
+      { id: "ui4", aspectRatio: 0.75 },
+      { id: "note2", kind: "note", aspectRatio: 280 / 90 },
+      { id: "ui5", aspectRatio: 1.2 },
+      { id: "art3", zone: "art", aspectRatio: 0.8 },
+      { id: "ui6", aspectRatio: 0.5 },
+      { id: "sw2", kind: "swatch", w: 220, h: 250 },
+      { id: "type1", kind: "typeSample", w: 320, h: 170 },
+    ];
+  }
+
+  it("puts the lead art at 2x on the left, notes beside it, a 3 by 2 UI grid on the right, swatches and type under", () => {
+    const r = byId(arrange("spread", direction()).items);
+    const top = ZONE_LABEL_SPACE;
+    expect(r.art1).toEqual({ id: "art1", x: 0, y: top, w: 560, h: Math.round(560 / 1.5) });
+    // Other art sits under the lead in two columns.
+    expect(r.art2!.y).toBeGreaterThan(r.art1!.y + r.art1!.h);
+    expect(r.art2!.x + r.art2!.w).toBeLessThanOrEqual(560);
+    expect(r.art3!.x).toBeGreaterThan(r.art2!.x);
+    // Notes: one column right of the lead, in order.
+    expect(r.note1).toMatchObject({ x: 560 + GAP, y: top, w: COLUMN_WIDTH });
+    expect(r.note2!.y).toBe(r.note1!.y + r.note1!.h + GAP);
+    // UI: 3 columns at 280, two rows, in input order.
+    const gridX = 560 + GAP + COLUMN_WIDTH + GAP;
+    const cols = [0, 1, 2].map((c) => gridX + c * (COLUMN_WIDTH + GAP));
+    expect(["ui1", "ui2", "ui3"].map((id) => r[id]!.x)).toEqual(cols);
+    expect(["ui4", "ui5", "ui6"].map((id) => r[id]!.x)).toEqual(cols);
+    for (const id of ["ui1", "ui2", "ui3", "ui4", "ui5", "ui6"]) expect(r[id]!.w).toBe(COLUMN_WIDTH);
+    const row1Bottom = Math.max(...["ui1", "ui2", "ui3"].map((id) => r[id]!.y + r[id]!.h));
+    expect(r.ui4!.y).toBe(row1Bottom + GAP);
+    // Swatches and the type sample: one row under everything, at their own size.
+    const blocks = ["art1", "art2", "art3", "note1", "note2", "ui1", "ui2", "ui3", "ui4", "ui5", "ui6"];
+    const bottom = Math.max(...blocks.map((id) => r[id]!.y + r[id]!.h));
+    for (const id of ["sw1", "sw2", "type1"]) expect(r[id]!.y).toBe(bottom + GAP);
+    expect([r.sw1!.x, r.sw2!.x, r.type1!.x]).toEqual([0, 220 + GAP, 440 + 2 * GAP]);
+    expect(r.type1).toMatchObject({ w: 320, h: 170 });
+    expect(hasOverlap(Object.values(r))).toBe(false);
+  });
+
+  it("drops empty blocks: no art means no label strip and the notes start at the left", () => {
+    const r = byId(arrange("spread", direction().filter((it) => it.zone !== "art")).items);
+    expect(r.note1).toMatchObject({ x: 0, y: 0 });
+    expect(r.ui1).toMatchObject({ x: COLUMN_WIDTH + GAP, y: 0 });
+    const onlyUi = byId(arrange("spread", [{ id: "a" }, { id: "b" }]).items);
+    expect([onlyUi.a!.x, onlyUi.b!.x]).toEqual([0, COLUMN_WIDTH + GAP]);
+  });
+
+  it("caps a very tall lead at 1.5 times its width", () => {
+    const r = byId(arrange("spread", [{ id: "tall", zone: "art", aspectRatio: 0.2 }]).items);
+    expect(r.tall).toMatchObject({ w: 560, h: 840 });
+  });
+
+  it("arrangeZoned uses the spread as is (art and UI side by side, not stacked)", () => {
+    const a = arrangeZoned("spread", direction(), { origin: { x: 16, y: 48 } });
+    const b = arrange("spread", direction(), { origin: { x: 16, y: 48 } });
+    expect(a).toEqual(b);
   });
 });

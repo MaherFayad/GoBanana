@@ -1,6 +1,8 @@
 /**
  * Canvas layouts (spec section 9). Pure, deterministic, no overlaps.
  *
+ * - spread: each section is one horizontal spread (lead art 2x, notes, a 3 column UI grid,
+ *   swatches and type samples under it); sections stack top to bottom (canvas/layout-adapter.ts).
  * - by_direction: one column per section, 280 px wide, 16 px gaps.
  * - masonry: 4 columns, each item keeps its aspect ratio.
  * - grid: equal square cells (the canvas crops with object-fit: cover).
@@ -14,8 +16,9 @@
  * draws its label ("Art direction", "UI references"). Sections without art items look as before.
  */
 
-export type LayoutKind = "by_direction" | "masonry" | "grid" | "hero";
-export const LAYOUTS: readonly LayoutKind[] = ["by_direction", "masonry", "grid", "hero"];
+export type LayoutKind = "spread" | "by_direction" | "masonry" | "grid" | "hero";
+/** `spread` first: it is the moodboard default (P0-13). */
+export const LAYOUTS: readonly LayoutKind[] = ["spread", "by_direction", "masonry", "grid", "hero"];
 
 export interface LayoutItem {
   id: string;
@@ -26,6 +29,8 @@ export interface LayoutItem {
   sectionId?: string;
   /** "art" for art direction items. Missing means a UI item. */
   zone?: "ui" | "art";
+  /** What the item is, for layouts that place kinds apart (spread). Missing means a reference image. */
+  kind?: "image" | "note" | "swatch" | "typeSample";
 }
 
 export interface LayoutSection {
@@ -212,8 +217,92 @@ export function hero(items: readonly LayoutItem[], opts: LayoutOptions = {}): La
   return { items: out, sections: [] };
 }
 
+/** Lead art width in a spread: two columns plus nothing between (2x a 280 px tile). */
+export const SPREAD_LEAD_WIDTH = COLUMN_WIDTH * 2;
+/** UI reference columns in a spread (3 by 2 for the usual 6). */
+export const SPREAD_UI_COLUMNS = 3;
+/** Tallest the lead art gets, as a multiple of its width (the canvas covers the box). */
+export const SPREAD_LEAD_MAX_RATIO = 1.5;
+
+/**
+ * One direction as a horizontal spread (P0-13), from `origin`:
+ * - left: the lead art item (the first art direction item) at 2x, other art below it in 2 columns
+ * - beside it: the notes (mechanic note and twist), one column
+ * - right: the UI references in a 3 column grid at 280 px (rows as tall as their tallest item)
+ * - under all of it: palette swatches and type samples in one row, at their own size.
+ * When the spread has art, a ZONE_LABEL_SPACE strip on top leaves room for the "Art direction"
+ * label. Blocks with no items take no room. Items keep input order inside each block.
+ */
+export function spread(items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
+  const { ox, oy, col, gap } = settings(opts);
+  const kindOf = (it: LayoutItem) => it.kind ?? "image";
+  const art = items.filter((it) => kindOf(it) === "image" && it.zone === "art");
+  const notes = items.filter((it) => kindOf(it) === "note");
+  const ui = items.filter((it) => kindOf(it) === "image" && it.zone !== "art");
+  const under = items.filter((it) => kindOf(it) === "swatch" || kindOf(it) === "typeSample");
+  const out: Rect[] = [];
+  const top = oy + (art.length > 0 ? ZONE_LABEL_SPACE : 0);
+  let x = ox;
+  let bottom = top;
+  const place = (it: LayoutItem, rx: number, ry: number, w: number, h: number) => {
+    out.push({ id: it.id, x: rx, y: ry, w, h });
+    bottom = Math.max(bottom, ry + h);
+  };
+
+  const [lead, ...moreArt] = art;
+  if (lead) {
+    const leadW = col * 2;
+    const leadH = Math.min(heightFor(lead, leadW), Math.round(leadW * SPREAD_LEAD_MAX_RATIO));
+    place(lead, x, top, leadW, leadH);
+    const half = Math.floor((leadW - gap) / 2);
+    const heights = [top + leadH + gap, top + leadH + gap];
+    for (const it of moreArt) {
+      const c = (heights[1] ?? 0) < (heights[0] ?? 0) ? 1 : 0;
+      const h = heightFor(it, half);
+      place(it, x + c * (half + gap), heights[c]!, half, h);
+      heights[c] = heights[c]! + h + gap;
+    }
+    x += leadW + gap;
+  }
+
+  if (notes.length > 0) {
+    let y = top;
+    for (const it of notes) {
+      const h = heightFor(it, col);
+      place(it, x, y, col, h);
+      y += h + gap;
+    }
+    x += col + gap;
+  }
+
+  if (ui.length > 0) {
+    const n = Math.min(SPREAD_UI_COLUMNS, ui.length);
+    let y = top;
+    for (let r = 0; r * n < ui.length; r++) {
+      const row = ui.slice(r * n, r * n + n);
+      const hs = row.map((it) => heightFor(it, col));
+      row.forEach((it, c) => place(it, x + c * (col + gap), y, col, hs[c]!));
+      y += Math.max(...hs) + gap;
+    }
+  }
+
+  if (under.length > 0) {
+    let ux = ox;
+    const uy = out.length > 0 ? bottom + gap : top;
+    for (const it of under) {
+      const w = positive(it.w) ? Math.round(it.w) : col;
+      const h = positive(it.h) ? Math.round(it.h) : heightFor(it, w);
+      place(it, ux, uy, w, h);
+      ux += w + gap;
+    }
+  }
+  return { items: out, sections: [] };
+}
+
 export function arrange(layout: LayoutKind, items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
   switch (layout) {
+    case "spread":
+      return spread(items, opts);
     case "by_direction":
       return byDirection(items, opts);
     case "masonry":
@@ -231,6 +320,8 @@ export function arrange(layout: LayoutKind, items: readonly LayoutItem[], opts: 
  * Without art items this is `arrange` unchanged.
  */
 export function arrangeZoned(layout: LayoutKind, items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
+  // A spread places art and UI side by side and leaves its own label room.
+  if (layout === "spread") return spread(items, opts);
   const { art, ui } = splitZones(items);
   if (art.length === 0) return arrange(layout, items, opts);
   const { ox, oy, gap } = settings(opts);

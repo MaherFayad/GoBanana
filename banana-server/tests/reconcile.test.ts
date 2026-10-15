@@ -17,6 +17,7 @@ import { createRateReferencesTool } from "@/lib/mcp/tools/rate_references";
 import { createReconcileDirectionTool, TOOL_DESCRIPTION as RECONCILE_DESC } from "@/lib/mcp/tools/reconcile_direction";
 import { cropColors, extractPalette } from "@/lib/palette";
 import type { FetchLike } from "@/lib/palette/fetch";
+import { harmonizeFromPalette } from "@/lib/stitch/harmonize";
 import { findConflicts, isStale, itemsKey, moodLine, reconcileHint, reconcilePairs } from "@/lib/reconcile";
 import { bandsRgba, encodePng, hexToRgba } from "./fixtures/palette-images";
 import { ALICE, imageNode, makeDeps, ref, sectionNode, seedCanvas, state, text } from "./tools-fixtures";
@@ -165,6 +166,20 @@ describe("reconcile_direction tool", () => {
     expect(row.detail!.verdict).toBe("keep");
     // Hex values and short lines only: no bytes saved.
     expect(JSON.stringify(row.detail)).not.toMatch(/base64|data:/);
+  });
+
+  it("gives the direction's Frankenstein pages their harmonize duotone from the new palette", async () => {
+    const page = (id: string, directionId: string): StoredNode =>
+      ({ id, type: "stitch", x: 0, y: 1200, w: 390, h: 800, data: { title: id, platform: "mobile", mode: "collage", rows: [], directionId } }) as StoredNode;
+    const { deps, repos, canvasId } = await board({ nodes: [...boardNodes(), page("st-1", "b1"), page("st-2", "b2")] });
+    await createReconcileDirectionTool(deps)({ canvasId, directionId: "b1" }, ALICE);
+    const row = (await repos.directions.listForCanvas(canvasId)).find((d) => d.bendId === "b1")!;
+    const expected = harmonizeFromPalette(row.detail!.reconciled!.palette);
+    expect(expected).toBeDefined();
+    const saved = (await repos.canvases.getOwned(ALICE, canvasId))!.state as { nodes: StoredNode[] };
+    const data = (id: string) => saved.nodes.find((n) => n.id === id)!.data as { harmonize?: unknown };
+    expect(data("st-1").harmonize).toEqual(expected);
+    expect(data("st-2").harmonize).toBeUndefined();
   });
 
   it("refuses an unknown direction", async () => {

@@ -10,7 +10,9 @@ import {
   MAX_SLOTS_PER_ROW,
   MAX_STITCH_ROWS,
   STITCH_MODES,
+  toStitchMode,
   type Crop,
+  type HarmonizeColors,
   type Part,
   type PartTheme,
   type StitchData,
@@ -156,13 +158,24 @@ export function cleanStitchData(raw: unknown): StitchData {
   return compact<StitchData>({
     title: str(d.title, MAX_STITCH_TITLE) ?? "Frankenstein page",
     platform: isStitchPlatform(d.platform) ? d.platform : "website",
-    mode: isStitchMode(d.mode) ? d.mode : "collage",
+    // A page saved in the legacy "even" view opens as harmonize.
+    mode: toStitchMode(d.mode) ?? "collage",
     rows: parseRows(d.rows),
     variantOf: str(d.variantOf, 120),
     variant,
     directionId: str(d.directionId, 80),
     note: str(d.note, MAX_STITCH_NOTE),
+    harmonize: parseHarmonize(d.harmonize),
   });
+}
+
+const HEX_RE = /^#[0-9a-f]{6}$/i;
+
+/** Harmonize colors from unknown JSON: two 6 digit hex colors, else undefined. */
+export function parseHarmonize(v: unknown): HarmonizeColors | undefined {
+  if (!isObject(v) || typeof v.ink !== "string" || typeof v.surface !== "string") return undefined;
+  if (!HEX_RE.test(v.ink) || !HEX_RE.test(v.surface)) return undefined;
+  return { ink: v.ink.toLowerCase(), surface: v.surface.toLowerCase() };
 }
 
 /** Drop slots whose part is not in the library, then rows left empty. Widths reset when a row shrinks. */

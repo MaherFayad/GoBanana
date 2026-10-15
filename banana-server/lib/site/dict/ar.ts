@@ -256,7 +256,7 @@ export const ar: Dict = {
       made: "صنعت في {date} بالمحرك الحقيقي: {n} عمليات بحث حية عن الصور، ثم اختيرت بالعين.",
       all: "عرض كل الأمثلة",
       openBoard: "فتح اللوحة",
-      modes: { collage: "كولاج", wireframe: "مخطط", even: "موحد" },
+      modes: { collage: "كولاج", wireframe: "مخطط", harmonize: "متناغم" },
       modesLabel: "طريقة العرض",
       pagesLabel: "الصفحة",
       roles: { nav: "التنقل", hero: "الواجهة", cards: "البطاقات", content: "المحتوى", features: "المزايا", testimonial: "الآراء", footer: "التذييل", other: "جزء" },

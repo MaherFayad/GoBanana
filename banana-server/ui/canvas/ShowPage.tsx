@@ -39,8 +39,7 @@ export function ShowPage({ app, canvasId, persistence }: { app: App; canvasId: s
     setProblem("");
     setPages(null);
     try {
-      const latest = await persistence.fetchLatest();
-      const state = parseState(latest.state);
+      const state = parseState(await persistence.fetchState());
       setParts(state.parts ?? []);
       setPages(state.nodes.flatMap((n) => (n.type === "stitch" ? [{ id: n.id, data: n.data as StitchData }] : [])));
     } catch {

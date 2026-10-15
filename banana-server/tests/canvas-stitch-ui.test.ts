@@ -3,7 +3,9 @@
  * theme, parts grouping and the client parts library. Pure modules only.
  */
 import { describe, expect, it } from "vitest";
-import type { Part, StitchData } from "@/lib/stitch/types";
+import { STITCH_MODES, toStitchMode, type Part, type StitchData } from "@/lib/stitch/types";
+import { cssColorToHex, duotoneTables, harmonizeFromPalette, hexContrast, hexToRgb } from "@/lib/stitch/harmonize";
+import { cleanStitchData } from "@/lib/stitch/parse";
 import { cropAspect, cropStyles, displaySrc, dragCrop, fromPercentField, slotFilter, toPercent } from "@/canvas/stitch/crop";
 import {
   appendPart,
@@ -103,18 +105,61 @@ describe("crop math", () => {
   });
 });
 
-describe("view filters by theme", () => {
+describe("view filters", () => {
   it("collage leaves parts as they are", () => {
-    expect(slotFilter("collage", "dark")).toBeUndefined();
+    expect(slotFilter("collage", "f")).toBeUndefined();
   });
-  it("wireframe is grey and soft for every theme", () => {
-    expect(slotFilter("wireframe", "dark")).toContain("grayscale(1)");
-    expect(slotFilter("wireframe", "light")).toBe(slotFilter("wireframe", "dark"));
+  it("wireframe is grey and soft", () => {
+    expect(slotFilter("wireframe")).toContain("grayscale(1)");
   });
-  it("even inverts only dark parts, and desaturates all", () => {
-    expect(slotFilter("even", "dark")).toContain("invert(1) hue-rotate(180deg)");
-    expect(slotFilter("even", "light")).not.toContain("invert");
-    expect(slotFilter("even", undefined)).toContain("saturate");
+  it("harmonize points every part at the page's SVG duotone filter, never inverts", () => {
+    expect(slotFilter("harmonize", "bn-harmonize-p1")).toBe("url(#bn-harmonize-p1)");
+    expect(slotFilter("harmonize")).toBe("grayscale(1)");
+    for (const m of STITCH_MODES) expect(slotFilter(m, "x") ?? "").not.toContain("invert");
+  });
+});
+
+describe("harmonize colors", () => {
+  it("takes the darkest and lightest palette colors as ink and surface", () => {
+    expect(harmonizeFromPalette([{ hex: "#C8553D" }, { hex: "#1a1a2e" }, { hex: "#f4f1de" }, { hex: "#81B29A" }])).toEqual({
+      ink: "#1a1a2e",
+      surface: "#f4f1de",
+    });
+  });
+  it("pushes a low contrast pair apart (same hues) until it reaches 4.5:1", () => {
+    const h = harmonizeFromPalette([{ hex: "#f6efe3" }, { hex: "#d62828" }])!;
+    expect(hexContrast(h.ink, h.surface)).toBeGreaterThanOrEqual(4.5);
+    const [r, g, b] = hexToRgb(h.ink)!;
+    expect(r).toBeGreaterThan(g + b); // still a red
+    expect(hexContrast(...Object.values(harmonizeFromPalette([{ hex: "#777777" }, { hex: "#888888" }])!) as [string, string])).toBeGreaterThanOrEqual(4.5);
+  });
+  it("falls back (undefined) for a palette without two distinct colors, or junk", () => {
+    expect(harmonizeFromPalette([{ hex: "#777777" }])).toBeUndefined();
+    expect(harmonizeFromPalette([{ hex: "#777777" }, { hex: "#777" }])).toBeUndefined();
+    expect(harmonizeFromPalette([{ hex: "nope" }, { hex: "#fff" }])).toBeUndefined();
+    expect(harmonizeFromPalette(undefined)).toBeUndefined();
+  });
+  it("builds feFuncR/G/B tables that map 0 to ink and 1 to surface", () => {
+    expect(duotoneTables({ ink: "#000000", surface: "#ffffff" })).toEqual({ r: "0 1", g: "0 1", b: "0 1" });
+    expect(duotoneTables({ ink: "#ff0000", surface: "#0000ff" })).toEqual({ r: "1 0", g: "0 0", b: "0 1" });
+    expect(duotoneTables({ ink: "nope", surface: "#fff" })).toBeNull();
+  });
+  it("matches the WCAG contrast numbers", () => {
+    expect(hexContrast("#000", "#fff")).toBeCloseTo(21, 5);
+    expect(hexContrast("#777", "#777")).toBe(1);
+  });
+  it("reads computed token colors in hex or rgb form", () => {
+    expect(cssColorToHex(" #EDEDED")).toBe("#ededed");
+    expect(cssColorToHex("rgb(27, 27, 27)")).toBe("#1b1b1b");
+    expect(cssColorToHex("oklch(0.5 0.1 30)")).toBeNull();
+  });
+  it("keeps even as a one-release alias of harmonize, in tools and saved pages", () => {
+    expect(toStitchMode("even")).toBe("harmonize");
+    expect(toStitchMode("harmonize")).toBe("harmonize");
+    expect(toStitchMode("sepia")).toBeUndefined();
+    expect(cleanStitchData({ mode: "even", rows: [] }).mode).toBe("harmonize");
+    expect(cleanStitchData({ harmonize: { ink: "#1A1A2E", surface: "#f4f1de" } }).harmonize).toEqual({ ink: "#1a1a2e", surface: "#f4f1de" });
+    expect(cleanStitchData({ harmonize: { ink: "red", surface: "#f4f1de" } }).harmonize).toBeUndefined();
   });
 });
 
