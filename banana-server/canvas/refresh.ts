@@ -6,7 +6,12 @@
  * becomes visible or focused again, or when the host sends a tool result or a context change.
  *
  * Framework free so Vitest can drive it with fake timers.
+ *
+ * The poll asks by version (`sinceUpdatedAt`, `takedownHash`): an unchanged board costs one
+ * small row read and the takedown hash on the server, never the state blob or the full list.
  */
+import { compileTakedowns } from "@/lib/takedown";
+import type { BridgePersistence } from "./persistence-bridge";
 
 /** Poll interval while the frame is visible and the window has focus. */
 export const POLL_FOCUSED_MS = 4_000;
@@ -156,6 +161,35 @@ export function decideRefresh({ newer, dirty, busy, conflict }: RefreshInput): R
   if (busy) return "defer";
   if (dirty) return "flush";
   return "apply";
+}
+
+// ---------------------------------------------------------------------------------- one poll
+
+/** The part of the bridge persistence one poll uses (canvas/persistence-bridge.ts). */
+export type PollPersistence = Pick<BridgePersistence, "conflict" | "baseUpdatedAt" | "fetchLatest" | "adopt" | "adoptTakedowns">;
+
+/** The part of the board one poll uses (CanvasApp `refreshRef`). */
+export interface PollView {
+  offer(remote: { state: unknown; updatedAt: string }, opts: { conflict: boolean }): RefreshDecision;
+  prune(isBlocked: (url: string) => boolean): number | null;
+}
+
+/**
+ * One poll: ask by version. Unchanged with a newer takedown list: hide the newly blocked items
+ * from the board the view shows. A newer save: offer it to the board.
+ */
+export async function pollOnce(persistence: PollPersistence, view: PollView | null): Promise<void> {
+  if (persistence.conflict) return;
+  const latest = await persistence.fetchLatest();
+  if (latest.unchanged) {
+    if (!latest.takedowns || !view) return;
+    const matcher = compileTakedowns(latest.takedowns.entries);
+    if (view.prune((url) => matcher.isBlocked(url)) !== null) persistence.adoptTakedowns(latest.takedowns.hash);
+    return;
+  }
+  if (!isNewer(latest.updatedAt, persistence.baseUpdatedAt)) return;
+  const decision = view?.offer(latest, { conflict: persistence.conflict !== null });
+  if (decision === "apply") persistence.adopt(latest.updatedAt, latest.takedownHash);
 }
 
 // ---------------------------------------------------------------------------------- tray

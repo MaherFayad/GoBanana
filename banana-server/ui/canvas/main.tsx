@@ -37,7 +37,7 @@ import {
   type McpUiToolResultNotification,
 } from "@modelcontextprotocol/ext-apps";
 import { CanvasApp, type CanvasRefreshHandle } from "@/canvas/CanvasApp";
-import { createRefreshScheduler, isNewer } from "@/canvas/refresh";
+import { createRefreshScheduler, pollOnce } from "@/canvas/refresh";
 import { ExternalIcon, WarningIcon } from "@/components/studio/icons";
 import { ToastProvider } from "@/components/studio/Toast";
 import type { CanvasPersistence } from "@/canvas/persistence";
@@ -275,13 +275,7 @@ function InlineCanvas({
   // which applies them unless the user has unsaved work or is mid-gesture.
   useEffect(() => {
     const scheduler = createRefreshScheduler(
-      async () => {
-        if (persistence.conflict) return;
-        const latest = await persistence.fetchLatest();
-        if (!isNewer(latest.updatedAt, persistence.baseUpdatedAt)) return;
-        const decision = refreshRef.current?.offer(latest, { conflict: persistence.conflict !== null });
-        if (decision === "apply") persistence.adopt(latest.updatedAt);
-      },
+      () => pollOnce(persistence, refreshRef.current),
       { isVisible: () => document.visibilityState === "visible", isFocused: () => document.hasFocus() },
     );
     const update = () => scheduler.update();

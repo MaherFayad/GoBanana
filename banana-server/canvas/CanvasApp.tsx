@@ -168,6 +168,12 @@ export interface CanvasRefreshHandle {
    * existing path) or waits for the next poll ("defer").
    */
   offer(remote: RemoteState, opts: { conflict: boolean }): RefreshDecision;
+  /**
+   * Hide items that a newer takedown list blocks from the board this view shows (the poll
+   * found no new save, but the list changed). Returns how many were hidden, or null when the
+   * user is mid-gesture (try again on the next poll). The change saves like any other edit.
+   */
+  prune(isBlocked: IsBlocked): number | null;
 }
 
 /** Where the board stores the zoom for CSS (chrome keeps one on-screen size at any zoom). */
@@ -1358,18 +1364,30 @@ function CanvasEditor({
         if (!liveRef.current.trayOpen) setTrayPulse((n) => n + 1);
       }
     };
+    const isBusy = () =>
+      dragSession.current ||
+      placingRef.current !== null ||
+      liveRef.current.editingId !== null ||
+      nodesRef.current.some((n) => n.dragging || n.resizing);
     refreshRef.current = {
       offer(remote, { conflict }) {
-        const busy =
-          dragSession.current ||
-          placingRef.current !== null ||
-          liveRef.current.editingId !== null ||
-          nodesRef.current.some((n) => n.dragging || n.resizing);
         const dirty = saver.status === "pending" || saver.status === "saving" || saver.status === "error";
-        const decision = decideRefresh({ newer: true, dirty, busy, conflict });
+        const decision = decideRefresh({ newer: true, dirty, busy: isBusy(), conflict });
         if (decision === "flush") void saver.flush();
         if (decision === "apply") applyRemote(remote);
         return decision;
+      },
+      prune(blocked) {
+        if (isBusy()) return null;
+        const current = serializeState(nodesRef.current, liveRef.current.viewport, trayRef.current, partsRef.current);
+        const data = deserializeState(current, { isBlocked: blocked });
+        if (data.removed === 0) return 0;
+        const selected = new Set(selectedIds(nodesRef.current));
+        setNodes(data.nodes.map((n) => (selected.has(n.id) ? ({ ...n, selected: true } as CanvasFlowNode) : n)));
+        setTray(data.tray);
+        setParts(data.parts);
+        announce(`${data.removed} ${plural(data.removed, "item", "items")} hidden because of a takedown`);
+        return data.removed;
       },
     };
     return () => {

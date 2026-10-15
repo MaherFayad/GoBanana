@@ -58,6 +58,17 @@ export async function getCanvasForOwner(db: Db, userId: string, canvasId: string
   return row ?? null;
 }
 
+/** Only `updated_at`: the canvas poll asks whether anything changed without reading the state blob. */
+export async function getCanvasVersion(db: Db, userId: string, canvasId: string): Promise<Date | null> {
+  if (!isUuid(canvasId) || !isUuid(userId)) return null;
+  const [row] = await db
+    .select({ updatedAt: canvases.updatedAt })
+    .from(canvases)
+    .where(and(eq(canvases.id, canvasId), eq(canvases.userId, userId)))
+    .limit(1);
+  return row?.updatedAt ?? null;
+}
+
 export async function countCanvases(db: Db, userId: string): Promise<number> {
   if (!isUuid(userId)) return 0;
   const [row] = await db.select({ n: count() }).from(canvases).where(eq(canvases.userId, userId));
@@ -167,6 +178,7 @@ export function canvasRepo(db: Db): CanvasRepo {
   return {
     create: (input) => createCanvas(db, input),
     getOwned: (userId, canvasId) => getCanvasForOwner(db, userId, canvasId),
+    getVersion: (userId, canvasId) => getCanvasVersion(db, userId, canvasId),
     countOwned: (userId) => countCanvases(db, userId),
     listOwned: (userId, opts) => listOwnedCanvases(db, userId, opts),
     saveState: (userId, canvasId, state, opts) => saveCanvasState(db, userId, canvasId, state, opts),

@@ -7,14 +7,14 @@ import { drizzle } from "drizzle-orm/neon-http";
 import { describe, expect, it, vi } from "vitest";
 import type { Db } from "@/db/client";
 import * as schema from "@/db/schema";
-import { countCanvases, getCanvasForOwner, listOwnedCanvases, saveCanvasState, updateCanvas } from "@/lib/db/canvases";
+import { countCanvases, getCanvasForOwner, getCanvasVersion, listOwnedCanvases, saveCanvasState, updateCanvas } from "@/lib/db/canvases";
 import { deleteDirections, findDirectionForUser, upsertDirections } from "@/lib/db/directions";
 import { isUuid, referenceRowId, uuidFromName } from "@/lib/db/ids";
 import { createMemoryRepos } from "@/lib/db/memory";
 import { findOwnedReferences, getReferencesByIds, insertReferences } from "@/lib/db/references";
 import { armStatsSql, blocklistRepo, directionStatsSql, insertFeedback, readArmStats, readDirectionStats } from "@/lib/db/feedback";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { listTakedowns, memoTakedowns } from "@/lib/db/takedowns";
+import { hashTakedowns, listTakedowns, memoTakedowns } from "@/lib/db/takedowns";
 import { incrementUsage, readUsage } from "@/lib/db/usage";
 import { getUserPlan } from "@/lib/db/users";
 import { ALICE, BOB, ref } from "./tools-fixtures";
@@ -189,12 +189,30 @@ describe("drizzle repositories", () => {
     const { db } = fakeDb([[["example.com"], ["https://www.pinterest.com/pin/9/"]]]);
     expect(await listTakedowns(db)).toEqual(["example.com", "https://www.pinterest.com/pin/9/"]);
   });
+
+  it("hashes the takedown list in the database without reading its entries", async () => {
+    const { db, calls } = fakeDb([[[2, "abc"]]]);
+    expect(await hashTakedowns(db)).toBe("2-abc");
+    expect(calls[0]!.sql).toMatch(/^select count\(\*\)::int, md5\(coalesce\(string_agg\("url_or_domain", E'\\n' ORDER BY "url_or_domain"/);
+    expect(calls[0]!.sql).toMatch(/from "takedowns"$/);
+  });
+
+  it("reads only updated_at for the canvas version, scoped to the owner", async () => {
+    const at = new Date("2026-10-15T12:00:00.000Z");
+    const { db, calls } = fakeDb([[[at.toISOString()]]]);
+    expect((await getCanvasVersion(db, ALICE, CANVAS))?.toISOString()).toBe(at.toISOString());
+    expect(calls[0]!.sql).toMatch(/select "updated_at" from "canvases"/);
+    expect(calls[0]!.sql).not.toMatch(/"state"/);
+    expect(calls[0]!.sql).toMatch(/"canvases"\."id" = \$1 and "canvases"\."user_id" = \$2/);
+    expect(await getCanvasVersion(db, ALICE, "nope")).toBeNull();
+    expect(calls).toHaveLength(1);
+  });
 });
 
 describe("memoTakedowns", () => {
   it("reads the list once per request and retries after a failure", async () => {
     const list = vi.fn().mockRejectedValueOnce(new Error("down")).mockResolvedValue(["example.com"]);
-    const load = memoTakedowns({ list });
+    const load = memoTakedowns({ list, hash: vi.fn() });
     await expect(load()).rejects.toThrow();
     const m = await load();
     await load();
