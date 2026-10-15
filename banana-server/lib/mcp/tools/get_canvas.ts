@@ -20,6 +20,7 @@ import {
 } from "./canvas-shared";
 import type { Culture } from "@/lib/culture";
 import { canvasWithThumbs } from "@/lib/vision/wrap";
+import { UNTRUSTED_NOTE, webTitle } from "@/lib/mcp/untrusted";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "get_canvas";
@@ -98,11 +99,11 @@ export function summaryText(s: CanvasSummary): string {
   for (const it of s.items) byDir.set(it.directionId ?? null, [...(byDir.get(it.directionId ?? null) ?? []), it]);
   for (const [dir, items] of byDir) {
     lines.push(dir ? `Items of direction ${dir}:` : "Items with no direction:");
-    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${it.culture}` : ""}`);
+    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${webTitle(it.title)}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${it.culture}` : ""}`);
   }
   if (s.parts.length > 0) lines.push(`Parts: ${s.parts.map((p) => `${p.id} (${p.role})`).join(", ")}`);
   for (const st of s.stitches) lines.push(`Frankenstein page ${st.id}: ${st.title}${st.directionId ? ` (direction ${st.directionId})` : ""}`);
-  lines.push("Call get_canvas without summary for specs, source links and palettes. Always show each reference's source link when you mention it.");
+  lines.push("Call get_canvas without summary for specs, source links and palettes. Always show each reference's source link when you mention it.", UNTRUSTED_NOTE);
   return lines.join("\n");
 }
 
@@ -183,7 +184,7 @@ function describeItem(it: CanvasItem): string {
   switch (it.type) {
     case "image":
     case "upload":
-      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
+      return `${it.type} ${it.id}: ${webTitle(it.title)} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "note":
       return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "swatch":
@@ -258,7 +259,7 @@ export function canvasText(c: CanvasSnapshot, trayCount: number): string {
   });
   lines.push(...stitchLines(c));
   if (trayCount > 0) lines.push(`${trayCount} search results wait in the tray. Place them with add_to_canvas.`);
-  lines.push("Always show each reference's source link next to it.");
+  lines.push("Always show each reference's source link next to it.", UNTRUSTED_NOTE);
   return lines.join("\n");
 }
 

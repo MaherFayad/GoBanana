@@ -10,13 +10,15 @@ export const dynamic = "force-dynamic";
  * clients that use the path-suffixed form.
  */
 export function GET(req: Request): Response {
-  const { authkitIssuer, mcpResourceUrl } = getConfig();
+  const { authkitIssuer, mcpResourceUrl, legacyAppUrl, legacyMcpResourceUrl } = getConfig();
+  // A client that reached us on the old workers.dev host keeps the old resource, so its tokens still match.
+  const onLegacyHost = !!legacyAppUrl && new URL(req.url).origin === new URL(legacyAppUrl).origin;
   if (!authkitIssuer) {
     return Response.json({ error: "Authorization server is not configured" }, { status: 503 });
   }
   return protectedResourceHandler({
     authServerUrls: [authkitIssuer],
-    resourceUrl: mcpResourceUrl,
+    resourceUrl: onLegacyHost && legacyMcpResourceUrl ? legacyMcpResourceUrl : mcpResourceUrl,
   })(req);
 }
 

@@ -5,6 +5,7 @@
  * the page uses.
  */
 import type { CanvasItem, CanvasSnapshot, StitchSnapshot } from "@/lib/canvas/types";
+import { webTitle } from "@/lib/mcp/untrusted";
 import { roleName } from "@/lib/stitch/skeleton";
 import type { ThumbTarget } from "./thumbs";
 
@@ -29,7 +30,7 @@ function itemLine(it: CanvasItem): string {
     case "image":
     case "upload": {
       const kind = it.type === "image" && it.kind === "build" ? "build" : it.zone === "art" ? "art" : "ui";
-      return `Item ${it.id} (${kind}) ${pos}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.note ? ` note: ${it.note}` : ""}`;
+      return `Item ${it.id} (${kind}) ${pos}: ${webTitle(it.title)} (${it.sourceSite}) ${it.sourceUrl}${it.note ? ` note: ${it.note}` : ""}`;
     }
     case "note":
       return `Note ${it.id} ${pos}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}`;

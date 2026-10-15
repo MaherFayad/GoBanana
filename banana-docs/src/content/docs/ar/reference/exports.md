@@ -25,6 +25,7 @@ description: كل صيغة في export_kit، والملف، ومكانه في م
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | تخطيط اللوحة بصيغة JSON لإعادة بنائها في FigJam عبر Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | لوحة HTML مستقلة تعرض الصور من روابطها الأصلية وتسرد المصادر |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | مربعات رمادية لكل خانة مع تسميات الأدوار والملاحظات، وقائمة بالمصادر، بلا صور مراجع |
+| `claude_settings` | `.claude/settings.json` | Free | مفاتيح تُدمج في إعداداتك ليُعرض على زملائك مكوّن GoBanana. تُدمج ولا تستبدل |
 
 ## الموجز الثقافي
 

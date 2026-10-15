@@ -203,7 +203,7 @@ export const register: RegisterTool = (server) => {
       description: TOOL_DESCRIPTION,
       // Validated in the handler so bad input gets a plain message, not the SDK's raw dump.
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

@@ -13,6 +13,7 @@ import type { ImageHostAllowlist } from "@/lib/sources/allowlist";
 import { boardView, sectionView, stitchView } from "@/lib/vision/snapshot";
 import { MAX_THUMBS, thumbBlocks, type McpContent, type VisionResult } from "@/lib/vision/thumbs";
 import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, type CanvasToolDeps } from "./canvas-shared";
+import { UNTRUSTED_NOTE } from "@/lib/mcp/untrusted";
 import { lenient, parseArgs, toolMessage, type RegisterTool } from "./types";
 
 export const TOOL_NAME = "get_snapshot";
@@ -75,7 +76,7 @@ export function createGetSnapshotTool(deps: GetSnapshotDeps) {
         });
         content.push(...blocks);
       }
-      content.push({ type: "text", text: [...view.tail, `Web link: ${canvas.webUrl ?? ""}`, "Always show each reference's source link next to it."].join("\n") });
+      content.push({ type: "text", text: [...view.tail, `Web link: ${canvas.webUrl ?? ""}`, "Always show each reference's source link next to it.", UNTRUSTED_NOTE].join("\n") });
       return { content, structuredContent: view.structured };
     } catch {
       console.error("[get_snapshot] failed");

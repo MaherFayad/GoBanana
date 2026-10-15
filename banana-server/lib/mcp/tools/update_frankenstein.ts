@@ -139,7 +139,7 @@ export const register: RegisterTool = (server) => {
       title: "Change Frankenstein page",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

@@ -39,6 +39,8 @@
     "APP_NAME": "GoBanana",
     "APP_URL": "https://gobanana-server.maherfayad55.workers.dev",
     "MCP_RESOURCE_URL": "https://gobanana-server.maherfayad55.workers.dev/api/mcp",
+    // Custom domain (DIST-02), switched off. To turn it on add PUBLIC_ORIGIN (the site) and MCP_ORIGIN (the MCP host),
+    // for example "https://example.com" and "https://mcp.example.com". See docs/directory-submission.md section 8.
     "WORKOS_CLIENT_ID": "client_01M4NBKJEZYVMTKFEG0Y7WXFBZ",
     "WORKOS_AUTHKIT_DOMAIN": "https://sensitive-conch-18-staging.authkit.app",
     "IMAGE_HOST_ALLOWLIST": "",

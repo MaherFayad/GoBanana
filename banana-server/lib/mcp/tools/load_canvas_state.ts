@@ -105,7 +105,7 @@ export const register: RegisterTool = (server) => {
   server.registerTool(
     TOOL_NAME,
     {
-      title: "Load canvas (canvas view only)",
+      title: "Load canvas for the view",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
       annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },

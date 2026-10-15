@@ -159,6 +159,20 @@ export const usage = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.period] })],
 );
 
+/**
+ * Install funnel (DIST-08): when each user first did each step. One row per user, written once per
+ * step (the first time wins), no tracking scripts and no content. Read by scripts/funnel-report.mjs.
+ */
+export const installFunnel = pgTable("install_funnel", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  firstPingAt: timestamp("first_ping_at", { withTimezone: true }),
+  firstCanvasAt: timestamp("first_canvas_at", { withTimezone: true }),
+  firstKeepAt: timestamp("first_keep_at", { withTimezone: true }),
+  firstExportAt: timestamp("first_export_at", { withTimezone: true }),
+});
+
 export const takedowns = pgTable("takedowns", {
   id: uuid("id").primaryKey().defaultRandom(),
   urlOrDomain: text("url_or_domain").notNull().unique(),

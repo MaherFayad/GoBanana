@@ -5,7 +5,7 @@ description: يصدّر اللوحة كملفات لمستودعك، مثل DIRE
 
 | الخطة | الحصة | يغير البيانات | التلميحات |
 | --- | --- | --- | --- |
-| المجانية: 5 صيغ. Pro: الصيغ الـ 15 كلها | لا شيء | لا. يعيد نصا، ووكيلك يكتب الملفات | |
+| المجانية: 6 صيغ. Pro: الصيغ الـ 16 كلها | لا شيء | لا. يعيد نصا، ووكيلك يكتب الملفات | |
 
 ## المدخلات
 
@@ -17,7 +17,7 @@ description: يصدّر اللوحة كملفات لمستودعك، مثل DIRE
 | `pages` | string[] | لا | من 1 إلى 5، وكل واحدة حتى 80 حرفا | أسماء مسارات أو أنماط glob: ‏`"pricing page"`، `"/launch"`، `"app/pricing/**"` |
 | `scope` | enum | لا | `page` (الافتراضي)، `system` | `page`: ينطبق على الصفحات فقط ويرث نظام التصميم الخاص بك. `system`: يصبح الاتجاه نظامك |
 
-**الصيغ:** `design_md`، `brief`، `direction_md`، `build_prompt`، `stitch_md`، `culture_md` (المجانية) · `review`، `cursor_rules`، `copilot`، `agents_md`، `claude_md`، `tokens`، `tailwind`، `figjam_spec`، `html_board`، `wireframe_html` ‏(Pro). المسارات والمحتويات: [صيغ التصدير](/docs/ar/reference/exports/).
+**الصيغ:** `design_md`، `brief`، `direction_md`، `build_prompt`، `stitch_md`، `culture_md`، `claude_settings` (المجانية) · `review`، `cursor_rules`، `copilot`، `agents_md`، `claude_md`، `tokens`، `tailwind`، `figjam_spec`، `html_board`، `wireframe_html` ‏(Pro). المسارات والمحتويات: [صيغ التصدير](/docs/ar/reference/exports/).
 
 ## مثال على الاستدعاء
 

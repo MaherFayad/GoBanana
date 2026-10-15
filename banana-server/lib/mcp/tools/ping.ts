@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { APP_NAME } from "@/lib/config";
+import { recordFunnel } from "@/lib/funnel";
 import { toolMessage, type RegisterTool } from "./types";
 
 export const register: RegisterTool = (server) => {
@@ -19,6 +20,8 @@ export const register: RegisterTool = (server) => {
       if (!auth.email) {
         return toolMessage(`You are signed in, but ${APP_NAME} could not load your email yet. Try again in a minute.`);
       }
+      // First connection per user (DIST-08 install funnel): the only write this tool makes, and it never fails the call.
+      await recordFunnel(auth.userId, "ping");
       const structuredContent = { ok: true as const, app: APP_NAME, email: auth.email };
       return {
         content: [{ type: "text", text: `Connected to ${APP_NAME} as ${auth.email}.` }],

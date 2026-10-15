@@ -26,6 +26,8 @@ The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `
    /plugin install gobanana@gobanana
    ```
 
+   You can also install the plugin once on claude.ai and it appears in Claude Code too (v2.1.273 and later).
+
    From your shell, without a session: `claude plugin install gobanana --marketplace MaherFayad/GoBanana` (2.1.292 or later), or `claude plugin marketplace add MaherFayad/GoBanana` then `claude plugin install gobanana@gobanana`.
 
 2. **Pick a scope.** The install opens the plugin's details. Review what it adds (9 skills and the `gobanana` MCP server), then choose **Install for you** (every project), **Install for all collaborators on this repository** (project), or **Install for you, in this repo only** (local). If the summary ends with `Run /reload-plugins to apply.`, run `/reload-plugins`.
@@ -47,6 +49,10 @@ The plugin bundles the server connection and the 9 skills (`gobanana-explore`, `
    Claude calls `ping` and answers "Connected to GoBanana as you@example.com."
 
 </Steps>
+
+### Offer the plugin to your team
+
+Ask for the hand-off with the `claude_settings` format (the `gobanana-handoff` skill offers it when it sees Claude Code, and asks first). It merges two keys into your repo's `.claude/settings.json`: an `extraKnownMarketplaces` entry for `MaherFayad/GoBanana` and `enabledPlugins` with `gobanana@gobanana`. Commit the file. Teammates who open the repo and trust the folder get the marketplace added, and Claude Code shows the install command. Each person still installs the plugin and signs in with their own account.
 
 ## Option B: the server only
 

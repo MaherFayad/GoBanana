@@ -661,6 +661,10 @@ export const ar: Dict = {
         "ابحث عن {app} في القائمة واختر Add. سجل الدخول حين يطلب Claude ذلك.",
       ],
       repoLabel: "المستودع",
+      addButton: "أضف {app} إلى Claude",
+      addHint: "يفتح Claude ونموذج الموصل معبأ. اختر Add ثم سجل الدخول حين يطلب Claude ذلك. هذا يضيف الموصل فقط. للمهارات كمان، اتبع خطوات الإضافة تحت.",
+      adminLink: "مالك حساب Team أو Enterprise؟ أضفه لكل مؤسستك",
+      manualTitle: "أو أضف الإضافة بنفسك",
       note: "تجلب الإضافة الموصل معها. إن لم يظهر {app} ضمن Connectors، أضف عنوان الخادم من تبويب وكلاء آخرون.",
     },
     file: {
@@ -669,8 +673,9 @@ export const ar: Dict = {
       download: "نزل الإضافة (.zip)",
     },
     code: {
-      intro: "في Claude Code، شغل هذين الأمرين:",
+      intro: "في الطرفية، شغل هذا الأمر الواحد. يضيف المتجر ويثبت الإضافة:",
       label: "Claude Code",
+      synced: "ثبت الإضافة مرة وحدة على claude.ai وتظهر لك في Claude Code كمان (الإصدار 2.1.273 أو أحدث).",
     },
     other: {
       intro: "Cursor وVS Code وWindsurf وCodex وChatGPT وغيرها من عملاء MCP: أضف عنوان الخادم هذا كموصل مخصص أو خادم MCP.",

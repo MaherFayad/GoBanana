@@ -25,6 +25,7 @@ description: Every export_kit format - the file, where it goes in your repo, wha
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | Board layout as JSON for rebuilding in FigJam through the Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | A standalone HTML board that hotlinks images and lists sources |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | Grey boxes per slot with role labels and notes, a sources list, no reference images |
+| `claude_settings` | `.claude/settings.json` | Free | Keys to merge into your settings so teammates are offered the GoBanana plugin. Merged, never replaced |
 
 ## Cultural brief
 

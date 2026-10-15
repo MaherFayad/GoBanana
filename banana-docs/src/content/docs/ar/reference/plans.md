@@ -31,6 +31,7 @@ GoBanana للأفراد، ولا توجد خطط للفرق. الأسعار با
 | `build_prompt` | BUILD-PROMPT.md | نعم | نعم |
 | `stitch_md` | FRANKENSTEIN.md | نعم | نعم |
 | `culture_md` | CULTURE.md | نعم | نعم |
+| `claude_settings` | مفاتيح `.claude/settings.json` | نعم | نعم |
 | `review` | REVIEW.md | لا | نعم |
 | `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc` | لا | نعم |
 | `copilot` | `.github/instructions/gobanana-<slug>.instructions.md` | لا | نعم |

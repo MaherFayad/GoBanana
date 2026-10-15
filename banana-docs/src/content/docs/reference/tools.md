@@ -31,7 +31,7 @@ The GoBanana MCP server at `https://gobanana-server.maherfayad55.workers.dev/api
 | [`update_frankenstein`](/docs/reference/tools/update-frankenstein/) | Changes one page with ops | All | No | Yes |
 | **Color and files** | | | | |
 | [`extract_palette`](/docs/reference/tools/extract-palette/) | Colors with roles and WCAG contrast | All | No | Saves the palette; swatches with `addSwatches` |
-| [`export_kit`](/docs/reference/tools/export-kit/) | Returns files: DIRECTION.md, BUILD-PROMPT.md, rules... | Free: 5 formats, Pro: all 15 | No | No |
+| [`export_kit`](/docs/reference/tools/export-kit/) | Returns files: DIRECTION.md, BUILD-PROMPT.md, rules... | Free: 6 formats, Pro: all 16 | No | No |
 
 Two more tools exist for the canvas view only: `save_canvas_state` and `load_canvas_state`. MCP Apps hosts hide them from the model. Agents must not call them.
 

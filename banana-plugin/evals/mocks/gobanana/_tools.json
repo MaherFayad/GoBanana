@@ -603,7 +603,8 @@
                 "claude_md",
                 "stitch_md",
                 "wireframe_html",
-                "culture_md"
+                "culture_md",
+                "claude_settings"
               ]
             }
           },

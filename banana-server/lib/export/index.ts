@@ -16,6 +16,7 @@ import { buildKitModel, type KitModel, type KitOptions } from "./model";
 import { reviewMd } from "./review";
 import { STITCH_MD_FILE, stitchMd, WIREFRAME_FILE } from "./stitch-md";
 import { wireframeHtml } from "./wireframe-html";
+import { CLAUDE_SETTINGS_PATH, claudeSettingsJson } from "./claude-settings";
 import { appSlug } from "./scope";
 import { tailwindCss } from "./tailwind";
 import { tokensJson } from "./tokens";
@@ -37,6 +38,7 @@ export const EXPORT_FORMATS = [
   "stitch_md",
   "wireframe_html",
   "culture_md",
+  "claude_settings",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -51,6 +53,8 @@ export interface ExportFile {
    * replace the block between the same markers if it is there, else append it.
    */
   append?: boolean;
+  /** "json": merge these keys into the existing JSON file (never replace it). */
+  merge?: "json";
 }
 
 interface Generator {
@@ -59,6 +63,7 @@ interface Generator {
   build: (m: KitModel) => string;
   path: (m: KitModel) => string;
   append?: (m: KitModel) => boolean;
+  merge?: "json";
 }
 
 const inDir = (file: string) => (m: KitModel) => `${m.dir}/${file}`;
@@ -101,6 +106,7 @@ const GENERATORS: Record<ExportFormat, Generator> = {
   stitch_md: { name: fixed(STITCH_MD_FILE), mime: "text/markdown", build: stitchMd, path: inDir(STITCH_MD_FILE) },
   wireframe_html: { name: fixed(WIREFRAME_FILE), mime: "text/html", build: wireframeHtml, path: inDir(WIREFRAME_FILE) },
   culture_md: { name: fixed(CULTURE_FILE), mime: "text/markdown", build: cultureMd, path: inDir(CULTURE_FILE) },
+  claude_settings: { name: fixed("settings.json"), mime: "application/json", build: claudeSettingsJson, path: fixed(CLAUDE_SETTINGS_PATH), merge: "json" },
 };
 
 export function isExportFormat(value: unknown): value is ExportFormat {
@@ -122,6 +128,7 @@ export function exportKit(snapshot: CanvasSnapshot, formats: readonly ExportForm
       path: g.path(model),
     };
     if (g.append?.(model)) file.append = true;
+    if (g.merge) file.merge = g.merge;
     return file;
   });
 }

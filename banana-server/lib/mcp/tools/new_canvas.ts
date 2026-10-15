@@ -61,7 +61,7 @@ export const register: RegisterTool = (server) => {
       title: "New canvas",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

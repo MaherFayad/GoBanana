@@ -11,6 +11,7 @@ import { authExtra } from "@/lib/auth";
 import { APP_NAME } from "@/lib/config";
 import { canvasWebUrl, emptyState, itemCount, loadCanvas, mutateCanvas, type CanvasState } from "@/lib/canvas/store";
 import { cleanTaste } from "@/lib/taste";
+import { recordFunnel } from "@/lib/funnel";
 import { canCreateCanvas, currentPeriod } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -119,6 +120,7 @@ export async function createCanvas(
   const state: CanvasState = taste.length > 0 ? { ...emptyState(), taste } : emptyState();
   const canvas = await repos.canvases.create({ userId, title, brief: input.brief ?? null, state });
   await repos.usage.addCanvases(userId, currentPeriod(deps.now?.()), 1);
+  await recordFunnel(userId, "canvas");
   const out: OpenCanvasOutput = {
     canvas: {
       id: canvas.id,
@@ -199,7 +201,7 @@ export const register: RegisterTool = (server) => {
       title: `Open ${APP_NAME} canvas`,
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
       _meta: { ui: { resourceUri: CANVAS_UI_URI } },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),

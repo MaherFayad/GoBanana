@@ -31,6 +31,7 @@ Payments are off during the beta. Every signed in account gets Pro monthly limit
 | `build_prompt` | BUILD-PROMPT.md | Yes | Yes |
 | `stitch_md` | FRANKENSTEIN.md | Yes | Yes |
 | `culture_md` | CULTURE.md | Yes | Yes |
+| `claude_settings` | `.claude/settings.json` keys | Yes | Yes |
 | `review` | REVIEW.md | No | Yes |
 | `cursor_rules` | `.cursor/rules/gobanana-<slug>.mdc` | No | Yes |
 | `copilot` | `.github/instructions/gobanana-<slug>.instructions.md` | No | Yes |

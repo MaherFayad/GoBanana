@@ -663,6 +663,10 @@ export const en = {
         "Find {app} in the list and choose Add. Sign in when Claude asks.",
       ],
       repoLabel: "Repository",
+      addButton: "Add {app} to Claude",
+      addHint: "Opens Claude with the connector form filled in. Choose Add, then sign in when Claude asks. This adds the connector. For the skills too, follow the plugin steps below.",
+      adminLink: "Team or Enterprise owner? Add it for your whole organization",
+      manualTitle: "Or add the plugin by hand",
       note: "The plugin brings the connector with it. If {app} does not show under Connectors, add the server address from Other agents.",
     },
     file: {
@@ -671,8 +675,9 @@ export const en = {
       download: "Download the plugin (.zip)",
     },
     code: {
-      intro: "In Claude Code, run these two commands:",
+      intro: "In your terminal, run this one command. It adds the marketplace and installs the plugin:",
       label: "Claude Code",
+      synced: "Install the plugin once on claude.ai and it appears in Claude Code too (v2.1.273 and later).",
     },
     other: {
       intro: "Cursor, VS Code, Windsurf, Codex, ChatGPT and other MCP clients: add this server address as a custom connector or MCP server.",

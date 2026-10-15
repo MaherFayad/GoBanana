@@ -26,6 +26,7 @@ import {
   type CanvasToolDeps,
 } from "./canvas-shared";
 import { cropSchema, idSchema, newPartId, roleSchema, ROLES_TEXT } from "./stitch-shared";
+import { webTitle } from "@/lib/mcp/untrusted";
 import { lenient, parseArgs, toolMessage, type RegisterTool } from "./types";
 
 export const TOOL_NAME = "cut_parts";
@@ -135,7 +136,7 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         }
         if (matcher.isReferenceBlocked(src)) return toolMessage("look: that image was removed after a takedown request. Nothing was cut.");
         const site = src.sourceSite || siteFromUrl(src.sourceUrl);
-        lookSrc = { ...src, label: `Look at ${itemId ? `item ${itemId}` : `reference ${referenceId}`}${src.title ? ` "${src.title}"` : ""} from ${site} ${src.sourceUrl}` };
+        lookSrc = { ...src, label: `Look at ${itemId ? `item ${itemId}` : `reference ${referenceId}`}${src.title ? ` "${webTitle(src.title)}"` : ""} from ${site} ${src.sourceUrl}` };
       }
 
       let parts: Part[] = [];
@@ -259,7 +260,7 @@ export const register: RegisterTool = (server) => {
       title: "Cut parts",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

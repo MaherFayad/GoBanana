@@ -23,7 +23,7 @@
 import { registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { APP_NAME } from "@/lib/config";
+import { APP_NAME, readAppUrl } from "@/lib/config";
 import { allowlistFromEnv, allowlistToCspDomains } from "@/lib/sources/allowlist";
 import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import { CANVAS_UI_URI } from "@/lib/mcp/tools/open_canvas";
@@ -42,7 +42,7 @@ export type CanvasCsp = { resourceDomains: string[]; connectDomains: string[] };
  */
 export function canvasCsp(opts: { imageHostAllowlist?: string; appUrl?: string } = {}): CanvasCsp {
   const allowlist = allowlistFromEnv(opts.imageHostAllowlist ?? readEnv("IMAGE_HOST_ALLOWLIST"));
-  const own = appOrigin(opts.appUrl ?? readEnv("APP_URL"));
+  const own = appOrigin(opts.appUrl ?? readAppUrl());
   const mobbin = MOBBIN_IMAGE_HOSTS.map((h) => `https://${h}`);
   const domains = [...allowlistToCspDomains(allowlist), ...mobbin, ...FONT_DOMAINS, ...(own ? [own] : [])];
   return { resourceDomains: [...new Set(domains)], connectDomains: [] };
@@ -97,7 +97,7 @@ export function loadCanvasHtml(): Promise<string> {
 }
 
 /** Fills the app origin into URLs of files the view loads from our host (fonts). */
-export function fillCanvasHtml(html: string, appUrl: string | undefined = readEnv("APP_URL")): string {
+export function fillCanvasHtml(html: string, appUrl: string | undefined = readAppUrl()): string {
   if (!html.includes(APP_ORIGIN_PLACEHOLDER)) return html;
   return html.replaceAll(APP_ORIGIN_PLACEHOLDER, appOrigin(appUrl) ?? "");
 }
