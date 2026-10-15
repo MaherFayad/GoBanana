@@ -29,7 +29,7 @@ const SYSTEM = `You write how a GoBanana ingredient card shows up in each UI ele
 ${PROMPT_RULES}
 
 For each card and each element, write:
-- how: one plain sentence (8 to 22 words) a developer can build from: what the element becomes, using the card's own shapes, type, texture or motion. Name concrete parts ("the progress track is a row of perforated stub tears"), not moods. It must stay usable: real labels, readable text, 44 px targets, nothing that hides state.
+- how: one plain sentence (6 to 14 words) a developer can build from: what the element becomes, using the card's own shapes, type, texture or motion. Name concrete parts ("the progress track is a row of perforated stub tears"), not moods. It must stay usable: real labels, readable text, 44 px targets, nothing that hides state.
 - buildability: 5 = plain CSS and components in an afternoon; 4 = a day, small SVG or a little motion; 3 = custom drawing, masks or canvas; 2 = heavy custom work or real performance risk; 1 = barely shippable. Be honest: most lines are 3 or 4.
 Elements where the card truly adds little still get an honest, modest line with a low buildability, never a forced gimmick.
 
@@ -46,7 +46,7 @@ export default defineJob<Input, CardElementLine>({
   schema: CardElementLineSchema,
   system: SYSTEM,
   maxTokens: 20000,
-  expectedOutputTokens: 9000,
+  expectedOutputTokens: 6500,
   effort: "low",
 
   loadInputs: () => {

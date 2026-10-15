@@ -60,7 +60,7 @@ Scores:
 - 0: wrong. It undermines the domain (playful kitsch for a cancer clinic, gambling cues for kids or finance, a sacred or care-tier tradition used where it would offend), or a culture card is out of place for the domain's region.
 Use the whole range. Most pairs are 1 or 2; give 3 and 0 when they are earned. A domain's "Fits" and "Clashes on purpose" family lists are hints, not rules.
 
-reason: 3 to 10 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). No em dashes.
+reason: 3 to 8 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). No em dashes.
 
 The domains:
 ${domainLines()}
@@ -77,7 +77,7 @@ export default defineJob<Input, FitScore>({
     return system();
   },
   maxTokens: 20000,
-  expectedOutputTokens: 9000,
+  expectedOutputTokens: 8000,
   effort: "low",
 
   loadInputs: () => {
