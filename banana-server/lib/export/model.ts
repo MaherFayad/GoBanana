@@ -2,7 +2,7 @@
  * Turns a CanvasSnapshot into one derived "kit model" that every export reads,
  * so DESIGN.md, tokens and Tailwind always agree on the same values.
  */
-import type { SlopRule } from "../atlas/types";
+import type { MotionRecipe, ShaderRecipe, SlopRule } from "../atlas/types";
 import type {
   CanvasDirection,
   CanvasItem,
@@ -191,6 +191,17 @@ export interface KitOptions {
   cards?: ReadonlyMap<string, LeadCard> | null;
   /** Slop rules (Atlas J8 `slop/*` shards), loaded by the caller: REVIEW.md checks the page against them. */
   slop?: readonly SlopRule[] | null;
+  /**
+   * J13 shader and motion recipes by id (VAL-14), loaded by the caller for the ids a direction's
+   * `detail.atlas.shaderIds` and `motionIds` name. BUILD-PROMPT.md writes their code.
+   */
+  stunning?: StunningRecipes | null;
+}
+
+/** The J13 recipes an export can write out, by id. */
+export interface StunningRecipes {
+  shaders: ReadonlyMap<string, ShaderRecipe>;
+  motion: ReadonlyMap<string, MotionRecipe>;
 }
 
 export interface KitNote {
@@ -243,6 +254,8 @@ export interface KitModel {
   motion: KitMotion | null;
   /** Default page features to stay away from (Atlas J8), most common first. Empty without an Atlas. */
   slop: SlopRule[];
+  /** J13 recipes by id (VAL-14); null without an Atlas stunning layer. */
+  stunning: StunningRecipes | null;
   scope: Scope;
   /** Directions this kit is about (see KitOptions.directionId). */
   focus: DirectionSummary[];
@@ -786,6 +799,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     card: card ? { id: card.id, name: oneLine(card.name, 80) } : null,
     motion: cardMotion(card),
     slop: cleanSlop(opts.slop),
+    stunning: opts.stunning ?? null,
     scope,
     focus,
     focusRefs,

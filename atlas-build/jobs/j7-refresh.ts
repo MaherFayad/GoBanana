@@ -146,14 +146,14 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 type SerperImage = { imageUrl?: string; thumbnailUrl?: string; link?: string; title?: string };
 
-/** One Serper image search (1 credit). Only URLs come back; nothing is stored. */
+/** One Serper image search (default 10 results, 1 credit). Only URLs come back; nothing is stored. */
 async function serperImages(q: string): Promise<SerperImage[]> {
   const key = process.env.SERPER_API_KEY;
   if (!key) throw new Error("SERPER_API_KEY is not set (atlas-build/.env)");
   const res = await fetch("https://google.serper.dev/images", {
     method: "POST",
     headers: { "X-API-KEY": key, "content-type": "application/json" },
-    body: JSON.stringify({ q, num: 20 }),
+    body: JSON.stringify({ q }),
   });
   if (!res.ok) throw new Error(`Serper answered ${res.status}`);
   return (((await res.json()) as { images?: SerperImage[] }).images ?? []).slice(0, TOP * 2);

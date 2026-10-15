@@ -6,7 +6,7 @@
 import type { DirectionDetail } from "@/lib/direction-detail";
 import { parsePage } from "./bend";
 import type { AtlasSource } from "./source";
-import type { IngredientCard, PageAnatomy } from "./types";
+import type { IngredientCard, MotionRecipe, PageAnatomy, ShaderRecipe } from "./types";
 
 /** Most card ids one export reads (lead and second card of up to 8 directions). */
 export const MAX_EXPORT_CARDS = 16;
@@ -29,6 +29,31 @@ export async function loadDirectionCards(
     return cards && cards.size > 0 ? cards : null;
   } catch {
     console.error("[atlas] could not read the direction cards");
+    return null;
+  }
+}
+
+/** Most shader and motion recipes one export reads (1 shader and 2 motion for each of up to 8 directions). */
+export const MAX_EXPORT_SHADERS = 8;
+export const MAX_EXPORT_MOTION = 16;
+
+/** The J13 recipes these directions name (`detail.atlas.shaderIds`, `motionIds`), or null when there are none to read. */
+export async function loadDirectionStunning(
+  source: AtlasSource | null | undefined,
+  directions: readonly { detail?: DirectionDetail | null }[],
+): Promise<{ shaders: Map<string, ShaderRecipe>; motion: Map<string, MotionRecipe> } | null> {
+  const shaderIds = new Set(directions.flatMap((d) => d.detail?.atlas?.shaderIds ?? []));
+  const motionIds = new Set(directions.flatMap((d) => d.detail?.atlas?.motionIds ?? []));
+  if (!source || shaderIds.size + motionIds.size === 0) return null;
+  try {
+    const [shaders, motion] = await Promise.all([shaderIds.size > 0 ? source.shaders() : [], motionIds.size > 0 ? source.motion() : []]);
+    const out = {
+      shaders: new Map((shaders ?? []).filter((r) => shaderIds.has(r.id)).slice(0, MAX_EXPORT_SHADERS).map((r) => [r.id, r] as const)),
+      motion: new Map((motion ?? []).filter((r) => motionIds.has(r.id)).slice(0, MAX_EXPORT_MOTION).map((r) => [r.id, r] as const)),
+    };
+    return out.shaders.size + out.motion.size > 0 ? out : null;
+  } catch {
+    console.error("[atlas] could not read the stunning layer");
     return null;
   }
 }

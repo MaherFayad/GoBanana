@@ -45,7 +45,61 @@ import { WILDNESS } from "@/lib/bend/wildness";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import type { AtlasSource } from "./source";
-import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, PageAnatomy, QueryRecipe, UiElement } from "./types";
+import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, UiElement } from "./types";
+
+/** Most shader and motion recipes one direction carries (VAL-14). Ids only. */
+export const MAX_SHADERS = 1;
+export const MAX_MOTION = 2;
+
+type Stunning = { id: string; use: readonly UiElement[]; cardIds: readonly string[]; families: readonly string[]; lensIds: readonly string[] };
+
+/**
+ * How well a J13 recipe fits a direction: the lens it follows (3), each of the direction's cards it
+ * names (2 for the lead, 1 for the second), a shared card family (1) and the element the
+ * direction's mechanic lands on (1). Zero means no fit: the recipe is never attached.
+ */
+export function stunningScore(r: Stunning, cards: readonly IngredientCard[], lensId: string | undefined, element: UiElement): number {
+  let s = 0;
+  if (lensId && r.lensIds.includes(lensId)) s += 3;
+  cards.forEach((c, i) => {
+    if (r.cardIds.includes(c.id)) s += i === 0 ? 2 : 1;
+  });
+  if (cards.some((c) => r.families.includes(c.family))) s += 1;
+  if (s > 0 && r.use.includes(element)) s += 1;
+  return s;
+}
+
+/**
+ * Up to `max` recipes for one direction, best fit first. Recipes already used by another direction
+ * come after unused ones, and ties break by a seeded number so the same brief gives the same pick.
+ * Motion recipes with a different trigger are preferred for the second pick.
+ */
+export function pickStunning<T extends Stunning & { trigger?: string }>(
+  list: readonly T[],
+  cards: readonly IngredientCard[],
+  lensId: string | undefined,
+  element: UiElement,
+  max: number,
+  used: Set<string>,
+  seed: string,
+): T[] {
+  const scored = list
+    .map((r) => ({ r, s: stunningScore(r, cards, lensId, element) }))
+    .filter((x) => x.s > 0)
+    .sort((a, b) => Number(used.has(a.r.id)) - Number(used.has(b.r.id)) || b.s - a.s || jitter(seed, a.r.id) - jitter(seed, b.r.id) || a.r.id.localeCompare(b.r.id));
+  const out: T[] = [];
+  for (const x of scored) {
+    if (out.length >= max) break;
+    if (out.some((o) => o.trigger !== undefined && o.trigger === x.r.trigger)) continue;
+    out.push(x.r);
+  }
+  for (const x of scored) {
+    if (out.length >= max) break;
+    if (!out.includes(x.r)) out.push(x.r);
+  }
+  for (const r of out) used.add(r.id);
+  return out;
+}
 
 const ENGINE_VERSION = "atlas-v1";
 /** Directions generated before slicing to count, as the lists engine does. */
@@ -652,6 +706,29 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     b.d.artQueries = artQueries.length > 0 ? artQueries : [b.d.searchQuery];
     if (baseline) recipeIds.push(recipeId(baseline));
     b.d.recipeIds = [...new Set(recipeIds)];
+  }
+
+  // 8. The stunning layer (J13, VAL-14): up to 1 shader and 2 motion recipes per direction, by the
+  // cards' families and the lens. Ids only; a missing layer or a failed read changes nothing.
+  let shaders: ShaderRecipe[] = [];
+  let motion: MotionRecipe[] = [];
+  try {
+    shaders = (await source.shaders()) ?? [];
+    motion = (await source.motion()) ?? [];
+  } catch {
+    shaders = [];
+    motion = [];
+  }
+  if (shaders.length > 0 || motion.length > 0) {
+    const usedShaders = new Set<string>();
+    const usedMotion = new Set<string>();
+    for (const b of built) {
+      const cardsOf = [b.pick.lead, ...(b.pick.second ? [b.pick.second] : [])];
+      const s = pickStunning(shaders, cardsOf, lens?.id, b.element, MAX_SHADERS, usedShaders, `${key}|shader|${b.id}`).map((r) => r.id);
+      const m = pickStunning(motion, cardsOf, lens?.id, b.element, MAX_MOTION, usedMotion, `${key}|motion|${b.id}`).map((r) => r.id);
+      if (s.length > 0) b.d.shaderIds = s;
+      if (m.length > 0) b.d.motionIds = m;
+    }
   }
 
   return applyBrand({

@@ -127,6 +127,8 @@ export function directionDetail(d: BendResult["directions"][number], wildness: n
             cardIds: d.cardIds,
             ...(d.mechanicId ? { mechanicId: d.mechanicId } : {}),
             recipeIds: d.recipeIds ?? [],
+            ...(d.shaderIds?.length ? { shaderIds: d.shaderIds } : {}),
+            ...(d.motionIds?.length ? { motionIds: d.motionIds } : {}),
             ...(atlas ? { pageId: atlas.pageId, domainId: atlas.domainId, productNoun: atlas.productNoun } : {}),
           },
         }

@@ -102,6 +102,10 @@ export interface DirectionAtlas {
   mechanicId?: string;
   /** Query recipe ids the direction's searches use. */
   recipeIds: string[];
+  /** J13 stunning layer (VAL-14): shader recipe id (at most 1), exported as GLSL in the build prompt. */
+  shaderIds?: string[];
+  /** J13 motion recipe ids (at most 2), exported as CSS keyframes in the build prompt. */
+  motionIds?: string[];
   /** The PageAnatomy id the brief was parsed into (crops read its bands). */
   pageId?: string;
   domainId?: string;

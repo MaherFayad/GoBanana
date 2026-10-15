@@ -30,7 +30,7 @@ import { exportLimitMessage, splitExportFormats } from "@/lib/quota";
 import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, upgradeUrl } from "./canvas-shared";
 import { directionStates, reconcileDirection, type ReconcileDeps } from "./reconcile_direction";
 import { recordFunnel } from "@/lib/funnel";
-import { loadDirectionCards } from "@/lib/atlas/wiring";
+import { loadDirectionCards, loadDirectionStunning } from "@/lib/atlas/wiring";
 import type { SlopRule } from "@/lib/atlas/types";
 import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
@@ -149,7 +149,10 @@ export function createExportKitTool(deps: ExportKitDeps) {
           slop = null;
         }
       }
-      const opts = { scope, pages: input.pages, cards, slop } as const;
+      // Shader and motion recipes (Atlas J13) for BUILD-PROMPT.md, read only when that format is
+      // allowed on the user's plan and a direction names recipe ids.
+      const stunning = allowed.includes("build_prompt") ? await loadDirectionStunning(deps.atlasSource?.() ?? null, exportedRows) : null;
+      const opts = { scope, pages: input.pages, cards, slop, stunning } as const;
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
       if (!directionId && kept.length > 1) {

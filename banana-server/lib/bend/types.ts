@@ -142,6 +142,10 @@ export interface Direction {
   mechanicId?: string;
   /** Atlas engine only: the query recipes its queries came from (lib/atlas/loader.ts recipeId). */
   recipeIds?: string[];
+  /** Atlas engine only (VAL-14): up to 1 shader recipe id (J13), by the cards' families and the lens. Ids only. */
+  shaderIds?: string[];
+  /** Atlas engine only (VAL-14): up to 2 motion recipe ids (J13). Ids only. */
+  motionIds?: string[];
   /** Atlas engine only (P1-I7): the lead card's story, its idea and why it surprises, for the idea note. */
   story?: string;
 }

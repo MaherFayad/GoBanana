@@ -4,6 +4,7 @@ import { directionRefs } from "./model";
 import { globsText, pagesText, scopeBlock } from "./scope";
 import { SPEC_AXES, bullets, exploreLine, fontsLine, kitTitle, refLine, shipLine, typeScaleText } from "./scoped";
 import { STITCH_MD_FILE, stitchSection } from "./stitch-md";
+import { stunningSection } from "./stunning";
 import { mdAutolink, mdText } from "./util";
 
 export function buildPromptMd(m: KitModel): string {
@@ -100,6 +101,9 @@ export function buildPromptMd(m: KitModel): string {
     ]),
     "",
   );
+
+  const stunning = stunningSection(m, "###");
+  if (stunning.length > 0) out.push(...stunning);
 
   out.push("### References", "", "Do not copy, trace or embed the reference images. Use them for mood and the what to steal notes only, and link the source when you mention one.", "");
   const listed = new Set<string>();

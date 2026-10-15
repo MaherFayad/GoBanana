@@ -105,3 +105,41 @@ export interface CC0Item {
 export interface SlopRule { feature: "font" | "accent-hue" | "radius" | "gradient" | "layout" | "shadow" | "copy"; value: string; share: number }
 
 export interface BenchBrief { id: string; brief: string; platform: Platform; pages: string[]; wildness: 1 | 2 | 3 | 4 | 5; lens?: string }
+
+// P1-J13 stunning layer (VAL-14). Mirrors atlas-build/schema.ts ShaderRecipe and MotionRecipe.
+
+export interface ShaderRecipe {
+  id: string;                                   // "sadu-band-drift"
+  name: string;                                 // 4 words max
+  idea: string;                                 // one plain sentence: what it looks like and how it moves
+  use: UiElement[];                             // where it belongs: hero, loading, empty-state, success, paywall-plan
+  frag: string;                                 // GLSL ES 1.00 fragment shader (WebGL 1 and 2), uniforms u_resolution, u_time, u_c0 to u_c3
+  colors: [string, string, string, string];     // default u_c0 (surface), u_c1 (ink), u_c2 (accent), u_c3 (support) as hex
+  reduced: { kind: "static" | "fade"; at: number; ms?: number; note: string }; // prefers-reduced-motion: one frame at `at` seconds, shown at once or faded in over ms
+  cardIds: string[];                            // J3 cards it fits
+  families: string[];                           // card families, computed offline from cardIds
+  lensIds: string[];                            // J6 lenses it follows
+  culturalNotes?: string;
+}
+
+export interface MotionKeyframe { offset?: number; easing?: string; transform?: string; opacity?: number; clipPath?: string; filter?: string }
+
+export interface MotionRecipe {
+  id: string;                                   // "receipt-line-feed"
+  name: string;                                 // 4 words max
+  verb: string;                                 // the motion verb it builds ("unspools", "weave in")
+  idea: string;                                 // one plain sentence
+  use: UiElement[];
+  trigger: "enter" | "exit" | "loop" | "hover" | "press" | "change";
+  target: "self" | "children";                  // children: every child plays it, delayed by stagger
+  stagger: number;                              // ms between children (0 for self)
+  origin: string;                               // transform-origin, "50% 100%"
+  keyframes: MotionKeyframe[];                  // WAAPI keyframes: element.animate(keyframes, timing)
+  timing: { duration: number; delay: number; easing: string; iterations: number | "infinite"; direction: "normal" | "alternate"; fill: "none" | "forwards" | "backwards" | "both" };
+  css: string;                                  // @keyframes, the class rule and the reduced-motion rule, computed offline
+  reduced: { kind: "static" | "fade"; ms?: number; note: string }; // static: no movement, end state at once; fade: opacity only
+  cardIds: string[];
+  families: string[];
+  lensIds: string[];
+  culturalNotes?: string;
+}
