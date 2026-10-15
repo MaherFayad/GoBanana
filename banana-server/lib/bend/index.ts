@@ -36,7 +36,7 @@ import {
 } from "./types";
 import { WILDNESS } from "./wildness";
 import { familyOf } from "./families";
-import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, type Market } from "./market";
+import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS, type Market } from "./market";
 import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
@@ -204,7 +204,14 @@ class EntryPicker {
    * passes everything the pick is exactly what it was before filters existed. When nothing passes,
    * the filter is dropped rather than failing.
    */
-  pick(poolKey: string, entries: readonly ListEntry[], checkOverlap: boolean, allow?: (e: ListEntry) => boolean): ListEntry {
+  pick(
+    poolKey: string,
+    entries: readonly ListEntry[],
+    checkOverlap: boolean,
+    allow?: (e: ListEntry) => boolean,
+    /** A rule that never relaxes (the brief's region): when its unused entries run out, one is reused. */
+    must?: (e: ListEntry) => boolean,
+  ): ListEntry {
     let pool = this.pools.get(poolKey);
     if (!pool) {
       pool = this.build(poolKey, entries, this.rng);
@@ -212,8 +219,10 @@ class EntryPicker {
       this.pools.set(poolKey, pool);
     }
     const unused = pool.filter((e) => !this.usedKeys.has(e.key.toLowerCase()));
-    const allowed = allow ? unused.filter(allow) : unused;
-    const fresh = allowed.length > 0 ? allowed : unused;
+    const kept = must ? unused.filter(must) : unused;
+    const allowed = allow ? kept.filter(allow) : kept;
+    const reuse = must && kept.length === 0 ? pool.filter(must) : [];
+    const fresh = allowed.length > 0 ? allowed : kept.length > 0 ? kept : reuse.length > 0 ? reuse : unused;
     const stemsClear = (e: ListEntry) => contentStems(e.key).every((s) => !this.usedStems.has(s));
     const family = (e: ListEntry) => this.familyOf?.(poolKey, e.key);
     const familyClear = (e: ListEntry) => {
@@ -372,14 +381,25 @@ function entryFilter(list: string, platform: Platform, wildness: Wildness, domai
   if (!FILTERED_LISTS.has(list)) return undefined;
   // Briefs with no platform keep their bend-v1 picks (and ids) at wildness 3: no weirdness cap there.
   const maxWeird = platform === "any" && wildness === 3 ? 3 : MAX_WEIRD[wildness];
-  const region = list === "traditions" && locale.market ? MARKET_TRADITIONS[locale.market] : null;
+  const region = regionFilter(list, wildness, locale);
   const latinOnly = list === "constraints" && locale.arabic;
   return (e: ListEntry) =>
     allowedOn(platform, list, e.key, e.hints.notOn) &&
     e.hints.weird <= maxWeird &&
     (wildness >= CLASH_FROM_WILDNESS || noClash(e, domain)) &&
-    (!region || region.has(e.key)) &&
+    (!region || region(e)) &&
     (!latinOnly || !LATIN_ONLY_CONSTRAINTS.has(e.key));
+}
+
+/**
+ * The region rule for traditions, which never relaxes (P0-07): a Gulf brief draws Gulf crafts only
+ * at wildness 1 to 3 and may add the wider region from WIDER_REGION_FROM_WILDNESS; a wider
+ * region brief draws the region. Undefined for other lists and briefs with no market.
+ */
+function regionFilter(list: string, wildness: Wildness, locale: Locale): ((e: ListEntry) => boolean) | undefined {
+  if (list !== "traditions" || !locale.market) return undefined;
+  const set = locale.market === "gulf" && wildness < WIDER_REGION_FROM_WILDNESS ? MARKET_TRADITIONS.gulf : MARKET_TRADITIONS.mena;
+  return (e) => set.has(e.key);
 }
 
 /** Clean page names: trimmed, single spaces, at most 3, no repeats. */
@@ -513,7 +533,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const picked: ListEntry[] = moves.map((m) => {
       if (m === "lens" && lens) return entries.pick(`lens:${lens.id}`, lensList, false);
       const def = MOVE_DEFS[m];
-      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale));
+      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale), regionFilter(def.list, wildness, locale));
     });
     // bend-v1 drew the mood here. Briefs with no platform still make that draw (a shadow pick, not
     // shown) so later picks and ids do not move; the shown mood is matched to the subject below.
