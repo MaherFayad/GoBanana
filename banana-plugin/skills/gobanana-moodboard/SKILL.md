@@ -38,6 +38,8 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 **Steal notes:** up to 280 characters, start with `steal:`, name one concrete thing for the page: `steal: the stamped date as a section divider`, `steal: the tab bar that hides on scroll`. Draw them from the direction's `spec.steal` and from what the title says. Look at the returned thumbnails before rating or noting: `get_canvas` and `add_to_canvas` results carry a small image after each reference's line, so write the note from what you see in it. Links in notes are clickable on the board.
 
+**Why it works:** when a reference was rated `great`, add a one line `why:` after the steal note naming the design principle you see in it (hierarchy, contrast or rhythm), for example `why: tight type scale and one accent color keep the eye on the pay button (contrast)`. Write it from the thumbnail, never from the title, and keep the whole note within 280 characters.
+
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message and stop adding.
 
 ### 3. Arrange (always)
