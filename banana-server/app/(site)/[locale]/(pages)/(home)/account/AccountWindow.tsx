@@ -11,7 +11,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { CardIcon, ChartIcon, ShareIcon, SignOutIcon } from "@/components/studio/icons";
+import { CardIcon, ChartIcon, ShareIcon, SignOutIcon, SwatchIcon } from "@/components/studio/icons";
+import { pinterestImportEnabled } from "@/lib/taste-profile/pinterest";
+import { createDbTasteStore } from "@/lib/taste-profile/store";
 import { betaPlan, limitsFor } from "@/lib/quota";
 import { getDict } from "@/lib/site/dict";
 import { fmt, href, type Locale } from "@/lib/site/i18n";
@@ -21,6 +23,17 @@ import { bidi } from "../../../../_components/Bidi";
 import { TwoToneHeading } from "../../../../_components/desktop/TwoToneHeading";
 import { Window } from "../../../../_components/desktop/Window";
 import { DeleteAccount } from "./DeleteAccount";
+import { TasteSettings } from "./TasteSettings";
+
+/** The user's saved style words. Fails open: an unreadable profile shows as empty. */
+async function readTasteWords(userId: string): Promise<string[]> {
+  try {
+    return (await createDbTasteStore().get(userId)).styleWords;
+  } catch {
+    console.error("[account] taste profile could not load");
+    return [];
+  }
+}
 
 /**
  * A usage meter (role="meter"): named by its row, with the same "3 of 50" text the row shows as
@@ -107,6 +120,7 @@ export async function AccountWindow({ locale, lights }: { locale: Locale; lights
   const limits = limitsFor(user.plan);
   const ofLimit = (used: number, limit: number) =>
     Number.isFinite(limit) ? fmt(t.ofLimit, { used, limit }) : fmt(t.unlimited, { used });
+  const tasteWords = e2eAuthBypass() && !process.env.DATABASE_URL ? [] : await readTasteWords(user.id);
   const planName = dict.pricing.plans[user.plan].name;
   const canvases = href(locale, "canvases");
 
@@ -135,6 +149,9 @@ export async function AccountWindow({ locale, lights }: { locale: Locale; lights
           </SideItem>
           <SideItem to="#shared-title" icon={<ShareIcon size={16} />}>
             {t.sharedTitle}
+          </SideItem>
+          <SideItem to="#taste-title" icon={<SwatchIcon size={16} />}>
+            {t.tasteTitle}
           </SideItem>
         </ul>
         <form className="settings-signout" method="post" action={SIGN_OUT_PATH}>
@@ -237,6 +254,36 @@ export async function AccountWindow({ locale, lights }: { locale: Locale; lights
                 {t.canvasesLink}
               </Link>
             </div>
+          </div>
+        </section>
+
+        <section className="settings-section" aria-labelledby="taste-title">
+          <h2 id="taste-title" tabIndex={-1}>
+            {t.tasteTitle}
+          </h2>
+          <p className="settings-lead">{t.tasteBody}</p>
+          <div className="settings-group">
+            <TasteSettings
+              words={tasteWords}
+              pinterestHref={pinterestImportEnabled(process.env) ? "/api/taste/pinterest/start" : undefined}
+              labels={{
+                wordsLabel: t.tasteWordsLabel,
+                empty: t.tasteEmpty,
+                clear: t.tasteClear,
+                clearing: t.tasteClearing,
+                cleared: t.tasteCleared,
+                clearFailed: t.tasteClearFailed,
+                importLabel: t.tasteImportLabel,
+                importNote: t.tasteImportNote,
+                importButton: t.tasteImportButton,
+                importing: t.tasteImporting,
+                imported: t.tasteImported,
+                importFailed: t.tasteImportFailed,
+                importCount: t.tasteImportCount,
+                pinterest: t.tastePinterest,
+                pinterestNote: t.tastePinterestNote,
+              }}
+            />
           </div>
         </section>
 

@@ -151,7 +151,9 @@ describe("12-month purge of search ratings", () => {
   it("runs from the daily cron next to the reference purge", async () => {
     const { readFileSync } = await import("node:fs");
     const worker = readFileSync(new URL("../custom-worker.ts", import.meta.url), "utf8");
-    expect(worker).toContain("purgeOldFeedback");
-    expect(worker).toContain('from "./lib/purge/feedback"');
+    expect(worker).toContain('from "./lib/cron/scheduled"');
+    const cron = readFileSync(new URL("../lib/cron/scheduled.ts", import.meta.url), "utf8");
+    expect(cron).toContain("purgeOldFeedback");
+    expect(cron).toContain('from "../purge/feedback"');
   });
 });

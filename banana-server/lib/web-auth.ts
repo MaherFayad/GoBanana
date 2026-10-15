@@ -95,7 +95,7 @@ export function signInHref(returnTo?: string | null): string {
  * about to expire). Everything that calls getWebUser() must be covered.
  */
 export function needsWebSession(pathname: string): boolean {
-  return /^\/(c|en|ar)(\/|$)/.test(pathname) || /^\/api\/(canvas|uploads)(\/|$)/.test(pathname) || pathname === SIGN_OUT_PATH;
+  return /^\/(c|en|ar)(\/|$)/.test(pathname) || /^\/api\/(canvas|uploads|taste)(\/|$)/.test(pathname) || pathname === SIGN_OUT_PATH;
 }
 
 /** Paths where a signed-out visitor goes straight to AuthKit. */

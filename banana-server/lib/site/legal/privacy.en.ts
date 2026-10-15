@@ -18,6 +18,7 @@ export const privacyEn: LegalDoc = {
         "Your uploads: images you choose to upload to your own canvases (Pro plans).",
         "Usage counts: the number of searches and canvases per month, used for plan limits.",
         "Billing data: your plan and your Paddle customer id. Paddle collects your payment details; we never see your card number.",
+        "Taste profile (optional): style words, ids of ideas you kept and, for a Pinterest import, links to pin pages. No images.",
         "Share links: a random token for each canvas you share.",
         "Takedown requests: the name, email and details you send in the takedown form.",
         "Technical data: IP address and request details that our hosting provider processes to deliver the service and block abuse.",
@@ -29,6 +30,14 @@ export const privacyEn: LegalDoc = {
       paragraphs: [
         "{app} does not download, store or host images found on other sites. We store only links and basic details such as the title, size and source site. The image loads in your browser straight from the source site, so that site may see your IP address and browser details under its own privacy policy.",
         "To pick colors, {app} may read a small preview image in memory for a moment and then drop it. It is never saved.",
+      ],
+    },
+    {
+      id: "taste",
+      heading: "Your taste profile",
+      paragraphs: [
+        "{app} can keep a small taste profile for your account: a few style words (such as \"minimal\" or \"dark mode\"), and the ids of ideas you kept. It never holds images. You can add words yourself, or import them from 5 to 20 of your own favourite images (we read their colors for a moment, keep the words and drop the pixels) or, if we offer it, from your own Pinterest boards after you agree on Pinterest's consent screen (read only; we keep style words and pin links, never images, and do not keep your Pinterest token).",
+        "It only breaks ties when {app} picks between ideas that fit your brief equally well. It never changes how well an idea fits your brief. You can clear it at any time from the account page, and it is deleted when you delete your account.",
       ],
     },
     {

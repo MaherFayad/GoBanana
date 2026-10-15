@@ -240,6 +240,41 @@ export const blockedItems = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.itemKey] })],
 );
 
+/**
+ * Nightly learned weights (P2-01, lib/learning/nightly.ts): one Beta(alpha, beta) per ingredient
+ * (`kind` "ingredient", id `direction|{ingredient}`) or lane arm (`kind` "arm", id
+ * `{termKey}#{arm}`), built from search_feedback (rate_references and rate_directions). Pooled
+ * across users and only for ids that at least K_ANON distinct users rated, so no user id and no
+ * per-user count is stored here. Rewritten every night.
+ */
+export const atlasWeights = pgTable(
+  "atlas_weights",
+  {
+    id: text("id").notNull(),
+    kind: text("kind").notNull(),
+    alpha: integer("alpha").notNull(),
+    beta: integer("beta").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.kind, t.id] })],
+);
+
+/**
+ * One user's taste profile (P2-02, VAL-03): words and ids only, never images. `liked_card_ids`
+ * are Atlas card ids the user kept, `style_words` are plain style words (from an agent, from
+ * palettes of the user's own uploads or from a consented Pinterest import). `source_urls` holds
+ * pin page links of a Pinterest import. Cleared from the account page; cascades with the user.
+ */
+export const userTaste = pgTable("user_taste", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  likedCardIds: text("liked_card_ids").array().notNull().default(sql`'{}'::text[]`),
+  styleWords: text("style_words").array().notNull().default(sql`'{}'::text[]`),
+  sourceUrls: text("source_urls").array().notNull().default(sql`'{}'::text[]`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type Canvas = typeof canvases.$inferSelect;
 export type Direction = typeof directions.$inferSelect;
