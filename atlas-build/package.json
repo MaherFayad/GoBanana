@@ -1,0 +1,29 @@
+{
+  "name": "atlas-build",
+  "private": true,
+  "type": "module",
+  "description": "Offline Banana Atlas builder. Calls the Claude API. Never imported by banana-server.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "job": "tsx run.ts",
+    "models": "tsx check-models.ts",
+    "fonts": "tsx lib/fonts-refresh.ts",
+    "upload": "tsx upload.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.134.0",
+    "culori": "^4.0.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

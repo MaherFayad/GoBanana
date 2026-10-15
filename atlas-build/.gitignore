@@ -4,3 +4,4 @@ rejects/
 review/
 costs.csv
 out/
+.cache/
