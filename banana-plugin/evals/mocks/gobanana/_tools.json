@@ -613,12 +613,11 @@
     {
       "name": "cut_parts",
       "title": "Cut parts",
-      "description": "Frankenstein it, step 1: add parts to the canvas parts library. A part is a role plus a crop rectangle (fractions) over a board image item or a tray reference; the browser applies the crop, nothing is downloaded or stored. Pass the crop you judged by looking; without one the server guesses a band by role and image aspect and marks the part guessedCrop. Every part keeps its source link. Library limit 80 parts.",
+      "description": "Frankenstein it, step 1: add parts to the canvas parts library. A part is a role plus a crop rectangle (fractions) over a board image item or a tray reference; the browser applies the crop, nothing is downloaded or stored. Look first: look { itemId } returns that one image up to 1200 px wide with its pixel size (never stored), so you can pass an exact crop. Without a crop the server guesses a band by role and image aspect and marks the part guessedCrop. Every part keeps its source link. Library limit 80 parts.",
       "inputSchema": {
         "type": "object",
         "required": [
-          "canvasId",
-          "cuts"
+          "canvasId"
         ],
         "properties": {
           "canvasId": {
@@ -720,8 +719,23 @@
                 }
               }
             }
+          },
+          "look": {
+            "type": "object",
+            "description": "One image to see before cutting, up to 1200 px wide, with its pixel size. Never stored. Pass itemId or referenceId, one of them.",
+            "properties": {
+              "itemId": {
+                "type": "string",
+                "description": "Board image item to look at."
+              },
+              "referenceId": {
+                "type": "string",
+                "description": "Tray or search reference to look at."
+              }
+            }
           }
-        }
+        },
+        "description": "Pass cuts, look or both."
       }
     },
     {

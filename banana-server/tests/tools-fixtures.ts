@@ -85,6 +85,6 @@ export async function seedCanvas(repos: MemoryRepos, userId: string, s: CanvasSt
   return repos.canvases.create({ userId, title, brief: "flight checkout screen", state: s });
 }
 
-export function text(res: { content: { text?: string }[] }): string {
+export function text(res: { content: { type?: string; text?: string }[] }): string {
   return res.content.map((c) => c.text ?? "").join("\n");
 }

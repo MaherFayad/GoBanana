@@ -29,7 +29,7 @@ describe("tool copy", () => {
       expect(d.length).toBeLessThan(400);
       expect(d).toContain("Frankenstein");
     }
-    expect(CUT_DESC).toContain("Pass a crop (fractions 0 to 1) only if your client shows you the image");
+    expect(CUT_DESC).toContain("Look first: look { itemId }");
     expect(CUT_DESC).toContain("Never download images");
   });
 });
