@@ -330,7 +330,22 @@ go in number order.
   - No lane topic is a single generic word.
   - The ruler-ticks art lane returns 3 or more results in a recorded live check.
 
-**Gate 1:** P0-01 to P0-16 merged, Bench baseline rated, cost leaks closed.
+### P0-17 Taste bar: references at the owner's board quality (added 2026-10-15)
+
+- **Why:** the owner set the quality bar as their own Pinterest boards (`docs/taste-bar.md`). The
+  Bench baseline shows on-page but generic Dribbble concepts pass as "good" today.
+- **Steps:**
+  1. Write the bar down (`docs/taste-bar.md`) and use it in Bench rating and in the skills'
+     `rate_references` rules.
+  2. Run a small, recorded experiment (about 150 Serper credits): for mobile and dashboard pages, try
+     query wordings, taste modifiers and gallery sources; judge the top 8 of each by eye against the
+     bar; log the winners in `docs/search-quality-experiment.md`.
+  3. Turn the winners into the taste lane wording and source order per platform, and into ranking
+     penalties for below-bar title patterns (UI kit, freebie, template, "concept" multi-screen comps).
+- **Done when:** a Bench rerun of the same briefs raises the share of "great" UI references, and no
+  brief's bend quality gets worse.
+
+**Gate 1:** P0-01 to P0-17 merged, Bench baseline rated, cost leaks closed.
 
 ---
 
@@ -504,7 +519,7 @@ Prompt rules for every generating job:
 Job notes:
 - **J3** keeps the strongest existing list words and fixes their gaps. Each card must be usable alone:
   palette, type, texture and motion belong together.
-- **J7** is the search fix. Store wordings and scores only, never results or images. Keep the best 2
+- **J7** is the search fix. Its judge scores against `docs/taste-bar.md` with 20 to 40 exemplar pins the owner picks from their boards. Store wordings and scores only, never results or images. Keep the best 2
   wordings per key with precision of 0.5 or more. Drop keys with no wording at 0.5 or more and log
   them for the owner.
 - **J9** adds museum image hosts to `lib/sources/allowlist.ts` only after the owner confirms. Verify
