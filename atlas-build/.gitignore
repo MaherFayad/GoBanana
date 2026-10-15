@@ -5,3 +5,4 @@ review/
 costs.csv
 out/
 .cache/
+state/
