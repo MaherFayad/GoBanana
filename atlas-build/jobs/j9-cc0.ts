@@ -1,16 +1,20 @@
 /**
- * P1-J9 CC0 art index: public domain and CC0 works from the Met, the Art Institute of Chicago and
- * the Cleveland Museum of Art, tagged by the vision judge for what a UI designer can steal.
+ * P1-J9 CC0 art index: public domain and CC0 works from the Met and the Cleveland Museum of Art,
+ * tagged by the vision judge for what a UI designer can steal.
+ *
+ * The Art Institute of Chicago is left out: its API works, but its IIIF image server
+ * (www.artic.edu/iiif/2) answers automated clients, headless Chrome included, with a Cloudflare
+ * challenge (HTTP 403), so the judge cannot see the images. We do not work around bot protection.
  *
  *   npx tsx run.ts j9-cc0 --dry
  *   npx tsx run.ts j9-cc0 --limit 5
  *   npx tsx run.ts j9-cc0 --limit <sheets that fit the budget>
  *
  * Harvest (no AI, cached in .cache/j9-pool.json, which is git-ignored): each museum's official
- * open API, read politely (AIC: 1 request a second, under its 60 a minute; Met: about 10 a second, far
- * under its 80 a second; Cleveland: 1 at a time). An item is kept only when the API's own flag says
- * public domain or CC0 (Met isPublicDomain, AIC is_public_domain, Cleveland share_license_status
- * "CC0"), and the flag is kept in the record as `rights`. Only metadata and URLs are stored.
+ * open API, read politely (Met: 8 workers with a pause, far under its 80 requests a second;
+ * Cleveland: 1 request at a time, about 1 a second). An item is kept only when the API's own flag
+ * says public domain or CC0 (Met isPublicDomain true, Cleveland share_license_status "CC0"), and the
+ * flag is kept in the record as `rights`. Only metadata and URLs are stored, never image bytes.
  *
  * Judging: 16 items per request on one contact sheet rendered in headless Chrome from the
  * museums' own image URLs and screenshotted into memory (never written to disk). The pool is
@@ -30,7 +34,7 @@ const CATEGORIES: Category[] = ["textiles", "ornament", "posters", "prints", "ma
 
 type PoolItem = {
   id: string;
-  museum: "met" | "aic" | "cleveland";
+  museum: "met" | "cleveland";
   category: Category;
   title: string;
   date?: string;
@@ -45,38 +49,18 @@ type Sheet = { index: number; items: PoolItem[] };
 const PER_SHEET = 16;
 const COLS = 4;
 const TILE = 224;
-const POOL_FILE = join(ROOT, ".cache", "j9-pool.json");
+export const POOL_FILE = join(ROOT, ".cache", "j9-pool.json");
 const UA = "GoBanana atlas-build (maherfayad55@gmail.com)";
 
 // ---------------------------------------------------------------------------------------------
 // Harvest queries per category. Caps are candidates per query (before the public domain filter).
 
-type AicQ = { cat: Category; q?: string; typeIds?: number[]; cap: number };
-type CleQ = { cat: Category; q?: string; type?: string; cap: number };
+type CleQ = { cat: Category; q?: string; type?: string; cap: number; skip?: number };
 type MetQ = { cat: Category; q: string; dept?: number; cap: number };
 
-const AIC: AicQ[] = [
-  { cat: "textiles", q: "pattern", typeIds: [5], cap: 1000 },
-  { cat: "textiles", q: "silk", typeIds: [5, 38], cap: 1000 },
-  { cat: "textiles", q: "cotton", typeIds: [5, 38], cap: 1000 },
-  { cat: "textiles", typeIds: [38], cap: 400 },
-  { cat: "ornament", q: "ornament", typeIds: [18, 14, 31], cap: 1000 },
-  { cat: "ornament", q: "pattern design", typeIds: [14, 31, 18], cap: 1000 },
-  { cat: "ornament", q: "decoration frieze border", typeIds: [14, 31, 18], cap: 1000 },
-  { cat: "ornament", q: "tile", typeIds: [36], cap: 400 },
-  { cat: "posters", q: "poster", typeIds: [18, 32], cap: 1000 },
-  { cat: "posters", q: "lithograph advertisement", typeIds: [18, 32], cap: 1000 },
-  { cat: "prints", q: "woodblock", typeIds: [18], cap: 1000 },
-  { cat: "prints", q: "Japan", typeIds: [18], cap: 1000 },
-  { cat: "maps", q: "map", cap: 600 },
-  { cat: "architecture", typeIds: [34], cap: 1000 },
-  { cat: "architecture", q: "elevation", typeIds: [34, 14], cap: 1000 },
-  { cat: "typography", q: "calligraphy", cap: 600 },
-  { cat: "typography", q: "alphabet lettering", typeIds: [18, 11, 32], cap: 600 },
-  { cat: "typography", typeIds: [11], cap: 600 },
-];
-const CLE: CleQ[] = [
+export const CLE: CleQ[] = [
   { cat: "textiles", type: "Textile", cap: 1000 },
+  { cat: "textiles", type: "Textile", cap: 1000, skip: 1000 },
   { cat: "textiles", type: "Embroidery", cap: 400 },
   { cat: "textiles", type: "Lace", cap: 300 },
   { cat: "ornament", type: "Print", q: "ornament", cap: 600 },
@@ -85,24 +69,37 @@ const CLE: CleQ[] = [
   { cat: "ornament", type: "Ceramic", q: "tile", cap: 200 },
   { cat: "posters", q: "poster", cap: 300 },
   { cat: "prints", type: "Print", q: "woodblock", cap: 1000 },
+  { cat: "prints", type: "Print", q: "Japan", cap: 1000 },
   { cat: "maps", q: "map", cap: 300 },
   { cat: "architecture", type: "Drawing", q: "architectural", cap: 400 },
   { cat: "typography", type: "Manuscript", cap: 800 },
   { cat: "typography", type: "Calligraphy", cap: 41 },
 ];
-const MET: MetQ[] = [
+export const MET: MetQ[] = [
   { cat: "textiles", q: "textile", dept: 14, cap: 1200 },
   { cat: "textiles", q: "textile pattern", dept: 12, cap: 800 },
   { cat: "textiles", q: "textile", dept: 6, cap: 800 },
+  { cat: "textiles", q: "carpet", dept: 14, cap: 500 },
+  { cat: "textiles", q: "embroidery", dept: 14, cap: 500 },
+  { cat: "textiles", q: "lace", dept: 12, cap: 500 },
+  { cat: "textiles", q: "textile", dept: 5, cap: 800 },
+  { cat: "textiles", q: "kimono", dept: 6, cap: 500 },
   { cat: "ornament", q: "ornament", dept: 9, cap: 1500 },
   { cat: "ornament", q: "tile", dept: 14, cap: 600 },
+  { cat: "ornament", q: "ornament design", dept: 12, cap: 800 },
+  { cat: "ornament", q: "wallpaper", dept: 9, cap: 600 },
+  { cat: "ornament", q: "pattern", dept: 9, cap: 1000 },
   { cat: "posters", q: "poster", dept: 9, cap: 1000 },
-  { cat: "prints", q: "woodblock print", dept: 6, cap: 1000 },
+  { cat: "prints", q: "woodblock print", dept: 6, cap: 1500 },
+  { cat: "prints", q: "lithograph", dept: 9, cap: 800 },
   { cat: "maps", q: "map", dept: 9, cap: 500 },
   { cat: "architecture", q: "architectural drawing", dept: 9, cap: 1000 },
+  { cat: "architecture", q: "elevation", dept: 9, cap: 800 },
   { cat: "typography", q: "calligraphy", dept: 14, cap: 800 },
   { cat: "typography", q: "calligraphy", dept: 6, cap: 400 },
   { cat: "typography", q: "alphabet", dept: 9, cap: 400 },
+  { cat: "typography", q: "manuscript", dept: 14, cap: 600 },
+  { cat: "typography", q: "title page", dept: 9, cap: 500 },
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -122,45 +119,9 @@ async function getJson(url: string, init?: RequestInit, tries = 4): Promise<unkn
   }
 }
 
-async function harvestAic(log: (l: string) => void): Promise<PoolItem[]> {
+export async function harvestCleveland(log: (l: string) => void, queries: readonly CleQ[] = CLE): Promise<PoolItem[]> {
   const out: PoolItem[] = [];
-  for (const q of AIC) {
-    let got = 0;
-    // AIC search refuses page x limit past 1,000 results (HTTP 403), so each query stops at page 10.
-    for (let page = 1; got < q.cap && page <= 10; page++) {
-      const filter: unknown[] = [{ term: { is_public_domain: true } }, { exists: { field: "image_id" } }];
-      if (q.typeIds) filter.push({ terms: { artwork_type_id: q.typeIds } });
-      const body = { ...(q.q ? { q: q.q } : {}), query: { bool: { filter } }, fields: ["id", "title", "date_display", "place_of_origin", "image_id", "is_public_domain"], limit: 100, page };
-      const j = (await getJson("https://api.artic.edu/api/v1/artworks/search", { method: "POST", headers: { "Content-Type": "application/json", "AIC-User-Agent": UA }, body: JSON.stringify(body) })) as { data?: Array<Record<string, unknown>> } | null;
-      await sleep(1_100); // AIC: anonymous clients get 60 requests a minute
-      const data = j?.data ?? [];
-      if (data.length === 0) break;
-      for (const d of data) {
-        got++;
-        const imageId = str(d.image_id);
-        if (d.is_public_domain !== true || !imageId) continue; // verified per item from the API flag
-        out.push({
-          id: `aic-${d.id}`,
-          museum: "aic",
-          category: q.cat,
-          title: str(d.title) ?? "Untitled",
-          date: str(d.date_display),
-          culture: str(d.place_of_origin),
-          imageUrl: `https://www.artic.edu/iiif/2/${imageId}/full/843,/0/default.jpg`,
-          thumbUrl: `https://www.artic.edu/iiif/2/${imageId}/full/,${TILE}/0/default.jpg`,
-          pageUrl: `https://www.artic.edu/artworks/${d.id}`,
-          rights: { flag: "is_public_domain", value: "true" },
-        });
-      }
-    }
-    log(`  aic ${q.cat} ${q.q ?? ""} ${q.typeIds?.join("+") ?? ""}: ${out.length} so far`);
-  }
-  return out;
-}
-
-async function harvestCleveland(log: (l: string) => void): Promise<PoolItem[]> {
-  const out: PoolItem[] = [];
-  for (const q of CLE) {
+  for (const q of queries) {
     const u = new URL("https://openaccess-api.clevelandart.org/api/artworks/");
     u.searchParams.set("cc0", "");
     u.searchParams.set("has_image", "1");
@@ -168,6 +129,7 @@ async function harvestCleveland(log: (l: string) => void): Promise<PoolItem[]> {
     u.searchParams.set("fields", "id,title,creation_date,culture,images,url,share_license_status");
     if (q.type) u.searchParams.set("type", q.type);
     if (q.q) u.searchParams.set("q", q.q);
+    if (q.skip) u.searchParams.set("skip", String(q.skip));
     const j = (await getJson(u.toString())) as { data?: Array<Record<string, unknown>> } | null;
     await sleep(1_000);
     for (const d of j?.data ?? []) {
@@ -193,18 +155,24 @@ async function harvestCleveland(log: (l: string) => void): Promise<PoolItem[]> {
   return out;
 }
 
-async function harvestMet(log: (l: string) => void): Promise<PoolItem[]> {
+export async function harvestMet(log: (l: string) => void, queries: readonly MetQ[] = MET, seen = new Set<number>()): Promise<PoolItem[]> {
   const out: PoolItem[] = [];
-  const seen = new Set<number>();
-  for (const q of MET) {
-    const u = new URL("https://collectionapi.metmuseum.org/public/collection/v1.1/search");
-    u.searchParams.set("q", q.q);
-    u.searchParams.set("hasImages", "true");
-    if (q.dept) u.searchParams.set("departmentId", String(q.dept));
-    u.searchParams.set("offset", "0");
-    u.searchParams.set("limit", String(q.cap));
-    const j = (await getJson(u.toString())) as { objectIDs?: number[] } | null;
-    const ids = (j?.objectIDs ?? []).filter((id) => !seen.has(id)).slice(0, q.cap);
+  for (const q of queries) {
+    // v1.1 search pages by offset and limit (at most 500 ids a page).
+    const found: number[] = [];
+    for (let offset = 0; offset < q.cap; offset += 500) {
+      const u = new URL("https://collectionapi.metmuseum.org/public/collection/v1.1/search");
+      u.searchParams.set("q", q.q);
+      u.searchParams.set("hasImages", "true");
+      if (q.dept) u.searchParams.set("departmentId", String(q.dept));
+      u.searchParams.set("offset", String(offset));
+      u.searchParams.set("limit", String(Math.min(500, q.cap - offset)));
+      const j = (await getJson(u.toString())) as { objectIDs?: number[] } | null;
+      const page = j?.objectIDs ?? [];
+      found.push(...page);
+      if (page.length < 500) break;
+    }
+    const ids = found.filter((id) => !seen.has(id)).slice(0, q.cap);
     ids.forEach((id) => seen.add(id));
     let next = 0;
     let fails = 0;
@@ -218,7 +186,7 @@ async function harvestMet(log: (l: string) => void): Promise<PoolItem[]> {
           d = null;
         }
         if (!d) fails++;
-        await sleep(300); // 4 workers, about 10 requests a second, far under the Met's 80
+        await sleep(300); // 8 workers with a pause: well under the Met's 80 requests a second
         const small = str(d?.primaryImageSmall);
         const page = str(d?.objectURL);
         if (!d || d.isPublicDomain !== true || !small?.startsWith("https://") || !page?.startsWith("https://")) continue; // verified per item
@@ -236,7 +204,7 @@ async function harvestMet(log: (l: string) => void): Promise<PoolItem[]> {
         });
       }
     };
-    await Promise.all(Array.from({ length: 4 }, worker));
+    await Promise.all(Array.from({ length: 8 }, worker));
     log(`  met ${q.cat} ${q.q} dept ${q.dept ?? "-"}: ${ids.length} ids, ${fails} failed fetches, ${out.length} kept so far`);
   }
   return out;
@@ -254,7 +222,7 @@ export function orderPool(items: PoolItem[]): PoolItem[] {
     queues.get(k)!.push(it);
   }
   const out: PoolItem[] = [];
-  const keys = CATEGORIES.flatMap((c) => (["aic", "met", "cleveland"] as const).map((m) => `${c}|${m}`)).filter((k) => queues.has(k));
+  const keys = CATEGORIES.flatMap((c) => (["met", "cleveland"] as const).map((m) => `${c}|${m}`)).filter((k) => queues.has(k));
   for (let more = true; more; ) {
     more = false;
     for (const k of keys) {
@@ -269,9 +237,9 @@ export function orderPool(items: PoolItem[]): PoolItem[] {
 }
 
 async function loadPool(ctx: JobContext): Promise<PoolItem[]> {
-  if (existsSync(POOL_FILE)) return JSON.parse(readFileSync(POOL_FILE, "utf8")) as PoolItem[];
+  if (existsSync(POOL_FILE)) return (JSON.parse(readFileSync(POOL_FILE, "utf8")) as PoolItem[]).filter((it) => (it.museum as string) !== "aic");
   ctx.log("Harvesting the museum APIs (metadata and URLs only) ...");
-  const all = [...(await harvestAic(ctx.log)), ...(await harvestCleveland(ctx.log)), ...(await harvestMet(ctx.log))];
+  const all = [...(await harvestCleveland(ctx.log)), ...(await harvestMet(ctx.log))];
   const pool = orderPool(all);
   mkdirSync(join(ROOT, ".cache"), { recursive: true });
   writeFileSync(POOL_FILE, JSON.stringify(pool));
@@ -295,11 +263,11 @@ b{position:absolute;top:0;left:0;background:#000;color:#fff;font:700 18px/1 sans
 }
 
 async function renderSheet(s: Sheet): Promise<{ jpeg: Buffer; failed: number[] }> {
-  const page = await (await browser()).newPage({ viewport: { width: COLS * TILE + (COLS + 1) * 6, height: 100 }, deviceScaleFactor: 1 });
+  const rows = Math.ceil(s.items.length / COLS);
+  const page = await (await browser()).newPage({ viewport: { width: COLS * TILE + (COLS + 1) * 6, height: rows * TILE + (rows + 1) * 6 }, deviceScaleFactor: 1 });
   try {
     await page.setContent(sheetHtml(s), { waitUntil: "load", timeout: 60_000 }).catch(() => undefined);
     const failed = await page.evaluate(() => Array.from(document.images).map((im, i) => (im.complete && im.naturalWidth > 0 ? -1 : i + 1)).filter((n) => n > 0));
-    const rows = Math.ceil(s.items.length / COLS);
     const jpeg = await page.screenshot({ type: "jpeg", quality: 80, clip: { x: 0, y: 0, width: COLS * TILE + (COLS + 1) * 6, height: rows * TILE + (rows + 1) * 6 } });
     return { jpeg, failed };
   } finally {
@@ -367,7 +335,7 @@ export default defineJob<Sheet, CC0Item>({
   schema: CC0ItemSchema,
   system: SYSTEM,
   maxTokens: 2000,
-  expectedOutputTokens: 700,
+  expectedOutputTokens: 1150, // measured on the --limit 5 run: 975 to 1,258
   effort: "low",
 
   loadInputs: async (ctx) => {
