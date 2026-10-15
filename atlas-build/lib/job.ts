@@ -22,6 +22,8 @@ export type JobContext = {
   /** Google Fonts index (data/google-fonts.json), loaded on first use. */
   fonts: () => FontIndex;
   log: (line: string) => void;
+  /** The run's slice, set by run.ts. A job that spends outside the API (Serper) checks room with it and prefetches only inside the slice. */
+  run?: { limit?: number; offset: number; fromRaw: boolean };
 };
 
 export interface AtlasJob<Input, Rec> {
@@ -42,6 +44,8 @@ export interface AtlasJob<Input, Rec> {
   expectedOutputTokens: number;
   /** output_config.effort. Opus 5.5 and Haiku 5.5 default to medium, Sonnet 5.5 to high. */
   effort?: Effort;
+  /** Measured tokens per image, for the spend estimate (default 1,600, the worst case). Set it from real usage in costs.csv. */
+  imageTokens?: number;
 
   /** The work items; each becomes one request. */
   loadInputs(ctx: JobContext): Input[] | Promise<Input[]>;

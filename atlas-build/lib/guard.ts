@@ -39,7 +39,14 @@ export function textTokens(s: string): number {
 }
 
 /** The parts of one request the estimate needs. */
-export type RequestShape = { systemChars: number; userChars: number; images: number; outputTokens: number };
+export type RequestShape = {
+  systemChars: number;
+  userChars: number;
+  images: number;
+  outputTokens: number;
+  /** Measured tokens per image for this job. Default TOKENS_PER_IMAGE, the 1,600 worst case. */
+  imageTokens?: number;
+};
 
 export type Estimate = { requests: number; inputTokens: number; outputTokens: number; usd: number };
 
@@ -49,7 +56,7 @@ export function estimateCost(model: ModelId, shapes: readonly RequestShape[], ba
   let outputTokens = 0;
   for (const s of shapes) {
     systemTokens += Math.ceil(s.systemChars / CHARS_PER_TOKEN);
-    inputTokens += Math.ceil(s.userChars / CHARS_PER_TOKEN) + s.images * TOKENS_PER_IMAGE;
+    inputTokens += Math.ceil(s.userChars / CHARS_PER_TOKEN) + s.images * (s.imageTokens ?? TOKENS_PER_IMAGE);
     outputTokens += s.outputTokens;
   }
   const usd = usageCost(model, { input_tokens: inputTokens, cache_creation_input_tokens: systemTokens, output_tokens: outputTokens }, batch);
