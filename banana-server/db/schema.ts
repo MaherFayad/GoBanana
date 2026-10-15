@@ -293,6 +293,72 @@ export const userTaste = pgTable("user_taste", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Client review of a shared canvas (VAL-04, /s/[token]): one row per reviewer per direction, with a
+ * keep or drop vote and a plain text comment. Reviewers do not sign in; `reviewer_key` is a random
+ * id their browser makes (not an account, not an IP). Removed with the canvas. The owner sees these
+ * rows as a separate source next to their own ratings; they never touch search_feedback.
+ */
+export const reviewFeedback = pgTable(
+  "review_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    canvasId: uuid("canvas_id")
+      .notNull()
+      .references(() => canvases.id, { onDelete: "cascade" }),
+    /** The direction's bend id, else its row id (same key rate_directions uses). */
+    directionKey: text("direction_key").notNull(),
+    reviewerKey: text("reviewer_key").notNull(),
+    reviewerName: text("reviewer_name"),
+    /** "keep", "drop" or null (comment only). */
+    verdict: text("verdict"),
+    comment: text("comment"),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("review_feedback_reviewer_idx").on(t.canvasId, t.directionKey, t.reviewerKey),
+    index("review_feedback_canvas_updated_idx").on(t.canvasId, t.updatedAt),
+  ],
+);
+
+/**
+ * The user's swipe file (VAL-09): parts and great references saved across boards. URLs, source
+ * links, roles and crop rectangles only; never image bytes (hard rule 2). Removed with the user.
+ * `item_key` dedupes (kind, source link, crop) per user.
+ */
+export const swipeItems = pgTable(
+  "swipe_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    itemKey: text("item_key").notNull(),
+    /** "part" (a crop of a reference) or "reference". */
+    kind: text("kind").notNull(),
+    /** Stitch part role (nav, hero...) for a part; null for a reference. */
+    role: text("role"),
+    /** Atlas card id, when the item came from one. */
+    cardId: text("card_id"),
+    sourceSite: text("source_site").notNull(),
+    sourceUrl: text("source_url").notNull(),
+    imageUrl: text("image_url").notNull(),
+    thumbUrl: text("thumb_url").notNull(),
+    title: text("title"),
+    /** { x, y, w, h } as fractions, for a part. */
+    crop: jsonb("crop"),
+    note: text("note"),
+    fromCanvasId: uuid("from_canvas_id").references(() => canvases.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex("swipe_items_user_item_idx").on(t.userId, t.itemKey),
+    index("swipe_items_user_created_idx").on(t.userId, t.createdAt),
+    index("swipe_items_user_role_idx").on(t.userId, t.role),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Canvas = typeof canvases.$inferSelect;
 export type Direction = typeof directions.$inferSelect;

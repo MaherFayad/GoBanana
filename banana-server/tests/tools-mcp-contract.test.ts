@@ -85,7 +85,7 @@ describe("MCP contract", () => {
     expect(byName.arrange_canvas!.inputSchema.required?.sort()).toEqual(["canvasId", "layout"]);
     // P0-10: a call passes cuts, look or both, so only canvasId is required.
     expect(byName.cut_parts!.inputSchema.required).toEqual(["canvasId"]);
-    expect(Object.keys(byName.cut_parts!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "cuts", "look"]);
+    expect(Object.keys(byName.cut_parts!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "cuts", "look", "save"]);
     expect(byName.frankenstein_page!.inputSchema.required).toEqual(["canvasId"]);
     expect(byName.remix_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "count", "stitchId"]);
     expect(byName.update_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "ops", "stitchId"]);
@@ -96,7 +96,7 @@ describe("MCP contract", () => {
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("taste");
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("lane");
     expect(byName.rate_references!.inputSchema.required).toEqual(["ratings"]);
-    expect(Object.keys(byName.rate_references!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
+    expect(Object.keys(byName.rate_references!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings", "save"]);
     expect(byName.rate_directions!.inputSchema.required?.sort()).toEqual(["canvasId", "ratings"]);
     expect(Object.keys(byName.rate_directions!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
     const ratings = byName.rate_directions!.inputSchema.properties!.ratings as {

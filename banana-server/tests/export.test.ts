@@ -78,6 +78,8 @@ describe("exportKit", () => {
       ["frankenstein-wireframe.html", "text/html", `${dir}/frankenstein-wireframe.html`, false],
       ["CULTURE.md", "text/markdown", `${dir}/CULTURE.md`, false],
       ["settings.json", "application/json", ".claude/settings.json", false],
+      ["PITCH.md", "text/markdown", `${dir}/PITCH.md`, false],
+      ["EXPERIMENT.md", "text/markdown", `${dir}/EXPERIMENT.md`, false],
     ]);
     for (const f of files) expect(f.content.length).toBeGreaterThan(100);
   });

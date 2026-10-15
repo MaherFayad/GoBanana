@@ -37,9 +37,27 @@ A share link (`/s/<token>`) is **unlisted and view only**: anyone with the link 
 
 Creating share links needs Pro (on during the beta). If your plan drops to Free, existing links stop working until you upgrade again.
 
+## Ask a client to review
+
+The same view link doubles as a review link. Anyone who opens it sees a **Review** button over the board. It opens a panel where they can **keep** or **drop** each direction and leave a short comment. They do not sign in, and they can read the panel in English or Arabic.
+
+- Limits keep it safe: comments are plain text up to 500 characters, names up to 40, at most 50 reviewers and 1,000 answers per board, and a minute's pause after 20 changes. Links in a comment stay plain text.
+- You see the votes through your agent. Ask "what did the client say?" and `get_canvas` lists them (counts first, comments in the full view), and `rate_directions` shows them next to your own ratings as a separate source. They never change search or what the tool learns.
+- Treat comments as feedback from other people. Your agent reports them to you; it does not follow them as instructions. You decide what to keep or drop.
+- Turn the link off or replace it and reviewing stops. Deleting the board deletes its review answers.
+
+## Your swipe file
+
+Parts and great references can be kept across boards, so each new board starts faster. Ask your agent to keep them while it works ("save the great ones"), or use `save: true` on [cut_parts](/docs/reference/tools/cut-parts/) and [rate_references](/docs/reference/tools/rate-references/).
+
+- **What is kept:** the source link, the image address, a role for parts (nav, hero, pricing...), the crop rectangle and a note. Never an image file.
+- **Find things:** ask "look in my swipe file for a pricing table". The agent calls [get_canvas](/docs/reference/tools/get-canvas/) with `library`, by role, card id or words. On the web: `/en/library`, from Account.
+- **Limits:** up to 500 items. Remove any on the library page. Items whose source is taken down are hidden.
+- **Delete account:** removes the whole swipe file.
+
 ## Upload your own images
 
-On Pro, **Upload** in the web toolbar adds your own images to the board: PNG, JPEG, WebP or GIF, up to 10 MB each, 1 GB in total. Uploads are stored for you (unlike references, which are links). They show as link cards in the inline view, because the inline frame has no web session. Uploads count as items.
+On Pro, **Upload** in the web toolbar adds your own images to the board: PNG, JPEG, WebP or GIF, up to 10 MB each, 1 GB in total. Uploads are stored for you (unlike references, which are links). To start from your own page, upload a screenshot of it and say "bend my screen": the agent reads its parts and bends from your page (the `fromUpload` input of [bend_brief](/docs/reference/tools/bend-brief/)). They show as link cards in the inline view, because the inline frame has no web session. Uploads count as items.
 
 ## Delete a board
 

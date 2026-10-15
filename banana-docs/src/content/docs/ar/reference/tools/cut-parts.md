@@ -21,6 +21,8 @@ description: Frankenstein it، الخطوة 1. اقطع أجزاء (شريط ا�
 | `cuts[].crop` | object | لا | `x` و`y` من 0 إلى 1، و`w` و`h` أكبر من 0 وحتى 1 | كسور من أبعاد الصورة، بدءا من الزاوية العليا اليسرى. إذا تركته يخمن الخادم شريطا حسب الدور |
 | `cuts[].theme` | enum | لا | `light`، `dark`، `unknown` | كما يبدو |
 | `cuts[].note` | string | لا | من 1 إلى 280 حرفا | ما الذي تأخذه، وتبدأ بـ `steal:` |
+| `cuts[].cardId` | string | لا | من 1 إلى 60 حرفا | رقم بطاقة من Atlas، يحفظ مع عنصر المكتبة |
+| `save` | boolean | لا | | احفظ الأجزاء المقصوصة أيضا في [مكتبتك](/docs/ar/guides/canvases/#مكتبتك): روابط وأدوار وقصات فقط |
 
 **الأدوار.** للويب والمشتركة: `nav`، `hero`، `logos`، `features`، `cards`، `gallery`، `stats`، `testimonial`، `pricing`، `cta`، `form`، `faq`، `content`، `footer`. لتطبيقات الويب: `sidebar`، `toolbar`، `table`، `chart`، `filters`. للهاتف: `status-header`، `tabbar`، `list`، `detail`، `sheet`، `empty`. وأي شيء آخر: `other`. كل دور يعمل على كل منصة.
 

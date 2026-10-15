@@ -17,6 +17,7 @@ description: المهارات الإحدى عشرة في إضافة GoBanana ل�
 | `gobanana-agents-md` | «AGENTS.md»، «قواعد لوكلاء البرمجة»، «اجعل وكلائي يتبعون هذا الاتجاه» | `get_canvas`، `export_kit` (`agents_md`، `claude_md`) | قسم معلَّم في AGENTS.md (وCLAUDE.md) |
 | `gobanana-asset-kit` | «حزمة الأصول»، «رموز تصميم لهذه الصفحة»، «تدرجات من لوحة الألوان»، «أي الخطوط والأيقونات» | `get_canvas`، `extract_palette`، `export_kit` (`tokens`، `tailwind`) | من `kit/00-readme.md` إلى `kit/06-sources.md` |
 | `gobanana-culture` | «خله يحس سعودي»، «استخدم السدو»، «أبواب نجدية»، «حملة رمضان»، أو أي طلب يذكر ثقافة أو منطقة أو خطا أو مناسبة | `get_canvas`، `get_snapshot`، `bend_brief`، `search_references`، `rate_references`، `add_to_canvas`، `export_kit` | كل عنصر ثقافي بتسميته الدقيقة، مصنف حسب حساسيته، ومحول إلى جزء من الواجهة، مع ملاحظات المعنى والمأخوذ والنسب والحذر، وملخص ثقافي في التسليم |
+| `gobanana-weekly-drop` | «إسقاط أسبوعي»، «فكرة جديدة لصفحة الأسعار كل اثنين»، «جدول لي أفكارا جامحة كل أسبوع» | `get_canvas`، `new_canvas`، `bend_brief`، `search_references`، `rate_references`، `add_to_canvas`، `arrange_canvas`، `open_canvas`، وتعمل على جدولتك أنت | بعد موافقتك، مهمة مجدولة في وكيلك تضيف جولة أفكار واحدة كل أسبوع إلى لوحة وتنشر الرابط |
 | `gobanana-critique` | «قيّم البناء»، «هل يطابق هذا الاتجاه»، «قيّم صفحتي» | `get_canvas`، `export_kit` (`review`)، أداة متصفح | جدول نجاح أو إصلاح مع الأدلة، وأهم 3 إصلاحات، تُطبق ضمن نطاق الصفحة إذا وافقت |
 
 ## أزواج الخطوط في حزمة الأصول
