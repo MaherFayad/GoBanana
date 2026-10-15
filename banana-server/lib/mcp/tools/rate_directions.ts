@@ -17,6 +17,7 @@ import { inspirationFromQuery } from "@/lib/bend/queries";
 import { mutateCanvas, type CanvasState } from "@/lib/canvas/store";
 import type { DirectionRecord, NewFeedback } from "@/lib/db/types";
 import {
+  atlasFeedbackRows,
   DIRECTION_LANE,
   DIRECTION_REASONS,
   DIRECTION_SOURCE,
@@ -208,7 +209,9 @@ export function createRateDirectionsTool(deps: CanvasToolDeps) {
           creator: null,
         };
       });
-      if (rows.length > 0) await repos.feedback.insertMany(rows);
+      // The direction's Atlas cards, mechanic and recipes get the same verdict (lane "atlas").
+      const atlasRows = rated.flatMap(({ direction }, i) => atlasFeedbackRows(rows[i]!, direction.detail ?? {}));
+      if (rows.length > 0) await repos.feedback.insertMany([...rows, ...atlasRows]);
 
       const out: RateDirectionsOutput = {
         canvasId: input.canvasId,

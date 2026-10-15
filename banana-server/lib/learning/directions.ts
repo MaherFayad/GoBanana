@@ -12,8 +12,9 @@
  * - Weight = keep rate under a Beta(2, 2) prior, divided by the prior mean, floored at 0.15:
  *   an unseen ingredient weighs 1, a kept one up to about 2, an often dropped one 0.15.
  */
+import type { NewFeedback } from "../db/types";
 import type { FeedbackVerdict } from "./hints";
-import { K_ANON, usableCounts, type CountStat } from "./arms";
+import { ATLAS_ARM, ATLAS_KINDS, ATLAS_LANE, ATLAS_SOURCE, atlasTermKey, K_ANON, usableCounts, type AtlasKind, type CountStat } from "./arms";
 
 export const DIRECTION_VERDICTS = ["keep", "drop"] as const;
 export type DirectionVerdict = (typeof DIRECTION_VERDICTS)[number];
@@ -89,4 +90,66 @@ export function weightedOrder<T>(items: readonly T[], weightOf: (item: T) => num
     })
     .sort((x, y) => y.key - x.key || x.i - y.i)
     .map((x) => x.item);
+}
+
+// ---------- Atlas ids (P1-I6) ----------
+
+/** The Atlas ids a rating lands on: a direction's cards, mechanic and recipes, or a result's card and recipe. */
+export type AtlasIds = { cardIds?: readonly string[]; mechanicId?: string | null; recipeIds?: readonly string[] };
+
+/** True for a term key of an Atlas id (`card|...`, `mechanic|...`, `recipe|...`). */
+export function isAtlasTermKey(key: string): boolean {
+  return ATLAS_KINDS.some((k) => key.startsWith(`${k}|`));
+}
+
+/**
+ * Extra search_feedback rows for the Atlas ids behind one rating: one row per distinct id, lane
+ * "atlas", arm "atlas", the same user, item, verdict and reasons as the rating itself.
+ */
+export function atlasFeedbackRows(
+  rating: Pick<NewFeedback, "userId" | "itemKey" | "verdict" | "reasons">,
+  ids: AtlasIds,
+): NewFeedback[] {
+  const keys = new Set<string>();
+  const add = (kind: AtlasKind, id: string | null | undefined) => {
+    if (typeof id === "string" && id.trim()) keys.add(atlasTermKey(kind, id));
+  };
+  for (const id of ids.cardIds ?? []) add("card", id);
+  add("mechanic", ids.mechanicId);
+  for (const id of ids.recipeIds ?? []) add("recipe", id);
+  return [...keys].map((termKey) => ({
+    userId: rating.userId,
+    itemKey: rating.itemKey,
+    sourceSite: ATLAS_SOURCE,
+    lane: ATLAS_LANE,
+    query: null,
+    termKey,
+    arm: ATLAS_ARM,
+    verdict: rating.verdict,
+    reasons: [...rating.reasons],
+    creator: null,
+  }));
+}
+
+/**
+ * The Atlas ids a rated search result found it by: a great boosts the card and the recipe ("more
+ * like this"); a bad lowers only the recipe, since one junk result says little about the idea.
+ */
+export function referenceAtlasIds(ref: { cardId?: string | null; recipeId?: string | null }, verdict: FeedbackVerdict): AtlasIds {
+  return {
+    ...(verdict === "great" && ref.cardId ? { cardIds: [ref.cardId] } : {}),
+    ...(ref.recipeId ? { recipeIds: [ref.recipeId] } : {}),
+  };
+}
+
+/**
+ * Beta weight per Atlas term key (card, mechanic, recipe) that is not 1, with the same prior,
+ * floor and K_ANON rule as ingredients. Bend engine v2 orders cards and mechanics with
+ * `weightedOrder(items, (c) => weights.get(atlasTermKey("card", c.id)) ?? 1)`.
+ */
+export function atlasWeights(stats: readonly IngredientStat[], opts: { global: boolean; k?: number }): Map<string, number> {
+  return ingredientWeights(
+    stats.filter((s) => isAtlasTermKey(s.termKey)),
+    opts,
+  );
 }

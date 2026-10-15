@@ -14,6 +14,7 @@ import { authExtra } from "@/lib/auth";
 import { loadCanvas, mutateCanvas } from "@/lib/canvas/store";
 import type { NewFeedback, ReferenceRecord } from "@/lib/db/types";
 import { parseCreator } from "@/lib/learning/creator";
+import { atlasFeedbackRows, referenceAtlasIds } from "@/lib/learning/directions";
 import { badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, type FeedbackReason } from "@/lib/learning/hints";
 import { itemKey } from "@/lib/sources/web-search";
 import { LANE_NAMES, type LaneName } from "@/lib/sources/types";
@@ -122,6 +123,8 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
       }
 
       const rows: NewFeedback[] = [];
+      /** Reference id of each row in `rows`. */
+      const ratedIds: string[] = [];
       const hints: RateHint[] = [];
       const badKeys = new Set<string>();
       let great = 0;
@@ -146,6 +149,7 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
           reasons,
           creator: parseCreator(ref.title),
         });
+        ratedIds.push(id);
         if (rating.verdict === "great") {
           great++;
         } else {
@@ -155,7 +159,12 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         }
       }
 
-      if (rows.length > 0) await deps.repos.feedback.insertMany(rows);
+      // A result found by an Atlas recipe and card: a great boosts both, a bad lowers the recipe (lane "atlas").
+      const atlasRows = rows.flatMap((row, i) => {
+        const ref = found.get(ratedIds[i]!);
+        return ref ? atlasFeedbackRows(row, referenceAtlasIds(ref, row.verdict)) : [];
+      });
+      if (rows.length > 0) await deps.repos.feedback.insertMany([...rows, ...atlasRows]);
       if (badKeys.size > 0) await deps.repos.blocklist.add(userId, [...badKeys]);
 
       let removedFromTray = 0;

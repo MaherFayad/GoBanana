@@ -47,6 +47,33 @@ function clone<T>(value: T): T {
   return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
 }
 
+/** Same grouping as lib/db/feedback.ts directionStatsSql and atlasStatsSql: one row per term key. */
+function laneStats(feedback: readonly MemoryFeedback[], userId: string, k: number, keep: (f: MemoryFeedback) => boolean): IngredientStatRow[] {
+  const perUser = new Map<string, { termKey: string; userId: string; g: number; b: number }>();
+  for (const f of feedback) {
+    if (!keep(f) || !f.termKey) continue;
+    const key = `${f.termKey}\n${f.userId}`;
+    const row = perUser.get(key) ?? { termKey: f.termKey, userId: f.userId, g: 0, b: 0 };
+    if (f.verdict === "great") row.g++;
+    else row.b++;
+    perUser.set(key, row);
+  }
+  const out = new Map<string, IngredientStatRow & { mine: boolean }>();
+  for (const u of perUser.values()) {
+    const s = out.get(u.termKey) ?? { termKey: u.termKey, great: 0, bad: 0, users: 0, ownGreat: 0, ownBad: 0, mine: false };
+    s.users++;
+    if (u.g > u.b) s.great++;
+    if (u.b > u.g) s.bad++;
+    if (u.userId === userId) {
+      s.ownGreat += u.g;
+      s.ownBad += u.b;
+      s.mine = true;
+    }
+    out.set(u.termKey, s);
+  }
+  return [...out.values()].filter((s) => s.users >= k || s.mine).map(({ mine: _mine, ...s }) => s);
+}
+
 export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<string, Plan> } = {}): MemoryRepos {
   const data: MemoryRepos["data"] = {
     canvases: new Map(),
@@ -353,30 +380,10 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
         return [...out.values()];
       },
       async directionStats(userId, k) {
-        // Same grouping as lib/db/feedback.ts directionStatsSql.
-        const perUser = new Map<string, { termKey: string; userId: string; g: number; b: number }>();
-        for (const f of data.feedback) {
-          if (f.lane !== "direction" || !f.termKey?.startsWith("direction|")) continue;
-          const key = `${f.termKey}\n${f.userId}`;
-          const row = perUser.get(key) ?? { termKey: f.termKey, userId: f.userId, g: 0, b: 0 };
-          if (f.verdict === "great") row.g++;
-          else row.b++;
-          perUser.set(key, row);
-        }
-        const out = new Map<string, IngredientStatRow & { mine: boolean }>();
-        for (const u of perUser.values()) {
-          const s = out.get(u.termKey) ?? { termKey: u.termKey, great: 0, bad: 0, users: 0, ownGreat: 0, ownBad: 0, mine: false };
-          s.users++;
-          if (u.g > u.b) s.great++;
-          if (u.b > u.g) s.bad++;
-          if (u.userId === userId) {
-            s.ownGreat += u.g;
-            s.ownBad += u.b;
-            s.mine = true;
-          }
-          out.set(u.termKey, s);
-        }
-        return [...out.values()].filter((s) => s.users >= k || s.mine).map(({ mine: _mine, ...s }) => s);
+        return laneStats(data.feedback, userId, k, (f) => f.lane === "direction" && !!f.termKey?.startsWith("direction|"));
+      },
+      async atlasStats(userId, k) {
+        return laneStats(data.feedback, userId, k, (f) => f.lane === "atlas" && !!f.termKey);
       },
       async verdictsFor(userId, itemKeys) {
         const keys = new Set(itemKeys);

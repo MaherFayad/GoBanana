@@ -275,3 +275,67 @@ export function pickArm(input: {
 export function globalLearningOn(value: string | undefined): boolean {
   return value?.trim().toLowerCase() !== "off";
 }
+
+// ---------- Atlas ids (P1-I6) ----------
+//
+// Ratings also land on the Atlas ids behind a direction or a result, as extra search_feedback
+// rows (no new table): lane "atlas", arm "atlas", term key `{kind}|{id}`. They are pooled like the
+// lane arms (each user once, K_ANON before they reach anyone else, GLOBAL_LEARNING=off keeps them
+// personal) and read back as Beta weights.
+
+export const ATLAS_LANE = "atlas";
+export const ATLAS_ARM = "atlas";
+export const ATLAS_SOURCE = "atlas";
+export const ATLAS_KINDS = ["card", "mechanic", "recipe"] as const;
+export type AtlasKind = (typeof ATLAS_KINDS)[number];
+
+/** Term key for one Atlas id, for example `recipe|checkout-mobile-concept-2`. */
+export function atlasTermKey(kind: AtlasKind, id: string): string {
+  return `${kind}|${id.trim()}`.slice(0, MAX_KEY_LENGTH);
+}
+
+/** Offline judging (QueryRecipe.precision over `judged` results) counts as at most this many ratings. */
+export const RECIPE_PRIOR_WEIGHT = 4;
+
+/** Beta prior of a recipe: its judged precision, worth up to RECIPE_PRIOR_WEIGHT ratings; Beta(1, 1) when unjudged. */
+export function recipePrior(precision?: number, judged?: number): { a: number; b: number } {
+  const p = Number.isFinite(precision) ? Math.min(1, Math.max(0, precision!)) : 0.5;
+  const n = Number.isFinite(judged) ? Math.min(RECIPE_PRIOR_WEIGHT, Math.max(0, judged!)) : 0;
+  return { a: 1 + p * n, b: 1 + (1 - p) * n };
+}
+
+export type RecipeCandidate = { id: string; precision?: number; judged?: number };
+export type AtlasStat = CountStat & { termKey: string };
+
+/**
+ * Draw one recipe for a key by Thompson sampling: each candidate gets one Beta(prior.a + great,
+ * prior.b + bad) draw with its usable ratings (usableCounts), and the highest draw wins. A great
+ * rating raises a recipe's odds, a bad one lowers them; none ever reaches zero. Same seed and
+ * stats, same draw. `learned` is true when any candidate had usable ratings.
+ */
+export function pickRecipe(input: {
+  candidates: readonly RecipeCandidate[];
+  stats: readonly AtlasStat[];
+  global: boolean;
+  seed: string;
+  k?: number;
+}): { id: string; learned: boolean } | null {
+  if (input.candidates.length === 0) return null;
+  const byKey = new Map(input.stats.map((s) => [s.termKey, s]));
+  const rng = mulberry32(cyrb53(`${input.seed}|recipe`));
+  let best = input.candidates[0]!.id;
+  let bestScore = -1;
+  let learned = false;
+  for (const c of input.candidates) {
+    const stat = byKey.get(atlasTermKey("recipe", c.id));
+    const counts = stat ? usableCounts(stat, { global: input.global, k: input.k }) : null;
+    if (counts && counts.great + counts.bad > 0) learned = true;
+    const prior = recipePrior(c.precision, c.judged);
+    const score = sampleBeta(prior.a + (counts?.great ?? 0), prior.b + (counts?.bad ?? 0), rng);
+    if (score > bestScore) {
+      best = c.id;
+      bestScore = score;
+    }
+  }
+  return { id: best, learned };
+}
