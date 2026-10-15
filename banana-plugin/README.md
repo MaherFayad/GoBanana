@@ -63,6 +63,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 | `gobanana-handoff` | "hand this off", "Cursor rules for this", "prompt for v0" | Detects your tools, exports the harness pack, writes each file at its path, merges into AGENTS.md or CLAUDE.md |
 | `gobanana-frankenstein` | "frankenstein it", "nav from this, hero from that", "make new layouts from my board" | Cuts parts out of the board's UI references (role, crop, light or dark, steal note), stitches 3 or 4 page variants from a recipe, reviews and fixes them, remixes with a lock, exports FRANKENSTEIN.md |
 | `gobanana-build` | "build this Frankenstein page", "code this screen from the parts" | Refreshes the direction from the board, looks at each part with get_snapshot, builds row by row against the parts with an RTL note per part, runs a drift check, and places a screenshot of the build next to the page |
+| `gobanana-weekly-drop` | "weekly drop", "a new idea for my pricing page every Monday" | After a yes, sets up a scheduled task in your own agent: one bend a week for a saved brief, a new board section, the board link posted |
 | `gobanana-critique` | "critique the build", "does this match the direction" | Screenshots at platform sizes, grades the REVIEW.md checklist with evidence, top 3 fixes inside page scope |
 
 ### Platforms
@@ -121,6 +122,8 @@ If your client cannot show the canvas inline, every skill gives you the web link
 | `figjam_spec`, `html_board` | Board as FigJam spec or HTML | Pro |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | Free |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro |
+| `pitch_md` | `design/explorations/<slug>/PITCH.md` | Pro |
+| `experiment_md` | `design/explorations/<slug>/EXPERIMENT.md` | Pro |
 
 Free also covers `bend_brief` (unlimited), 30 searches a month and 3 canvases. When you hit a limit, the skills show the plain upgrade message once and stop; they never retry in a loop. At the canvas limit they offer to add to an existing board or delete an old one, and delete only after you say yes.
 

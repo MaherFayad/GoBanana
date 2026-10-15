@@ -22,6 +22,8 @@ export const EXPORT_FORMATS = [
   "claude_md",
   "stitch_md",
   "wireframe_html",
+  "pitch_md",
+  "experiment_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 

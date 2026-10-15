@@ -24,6 +24,8 @@ description: كل صيغة في export_kit، والملف، ومكانه في م
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | تخطيط اللوحة بصيغة JSON لإعادة بنائها في FigJam عبر Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | لوحة HTML مستقلة تعرض الصور من روابطها الأصلية وتسرد المصادر |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | مربعات رمادية لكل خانة مع تسميات الأدوار والملاحظات، وقائمة بالمصادر، بلا صور مراجع |
+| `pitch_md` | `design/explorations/<slug>/PITCH.md` | Pro | الاتجاهات المحفوظة كعرض قصير بصيغة Markdown: الفكرة، الآلية، المراجع مع روابط المصادر، الألوان، الخطوط. تبقى الصور مرتبطة بمصدرها |
+| `experiment_md` | `design/explorations/<slug>/EXPERIMENT.md` | Pro | اتجاهان محفوظان كنسختين خلف مفتاح ميزة، مع أسماء الأحداث وخطة اختبار قصيرة |
 
 ## كتلة النطاق
 

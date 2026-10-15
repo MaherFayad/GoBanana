@@ -24,6 +24,8 @@ description: Every export_kit format - the file, where it goes in your repo, wha
 | `figjam_spec` | `design/explorations/<slug>/figjam-spec.json` | Pro | Board layout as JSON for rebuilding in FigJam through the Figma MCP |
 | `html_board` | `design/explorations/<slug>/board.html` | Pro | A standalone HTML board that hotlinks images and lists sources |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro | Grey boxes per slot with role labels and notes, a sources list, no reference images |
+| `pitch_md` | `design/explorations/<slug>/PITCH.md` | Pro | The kept directions as a short Markdown deck: idea, mechanic, references with source links, palette, type. Images stay hotlinked |
+| `experiment_md` | `design/explorations/<slug>/EXPERIMENT.md` | Pro | Two kept directions as feature-flagged variants, with event names and a short test plan |
 
 ## Scope block
 

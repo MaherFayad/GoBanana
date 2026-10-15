@@ -1,6 +1,6 @@
 ---
 name: gobanana-handoff
-description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
+description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction", "pitch deck", "A/B test this", "send to Figma". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
 ---
 
 # GoBanana handoff
@@ -57,6 +57,8 @@ Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and t
 | `claude_md` | a section for `CLAUDE.md` | Pro |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md`: a skeleton per Frankenstein page with source links | Free |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html`: grey boxes, no reference images | Pro |
+| `pitch_md` | `design/explorations/<slug>/PITCH.md`: the kept directions as a short deck, one slide per section | Pro |
+| `experiment_md` | `design/explorations/<slug>/EXPERIMENT.md`: two directions as flagged variants, event names, test plan | Pro |
 
 ### 4. Write the files
 
@@ -74,6 +76,22 @@ A short list of written files with paths, then one line on scope: "These apply o
 - **v0, Lovable:** paste BUILD-PROMPT.md into a new chat.
 
 BUILD-PROMPT.md starts with the steps before any code: look at each Frankenstein page (get_snapshot) and the part notes first. Offer next: build the page now, then grade it (gobanana-critique).
+
+## Pitch deck and experiment (optional)
+
+- **"Pitch deck", "present this to my boss":** export `pitch_md` without a `directionId`. One file covers all kept directions: slides split by `---` (idea, mechanic, references with links, palette, type). Write it at its `path`. Images stay hotlinked and every reference keeps its source link; tell the user to credit them when presenting. Offer to paste it into their slide tool.
+- **"A/B test", "ship two variants":** export `experiment_md` without a `directionId`. It takes the first two kept directions as variants of one page (with one kept direction, the current page is the control). Drop extra kept directions first (`rate_directions`) if the user wants a specific pair. The file names the flag, the events and a test plan; build each variant behind the flag from its own DIRECTION.md and BUILD-PROMPT.md.
+
+## Send to Figma (optional)
+
+Send one kept direction, or one Frankenstein page, to Figma through the user's own Figma connector. GoBanana never talks to Figma.
+
+1. Check the Figma MCP is connected (tools such as `use_figma`, `create_new_file`). If not, tell the user to connect it, and give the GoBanana web link meanwhile. Stop there.
+2. Call `export_kit` with `canvasId`, `directionId` (the kept direction) and `formats: ["figjam_spec"]` (Pro). For a Frankenstein page, also call `get_snapshot` on it and read its parts and notes. The spec is JSON: sections of items with `x`, `y`, `w`, `h`, `imageUrl`, `text`, `hex` and `sourceUrl`.
+3. Load the Figma plugin's own skills before writing (`figma-use-figjam` for a FigJam board, `figma-use` with `figma-generate-design` for frames), then follow them.
+4. Build from the spec and keep positions and sizes. FigJam board: one section per direction, an "Art direction" row above the "UI references" grid, stickies for notes, rectangles for swatches. Figma frames (a Frankenstein page): one frame per page, one layer per part in reading order, named by its role; a part with no usable crop becomes a grey box with its role label.
+5. Images come from their `imageUrl` and carry a label linked to `sourceUrl`. If Figma cannot load an image, make a link card. Never download or save an image to disk.
+6. End with a **Sources** section that lists every `sourceUrl`, then share the Figma link. The images belong to their owners, so the file is for private reference.
 
 ## On the Free plan
 

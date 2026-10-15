@@ -13,7 +13,7 @@ description: Every limit per plan, which export needs Pro, the exact limit messa
 | Items per canvas | 40 | 300 | 300 | 300 |
 | Share links | No | Yes | Yes | Yes |
 | Uploads to your canvases | No | 1 GB | 1 GB | 1 GB |
-| Export formats | 5 free formats | All 15 | All 15 | All 15 |
+| Export formats | 5 free formats | All 17 | All 17 | All 17 |
 
 GoBanana is for individuals: there are no team plans. Prices are in US dollars. Paddle is the reseller and Merchant of Record: it handles payment, sales tax or VAT, invoices and refunds. Pro yearly saves about 35% against 12 monthly payments. The Founding plan is for the first 100 buyers.
 
@@ -40,6 +40,8 @@ Payments are off during the beta. Every signed in account gets Pro monthly limit
 | `figjam_spec` | `figjam-spec.json` | No | Yes |
 | `html_board` | `board.html` | No | Yes |
 | `wireframe_html` | `frankenstein-wireframe.html` | No | Yes |
+| `pitch_md` | `PITCH.md` | No | Yes |
+| `experiment_md` | `EXPERIMENT.md` | No | Yes |
 
 Paths and contents: [Export formats](/docs/reference/exports/). The repo notes that `wireframe_html` being Pro is still for the owner to confirm.
 

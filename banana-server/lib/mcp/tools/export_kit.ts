@@ -14,6 +14,7 @@ import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, loadCanvas, toSnapshot } from "@/lib/canvas/store";
 import {
+  CROSS_DIRECTION_FORMATS,
   EXPORT_FORMATS,
   MAX_PAGES,
   SCOPES,
@@ -34,8 +35,8 @@ export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
   "Export a canvas as files for one wild page (default) or the design system. Formats: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
-  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html. " +
-  "Kept directions get a folder each. Big exports list files: fetch each with file. Free: design_md, brief, direction_md, build_prompt, stitch_md.";
+  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, pitch_md, experiment_md. " +
+  "Big exports list files: fetch each with file. Free: design_md, brief, direction_md, build_prompt, stitch_md.";
 
 /** Inline output cap in characters (file contents plus headers), so results stay readable. */
 export const INLINE_CAP = 20_000;
@@ -130,8 +131,15 @@ export function createExportKitTool(deps: ExportKitDeps) {
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
       if (!directionId && kept.length > 1) {
-        sets = exportKitByDirection(snapshot, allowed, kept, opts);
-        files = sets.flatMap((s) => s.files.map((f) => ({ ...f, directionId: s.directionId })));
+        // pitch_md and experiment_md cover the kept directions together: one file, not one per folder.
+        const together = allowed.filter((f) => CROSS_DIRECTION_FORMATS.includes(f));
+        const apart = allowed.filter((f) => !CROSS_DIRECTION_FORMATS.includes(f));
+        files = [];
+        if (apart.length > 0) {
+          sets = exportKitByDirection(snapshot, apart, kept, opts);
+          files = sets.flatMap((s) => s.files.map((f) => ({ ...f, directionId: s.directionId })));
+        }
+        if (together.length > 0) files.push(...exportKit(snapshot, together, opts));
       } else {
         files = exportKit(snapshot, allowed, { ...opts, directionId });
       }

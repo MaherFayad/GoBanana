@@ -5,19 +5,19 @@ description: يصدّر اللوحة كملفات لمستودعك، مثل DIRE
 
 | الخطة | الحصة | يغير البيانات | التلميحات |
 | --- | --- | --- | --- |
-| المجانية: 5 صيغ. Pro: الصيغ الـ 15 كلها | لا شيء | لا. يعيد نصا، ووكيلك يكتب الملفات | |
+| المجانية: 5 صيغ. Pro: الصيغ الـ 17 كلها | لا شيء | لا. يعيد نصا، ووكيلك يكتب الملفات | |
 
 ## المدخلات
 
 | الاسم | النوع | مطلوب | الحدود والقيمة الافتراضية | ماذا يفعل |
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | نعم | من 1 إلى 100 حرف | اللوحة |
-| `formats` | enum[] | نعم | من 1 إلى 15، انظر أدناه | الملفات المطلوبة |
+| `formats` | enum[] | نعم | من 1 إلى 17، انظر أدناه | الملفات المطلوبة |
 | `directionId` | string | لا | من 1 إلى 100 حرف | اتجاه واحد مبقى عليه. الافتراضي: كل الاتجاهات المبقى عليها |
 | `pages` | string[] | لا | من 1 إلى 5، وكل واحدة حتى 80 حرفا | أسماء مسارات أو أنماط glob: ‏`"pricing page"`، `"/launch"`، `"app/pricing/**"` |
 | `scope` | enum | لا | `page` (الافتراضي)، `system` | `page`: ينطبق على الصفحات فقط ويرث نظام التصميم الخاص بك. `system`: يصبح الاتجاه نظامك |
 
-**الصيغ:** `design_md`، `brief`، `direction_md`، `build_prompt`، `stitch_md` (المجانية) · `review`، `cursor_rules`، `copilot`، `agents_md`، `claude_md`، `tokens`، `tailwind`، `figjam_spec`، `html_board`، `wireframe_html` ‏(Pro). المسارات والمحتويات: [صيغ التصدير](/docs/ar/reference/exports/).
+**الصيغ:** `design_md`، `brief`، `direction_md`، `build_prompt`، `stitch_md` (المجانية) · `review`، `cursor_rules`، `copilot`، `agents_md`، `claude_md`، `tokens`، `tailwind`، `figjam_spec`، `html_board`، `wireframe_html`، `pitch_md`، `experiment_md` ‏(Pro). المسارات والمحتويات: [صيغ التصدير](/docs/ar/reference/exports/).
 
 ## مثال على الاستدعاء
 

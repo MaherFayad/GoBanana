@@ -5,19 +5,19 @@ description: Export a board as files for your repo - DIRECTION.md, BUILD-PROMPT.
 
 | Plan | Quota | Changes data | Hints |
 | --- | --- | --- | --- |
-| Free: 5 formats. Pro: all 15 | None | No. Returns text; your agent writes the files | |
+| Free: 5 formats. Pro: all 17 | None | No. Returns text; your agent writes the files | |
 
 ## Inputs
 
 | Name | Type | Required | Limits and default | What it does |
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | Yes | 1 to 100 characters | The board |
-| `formats` | enum[] | Yes | 1 to 15, see below | Which files |
+| `formats` | enum[] | Yes | 1 to 17, see below | Which files |
 | `directionId` | string | No | 1 to 100 characters | One kept direction. Default: all kept directions |
 | `pages` | string[] | No | 1 to 5, each up to 80 characters | Route names or globs: `"pricing page"`, `"/launch"`, `"app/pricing/**"` |
 | `scope` | enum | No | `page` (default), `system` | `page`: applies only to the pages, inherits your system. `system`: the direction becomes your system |
 
-**Formats:** `design_md`, `brief`, `direction_md`, `build_prompt`, `stitch_md` (Free) · `review`, `cursor_rules`, `copilot`, `agents_md`, `claude_md`, `tokens`, `tailwind`, `figjam_spec`, `html_board`, `wireframe_html` (Pro). Paths and contents: [Export formats](/docs/reference/exports/).
+**Formats:** `design_md`, `brief`, `direction_md`, `build_prompt`, `stitch_md` (Free) · `review`, `cursor_rules`, `copilot`, `agents_md`, `claude_md`, `tokens`, `tailwind`, `figjam_spec`, `html_board`, `wireframe_html`, `pitch_md`, `experiment_md` (Pro). Paths and contents: [Export formats](/docs/reference/exports/).
 
 ## Example call
 
