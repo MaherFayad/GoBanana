@@ -14,7 +14,7 @@ describe("j9 line parser", () => {
 
   it("interleaves categories and drops duplicate ids", () => {
     const it = (id: string, category: string, museum: string) => ({ id, category, museum, title: id, imageUrl: "https://x", thumbUrl: "https://x", pageUrl: "https://x", rights: { flag: "f", value: "v" } }) as never;
-    const out = orderPool([it("a", "maps", "aic"), it("b", "maps", "aic"), it("c", "textiles", "met"), it("a", "maps", "aic")]);
+    const out = orderPool([it("a", "maps", "cleveland"), it("b", "maps", "cleveland"), it("c", "textiles", "met"), it("a", "maps", "cleveland")]);
     expect(out.map((x: { id: string }) => x.id)).toEqual(["c", "a", "b"]);
   });
 });
