@@ -35,8 +35,12 @@ jobs:
         run: npx vitest run
       - name: Build Worker (OpenNext, runs build:ui first)
         run: npx opennextjs-cloudflare build
-      - name: Worker size (gzipped; Workers Free limit 3 MB, budget 2.9 MB)
-        run: npm run worker:size -- --max-mb 2.9
+      # Cloudflare limits page: 64 MiB on Free and Paid, "There is no compressed size limit".
+      # Gate on the uncompressed size; the gzipped size is printed as a report (docs/worker-size.md).
+      - name: Worker size (uncompressed; limit 64 MiB, budget 60 MiB)
+        run: npm run worker:size -- --max-mib 60
+      - name: Worker startup (local profile; limit 1 s, budget 400 ms)
+        run: npm run worker:startup -- --max-ms 400
       - name: Worker size breakdown (largest packages)
         if: always()
         run: npm run worker:breakdown

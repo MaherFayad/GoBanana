@@ -10,7 +10,7 @@
  * A proxy never renders OG images, so this adds the same alias to the middleware build.
  *
  * Idempotent. If the file no longer matches (OpenNext changed), it warns and does nothing:
- * the CI size budget (`npm run worker:size -- --max-mb 2.9`) then shows the regression.
+ * the gzipped size that `npm run worker:size` prints then shows the regression.
  * See DECISIONS.md (Hosting, Worker size).
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
