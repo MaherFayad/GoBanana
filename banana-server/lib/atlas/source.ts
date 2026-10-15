@@ -4,7 +4,7 @@
  * back to the current engine or the Phase 0 lanes.
  */
 import { bucketOf, recipeKeyString, type AtlasLoader } from "./loader";
-import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, SlopRule, UiElement } from "./types";
+import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, SlopRule, TypePair, UiElement } from "./types";
 
 export interface AtlasSource {
   pages(): Promise<PageAnatomy[] | null>;
@@ -25,6 +25,11 @@ export interface AtlasSource {
   shaders(): Promise<ShaderRecipe[] | null>;
   /** J13 motion recipes (read whole); an empty list when the Atlas has none. */
   motion(): Promise<MotionRecipe[] | null>;
+  /**
+   * J12 bilingual type pairs of one type voice (`type-pairs/<voice>`). An empty list when the Atlas
+   * has no pairs for the voice; null when the shard could not be read (bad hash, budget spent).
+   */
+  typePairs(voice: string): Promise<TypePair[] | null>;
 }
 
 /** Load each bucket an id list touches, once, and keep the rows `keep` accepts. */
@@ -74,6 +79,10 @@ export function loaderSource(loader: AtlasLoader): AtlasSource {
     async motion() {
       if (loader.names("motion").length === 0) return [];
       return loader.all<MotionRecipe>("motion");
+    },
+    async typePairs(voice) {
+      if (!loader.names("type-pairs").includes(voice)) return [];
+      return loader.shard<TypePair>("type-pairs", voice);
     },
     async cc0(regions) {
       const names = new Set(loader.names("cc0"));

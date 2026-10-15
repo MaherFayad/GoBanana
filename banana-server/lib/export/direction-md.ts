@@ -1,6 +1,7 @@
 /** DIRECTION.md: the full visual spec of the direction(s) this kit is about, with references. */
 import type { DirectionSummary, KitModel } from "./model";
 import { dimText, directionRefs } from "./model";
+import { arabicRulesSection, directionArabicLines } from "./arabic";
 import { culturalBriefSection } from "./culture";
 import { pairingSource } from "./design-md";
 import { globsText, pagesText, scopeBlock } from "./scope";
@@ -36,6 +37,9 @@ function directionBlock(m: KitModel, d: DirectionSummary, i: number): string[] {
       "",
     );
   }
+
+  const arabic = directionArabicLines(m, d);
+  if (arabic.length > 0) out.push("### Arabic-first pack", "", ...arabic, "");
 
   const { art, ui } = directionRefs(m, d.direction.id);
   out.push("### Art direction references", "");
@@ -85,6 +89,7 @@ export function directionMd(m: KitModel): string {
   );
   out.push("## Type", "", `${fontsLine(m)}. ${pairingSource(m)}`, "");
   out.push("## Colors: ship vs explore", "", bullets([shipLine(m), exploreLine(m)]), "");
+  if (m.focus.length > 0) out.push(...arabicRulesSection("##"));
   out.push("## Sources", "", focusSources(m), "");
   return out.join("\n");
 }

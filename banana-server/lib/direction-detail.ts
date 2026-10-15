@@ -92,6 +92,41 @@ export interface DirectionDetail {
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */
   reconciled?: Reconciled;
+  /** VAL-08 Arabic-first pack: sample copy, RTL notes per part and an Arabic type pair. Missing on old rows. */
+  arabic?: ArabicPack;
+}
+
+/** One string in both languages: Arabic in white Saudi dialect without tashkeel, and what it says in English. */
+export interface BiText {
+  ar: string;
+  en: string;
+}
+
+/** What flips and what must not for one part of the page in a right to left layout. */
+export interface RtlNote {
+  part: string;
+  flips: string;
+  keeps: string;
+}
+
+/** The Arabic type pair of a direction: from the J12 type atlas, or the voice's own fonts when the Atlas has none. */
+export interface ArabicTypePair {
+  source: "atlas" | "voice";
+  /** J12 pair id; absent for the voice fallback. */
+  id?: string;
+  voice: TypeVoice;
+  latin: { display: string; body: string };
+  arabic: { display: string; body: string };
+  notes?: string;
+}
+
+/** The Arabic-first pack of one direction (VAL-08). Deterministic: no model call at runtime. */
+export interface ArabicPack {
+  /** The page kind the copy was chosen for ("checkout", "booking", "generic"). */
+  page: string;
+  copy: { headline: BiText; action: BiText; support: BiText };
+  rtl: RtlNote[];
+  type: ArabicTypePair;
 }
 
 /** The Atlas ids of one direction (bend engine v2). */

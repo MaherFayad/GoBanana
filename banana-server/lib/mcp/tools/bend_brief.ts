@@ -17,6 +17,9 @@ import { bendBriefAtlas, BEND_SHARD_BUDGET } from "@/lib/atlas/bend";
 import { liveAtlasLoader } from "@/lib/atlas/live";
 import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
 import { readAtlasLearning } from "@/lib/atlas/learning";
+import { loadTypePairs } from "@/lib/atlas/wiring";
+import type { TypePair } from "@/lib/atlas/types";
+import { buildArabicPack } from "@/lib/arabic";
 import { lookAtUpload, type UploadLookDeps } from "@/lib/uploads/look";
 import { liveCanvasDeps, plausibleId, takedownLoader, tasteInputSchema, type CanvasToolDeps } from "./canvas-shared";
 import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./types";
@@ -110,8 +113,15 @@ async function readWeights(
 }
 
 /** The detail saved with a direction (directions.detail). The verdict stays with rate_directions. */
-export function directionDetail(d: BendResult["directions"][number], wildness: number, brief?: string, atlas?: BendResult["atlas"]): DirectionDetail {
-  return {
+export function directionDetail(
+  d: BendResult["directions"][number],
+  wildness: number,
+  brief?: string,
+  atlas?: BendResult["atlas"],
+  /** Pass to save the Arabic-first pack (VAL-08) with the direction; `pairs` are the J12 pairs (null: the voice's fonts). */
+  arabic?: { pairs: readonly TypePair[] | null },
+): DirectionDetail {
+  const detail: DirectionDetail = {
     ...(brief ? { brief } : {}),
     platform: d.platform,
     pages: d.pages,
@@ -134,6 +144,8 @@ export function directionDetail(d: BendResult["directions"][number], wildness: n
         }
       : {}),
   };
+  if (arabic) detail.arabic = buildArabicPack({ seed: d.id, detail, brief, pairs: arabic.pairs });
+  return detail;
 }
 
 export const UPLOAD_NOT_FOUND =
@@ -171,6 +183,7 @@ async function saveDirections(
   canvas: CanvasRecord,
   result: BendResult,
   newTaste: string[],
+  pairs: readonly TypePair[] | null = null,
 ): Promise<boolean> {
   const canvasId = canvas.id;
   await deps.repos.directions.upsertMany(
@@ -180,7 +193,7 @@ async function saveDirections(
       move: d.move,
       title: d.title,
       searchQuery: d.searchQuery,
-      detail: directionDetail(d, result.wildness, result.brief, result.atlas),
+      detail: directionDetail(d, result.wildness, result.brief, result.atlas, { pairs }),
     })),
   );
   await deps.repos.canvases.update(userId, canvasId, {
@@ -303,7 +316,13 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendE
     let saved = false;
     if (canvasId && userId) {
       try {
-        saved = reachable && canvas ? await saveDirections(getDeps(), userId, canvas, result, newTaste) : false;
+        if (reachable && canvas) {
+          // J12 Arabic type pairs for the directions' voices; none (or no Atlas) means the voice's fonts.
+          const pairs = await loadTypePairs(engine?.source() ?? null, result.directions.map((d) => ({ detail: { spec: d.spec } as DirectionDetail }))).catch(() => null);
+          saved = await saveDirections(getDeps(), userId, canvas, result, newTaste, pairs);
+        } else {
+          saved = false;
+        }
       } catch {
         console.error("[bend_brief] could not save directions");
         saved = false;

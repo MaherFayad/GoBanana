@@ -3,7 +3,7 @@
  * Unknown keys are dropped, wrong types are dropped field by field, and anything that is not an
  * object reads as null. Strings are trimmed and capped so a bad caller cannot bloat the row.
  */
-import { isPlatform, isTypeVoice, type DirectionAtlas, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
+import { isPlatform, isTypeVoice, type ArabicPack, type BiText, type DirectionAtlas, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -112,6 +112,46 @@ export function parseDirectionAtlas(raw: unknown): DirectionAtlas | undefined {
   return (isObj(raw.atlas) ? atlasFields(raw.atlas) : undefined) ?? atlasFields(raw);
 }
 
+function bi(v: unknown, max: number): BiText | undefined {
+  if (!isObj(v)) return undefined;
+  const ar = str(v.ar, max);
+  const en = str(v.en, max);
+  return ar && en ? { ar, en } : undefined;
+}
+
+const fontNames = (v: unknown): { display: string; body: string } | undefined => {
+  if (!isObj(v)) return undefined;
+  const display = str(v.display, 80);
+  const body = str(v.body, 80);
+  return display && body ? { display, body } : undefined;
+};
+
+/** The saved Arabic-first pack (VAL-08): short strings only, capped; undefined unless every part is there. */
+export function parseArabicPack(v: unknown): ArabicPack | undefined {
+  if (!isObj(v) || !isObj(v.copy) || !isObj(v.type) || !Array.isArray(v.rtl)) return undefined;
+  const headline = bi(v.copy.headline, 120);
+  const action = bi(v.copy.action, 80);
+  const support = bi(v.copy.support, 240);
+  const latin = fontNames(v.type.latin);
+  const arabic = fontNames(v.type.arabic);
+  const page = str(v.page, 40);
+  if (!headline || !action || !support || !latin || !arabic || !page || !isTypeVoice(v.type.voice)) return undefined;
+  const rtl = v.rtl.filter(isObj).flatMap((n) => {
+    const part = str(n.part, 60);
+    const flips = str(n.flips, 300);
+    const keeps = str(n.keeps, 300);
+    return part && flips && keeps ? [{ part, flips, keeps }] : [];
+  }).slice(0, 8);
+  const id = str(v.type.id, 120);
+  const notes = str(v.type.notes, 600);
+  return {
+    page,
+    copy: { headline, action, support },
+    rtl,
+    type: { source: v.type.source === "atlas" ? "atlas" : "voice", ...(id ? { id } : {}), voice: v.type.voice, latin, arabic, ...(notes ? { notes } : {}) },
+  };
+}
+
 /** Clean detail, or null when `raw` is not an object or has nothing usable. */
 export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (!isObj(raw)) return null;
@@ -138,6 +178,8 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
     const how = str(raw.mechanic.how, 400);
     if (element && how) out.mechanic = { element, how };
   }
+  const arabicPack = parseArabicPack(raw.arabic);
+  if (arabicPack) out.arabic = arabicPack;
   // Atlas ids (bend engine v2), flat fields of old rows included.
   const atlas = parseDirectionAtlas(raw);
   if (atlas) out.atlas = atlas;

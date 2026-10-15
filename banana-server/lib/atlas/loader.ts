@@ -18,6 +18,7 @@
  *   slop/<n>             SlopRule[]
  *   shaders/<n>          ShaderRecipe[]     J13 stunning layer, size split, read whole
  *   motion/<n>           MotionRecipe[]     J13 stunning layer, size split, read whole
+ *   type-pairs/<voice>   TypePair[]         J12 bilingual type pairs, one shard per type voice ("grotesk", "slab", ...)
  *
  * Buckets are named "00", "01", ... and a kind's shard count is the number of its manifest
  * entries, so the server finds the shard of any id without an index.
@@ -32,7 +33,7 @@
 import { cyrb53 } from "@/lib/bend/prng";
 import type { QueryRecipe } from "./types";
 
-export const ATLAS_KINDS = ["pages", "domains", "fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop", "shaders", "motion"] as const;
+export const ATLAS_KINDS = ["pages", "domains", "fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop", "shaders", "motion", "type-pairs"] as const;
 export type AtlasKind = (typeof ATLAS_KINDS)[number];
 
 export interface ManifestShard {

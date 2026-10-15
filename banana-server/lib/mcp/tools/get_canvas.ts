@@ -4,6 +4,7 @@
  * lists the user's recent canvases, so an agent in a new chat can extend a board instead of
  * starting another.
  */
+import { arabicSummaryLine } from "@/lib/arabic";
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, loadCanvas, toSnapshot, type TrayReference } from "@/lib/canvas/store";
@@ -227,6 +228,7 @@ export function directionDetailLines(d: CanvasDirection): string[] {
     ].filter(Boolean);
     lines.push(`  spec: ${parts.join(" | ")}`);
   }
+  if (det?.arabic) lines.push(`  ${arabicSummaryLine(det.arabic)}`);
   return lines;
 }
 

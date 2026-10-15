@@ -1,4 +1,5 @@
 /** BUILD-PROMPT.md: a ready to paste prompt for Claude Code, Cursor, v0 or Lovable. */
+import { arabicBuildSection } from "./arabic";
 import type { KitModel } from "./model";
 import { directionRefs } from "./model";
 import { globsText, pagesText, scopeBlock } from "./scope";
@@ -101,6 +102,8 @@ export function buildPromptMd(m: KitModel): string {
     ]),
     "",
   );
+
+  out.push(...arabicBuildSection(m, "###"));
 
   const stunning = stunningSection(m, "###");
   if (stunning.length > 0) out.push(...stunning);
