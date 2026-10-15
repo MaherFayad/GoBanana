@@ -132,6 +132,8 @@ export interface MechanicInput {
   protect: ReadonlySet<MechanicElement>;
   /** Elements earlier directions of this bend landed on: spread over the top candidates. */
   used: ReadonlyMap<MechanicElement, number>;
+  /** Retry number (P0-08 coherence retries): each one moves to the next allowed element. */
+  attempt?: number;
 }
 
 /**
@@ -151,7 +153,9 @@ export function pickMechanic(input: MechanicInput): Mechanic {
   const allowed = ordered.filter((el) => !(RISKY.has(el) && input.protect.has(el)));
   const top = allowed.slice(0, 3);
   const least = Math.min(...top.map((el) => input.used.get(el) ?? 0));
-  const element = top.find((el) => (input.used.get(el) ?? 0) === least) ?? allowed[0] ?? "header";
+  const first = top.find((el) => (input.used.get(el) ?? 0) === least) ?? allowed[0] ?? "header";
+  const attempt = input.attempt ?? 0;
+  const element = attempt > 0 && allowed.length > 0 ? allowed[(allowed.indexOf(first) + attempt) % allowed.length]! : first;
   const how =
     input.lead === "constraint"
       ? RULE_HOW[element].replace("{rule}", input.entry.label)

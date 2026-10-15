@@ -30,7 +30,7 @@
  */
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
-import { artDropReason, bigEnough, isJunk, isKitTitle, isUiResult, lensExcludeWords, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
+import { artDropReason, bigEnough, isJunk, isKitTitle, isUiResult, laneDropLine, lensExcludeWords, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
 import {
   CREATOR_CAP,
   FALLBACK_MIN_GOOD,
@@ -153,6 +153,8 @@ export type PlanRequestReport = {
   query: string;
   /** Good results (item pages that passed every filter). */
   good: number;
+  /** Results the quality and lane filters dropped (P0-16 lane waste log). */
+  dropped?: number;
   /** Set when the request was retried with its fallback query. */
   retried?: string;
   /** Set when page 2 was fetched because page 1 was mostly already on the canvas or blocked. */
@@ -790,10 +792,15 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         site: s.req.site,
         query: s.req.query,
         good: s.refs.length,
+        dropped: s.dropped,
         ...(s.retried ? { retried: s.retried } : {}),
         ...(s.page2 ? { page2: true as const } : {}),
       })),
     };
+    // Lane waste log (P0-16): dropped / returned per request; see docs/search-quality-experiment.md.
+    for (const s of slots) {
+      if (s.ok) console.info(laneDropLine({ lane: s.req.lane, site: s.req.site, query: s.req.query, dropped: s.dropped, kept: Math.max(s.before, s.refs.length) }));
+    }
     const note = countNote(references.length, count);
     if (note) result.note = note;
     const dropped = slots.reduce((n, s) => n + s.dropped, 0);

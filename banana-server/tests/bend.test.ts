@@ -124,8 +124,9 @@ describe("wildness rules", () => {
           const briefLayout = words(brief.toLowerCase()).filter((x) => LAYOUT_WORDS.has(x));
           for (const lw of briefLayout) expect(words(d.searchQuery.toLowerCase())).not.toContain(lw);
           expect(d.searchQueries).not.toContain(d.searchQuery);
-          expect(d.searchQueries[0]).toBe(fidelityQuery(brief));
-          expect(d.searchQueries.length).toBeGreaterThanOrEqual(2);
+          // P0-05: the brief's page lane is the canvas baseline, never a direction's own query.
+          expect(d.searchQueries).not.toContain(fidelityQuery(brief));
+          expect(d.searchQueries.length).toBeGreaterThanOrEqual(1);
         }
       }
     }
@@ -142,6 +143,33 @@ describe("wildness rules", () => {
     expect(extractSubject("ride sharing home screen", 2).title).toBe("ride sharing");
     expect(extractSubject("page", 3).title).toBe("page");
     expect(extractSubject("!!!", 3).title).toBe("interface");
+  });
+});
+
+describe("P0-06 keeps the product noun in the subject", () => {
+  // Subjects as bend_brief shows them (result.subject, acronyms fixed).
+  const subjectOf = (brief: string, wildness: 1 | 2 | 3 | 4 | 5 = 3) => bendBrief({ brief, wildness, count: 1 }).subject;
+
+  it.each([
+    ["eSIM plan picker for a GCC travel app", "eSIM plan picker"],
+    ["eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy", "eSIM plan picker"],
+    ["flight checkout for a GCC OTA", "flight checkout"],
+    ["flight checkout screen for a GCC travel OTA", "flight checkout"],
+    ["eSIM data plan picker for travelers", "eSIM"],
+    ["VPN server picker for a privacy app", "VPN server picker"],
+    ["WhatsApp style chat for a dental clinic", "WhatsApp"],
+    ["loyalty points wallet for a coffee chain", "loyalty points wallet"],
+    ["Retail banking mobile app homepage: balance, quick actions, recent transactions", "retail banking"],
+    ["hotel booking calendar for a Dubai resort", "hotel booking calendar"],
+  ])("%s keeps %s", (brief, want) => {
+    expect(subjectOf(brief).toLowerCase()).toContain(want.toLowerCase());
+    expect(subjectOf(brief)).toContain(want);
+  });
+
+  it("keeps the old subjects when the thing chunk is short", () => {
+    expect(extractSubject("landing page for a coffee shop", 3).title).toBe("coffee shop");
+    expect(extractSubject("checkout for a coffee shop", 3).title).toBe("coffee shop checkout");
+    expect(extractSubject("eSIM data plan picker for travelers", 3).title).toBe("eSIM plan picker");
   });
 });
 

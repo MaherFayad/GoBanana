@@ -6,7 +6,7 @@ import { cleanTaste } from "@/lib/taste";
 import { allowedOn, PLATFORM_PROFILES, resolvePlatform, type Platform } from "@/lib/platform";
 import { weightedOrder } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
-import { briefComponents, inspirationQuery, laneTexts } from "./queries";
+import { briefComponents, ideaMechanicQuery, inspirationQuery, laneTexts, MAX_FOCUSED_QUERY_WORDS, queryKey } from "./queries";
 import { artQueries, buildSpec, fixCase } from "./spec";
 import { CLASH_FROM_WILDNESS, detectDomain, MAX_WEIRD, moodClashes, moodFits, noClash, type Domain } from "./tone";
 import wildSpotsJson from "./wild-spots.json";
@@ -36,8 +36,9 @@ import {
 } from "./types";
 import { WILDNESS } from "./wildness";
 import { familyOf } from "./families";
-import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, type Market } from "./market";
+import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS, type Market } from "./market";
 import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
+import { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -53,6 +54,10 @@ export {
   fidelityCoreQuery,
   fidelityQuery,
   heroQuery,
+  ideaMechanicQuery,
+  mechanicQuery,
+  queryKey,
+  ELEMENT_NOUN,
   inspirationFromQuery,
   inspirationQuery,
   isArabicBrief,
@@ -70,6 +75,7 @@ export { fixCase, VERIFIED_STYLE_WORDS } from "./spec";
 export { detectDomain } from "./tone";
 export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
 export type { Mechanic, MechanicElement } from "./mechanic";
+export { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
 
 /** How many wild spots a result suggests. */
 export const WILD_SPOTS_SHOWN = 5;
@@ -200,7 +206,14 @@ class EntryPicker {
    * passes everything the pick is exactly what it was before filters existed. When nothing passes,
    * the filter is dropped rather than failing.
    */
-  pick(poolKey: string, entries: readonly ListEntry[], checkOverlap: boolean, allow?: (e: ListEntry) => boolean): ListEntry {
+  pick(
+    poolKey: string,
+    entries: readonly ListEntry[],
+    checkOverlap: boolean,
+    allow?: (e: ListEntry) => boolean,
+    /** A rule that never relaxes (the brief's region): when its unused entries run out, one is reused. */
+    must?: (e: ListEntry) => boolean,
+  ): ListEntry {
     let pool = this.pools.get(poolKey);
     if (!pool) {
       pool = this.build(poolKey, entries, this.rng);
@@ -208,8 +221,10 @@ class EntryPicker {
       this.pools.set(poolKey, pool);
     }
     const unused = pool.filter((e) => !this.usedKeys.has(e.key.toLowerCase()));
-    const allowed = allow ? unused.filter(allow) : unused;
-    const fresh = allowed.length > 0 ? allowed : unused;
+    const kept = must ? unused.filter(must) : unused;
+    const allowed = allow ? kept.filter(allow) : kept;
+    const reuse = must && kept.length === 0 ? pool.filter(must) : [];
+    const fresh = allowed.length > 0 ? allowed : kept.length > 0 ? kept : reuse.length > 0 ? reuse : unused;
     const stemsClear = (e: ListEntry) => contentStems(e.key).every((s) => !this.usedStems.has(s));
     const family = (e: ListEntry) => this.familyOf?.(poolKey, e.key);
     const familyClear = (e: ListEntry) => {
@@ -368,14 +383,25 @@ function entryFilter(list: string, platform: Platform, wildness: Wildness, domai
   if (!FILTERED_LISTS.has(list)) return undefined;
   // Briefs with no platform keep their bend-v1 picks (and ids) at wildness 3: no weirdness cap there.
   const maxWeird = platform === "any" && wildness === 3 ? 3 : MAX_WEIRD[wildness];
-  const region = list === "traditions" && locale.market ? MARKET_TRADITIONS[locale.market] : null;
+  const region = regionFilter(list, wildness, locale);
   const latinOnly = list === "constraints" && locale.arabic;
   return (e: ListEntry) =>
     allowedOn(platform, list, e.key, e.hints.notOn) &&
     e.hints.weird <= maxWeird &&
     (wildness >= CLASH_FROM_WILDNESS || noClash(e, domain)) &&
-    (!region || region.has(e.key)) &&
+    (!region || region(e)) &&
     (!latinOnly || !LATIN_ONLY_CONSTRAINTS.has(e.key));
+}
+
+/**
+ * The region rule for traditions, which never relaxes (P0-07): a Gulf brief draws Gulf crafts only
+ * at wildness 1 to 3 and may add the wider region from WIDER_REGION_FROM_WILDNESS; a wider
+ * region brief draws the region. Undefined for other lists and briefs with no market.
+ */
+function regionFilter(list: string, wildness: Wildness, locale: Locale): ((e: ListEntry) => boolean) | undefined {
+  if (list !== "traditions" || !locale.market) return undefined;
+  const set = locale.market === "gulf" && wildness < WIDER_REGION_FROM_WILDNESS ? MARKET_TRADITIONS.gulf : MARKET_TRADITIONS.mena;
+  return (e) => set.has(e.key);
 }
 
 /** Clean page names: trimmed, single spaces, at most 3, no repeats. */
@@ -509,7 +535,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const picked: ListEntry[] = moves.map((m) => {
       if (m === "lens" && lens) return entries.pick(`lens:${lens.id}`, lensList, false);
       const def = MOVE_DEFS[m];
-      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale));
+      return entries.pick(def.list, LISTS[def.list], true, entryFilter(def.list, platform, wildness, domain, locale), regionFilter(def.list, wildness, locale));
     });
     // bend-v1 drew the mood here. Briefs with no platform still make that draw (a shadow pick, not
     // shown) so later picks and ids do not move; the shown mood is matched to the subject below.
@@ -541,6 +567,9 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   // or main button. Never part of the seed, so ids never move.
   const protect = protectedElements(input.brief, input.mustKeep ?? []);
   const mechanicUse = new Map<MechanicElement, number>();
+  /** Query keys (queryKey) earlier directions already search: no two directions share one. */
+  const usedQueries = new Set<string>();
+  const sigComponent = signatureComponent(input.brief, platform);
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -651,39 +680,68 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
     if (brokenMustKeep(ingredients, protect)) return;
     const leadEntry = picked[moves.indexOf(lead)]!;
-    const mechanic = pickMechanic({
-      lead,
-      entry: leadEntry,
-      others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
-      protect,
-      used: mechanicUse,
-    });
-    mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
     const byMove: Partial<Record<MoveId, ListEntry>> = {};
     moves.forEach((m, j) => {
       if (picked[j]) byMove[m] = picked[j];
     });
     if (garnishMove && twistEntry) byMove[garnishMove] = twistEntry;
-    const spec = buildSpec({
-      profile,
-      moves: promptMoves,
-      entries: byMove,
-      lead,
-      mood,
-      clash,
-      domain,
-      subject: subject.title,
-      component: signatureComponent(input.brief, platform),
-      arabic: locale.arabic,
-    });
-    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages });
-    const searchQueries = [
-      ...new Set(
-        [lanes.fidelity, lanes.taste, ...(lanes.component ?? []), lanes.hero, lanes.bridge, lanes.locale].filter((q): q is string =>
-          Boolean(q),
-        ),
-      ),
+    // One spec engine (P0-08): the mechanic first, then the spec written on it. While the result
+    // fails checkCoherence (with the directions before it), the mechanic moves to the next part,
+    // at most MAX_COHERENCE_TRIES draws. Ingredients never change, so ids never move.
+    const draw = (attempt: number) => {
+      const mech = pickMechanic({
+        lead,
+        entry: leadEntry,
+        others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
+        protect,
+        used: mechanicUse,
+        attempt,
+      });
+      const sp = buildSpec({
+        profile,
+        moves: promptMoves,
+        entries: byMove,
+        lead,
+        mood,
+        clash,
+        domain,
+        subject: subject.title,
+        component: sigComponent,
+        arabic: locale.arabic,
+        mechanic: mech.element,
+        page: pages[0] ?? subject.title,
+      });
+      return { mechanic: mech, spec: sp };
+    };
+    let drawn = draw(0);
+    for (let attempt = 1; attempt < MAX_COHERENCE_TRIES; attempt++) {
+      if (checkCoherence({ id, moves, ingredients, searchQuery, ...drawn }, directions).length === 0) break;
+      drawn = draw(attempt);
+    }
+    const { mechanic, spec } = drawn;
+    mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
+    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages, mechanic: mechanic.element });
+    // P0-05: a direction's queries are its own. The brief's page lanes (fidelity) run once per
+    // canvas as the baseline, so they are left out; the mechanic and the ingredient lead; a query
+    // an earlier direction of this bend already has, in any word order, is dropped.
+    const own = [
+      lanes.component?.[0],
+      lead === "constraint" ? null : ideaMechanicQuery(searchQuery, mechanic.element),
+      lanes.bridge ?? `${searchQuery} interface`,
+      lanes.taste,
+      ...(lanes.component ?? []).slice(1),
+      lanes.hero,
+      lanes.locale,
     ];
+    const shared = new Set([lanes.fidelity, lanes.fidelityCore].filter(Boolean).map((q) => queryKey(q!)));
+    const searchQueries: string[] = [];
+    for (const q of own) {
+      if (!q || wordCount(q) > MAX_FOCUSED_QUERY_WORDS) continue;
+      const k = queryKey(q);
+      if (shared.has(k) || usedQueries.has(k)) continue;
+      usedQueries.add(k);
+      searchQueries.push(q);
+    }
 
     directions.push({
       id,

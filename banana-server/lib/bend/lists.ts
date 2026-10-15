@@ -31,6 +31,7 @@ type RawEntry =
       layout?: string;
       density?: string;
       pattern?: string;
+      art?: string;
       style?: string[];
     };
 
@@ -68,6 +69,7 @@ function hintsOf(e: RawEntry, list: string): EntryHints {
     ...(raw.layout ? { layout: raw.layout } : {}),
     ...(raw.density ? { density: raw.density } : {}),
     ...(raw.pattern ? { pattern: raw.pattern } : {}),
+    ...(raw.art ? { art: raw.art } : {}),
     style: raw.style ?? [],
   };
 }

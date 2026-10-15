@@ -55,6 +55,11 @@ export interface EntryHints {
   layout?: string;
   density?: string;
   pattern?: string;
+  /**
+   * The concrete object the art zone searches, when the label is ambiguous ("ruler ticks" pulled
+   * insect ticks live; "measuring ruler" pulled rulers, 2026-10-15). Verified live before it is set.
+   */
+  art?: string;
   /** Verified search style words (lib/taste.ts). */
   style: readonly string[];
 }
@@ -103,12 +108,13 @@ export interface Direction {
    */
   searchQuery: string;
   /**
-   * Lane words search_references uses for a directionId (lib/bend/queries.ts), all UI forms:
-   * fidelity ("{domain} app ui", shared by every direction of a brief), taste ("{style} {domain}
-   * {component} ui design"), then the component lanes ("{core} {component} ui"), hero ("{style}
-   * {domain} app single screen", app briefs), bridge ("{ingredient} ui design", UI briefs) and
-   * locale ("arabic app ui", Arabic briefs) when they apply. Plain words: the server adds negatives
-   * and site operators when it searches. At most 7 words each.
+   * This direction's own UI queries (lib/bend/queries.ts, P0-05), no two directions of one bend
+   * sharing one in any word order: the mechanic lane ("{topic} {element} {surface}"), the
+   * idea on its part ("{ingredient} {element} ui", not for a rule), the bridge ("{ingredient} ui
+   * design", else "{ingredient} interface"), then taste, the brief's other component lane, hero
+   * and locale when an earlier direction does not already have them. The brief's page lane
+   * (fidelity) is left out: it is the canvas baseline. Plain words: the server adds negatives and
+   * site operators when it searches. At most 7 words each.
    */
   searchQueries: string[];
   /** The full combined idea (every move and the twist) for the agent to riff on. */

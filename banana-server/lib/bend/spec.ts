@@ -8,6 +8,8 @@ import type { PlatformProfile } from "@/lib/platform";
 import { article, capitalize } from "./templates";
 import type { Domain } from "./tone";
 import { ARABIC_FACE } from "./market";
+import { LISTS } from "./lists";
+import type { MechanicElement } from "./mechanic";
 import type { ListEntry, MoveId, Tone } from "./types";
 
 
@@ -39,7 +41,8 @@ const ACRONYMS: Readonly<Record<string, string>> = {
   ota: "OTA", sms: "SMS", faq: "FAQ", faqs: "FAQs", pdf: "PDF", seo: "SEO", cms: "CMS", vr: "VR", uae: "UAE",
   ksa: "KSA", usa: "USA", uk: "UK", nyc: "NYC", qr: "QR", "3d": "3D", "2d": "2D", sdk: "SDK", llm: "LLM",
   llms: "LLMs", gpu: "GPU", esg: "ESG", roi: "ROI", okr: "OKR", okrs: "OKRs", tv: "TV", dj: "DJ", diy: "DIY",
-  hiit: "HIIT", gps: "GPS", nfc: "NFC", pos: "POS", rsvp: "RSVP", ar: "AR",
+  hiit: "HIIT", gps: "GPS", nfc: "NFC", pos: "POS", rsvp: "RSVP", ar: "AR", esim: "eSIM", esims: "eSIMs", vpn: "VPN",
+  bnpl: "BNPL",
 };
 
 const ACRONYM_RE = new RegExp(`(?<![\\p{L}\\p{N}'’-])(${Object.keys(ACRONYMS).join("|")})(?![\\p{L}\\p{N}'’-])`, "giu");
@@ -163,6 +166,75 @@ export interface SpecInput {
   component: string;
   /** The design must work in Arabic (lib/bend/market.ts needsArabic): the type line names an Arabic face. */
   arabic?: boolean;
+  /**
+   * The part the idea becomes (lib/bend/mechanic.ts). P0-08: the pattern and layout lines are
+   * written on this part, so the spec never names a header while the mechanic is a progress bar.
+   */
+  mechanic: MechanicElement;
+  /** The page the idea is for, as people say it: the first page given, else the subject ("eSIM plan picker"). */
+  page: string;
+}
+
+/** Each mechanic element as the part the pattern and layout lines name. */
+export const PART: Readonly<Record<MechanicElement, string>> = {
+  progress: "progress bar",
+  total: "total block",
+  cta: "main button",
+  divider: "section dividers",
+  "section-nav": "section tabs",
+  header: "header strip",
+  "empty-state": "empty state",
+};
+
+// ---------------------------------------------------------------------------
+// Palette family (P0-08): the lead ingredient sets the color; the mood only shifts it.
+
+/** Words that read warm or cool in a color line. */
+export const WARM_WORDS = /\b(warm|warmer|red|reds|orange|amber|gold|golden|rust|brown|ochre|terracotta|copper|peach|coral|saffron)\b/i;
+export const COOL_WORDS = /\b(cool|cooler|cold|icy|ice|blue|blues|navy|teal|cyan|steel|silver|grey|gray|grays|greys|slate|mint)\b/i;
+
+export type PaletteFamily = "warm" | "cool" | "neutral";
+
+/** An ingredient's palette family from its tones: warm or cold alone, else neutral. */
+export function paletteFamily(entry: ListEntry | undefined): PaletteFamily {
+  const tones = entry?.hints.tone ?? [];
+  const warm = tones.includes("warm");
+  const cold = tones.includes("cold");
+  return warm && !cold ? "warm" : cold && !warm ? "cool" : "neutral";
+}
+
+/**
+ * The lead's palette family. A lens preset term has no tones of its own, so it takes the family of
+ * the tradition with the same name ("Sadu weaving" is warm).
+ */
+export function leadFamily(move: MoveId, entry: ListEntry | undefined): PaletteFamily {
+  const own = paletteFamily(entry);
+  if (own !== "neutral" || move !== "lens" || !entry) return own;
+  return paletteFamily(LISTS.traditions.find((t) => t.label.toLowerCase() === entry.label.toLowerCase()));
+}
+
+/** True when the text has a temperature word that fights the family (cool words on a warm ingredient). */
+export function fightsFamily(text: string, family: PaletteFamily): boolean {
+  return (family === "warm" && COOL_WORDS.test(text)) || (family === "cool" && WARM_WORDS.test(text));
+}
+
+/** How a mood shifts the lead's colors: temperature (unless it fights the lead) and contrast. */
+const MOOD_CONTRAST: Record<Tone, string> = {
+  calm: "soft contrast",
+  energetic: "high contrast",
+  serious: "restrained contrast",
+  playful: "bright, clean contrast",
+  luxe: "deep contrast",
+  dark: "a dark base",
+  light: "a light base",
+  warm: "soft contrast",
+  cold: "crisp contrast",
+};
+
+function moodShift(mood: ListEntry, family: PaletteFamily): string {
+  const tones = mood.hints.tone;
+  const temp = tones.includes("warm") && family !== "cool" ? "pushed warmer, " : tones.includes("cold") && family !== "warm" ? "pushed cooler, " : "";
+  return `${temp}${MOOD_CONTRAST[moodTone(mood)]}`;
 }
 
 const words = (s: string) => s.split(/\s+/).filter(Boolean);
@@ -179,10 +251,6 @@ function moodTone(mood: ListEntry): Tone {
   return mood.hints.tone[0] ?? "light";
 }
 
-/** Second component for the pattern line: one the platform has that the signature does not use. */
-function patternComponent(input: SpecInput): string {
-  return input.profile.components.find((c) => c !== input.component) ?? input.profile.defaultComponent;
-}
 
 function signature(input: SpecInput): string {
   const e = input.entries[input.lead];
@@ -204,31 +272,54 @@ function signature(input: SpecInput): string {
   }
 }
 
+/** The pattern, always on the mechanic's part (P0-08). */
 function pattern(input: SpecInput): string {
   const e = input.entries[input.lead];
   const label = e?.label ?? "";
-  const c = patternComponent(input);
-  if (e?.hints.pattern) return `${capitalize(e.hints.pattern)}, as ${the(c)}`;
+  const c = PART[input.mechanic];
+  if (e?.hints.pattern) return `${capitalize(e.hints.pattern)}, on ${the(c)}`;
   switch (input.lead) {
     case "transplant":
       return `${capitalize(the(c))} laid out like ${article(label)} ${label}`;
     case "material":
-      return `Layered ${label} panels as ${the(c)}, depth shows what matters`;
+      return `Layered ${label} on ${the(c)}, depth shows what matters`;
     case "era":
-      return `Headers and labels from ${label} on ${the(c)}`;
+      return `${capitalize(the(c))} set in the headers and labels of ${label}`;
     case "constraint":
       return `${capitalize(the(c))} follows the rule: ${label}`;
     case "scale":
       return `One giant ${label.replace(/s$/, "")} anchors ${the(c)}`;
     case "lens":
-      return `${capitalize(article(label))} ${label} band as the divider in ${the(c)}`;
+      return `${capitalize(article(label))} ${label} band frames ${the(c)}`;
   }
+}
+
+/** Where the part sits, with the idea's name: unique per direction, written from the mechanic (P0-08). */
+const PART_LAYOUT: Record<MechanicElement, string> = {
+  progress: "{idea} progress bar across the top, steps below it",
+  total: "{idea} total block right above the main button",
+  cta: "{idea} main button alone in a fixed bar",
+  divider: "{idea} bands between stacked sections",
+  "section-nav": "{idea} tabs switch the sections at the top",
+  header: "{idea} header strip over a single column",
+  "empty-state": "{idea} art centered in the empty state, one action below",
+};
+
+function layout(input: SpecInput): string {
+  const lead = input.entries[input.lead];
+  const idea = input.lead === "scale" ? `giant ${lead?.label ?? ""}` : (lead?.label ?? input.mood.label);
+  const part = PART_LAYOUT[input.mechanic].replace("{idea}", idea);
+  const rule = input.entries.constraint?.hints.layout;
+  const grid = input.profile.gridShort;
+  const withRule = rule ? `${part}; ${rule.charAt(0).toLowerCase()}${rule.slice(1)}, on ${grid}` : "";
+  return withRule && words(withRule).length <= 30 ? withRule : `${part}, on ${grid}`;
 }
 
 function imagery(input: SpecInput): string {
   const { entries, lead } = input;
   const c = entries.constraint?.hints.img;
-  if (c) return c;
+  // The lead ingredient first (P0-08); a constraint's imagery rule only when it leads or nothing else speaks.
+  if (c && lead === "constraint") return c;
   const byMove: Record<MoveId, () => string | undefined> = {
     transplant: () => entries.transplant && `Real photos of ${entries.transplant.label} details, cropped close`,
     lens: () => entries.lens && `${capitalize(entries.lens.label)} motifs as flat borders and fills, no stock photos`,
@@ -237,8 +328,10 @@ function imagery(input: SpecInput): string {
     scale: () => entries.scale && `Giant ${entries.scale.label} as the main graphic, no photos`,
     constraint: () => undefined,
   };
-  const order: MoveId[] = [lead, ...input.moves.filter((m) => m !== lead)];
-  for (const m of order) {
+  const leadLine = byMove[lead]();
+  if (leadLine) return leadLine;
+  if (c) return c;
+  for (const m of input.moves.filter((x) => x !== lead)) {
     const line = byMove[m]();
     if (line) return line;
   }
@@ -300,13 +393,55 @@ function avoid(input: SpecInput): string[] {
   return out.slice(0, 3);
 }
 
+/**
+ * Why the idea fits, written from the lead ingredient, the page and the mechanic's part (P0-08).
+ * No generic fallback: every line names the ingredient, so no two directions of a bend share one.
+ */
 function whyItFits(input: SpecInput): string {
-  const lead = input.entries[input.lead]?.label ?? input.mood.label;
+  const label = input.entries[input.lead]?.label ?? input.mood.label;
+  const page = input.page;
+  const part = PART[input.mechanic];
   if (input.clash && input.domain) {
-    return `A deliberate clash: a ${input.mood.label} mood is the last thing ${input.domain.audience} expect, so it sticks`;
+    return `A deliberate clash: ${label} in a ${input.mood.label} mood is the last thing ${input.domain.audience} expect, so it sticks`;
   }
-  if (input.domain) return `${capitalize(article(input.mood.label))} ${input.mood.label} mood suits ${input.domain.audience}, and ${lead} ${/s$/i.test(lead) && !/ss$/i.test(lead) ? "give" : "gives"} it a story`;
-  return `${capitalize(article(input.mood.label))} ${input.mood.label} mood and ${lead} give the ${input.subject} a look no competitor has`;
+  const plural = /s$/i.test(label) && !/ss$/i.test(label);
+  switch (input.lead) {
+    case "transplant":
+      return `People already know how to read ${article(label)} ${label}, so the ${page} borrows that habit for its ${part}`;
+    case "material":
+      return `${capitalize(label)} ${plural ? "give" : "gives"} the ${page} a surface people want to touch, shown on the ${part}`;
+    case "era":
+      return `${capitalize(label)} ${plural ? "give" : "gives"} the ${page} a voice people remember, while the ${part} still works as expected`;
+    case "constraint":
+      return `One rule, ${label}, keeps the ${page} calm and makes the ${part} stand out`;
+    case "scale":
+      return `Giant ${label} make the ${part} of the ${page} impossible to miss`;
+    case "lens":
+      return `${capitalize(label)} ${plural ? "root" : "roots"} the ${page} in a craft its users know, carried by the ${part}`;
+  }
+}
+
+/** "The colors of a real exhibition catalog" (one thing), "The colors of real halftone dots" (many) or "of real limestone" (a material). */
+function realColors(label: string, mass: boolean): string {
+  const many = mass || (/s$/i.test(label) && !/ss$/i.test(label));
+  return `The colors of ${many ? "real" : "a real"} ${label}, one base and one accent`;
+}
+
+/** The color line: the lead ingredient's colors first, other ingredients as accents, the mood only shifts (P0-08). */
+function colorLine(input: SpecInput): string {
+  const { entries, lead, mood } = input;
+  const leadEntry = entries[lead];
+  const family = leadFamily(lead, leadEntry);
+  const rule = entries.constraint?.hints.color;
+  const base =
+    (lead === "constraint" ? rule : undefined) ??
+    leadEntry?.hints.color ??
+    rule ??
+    realColors(leadEntry?.label ?? mood.label, lead === "material");
+  const opposite = (f: PaletteFamily) => (family === "warm" && f === "cool") || (family === "cool" && f === "warm");
+  const accent = [entries.lens, entries.era].find((e) => e && e !== leadEntry && !fightsFamily(e.label, family) && !opposite(paletteFamily(e)));
+  const accentText = accent && !base.includes(accent.label) ? `; accents from ${accent.label}` : "";
+  return `${base}${accentText}; ${moodShift(mood, family)}, text at 4.5 to 1 or more`;
 }
 
 /** The full visual spec for one direction. */
@@ -314,17 +449,11 @@ export function buildSpec(input: SpecInput): VisualSpec {
   const { profile, entries, mood } = input;
   const voice = typeVoice(input);
   const caseNote = entries.constraint ? (CASE_NOTE[entries.constraint.key] ?? "") : "";
-  const accent = first(entries.lens, entries.era);
-  const baseColor = entries.constraint?.hints.color ?? mood.hints.color ?? `${capitalize(article(mood.label))} ${mood.label} palette with one accent`;
-  const color =
-    entries.constraint?.hints.color || !accent
-      ? `${baseColor}; text at 4.5 to 1 contrast or more`
-      : `${baseColor}; accents from ${accent.label}, text at 4.5 to 1 or more`;
-  const constraintLayout = entries.constraint?.hints.layout;
-  const layout = constraintLayout ? `${constraintLayout}, on ${profile.gridShort}.` : profile.grid;
+  const color = colorLine(input);
   const motionHint = first(entries.transplant?.hints.motion, entries.material?.hints.motion, entries.era?.hints.motion);
   const motion = `${motionHint ?? TONE_MOTION[moodTone(mood)]}, and none with reduced motion on`;
-  const surface = first(entries.material?.hints.tex, entries.transplant?.hints.tex);
+  // The lead ingredient's surface first (P0-08), then a material or object surface.
+  const surface = first(entries[input.lead]?.hints.tex, entries.material?.hints.tex, entries.transplant?.hints.tex);
   const texture = surface
     ? // A material or object surface is busy: text never sits on it (field report, 2026-10-12:
       // "text on a textured background will fail contrast").
@@ -346,7 +475,7 @@ export function buildSpec(input: SpecInput): VisualSpec {
     }.`,
     typeVoice: voice,
     color: sentence(color),
-    layout: sentence(layout),
+    layout: sentence(layout(input)),
     imagery: sentence(imagery(input)),
     motion: sentence(motion),
     texture: sentence(texture),
@@ -371,21 +500,26 @@ function sentence(text: string): string {
 // ---------------------------------------------------------------------------
 // Art queries
 
+/**
+ * One medium word after the ingredient, never a stacked suffix (P0-16): "oversized ruler ticks
+ * graphic print close-up" returned 0 results live (2026-10-13), while concrete objects ("exhibition
+ * catalog") returned real spreads. Objects and scale elements go bare: the concrete noun only.
+ */
 const ART_TAIL: Record<MoveId, { tail: string; skip: RegExp }> = {
-  transplant: { tail: "design close-up", skip: /\b(poster|posters|cover|covers|label|labels|sign|signs|map|chart|card|cards|menu|ticket|tickets|stamp|stamps|board|page|manual|program|playbill|catalog)\b/i },
+  transplant: { tail: "", skip: /$^/ },
   material: { tail: "texture", skip: /\b(texture|paper|glass|print)\b/i },
   era: { tail: "poster", skip: /\b(poster|posters|graphics|design|art|aesthetic|cover|covers|flyer|flyers|ads|typography|zine|illustration|architecture|magazine|catalog|print)\b/i },
   lens: { tail: "pattern", skip: /\b(pattern|fabric|textile|print|art|weaving|braid|braiding|trim|mural|murals|majlis|house|interior|painted|painting|tiles?|rugs?|embroidery|knit|quilts?|posters?|neon|silver|mosaic|pottery|porcelain|doors?|windows?|screens|labels|curtains|crests|marquetry|enamel|craft|palette|sweater|woodcut|impression|miniature|cloth|seals?)\b/i },
-  // Subject, medium and composition, never an abstract word alone: "oversized stripes poster"
-  // returned White Stripes band posters (field report, 2026-10-12).
-  scale: { tail: "graphic print close-up", skip: /$^/ },
+  // A one word element alone is too abstract ("stripes" returned White Stripes band posters, field
+  // report 2026-10-12): it gets "graphic". Two words or more go bare ("ruler ticks").
+  scale: { tail: "graphic", skip: /\b(graphic|graphics|poster|posters|print)\b/i },
   constraint: { tail: "poster", skip: /\b(poster|print|art|typography|lettering)\b/i },
 };
 
 /**
- * 1 to 3 image queries of the direction's ingredients for the art zone, phrased as a visual
- * (subject, medium, composition): "korean bojagi pattern", "synthwave 1984 poster", "holographic
- * foil texture", "oversized stripes graphic print close-up". At most 6 words, never UI words.
+ * 1 to 3 image queries of the direction's ingredients for the art zone: the concrete noun, with at
+ * most one medium word ("korean bojagi pattern", "synthwave 1984 poster", "holographic foil
+ * texture", "ruler ticks", "exhibition catalog"). At most 6 words, never UI words.
  */
 export function artQueries(
   moves: readonly MoveId[],
@@ -400,9 +534,10 @@ export function artQueries(
   for (const m of order) {
     const e = entries[m];
     if (!e) continue;
-    const base = m === "scale" ? `oversized ${e.query}` : e.query;
+    // A verified concrete object wins and goes bare ("measuring ruler" for ruler ticks).
+    const base = e.hints.art ?? e.query;
     const { tail, skip } = ART_TAIL[m];
-    const q = words(tail && !skip.test(base) && words(base).length < 4 ? `${base} ${tail}` : base)
+    const q = words(tail && !e.hints.art && !skip.test(base) && words(base).length < (m === "scale" ? 2 : 4) ? `${base} ${tail}` : base)
       .slice(0, 6)
       .join(" ");
     if (UI_WORDS.test(q) || out.some((o) => o.toLowerCase() === q.toLowerCase())) continue;

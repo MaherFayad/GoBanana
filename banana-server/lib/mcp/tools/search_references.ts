@@ -311,6 +311,7 @@ export function directionLanes(direction: Direction, taste: readonly string[]): 
     ...(detail?.platform ? { platform: detail.platform } : {}),
     ...(detail?.spec?.styleWords?.length ? { styleWords: detail.spec.styleWords } : {}),
     ...(detail?.pages?.length ? { pages: detail.pages } : {}),
+    ...(detail?.mechanic?.element ? { mechanic: detail.mechanic.element } : {}),
   });
   const art = (detail?.artQueries ?? []).map(artWords).filter(Boolean);
   const fallback = artWords(idea);

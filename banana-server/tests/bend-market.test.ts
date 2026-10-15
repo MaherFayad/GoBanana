@@ -5,9 +5,10 @@
  * Arabic) and "paper clips with Icelandic knitwear" (off brief).
  */
 import { describe, expect, it } from "vitest";
-import { bendBrief, LISTS } from "@/lib/bend";
+import { bendBrief, LISTS, MOVES } from "@/lib/bend";
 import { OBJECT_FAMILIES, familyOf } from "@/lib/bend/families";
-import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic } from "@/lib/bend/market";
+import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS } from "@/lib/bend/market";
+import { mulberry32 } from "@/lib/bend/prng";
 import type { Wildness } from "@/lib/bend/types";
 
 const GCC = "flight checkout screen for a GCC travel OTA";
@@ -16,8 +17,11 @@ const keyOf = (list: keyof typeof LISTS, label: string) => LISTS[list].find((e) 
 
 describe("market and script words", () => {
   it("reads the market and the need for Arabic from the brief", () => {
-    expect(briefMarket(GCC)).toBe("mena");
-    expect(briefMarket("Retail banking app for Saudi customers")).toBe("mena");
+    expect(briefMarket(GCC)).toBe("gulf");
+    expect(briefMarket("Retail banking app for Saudi customers")).toBe("gulf");
+    expect(briefMarket("food delivery app in Cairo")).toBe("mena");
+    expect(briefMarket("Arabic news reader")).toBe("mena");
+    expect(needsArabic("food delivery app in Cairo")).toBe(true);
     expect(briefMarket("podcast player")).toBeNull();
     expect(briefMarket("a woman's running app in Romania")).toBeNull();
     expect(needsArabic(GCC)).toBe(true);
@@ -27,6 +31,7 @@ describe("market and script words", () => {
 
   it("names only real list entries", () => {
     for (const k of MARKET_TRADITIONS.mena) expect(keys("traditions").has(k), k).toBe(true);
+    for (const k of MARKET_TRADITIONS.gulf) expect(MARKET_TRADITIONS.mena.has(k), k).toBe(true);
     for (const k of LATIN_ONLY_CONSTRAINTS) expect(keys("constraints").has(k), k).toBe(true);
     for (const list of Object.values(OBJECT_FAMILIES)) for (const k of list) expect(keys("objects").has(k), k).toBe(true);
   });
@@ -80,6 +85,60 @@ describe("a market brief bends within its region and its script", () => {
     expect(new Set(LEVELS.map(ideas)).size).toBe(LEVELS.length);
     const w5 = bendBrief({ brief: GCC, wildness: 5, platform: "mobile" }).directions;
     expect(w5.every((d) => d.twist.length > 0)).toBe(true);
+  });
+});
+
+describe("P0-07 Gulf lenses first for Gulf briefs", () => {
+  const GULF_BRIEFS = [
+    GCC,
+    "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy",
+    "Riyadh metro ticket app",
+    "Dubai hotel booking website",
+    "Kuwait bank onboarding",
+  ];
+
+  it("over 200 seeds, a GCC brief at wildness 3 never gets a non-Gulf tradition", () => {
+    const rng = mulberry32(20261015);
+    const problems: string[] = [];
+    let traditions = 0;
+    for (let seed = 0; seed < 200; seed++) {
+      const brief = GULF_BRIEFS[seed % GULF_BRIEFS.length]!;
+      // Seeds vary the moves (lens heavy ones too), the platform and the count.
+      const moves = seed % 4 === 0 ? (["lens"] as const) : MOVES.filter(() => rng() < 0.6);
+      const platform = (["mobile", "website", "webapp", undefined] as const)[Math.floor(rng() * 4)];
+      const r = bendBrief({ brief, wildness: 3, count: 8, ...(moves.length ? { moves: [...moves] } : {}), ...(platform ? { platform } : {}) });
+      for (const d of r.directions) {
+        const t = d.ingredients.tradition;
+        if (!t) continue;
+        traditions++;
+        if (!MARKET_TRADITIONS.gulf.has(keyOf("traditions", t))) problems.push(`${brief} seed ${seed}: ${t}`);
+      }
+    }
+    expect(problems).toEqual([]);
+    expect(traditions).toBeGreaterThan(200);
+  });
+
+  it("keeps Gulf crafts at wildness 1 to 3 and may add the wider region at 4 and 5", () => {
+    const wider = new Set<string>();
+    for (const wildness of [1, 2, 3, 4, 5] as Wildness[]) {
+      for (const d of bendBrief({ brief: GCC, wildness, count: 8, moves: ["lens", "material"] }).directions) {
+        const t = d.ingredients.tradition;
+        if (!t) continue;
+        const k = keyOf("traditions", t);
+        if (wildness < WIDER_REGION_FROM_WILDNESS) expect(MARKET_TRADITIONS.gulf.has(k), `${t} w${wildness}`).toBe(true);
+        else {
+          expect(MARKET_TRADITIONS.mena.has(k), `${t} w${wildness}`).toBe(true);
+          if (!MARKET_TRADITIONS.gulf.has(k)) wider.add(k);
+        }
+      }
+    }
+    expect(wider.size).toBeGreaterThan(0);
+  });
+
+  it("a wider region brief still draws the region", () => {
+    for (const d of bendBrief({ brief: "food delivery app in Cairo", wildness: 3, count: 8, moves: ["lens"] }).directions) {
+      if (d.ingredients.tradition) expect(MARKET_TRADITIONS.mena.has(keyOf("traditions", d.ingredients.tradition))).toBe(true);
+    }
   });
 });
 
