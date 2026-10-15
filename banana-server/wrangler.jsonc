@@ -29,6 +29,12 @@
     {
       "binding": "R2_BUCKET",
       "bucket_name": "banana-uploads"
+    },
+    // Banana Atlas shards (owner decision D6): curated JSON built offline in atlas-build/, read only.
+    // Create first: npx wrangler r2 bucket create banana-atlas
+    {
+      "binding": "ATLAS",
+      "bucket_name": "banana-atlas"
     }
   ],
   // Non-secret config. Replace the placeholders with your workers.dev URL and
@@ -46,6 +52,8 @@
     // Search learning from rate_references across users ("off": each user's own ratings only).
     "GLOBAL_LEARNING": "on",
     // Most Serper credits all users together may spend per UTC month (owner decision D2). Empty: no cap.
-    "SERPER_MONTHLY_CREDIT_CAP": "2500"
+    "SERPER_MONTHLY_CREDIT_CAP": "2500",
+    // Bend engine: "lists" (word lists, today) or "atlas" (Banana Atlas, after Gate 2). Atlas falls back to lists when it has no data.
+    "BEND_ENGINE": "lists"
   }
 }
