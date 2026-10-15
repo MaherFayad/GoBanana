@@ -18,6 +18,9 @@ Rules:
   nav x 0, y 0, w 1, h 0.04. hero x 0, y 0.04, w 1, h 0.15. footer x 0, y 0.9, w 1, h 0.1. tabbar x 0, y 0.9, w 1, h 0.1. status-header x 0, y 0, w 1, h 0.14. sidebar x 0, y 0, w 0.18, h 1. Any other role x 0, y 0.4, w 1, h 0.2.
 - theme is the input theme, or "unknown". Note is the input note, or "none".
 
+If any cut has no crop and the canvas brief or the direction names a checkout, write this line before the end lines:
+Guessed bands follow the checkout page anatomy (Banana Atlas). Its sections top to bottom: status-header, detail, list, cta. Use these roles, in this order, for the recipe.
+
 Then end with these lines:
 Cut <count> parts into the library of canvas <canvasId>. The browser applies each crop over the hotlinked image; nothing was downloaded or stored.
 Parts with guessedCrop were cropped by role and aspect. Check them on the board or pass a crop.

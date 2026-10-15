@@ -59,6 +59,7 @@ import { compileTakedowns, type TakedownMatcher } from "@/lib/takedown";
 import { atlasSearchPlan, provenanceFor, SEARCH_SHARD_BUDGET, type AtlasIds, type AtlasPlan } from "@/lib/atlas/search";
 import { liveAtlasLoader } from "@/lib/atlas/live";
 import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
+import { readAtlasLearning, type AtlasLearning } from "@/lib/atlas/learning";
 import { briefMarket } from "@/lib/bend/market";
 import { allowlistFromEnv, isAllowedImageUrl } from "@/lib/sources/allowlist";
 import { getConfig } from "@/lib/config";
@@ -171,6 +172,8 @@ export type SearchReferencesDeps = {
   now?(): Date;
   /** Search plan v2 (P1-I3): the Atlas for this call, or null (no Atlas: the Phase 0 lanes run). */
   atlasSource?(): AtlasSource | null;
+  /** Atlas learning for recipe draws (W2): nightly weights plus the user's own ratings. Fails open. */
+  atlasLearning?(userId: string): Promise<AtlasLearning>;
   /** Image host check for CC0 index results (the image host allowlist). Missing: none are shown. */
   allowImage?(url: string): boolean;
   /** Takedown list for results that skip the search adapter (CC0 index). Missing or failing: none are shown. */
@@ -562,12 +565,14 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (lanes && !input.lane && atlasIds && deps.atlasSource) {
         try {
           const source = deps.atlasSource();
+          const atlasLearning = source && deps.atlasLearning ? await deps.atlasLearning(userId).catch(() => null) : null;
           atlasPlan = source
             ? await atlasSearchPlan(lanes, atlasIds, source, {
                 ...(atlasMechanic ? { mechanic: atlasMechanic } : {}),
                 market: briefMarket(atlasBrief),
                 allowImage: deps.allowImage ?? (() => false),
                 withArt: zone !== "ui",
+                learning: atlasLearning,
               })
             : null;
         } catch {
@@ -880,6 +885,7 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
       const loader = liveAtlasLoader(SEARCH_SHARD_BUDGET);
       return loader ? loaderSource(loader) : null;
     },
+    atlasLearning: async (userId) => readAtlasLearning(r().feedback, userId, globalLearningOn(process.env.GLOBAL_LEARNING)),
     allowImage: (url) => isAllowedImageUrl(url, allowlistFromEnv()),
     loadTakedowns: async () => compileTakedowns(await r().takedowns.list()),
     getBaseline: async (userId, canvasId) => {

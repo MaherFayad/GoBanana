@@ -13,6 +13,11 @@
  *   6. The spec from the lead card; a second card adds only texture or motion.
  *   7. Queries from recipes (J7), the Phase 0 lanes after them.
  *
+ * Learning (W2): card and mechanic weights from `atlasWeights` and recipe draws from `pickRecipe`
+ * (lib/atlas/learning.ts, the nightly `atlas_weights` table plus the user's own ratings), and the
+ * user's taste profile (`applyTaste`, P2-02) only as a tie breaker between cards of equal fit.
+ * With no learning and no profile the directions are the same as before.
+ *
  * The output keeps the lists engine's shape (skills keep working) plus cardIds, mechanicId and
  * recipeIds. It returns null whenever the Atlas cannot answer (a page or domain it does not know,
  * too few cards, a shard it could not read): the caller then runs the lists engine.
@@ -20,6 +25,8 @@
 import type { TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import { isTypeVoice } from "@/lib/direction-detail";
 import { directionTermKey } from "@/lib/learning/terms";
+import { atlasTermKey } from "@/lib/learning/arms";
+import { applyTaste, type TasteTarget } from "@/lib/taste-profile";
 import { PLATFORM_PROFILES, resolvePlatform, type Platform } from "@/lib/platform";
 import { cleanTaste } from "@/lib/taste";
 import { checkCoherence, MAX_COHERENCE_TRIES } from "@/lib/bend/coherence";
@@ -35,6 +42,7 @@ import { fixCase, PART, UI_WORDS, VERIFIED_STYLE_WORDS } from "@/lib/bend/spec";
 import { extractSubject } from "@/lib/bend/subject";
 import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/lib/bend/types";
 import { WILDNESS } from "@/lib/bend/wildness";
+import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import type { AtlasSource } from "./source";
 import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, PageAnatomy, QueryRecipe, UiElement } from "./types";
@@ -149,6 +157,40 @@ function similarity(a: IngredientCard, b: IngredientCard): number {
 
 /** A seeded number in [0, 1) per card, so ties break the same way for the same brief. */
 const jitter = (key: string, id: string) => (cyrb53(`${key}|${id}`) % 1000) / 1000;
+
+/** Options of the Atlas bend: the lists engine's options plus Atlas learning and the taste profile. */
+export type AtlasBendOptions = BendOptions & {
+  /** Atlas id weights and recipe stats (lib/atlas/learning.ts). None: no learning. */
+  learning?: AtlasLearning | null;
+  /** The user's taste profile (P2-02): a tie breaker between cards of equal fit, never more. */
+  taste?: TasteTarget | null;
+};
+
+/** Words that describe a card for the taste profile: its name, family, kind and style words. */
+function cardWords(c: IngredientCard): string[] {
+  const voice: TypeVoice = isTypeVoice(c.type.voice) ? c.type.voice : "grotesk";
+  return [...new Set([c.family, c.kind, c.name.toLowerCase(), ...words(c.name.toLowerCase()), ...cardStyleWords(c, voice)])];
+}
+
+/**
+ * The tie breaker of each card in [0, 1): the seeded jitter, or with a taste profile the card's
+ * place among the cards of the same fit after `applyTaste` (liked and matching cards first, the
+ * jitter order after). It is scaled below one fit step, so taste never beats a better fit.
+ */
+export function tieBreaks(cards: readonly IngredientCard[], fitOf: (c: IngredientCard) => number, key: string, taste: TasteTarget | null | undefined): Map<string, number> {
+  const silent = (taste?.likedCardIds?.length ?? 0) === 0 && (taste?.styleWords?.length ?? 0) === 0;
+  if (silent) return new Map(cards.map((c) => [c.id, jitter(key, c.id)]));
+  const byJitter = [...cards].sort((a, b) => jitter(key, b.id) - jitter(key, a.id) || a.id.localeCompare(b.id));
+  const ordered = applyTaste(byJitter.map((c) => ({ id: c.id, fit: fitOf(c), words: cardWords(c) })), taste);
+  const groups = new Map<string, string[]>();
+  for (const c of ordered) {
+    const g = c.fit.toFixed(2);
+    groups.set(g, [...(groups.get(g) ?? []), c.id]);
+  }
+  const out = new Map<string, number>();
+  for (const ids of groups.values()) ids.forEach((id, r) => out.set(id, 1 - (r + 0.5) / ids.length));
+  return out;
+}
 
 interface Pick {
   lead: IngredientCard;
@@ -267,13 +309,25 @@ function holdsNoun(query: string, productNoun: string | null, page: PageAnatomy)
   return nouns.some((n) => has(query, n));
 }
 
-/** Best recipe (precision, then judged) among the keys in order of specificity. */
-function bestRecipe(byKey: ReadonlyMap<string, QueryRecipe[]>, keys: readonly QueryRecipe["key"][], ok: (r: QueryRecipe) => boolean, skip: ReadonlySet<string>): QueryRecipe | null {
+/**
+ * Best recipe among the keys in order of specificity: for the first key with a usable recipe, the
+ * best judged (precision, then judged), or a Thompson draw when the learning has ratings for one
+ * of them (lib/atlas/learning.ts chooseRecipe).
+ */
+function bestRecipe(
+  byKey: ReadonlyMap<string, QueryRecipe[]>,
+  keys: readonly QueryRecipe["key"][],
+  ok: (r: QueryRecipe) => boolean,
+  skip: ReadonlySet<string>,
+  learning?: AtlasLearning | null,
+  seed = "",
+): QueryRecipe | null {
   for (const key of keys) {
-    const list = (byKey.get(JSON.stringify(normKey(key))) ?? [])
+    const k = JSON.stringify(normKey(key));
+    const list = (byKey.get(k) ?? [])
       .filter((r) => ok(r) && !skip.has(recipeId(r)))
       .sort((a, b) => b.precision - a.precision || b.judged - a.judged || a.query.localeCompare(b.query));
-    if (list[0]) return list[0];
+    if (list[0]) return chooseRecipe(list, learning, `${seed}|${k}`);
   }
   return null;
 }
@@ -296,7 +350,7 @@ const atlasPlatform = (p: Platform): QueryRecipe["key"]["platform"] => (p === "a
  * Directions from the Atlas, or null when it cannot answer (the caller runs the lists engine).
  * Throws BendInputError on invalid input, like bendBrief.
  */
-export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, options: BendOptions = {}): Promise<BendResult | null> {
+export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, options: AtlasBendOptions = {}): Promise<BendResult | null> {
   const parsed = parseBendInput(raw);
   if (!parsed.ok) throw new BendInputError(parsed.message);
   const input = parsed.input;
@@ -350,11 +404,14 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     .filter((c) => wildness >= 5 || !domain.clashFamilies.includes(c.family))
     .filter((c) => !brokenMustKeep({ mood: "", [KIND_SLOT[c.kind]]: c.name }, protect));
 
-  // 3. MMR by family and kind; learning weights and Gulf-first scale relevance.
+  // 3. MMR by family and kind; learning weights and Gulf-first scale relevance. The taste
+  // profile only reorders cards of equal fit (the tie breaker stays under one fit step).
+  const learning = options.learning ?? null;
+  const tie = tieBreaks(cards, (c) => fitOf.get(c.id)?.score ?? 0, key, options.taste);
   const relevance = (c: IngredientCard) => {
-    const base = (fitOf.get(c.id)?.score ?? 0) / 3 + 0.3 * jitter(key, c.id);
+    const base = (fitOf.get(c.id)?.score ?? 0) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
     const gulf = market === "gulf" && c.kind === "tradition" && c.region === "gulf" ? GULF_BONUS : 0;
-    const weight = options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1;
+    const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
     return (base + gulf) * weight;
   };
   const mmr = (pool: IngredientCard[], n: number, chosen: IngredientCard[] = []): IngredientCard[] => {
@@ -450,10 +507,12 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const draw = async (attempt: number) => {
       const el = elements[attempt % elements.length]!;
       const list = (await mechanicsFor(el)) ?? [];
+      // Mechanics ratings weight buildability (W2); with none it is the plain buildability order.
+      const mechScore = (m: Mechanic) => m.buildability * idWeight(learning, atlasTermKey("mechanic", m.id));
       const mech =
         [...list]
           .filter((m) => !usedMechanics.has(m.id))
-          .sort((a, b) => Number(b.pages.includes(page.id)) - Number(a.pages.includes(page.id)) || b.buildability - a.buildability || a.id.localeCompare(b.id))[0] ?? null;
+          .sort((a, b) => Number(b.pages.includes(page.id)) - Number(a.pages.includes(page.id)) || mechScore(b) - mechScore(a) || a.id.localeCompare(b.id))[0] ?? null;
       const line = lineOf.get(`${lead.id}|${el}`);
       const how = fixCase(line?.how ?? (mech ? `${lead.name}: ${mech.how}` : `${lead.name} as the ${PART[ELEMENT_TO_MECHANIC[el]!]}`));
       const element = ELEMENT_TO_MECHANIC[el]!;
@@ -514,6 +573,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
         cardIds,
         ...(drawn.mech ? { mechanicId: drawn.mech.id } : {}),
         recipeIds: [],
+        story: fixCase(`${sentence(lead.idea)} ${sentence(lead.surprise)}${second ? ` ${second.name} adds its ${pick.adds}.` : ""}`),
       },
     });
   }
@@ -554,14 +614,14 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();
   const usedRecipes = new Set<string>();
-  const baseline = bestRecipe(byKey, keysFor(built[0]!).baseline, uiOk, new Set());
+  const baseline = bestRecipe(byKey, keysFor(built[0]!).baseline, uiOk, new Set(), learning, key);
 
   for (const b of built) {
     const keys = keysFor(b);
     const recipeIds: string[] = [];
     const own: string[] = [];
     for (const lane of ["concept", "component"] as const) {
-      const r = bestRecipe(byKey, keys[lane], uiOk, usedRecipes);
+      const r = bestRecipe(byKey, keys[lane], uiOk, usedRecipes, learning, `${key}|${b.id}`);
       if (!r) continue;
       usedRecipes.add(recipeId(r));
       recipeIds.push(recipeId(r));
@@ -579,7 +639,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
       rule: b.pick.lead.kind === "constraint",
     });
     b.d.searchQueries = takeQueries({ own: [...own, ...p0.own], shared: p0.shared }, usedQueries);
-    const art = keys.art.flatMap((k) => (byKey.get(JSON.stringify(normKey(k))) ?? []).filter(artOk)).sort((x, y) => y.precision - x.precision).slice(0, 2);
+    const artScore = (r: QueryRecipe) => r.precision * idWeight(learning, atlasTermKey("recipe", recipeId(r)));
+    const art = keys.art.flatMap((k) => (byKey.get(JSON.stringify(normKey(k))) ?? []).filter(artOk)).sort((x, y) => artScore(y) - artScore(x)).slice(0, 2);
     for (const r of art) recipeIds.push(recipeId(r));
     const artQueries: string[] = [];
     for (const q of [...art.map((r) => r.query), ...b.pick.lead.artQueries, ...(b.pick.second?.artQueries ?? [])]) {

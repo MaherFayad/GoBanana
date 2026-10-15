@@ -39,7 +39,7 @@ describe("runNightlyWeights", () => {
       replaceAll: async (rows, now) => void written.push({ rows, now }),
     };
     const result = await runNightlyWeights(store, { now: NOW });
-    expect(result).toEqual({ written: 2, ingredients: 1, arms: 1 });
+    expect(result).toEqual({ written: 2, ingredients: 1, arms: 1, atlas: 0 });
     expect(written).toHaveLength(1);
   });
 });

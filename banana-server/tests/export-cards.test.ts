@@ -77,7 +77,7 @@ function canvas(details: Record<string, DirectionDetail>): CanvasSnapshot {
   } as CanvasSnapshot;
 }
 
-const keep = (cardIds: string[], extra: DirectionDetail = {}): DirectionDetail => ({ verdict: "keep", platform: "mobile", cardIds, ...extra });
+const keep = (cardIds: string[], extra: DirectionDetail = {}): DirectionDetail => ({ verdict: "keep", platform: "mobile", atlas: { cardIds, recipeIds: [] }, ...extra });
 
 describe("exports from the lead card", () => {
   it("reads fonts, radius, motion and palette from the lead card", () => {

@@ -215,7 +215,7 @@ export function createRateDirectionsTool(deps: CanvasToolDeps) {
         };
       });
       // The direction's Atlas cards, mechanic and recipes get the same verdict (lane "atlas").
-      const atlasRows = rated.flatMap(({ direction }, i) => atlasFeedbackRows(rows[i]!, direction.detail ?? {}));
+      const atlasRows = rated.flatMap(({ direction }, i) => atlasFeedbackRows(rows[i]!, direction.detail?.atlas ?? {}));
       if (rows.length > 0) await repos.feedback.insertMany([...rows, ...atlasRows]);
 
       const out: RateDirectionsOutput = {

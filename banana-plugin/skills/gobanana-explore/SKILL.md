@@ -189,7 +189,7 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 
 - **Art direction row: 2 to 4 art items**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
 - **UI references grid: 6 to 8 UI items**, best first, from the UI zone only, including the 2 to 4 Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
-- **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
+- **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.` When the direction has a `Card story (<card id>):` line (directions from the Banana Atlas), start the note with `STORY: <the card story>` in one or two plain sentences: what the thing is, why it surprises in UI, and what the second card adds. Tell it in your own words from that line; never invent facts about the craft, place or people beyond it, and for a tradition keep the credit from gobanana-culture.
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
 **Shipped today section, once per board:** `{ "type": "section", "title": "Shipped today" }`, then 3 to 6 of the good "Shipped today" results from the search (no `directionId`), each with a short `steal:` or `keep:` note. If Mobbin ran, its "Shipped today" note and screens go in this section too. Never put these results in a direction's section, and never count them toward a direction's 6 to 8 UI items.
@@ -204,7 +204,7 @@ Call `open_canvas` with the `canvasId`. If the client shows it inline, say it is
 
 Keep the reply short and in this order: the board link, one line with platform, page and wildness, the direction cards, the one-liners below, then next steps (step 14). No prose paragraphs.
 
-Present each kept direction as a compact card, from its `spec`, five short lines at most, and always end it with its highlights: 2 to 3 UI references and 1 or 2 art references, each written exactly as `[title](sourceUrl) (site)`:
+Present each kept direction as a compact card, from its `spec` (and its card story, when it has one, as the first line), five short lines at most, and always end it with its highlights: 2 to 3 UI references and 1 or 2 art references, each written exactly as `[title](sourceUrl) (site)`:
 
 > **1. Frosted vinyl sleeve** (transplant + material)
 > Mechanic: total = the sleeve frames the total; the amount stays plain and large. Pattern: fare summary slides out of a sleeve.

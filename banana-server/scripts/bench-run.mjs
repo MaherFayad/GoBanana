@@ -8,6 +8,12 @@
  *   node scripts/bench-run.mjs --only a,b       # only these brief ids
  *   node scripts/bench-run.mjs --dev-vars path  # read SERPER_API_KEY and DATABASE_URL from another .dev.vars
  *   node scripts/bench-run.mjs --date 2026-10-15 --count 12
+ *   node scripts/bench-run.mjs --atlas ../atlas-build/out/server/v1   # the Atlas engine over local shards
+ *
+ * --atlas <dir> reads a local Atlas in the server layout (atlas-build lib/layout.ts: <dir>/manifest.json
+ * and <dir>/<kind>/<shard>.json) through the real loader, bends with the Atlas engine first and the
+ * word lists when it cannot answer (as bend_brief does with BEND_ENGINE=atlas), and searches Atlas
+ * directions with their recipes. run.json records the manifest hash and each brief's engine.
  *
  * Writes bench/runs/<date>/run.json (directions, queries, credits, result URLs) and
  * bench/runs/<date>/report.html (one self-contained page to rate the run). The owner rates there and
@@ -66,6 +72,7 @@ const count = Number(arg("count", "12"));
 const date = arg("date", new Date().toISOString().slice(0, 10));
 const only = arg("only")?.split(",").map((s) => s.trim());
 const devVarsFile = resolve(arg("dev-vars", join(ROOT, ".dev.vars")));
+const atlasDir = arg("atlas") ? resolve(arg("atlas")) : null;
 
 const briefsFile = join(ROOT, "bench", "briefs.json");
 const bench = JSON.parse(readFileSync(briefsFile, "utf8"));
@@ -79,6 +86,33 @@ const { createMemoryUsageStore } = await import("@/lib/quota");
 const { createWebSearchAdapter } = await import("@/lib/sources/web-search");
 const { compileTakedowns } = await import("@/lib/takedown");
 const { ART_NEG } = await import("@/lib/sources/plan");
+
+/** The local Atlas (--atlas), or null: an AtlasSource over the files through the real loader. */
+async function localAtlas(dir) {
+  if (!dir) return null;
+  const { createAtlasLoader, atlasReady } = await import("@/lib/atlas/loader");
+  const { loaderSource } = await import("@/lib/atlas/source");
+  const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8"));
+  if (!atlasReady(manifest)) {
+    console.error(`No shards in ${join(dir, "manifest.json")}: the word lists run.`);
+    return null;
+  }
+  const source = () =>
+    loaderSource(
+      createAtlasLoader({
+        manifest,
+        budget: 1000,
+        fetchShard: async (path) => {
+          const rel = path.split("/").slice(2).join("/");
+          const file = join(dir, rel);
+          return existsSync(file) ? readFileSync(file, "utf8") : null;
+        },
+      }),
+    );
+  return { manifest, source };
+}
+const atlas = await localAtlas(atlasDir);
+const { bendBriefAtlas } = atlas ? await import("@/lib/atlas/bend") : {};
 
 /** Art requests carry the art negatives, or name an art lane without any UI words. */
 function isArtQuery(q, artWords) {
@@ -108,7 +142,7 @@ function searchDirection(brief, result, d) {
     searchQuery: d.searchQuery,
     brief: result.brief,
     taste: null,
-    detail: directionDetail(d, result.wildness, result.brief),
+    detail: directionDetail(d, result.wildness, result.brief, result.atlas),
   };
 }
 
@@ -121,12 +155,12 @@ const run = {
   budget,
   count,
   credits: 0,
-  engine: { checkCoherence: typeof bendModule.checkCoherence === "function" },
+  engine: { checkCoherence: typeof bendModule.checkCoherence === "function", atlas: atlas ? { dir: atlasDir, hash: atlas.manifest.hash, shards: atlas.manifest.shards.length } : null },
   briefs: [],
 };
 
 for (const b of briefs) {
-  const result = bendBrief({
+  const input = {
     brief: b.brief,
     wildness: b.wildness,
     count: perBrief,
@@ -134,10 +168,14 @@ for (const b of briefs) {
     ...(b.lens ? { lens: b.lens } : {}),
     ...(b.pages ? { pages: b.pages } : {}),
     ...(b.mustKeep ? { mustKeep: b.mustKeep } : {}),
-  });
+  };
+  // With --atlas, the Atlas engine first and the word lists when it cannot answer (as bend_brief).
+  const fromAtlas = atlas ? await bendBriefAtlas(input, atlas.source()) : null;
+  const result = fromAtlas ?? bendBrief(input);
   run.briefs.push({
     id: b.id,
     brief: b.brief,
+    engine: fromAtlas ? "atlas" : "lists",
     market: b.market ?? null,
     platform: result.platform,
     wildness: result.wildness,
@@ -167,6 +205,7 @@ for (const b of briefs) {
   });
 }
 console.log(`Bent ${run.briefs.length} briefs, ${run.briefs.reduce((n, b) => n + b.directions.length, 0)} directions.`);
+if (atlas) console.log(`Atlas engine answered ${run.briefs.filter((b) => b.engine === "atlas").length} of ${run.briefs.length} briefs (manifest ${atlas.manifest.hash.slice(0, 12)}).`);
 
 // ---------------------------------------------------------------------------- search (Serper credits)
 
@@ -219,6 +258,7 @@ if (dry) {
         usage: createMemoryUsageStore(),
         getPlan: async () => "pro_monthly",
         getDirection: async () => searchDirection(b, b._bend, bd),
+        ...(atlas ? { atlasSource: () => atlas.source() } : {}),
         addToTray: async () => true,
         getCanvasSourceUrls: async () => [...placed],
         upgradeUrl: () => "https://example.invalid/pricing",

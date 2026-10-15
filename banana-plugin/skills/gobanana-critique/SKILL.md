@@ -25,6 +25,7 @@ Check a built page against the direction it came from, honestly and with evidenc
 
 - **`design/explorations/<slug>/REVIEW.md` exists:** use it.
 - **Otherwise:** call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and `formats: ["review"]`, and write it at the returned `path`.
+- **Slop checks.** REVIEW.md from `export_kit` has a "Distance from slop" section when the Banana Atlas holds slop rules (J8: the fonts, accent hues, radii, gradients, layouts, shadows and copy most default AI built pages share, each with how often it shows up). Grade each of those items like any other: `fix` when the page uses that default and the direction does not ask for it. Matching 2 or more is a fail on distance from slop; say how many it matched. These rules come from the server's export, not from this skill: when REVIEW.md has no such section (the Atlas has no slop rules yet), say "No slop rules from the server yet" in the reply and skip the section, never make the list up.
 - **Free plan** (`review` is Pro): relay the plan message once. Build the checklist yourself from `DIRECTION.md` (free, or the direction's `spec` from `get_canvas`): one item each for signature, pattern, typography, color, layout, motion, texture, iconography, density, every `avoid` line, plus WCAG 2.2 AA contrast and target size.
 
 ### 3. Screenshot at the platform's sizes
