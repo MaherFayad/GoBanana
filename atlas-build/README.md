@@ -59,10 +59,15 @@ Each run:
 1. Open `review/<job>.html` for every job you want to ship and read the sample. Look at
    `rejects/<job>.jsonl` if the reject count is high.
 2. Not happy: say what is wrong; the job's prompt is fixed and the job rerun.
-3. Happy: run `npx tsx upload.ts` (optionally `--kind cards`). It checks every shard against the
-   manifest, prints the `wrangler r2 object put banana-atlas/atlas/v1/...` commands, and copies the
-   manifest to `banana-server/lib/atlas/manifest.json`. Run the printed commands yourself from
-   `banana-server/`. Agents never run them.
+3. Happy: run `npx tsx upload.ts` (optionally `--kind cards`, a server kind). It checks every job
+   shard against the job manifest, turns `out/v1/` into the server's layout in `out/server/v1/`
+   (`lib/layout.ts`: `pages`, `domains`, `lenses`, `slop` split by size; `fit/<domainId>`,
+   `mechanics/<element>`, `cc0/<region>` named; `cards`, `lines` and `recipes` in hash buckets with
+   the loader's own `bucketOf`), prints the `wrangler r2 object put banana-atlas/atlas/v1/...`
+   commands, and copies that manifest to `banana-server/lib/atlas/manifest.json`. Job kinds map as
+   `anatomy` to `pages` and `card-elements` to `lines`; kinds the server does not read are skipped.
+   A named shard over 100 KB (one domain's fit, one element's mechanics, one region's CC0 items)
+   stops the run. Run the printed commands yourself from `banana-server/`. Agents never run them.
 
 ## Add a job
 

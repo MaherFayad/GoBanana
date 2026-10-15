@@ -1,17 +1,22 @@
 /**
  * Upload step, run only after the owner approves the review pages. It uploads nothing itself:
- * it checks every shard against the manifest, prints the wrangler commands to run from
- * banana-server/, and copies the manifest to banana-server/lib/atlas/manifest.json.
+ * it checks every job shard against the job manifest, turns out/v1 into the server's shard layout
+ * in out/server/v1 (lib/layout.ts: the layout banana-server/lib/atlas/loader.ts reads), prints the
+ * wrangler commands to run from banana-server/, and copies the server manifest to
+ * banana-server/lib/atlas/manifest.json.
  *
  *   npx tsx upload.ts [--kind cards] [--no-copy]
  *
- * Kinds starting with "example" (the infra test job) are never uploaded or listed.
+ * --kind takes server kinds (pages, domains, fit, cards, lines, mechanics, lenses, recipes, cc0,
+ * slop) and only limits the printed commands; the manifest always lists every kind. Job kinds the
+ * server does not read (example, bench, ...) are never uploaded.
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { PATHS } from "./config.ts";
 import { readManifest, verifyManifest, type Manifest } from "./lib/shards.ts";
+import { readJobRecords, serverLayout, serverUploadCommands, writeServerLayout } from "./lib/layout.ts";
 
 export const BUCKET = "banana-atlas";
 export const PREFIX = "atlas/v1";
@@ -43,25 +48,27 @@ function main(argv: readonly string[]): number {
     console.error(`Shards do not match the manifest; rerun the job (or --from-raw):\n  ${problems.join("\n  ")}`);
     return 1;
   }
-  const full = readManifest(PATHS.manifest);
-  // Partial uploads (--kind) still copy and upload the full shippable manifest, so the server sees every kind.
-  const shipManifest = shippable(full);
-  const toUpload = shippable(full, kinds);
-  if (toUpload.shards.length === 0) {
-    console.error("Nothing to upload (only example kinds, or no shards).");
+  // The server's layout (lib/layout.ts). Partial uploads (--kind) still copy the full manifest,
+  // so the server sees every kind.
+  const layout = serverLayout(readJobRecords(PATHS.out));
+  if (layout.manifest.shards.length === 0) {
+    console.error("Nothing to upload (only kinds the server does not read, or no shards).");
     return 1;
   }
-  const shipFile = join(PATHS.out, "manifest.ship.json");
-  writeFileSync(shipFile, JSON.stringify(shipManifest, null, 2) + "\n");
+  const serverOut = join(PATHS.out, "..", "server", "v1");
+  writeServerLayout(serverOut, layout);
+  const picked = kinds.length > 0 ? { ...layout, files: new Map([...layout.files].filter(([p]) => kinds.includes(p.split("/")[0]!))) } : layout;
+  if (layout.skipped.length > 0) console.log(`Not uploaded (the server does not read them): ${layout.skipped.join(", ")}.`);
 
   const serverDir = join(dirname(PATHS.serverManifest), "..", "..");
+  const rel = (p: string) => relative(serverDir, p).replace(/\\/g, "/");
   console.log(`Owner: after approving review/*.html, run these from ${serverDir}:\n`);
-  for (const c of uploadCommands(toUpload, PATHS.out, serverDir, shipFile)) console.log(c);
+  for (const c of serverUploadCommands(picked, serverOut, rel, BUCKET, PREFIX)) console.log(c);
 
   if (copy) {
     mkdirSync(dirname(PATHS.serverManifest), { recursive: true });
-    writeFileSync(PATHS.serverManifest, JSON.stringify(shipManifest, null, 2) + "\n");
-    console.log(`\nCopied the manifest (${shipManifest.shards.length} shards) to ${PATHS.serverManifest}${existsSync(PATHS.serverManifest) ? "" : " (failed)"}.`);
+    writeFileSync(PATHS.serverManifest, JSON.stringify(layout.manifest, null, 2) + "\n");
+    console.log(`\nCopied the manifest (${layout.manifest.shards.length} shards) to ${PATHS.serverManifest}${existsSync(PATHS.serverManifest) ? "" : " (failed)"}.`);
   }
   return 0;
 }
