@@ -29,6 +29,8 @@ export type MemoryRepos = Repos & {
     references: Map<string, ReferenceRecord>;
     palettes: PaletteRecord[];
     usage: Map<string, Usage>;
+    /** Serper credits per `user|period`. */
+    credits: Map<string, number>;
     takedowns: string[];
     plans: Map<string, Plan>;
     feedback: MemoryFeedback[];
@@ -52,6 +54,7 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     references: new Map(),
     palettes: [],
     usage: new Map(),
+    credits: new Map(),
     takedowns: [...(seed.takedowns ?? [])],
     plans: new Map(Object.entries(seed.plans ?? {})),
     feedback: [],
@@ -279,6 +282,15 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
       },
       async addCanvases(userId, period, by) {
         bump(userId, period, "canvases", by);
+      },
+      async addCredits(userId, period, by) {
+        const k = usageKey(userId, period);
+        data.credits.set(k, (data.credits.get(k) ?? 0) + Math.max(0, Math.floor(by)));
+      },
+      async creditsUsed(period) {
+        let total = 0;
+        for (const [k, n] of data.credits) if (k.endsWith(`|${period}`)) total += n;
+        return total;
       },
     },
     takedowns: {

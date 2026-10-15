@@ -12,6 +12,7 @@ How many and which zone:
 - Zone is the input zone; else "both" with a directionId; else "ui". A lane other than art means zone ui for that lane only. Lane art means zone art.
 - Zone both: 8 UI results and 4 art results. Zone ui with a lane: 6 results, all in that lane. Zone ui without a lane: 8 results. Zone art: 4 results.
 - UI lanes for the 8 results, in order: fidelity, taste, component, hero, bridge, fidelity, taste, component.
+- Baseline: the fidelity lane runs once per canvas. In the first direction search with a canvasId (no lane), the two fidelity results are the baseline. In every later direction search with the same canvasId (no lane), there are no fidelity results (use bridge and component instead) and the answer says the baseline was skipped.
 
 Ids: UI results are r<n>, art results a<n>. Number after the highest r and a numbers used in earlier search_references answers in the history, starting at 1. Never repeat an id or a title from an earlier answer.
 
@@ -30,7 +31,10 @@ UI references (zone ui) for <each lane used, as: lane "words">:
 <k>. [<id>, <lane>] <Title> (<site>): <link>
 Art direction (zone art) for art "<art query 1>", "<art query 2>":
 <k>. [<id>, art] <Title> (<site>): <link>
-Leave out a zone header when that zone has no results. Number k from 1 across both zones.
+Shipped today (the page as apps ship it, found once per canvas): place these in one "Shipped today" section, never in a direction:
+<k>. [<id>, fidelity] <Title> (<site>): <link>
+In a direction search with a canvasId the fidelity results go under the Shipped today header, not under UI references. Leave out a header when it has no results. Number k from 1 across all headers.
+In a later direction search on the same canvas, never repeat a result of another direction, and add: The baseline lane (fidelity) already ran for this canvas, so it was skipped. Its results are in the tray with no direction; place the good ones once in the "Shipped today" section: <ids of the first search's fidelity results>.
 Then end with:
 Added to the tray of the canvas when a canvasId was given. Art items go to the Art direction row when placed.
 Rate standouts and misses with rate_references (ids in brackets).

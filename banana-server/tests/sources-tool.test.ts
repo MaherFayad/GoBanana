@@ -149,7 +149,9 @@ describe("search_references tool", () => {
     expect(plan.find((r) => r.lane === "art")!.query).toMatch(/^crushed velvet -etsy/);
     const ui = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1", zone: "ui" }, "u1");
     expect(ui.structuredContent).toMatchObject({ zone: "ui" });
-    const [uiPlan] = runPlan.mock.calls[1]! as unknown as [{ lane: string; query: string; site: string }[]];
+    // Calls with one request are the extra UI request a short direction runs (P0-04); skip them.
+    const plans = (runPlan.mock.calls as unknown as unknown[][]).map((c) => c[0] as { lane: string; query: string; site: string }[]).filter((p) => p.length > 1);
+    const uiPlan = plans[1]!;
     expect(uiPlan.some((r) => r.lane === "art")).toBe(false);
     expect(uiPlan.find((r) => r.lane === "bridge")).toMatchObject({
       query: "crushed velvet ui design -template -kit -free -wireframe",

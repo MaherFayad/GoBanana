@@ -75,7 +75,7 @@ export const UPLOAD_MESSAGES: Readonly<Record<UploadErrorCode, string>> = {
   empty: "This file is empty. Choose another image.",
   too_large: `This image is too big. The limit is ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB per image.`,
   unsupported_type: "This file type is not supported. Use a PNG, JPEG, WebP or GIF image.",
-  storage_full: "Your upload space is full (1 GB). Remove some uploads, then try again.",
+  storage_full: "Your upload space is full. Remove some uploads, then try again.",
   storage_unavailable: "Uploads are not working right now. Try again in a minute.",
   bad_request: "Could not read the upload. Try again.",
   forbidden_origin: "This request was blocked. Reload the page and try again.",

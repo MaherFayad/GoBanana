@@ -128,6 +128,12 @@ export type StoredNode = {
 
 export const STATE_VERSION = 1;
 
+/**
+ * The canvas's baseline search (lib/sources/baseline.ts): the fidelity lane ran once for `key`
+ * (platform and page words) at `at` (ISO time) and found `referenceIds`. Set only by the MCP tools.
+ */
+export type CanvasBaseline = { key: string; referenceIds: string[]; at: string };
+
 /** The JSON saved in `canvases.state` (spec section 11: nodes + viewport, plus the tray). */
 export interface CanvasState {
   version: typeof STATE_VERSION;
@@ -141,6 +147,8 @@ export interface CanvasState {
   taste?: string[];
   /** Parts library for stitches (lib/stitch/types.ts), up to MAX_PARTS. The UI and the tools both edit it. */
   parts?: Part[];
+  /** The baseline search, run once per canvas (search_references). The canvas UI never edits it. */
+  baseline?: CanvasBaseline;
 }
 
 /** Default sizes for new nodes, in canvas pixels. */

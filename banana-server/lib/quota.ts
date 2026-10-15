@@ -40,6 +40,9 @@ export type PlanLimits = {
 
 const ONE_GB = 1024 * 1024 * 1024;
 
+/** Upload storage per user while BETA_PLAN lifts free users (owner decision D3, 2026-10-15). */
+export const BETA_UPLOAD_BYTES = 50 * 1024 * 1024;
+
 export const PLAN_LIMITS: Readonly<Record<Plan, PlanLimits>> = {
   free: {
     searchesPerMonth: 30,
@@ -105,7 +108,11 @@ export function effectivePlan(plan: Plan | string | null | undefined): Plan {
 }
 
 export function limitsFor(plan: Plan | string | null | undefined): PlanLimits {
-  return PLAN_LIMITS[effectivePlan(plan)];
+  const limits = PLAN_LIMITS[effectivePlan(plan)];
+  // A free user lifted by BETA_PLAN gets the plan's limits, but uploads stay at 50 MB: beta
+  // storage is paid by the owner. Paid plans keep their own limits.
+  if (planOf(plan) !== "free" || betaPlan() === null) return limits;
+  return { ...limits, uploadBytes: Math.min(limits.uploadBytes, BETA_UPLOAD_BYTES) };
 }
 
 export function isPaid(plan: Plan | string | null | undefined): boolean {
@@ -170,6 +177,31 @@ export function itemLimitMessage(plan: Plan | string | null | undefined, opts: M
 
 export function exportLimitMessage(blocked: readonly string[], opts: MessageOptions): string {
   return `These formats need Pro: ${blocked.join(", ")}. Upgrade: ${opts.upgradeUrl}`;
+}
+
+/**
+ * Global monthly guard on Serper credits (owner decision D2, 2026-10-15): SERPER_MONTHLY_CREDIT_CAP
+ * is the most credits all users together may spend in one UTC month. Unset, empty or not a
+ * positive whole number means no cap. Read per call because Workers fill process.env per request.
+ */
+export function serperCreditCap(env: Record<string, string | undefined> = process.env): number | null {
+  const raw = env.SERPER_MONTHLY_CREDIT_CAP?.trim();
+  if (!raw || !/^\d+$/.test(raw)) return null;
+  const cap = Number(raw);
+  return cap > 0 ? cap : null;
+}
+
+/** Plain message when the shared monthly search budget is spent. Same shape as the user quota message. */
+export function creditCapMessage(opts: Pick<MessageOptions, "now">): string {
+  return `The shared search budget for this month is used up, so searches are paused until ${resetDate(opts.now ?? new Date())}. Your directions and canvases are kept.`;
+}
+
+/** Is there credit left under the global cap? `spent` is credits all users spent this period. */
+export function canSpendCredits(spent: number, cap: number | null, opts: Pick<MessageOptions, "now"> = {}): QuotaCheck {
+  if (cap === null) return { ok: true, limit: Infinity, remaining: Infinity };
+  const remaining = Math.max(0, cap - Math.max(0, spent));
+  if (remaining > 0) return { ok: true, limit: cap, remaining };
+  return { ok: false, limit: cap, remaining: 0, message: creditCapMessage(opts) };
 }
 
 /** Can the user run one more search? `used` is searches already counted this period. */
@@ -237,20 +269,34 @@ export interface UsageStore {
   get(userId: string, period: string): Promise<Usage>;
   /** Add `by` searches to the period row, creating it when missing. */
   addSearches(userId: string, period: string, by: number): Promise<void>;
+  /** Add `by` Serper credits (provider requests sent) to the period row, creating it when missing. */
+  addCredits(userId: string, period: string, by: number): Promise<void>;
+  /** Serper credits spent by everyone in the period (the global guard reads this). */
+  creditsUsed(period: string): Promise<number>;
 }
 
 /** In-memory store for tests and local runs. Not shared across Workers isolates. */
-export function createMemoryUsageStore(): UsageStore & { rows: Map<string, Usage> } {
+export function createMemoryUsageStore(): UsageStore & { rows: Map<string, Usage>; credits: Map<string, number> } {
   const rows = new Map<string, Usage>();
+  const credits = new Map<string, number>();
   const key = (u: string, p: string) => `${u}|${p}`;
   return {
     rows,
+    credits,
     async get(userId, period) {
       return { ...(rows.get(key(userId, period)) ?? { searches: 0, canvases: 0 }) };
     },
     async addSearches(userId, period, by) {
       const row = rows.get(key(userId, period)) ?? { searches: 0, canvases: 0 };
       rows.set(key(userId, period), { ...row, searches: row.searches + by });
+    },
+    async addCredits(userId, period, by) {
+      credits.set(key(userId, period), (credits.get(key(userId, period)) ?? 0) + Math.max(0, Math.floor(by)));
+    },
+    async creditsUsed(period) {
+      let total = 0;
+      for (const [k, n] of credits) if (k.endsWith(`|${period}`)) total += n;
+      return total;
     },
   };
 }

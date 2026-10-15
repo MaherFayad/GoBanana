@@ -153,6 +153,8 @@ export const usage = pgTable(
     period: text("period").notNull(),
     searches: integer("searches").notNull().default(0),
     canvases: integer("canvases").notNull().default(0),
+    /** Serper credits (provider requests) the user's searches spent this period. Read summed for the global cap. */
+    serperCredits: integer("serper_credits").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.userId, t.period] })],
 );

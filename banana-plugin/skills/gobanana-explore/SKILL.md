@@ -140,6 +140,10 @@ For each shortlisted direction call `search_references` once with `directionId`,
 - **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
 - The server keeps at most 2 results per studio, prefers newer work, and drops UI kits and templates.
 
+Each result belongs to one direction: with a `canvasId`, the server leaves out results another direction on the canvas already has (the reply says how many), and when fewer than 6 UI results are left it runs one extra UI request itself (the reply names it). That extra request is not one of your lane retries. Never place one reference in two directions.
+
+The `fidelity` lane (the page as apps ship it) runs once per canvas: the first direction search lists its results under "Shipped today", and later direction searches on that canvas skip it and name those ids again. They belong to no direction.
+
 Each result line shows `[referenceId, lane]` and its zone. Do not pass a direction's query as `query` when you have its id. Use `zone: "ui"` or `zone: "art"` only to search one zone again. Leave `sources` at the default (the server picks UI galleries by platform) unless the user asks for a specific source.
 
 ### 10. Audit and rate every search, both zones
@@ -176,6 +180,8 @@ For each kept direction, call `add_to_canvas` with its `sectionId` (create the s
 - **UI references grid: 6 to 8 UI items**, best first, from the UI zone only, including the 2 to 4 Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
 - **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
+
+**Shipped today section, once per board:** `{ "type": "section", "title": "Shipped today" }`, then 3 to 6 of the good "Shipped today" results from the search (no `directionId`), each with a short `steal:` or `keep:` note. If Mobbin ran, its "Shipped today" note and screens go in this section too. Never put these results in a direction's section, and never count them toward a direction's 6 to 8 UI items.
 
 A reference you rated `great` gets its `why:` line from step 10 after the `steal:` line, inside the 280 characters (shorten `steal:` first if needed). Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
 
@@ -216,7 +222,7 @@ Then:
 
 ## When things go wrong
 
-- **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs.
+- **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs. The shared monthly search budget message ("searches are paused until ...") has no link: show it once the same way, and do not suggest upgrading.
 - **Canvas limit:** see step 6.4. Never delete without an explicit yes.
 - **An art lane comes back empty or all junk after 2 retries:** place no art for that direction and say so in one line. The direction can still pass on UI.
 - **Tool error or timeout:** retry once at most, then tell the user in one line and continue with what you have.

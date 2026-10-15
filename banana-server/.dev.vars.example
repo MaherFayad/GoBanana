@@ -21,3 +21,6 @@ NEXT_PUBLIC_WORKOS_REDIRECT_URI=http://localhost:8787/auth/callback
 
 # Payments are off: every free user gets Pro limits. Remove at launch.
 BETA_PLAN=pro
+
+# Most Serper credits all users together may spend per UTC month. Empty: no cap.
+SERPER_MONTHLY_CREDIT_CAP=2500
