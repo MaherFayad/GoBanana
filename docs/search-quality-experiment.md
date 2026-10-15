@@ -211,3 +211,223 @@ Title gate on every result: keep only titles with a UI word (app, ui, ux, dashbo
 | vaporwave | 4 | 0 | 2 | 1 |
 
 All 60 sampled kept items were UI. Decision: remove the raw inspiration lane, gate every result, add component lanes from the brief, and force plain queries into UI forms. Wild ideas live in direction notes, not images.
+
+## Round 12 (2026-10-15): the taste bar (P0-17 steps 1 and 2)
+
+**Goal:** references at the quality of the owner's boards (`docs/taste-bar.md`). The boards were looked at
+once in headless Chrome (first screen only, nothing saved).
+
+**Method:** 125 Serper image queries (125 credits of the 150 budget), 10 results each, run through the
+server's own mapper (`mapSerperImagesWithStats`: item page, host allowlist, junk, kit and UI title gates,
+ranking). The top 8 kept results of each query were rendered as a contact sheet of hotlinked images in
+headless Chrome and judged by eye against the bar:
+
+- **great:** could sit on the owner's boards and is the brief's page;
+- **good:** the brief's page, but generic;
+- **bad:** off page, wrong platform, kit, listicle or below the bar.
+
+Precision is **great out of 8 slots** (empty slots count as misses). "On page" is great plus good out of 8.
+One judge (the agent), not owner gold ratings. The screenshots were deleted after rating.
+
+**Pages:**
+- **Mobile:** paywall, onboarding, wallet (finance home), checkout.
+- **Web app:** analytics dashboard, admin data table. A CRM dashboard was added as a holdout check.
+
+`{N}` below is the UI negatives (`-template -kit -free -wireframe`), sent on every Dribbble, Pinterest and
+Behance query.
+
+### Mobile
+
+| Wording | Site | Pages | Great | On page |
+| --- | --- | --- | --- | --- |
+| `{page} app ui {N}` (today's fidelity lane) | dribbble | 4 | 2/32 (6%) | 28/32 (88%) |
+| `minimal {page} app ui {N}` | dribbble | 4 | 1/32 (3%) | 28/32 (88%) |
+| `{page} app product design {N}` | dribbble | 4 | 0/32 | 27/32 (84%) |
+| `{page} app ui 2025 {N}` | dribbble | 4 | 0/32 | 25/32 (78%) |
+| `{page} ios app ui {N}` | dribbble | 3 | 1/24 (4%) | 20/24 (83%) |
+| `dark mode {page} app ui {N}` | dribbble | 4 | 3/32 (9%) | 22/32 (69%) |
+| `dark mode minimal {page} app ui {N}` | dribbble | 4 | 4/32 (12%) | 20/32 (62%) |
+| `dark {page} app single screen` (hero form) | dribbble | 3 | 1/24 (4%) | 12/24 (50%); paywall kept 0 of 10 |
+| `dark finance app home screen ui`, `dark mode minimal banking app home ui` | dribbble | wallet | 6/16 (37%) | 13/16 (81%) |
+| `{page} app ui {N}` | pinterest | 4 | 3/32 (9%) | 30/32 (94%) |
+| `{page} app design {N}` | pinterest | 4 | 4/32 (12%) | 28/32 (88%) |
+| `dark mode {page} app ui {N}` | pinterest | 4 | 9/32 (28%) | 26/32 (81%) |
+| **`{phrase} ui ios app {N}`** | pinterest | 4 | **12/32 (37%)** | **31/32 (97%)** |
+| **`dark {phrase} ui ios app {N}`** | pinterest | 4 | **16/32 (50%)** | 26/32 (81%) |
+| `{page}` | screensdesign | 4 | 0/32 | 10/32 (31%) |
+| `{page}` | 60fps | 4 | 4/32 (12%) | 13/32 (41%) |
+| `pay` | 60fps | checkout | 4/8 (50%) | 6/8 |
+| `{page} app ui {N}` | behance | 4 | 0/32 | 17/32 (53%) |
+| `{page} app` | cosmos | 2 | 0 results | |
+
+Per page, the best wording:
+
+| Page | Best wording | Great |
+| --- | --- | --- |
+| Paywall | `dark paywall subscription ui ios app` on Pinterest | 8/8 |
+| Onboarding | `welcome screen ui ios app` on Pinterest | 5/8 |
+| Onboarding | `dark onboarding ui ios app` on Pinterest | 4/8 |
+| Wallet home | `wallet balance ui ios app` on Pinterest | 6/8 |
+| Wallet home | `dark wallet balance ui ios app` on Pinterest | 4/8 |
+| Wallet home | `dark mode minimal banking app home ui` on Dribbble | 3/8 |
+| Checkout | `pay` on 60fps (CRED, Swiggy, Airbnb, Apple Pay) | 4/8 |
+| Checkout | `dark mode minimal checkout app ui` on Dribbble | 2/8 |
+
+- **Why the winner works:** Pinterest holds a large series of reposted shipped screens titled
+  "{Page} UI from {App} iOS App" ("Paywall & Subscription UI from Flighty iOS App", "Wallet & Balance UI
+  from Revolut iOS App", "Welcome Screen UI from Claude iOS App"). One staged phone, real product polish,
+  often dark: the bar. The query must use the series' page phrase: "paywall subscription", "wallet
+  balance", "welcome screen".
+- **Checkout has no series.** On Pinterest, `dark checkout ui ios app` drifted to wallets, banking and
+  furniture shops (0/8 great, 4 bad). Checkout's great results came from 60fps shipped interactions
+  and Dribbble.
+- **Dribbble on mobile is on page but generic.** It gave 84 to 88% on page with every wording, but almost
+  no great results: three-phone concept comps on gradients. Taste words do not fix this on Dribbble.
+  `dark mode` even pulled web checkout pages onto a phone brief (4 of 8 bad).
+- **Domain words help Dribbble:** "finance app home", "banking app home" lifted wallet from 0 to 37% great.
+
+### Web app (dashboard)
+
+| Wording | Site | Pages | Great | On page |
+| --- | --- | --- | --- | --- |
+| `{page} ui {N}` (today's fidelity lane) | dribbble | 3 | 4/24 (17%) | 22/24 (92%) |
+| `minimal {page} ui {N}` | dribbble | 2 | 4/16 (25%) | 14/16 (88%) |
+| `{page} product design {N}` | dribbble | 2 | 2/16 (12%) | 14/16 (88%) |
+| `saas {page} ui {N}` | dribbble | 2 | 2/16 (12%) | 14/16 (88%) |
+| `{page} ui 2025 {N}` | dribbble | 2 | 3/16 (19%) | 13/16 (81%) |
+| `linear style {page} ui {N}` | dribbble | 1 | 1/8 | 5/8 |
+| `dark mode {page} ui {N}` | dribbble | 3 | 11/24 (46%) | 20/24 (83%) |
+| **`dark mode minimal {page} ui {N}`** | dribbble | 5 | **19/40 (48%)** | **36/40 (90%)** |
+| `dark {page} web app ui {N}` | dribbble | 2 | 7/16 (44%) | 16/16 (100%) |
+| `{page} ui {N}` | pinterest | 2 | 0/16 | 15/16 (94%), 2018 to 2020 shots |
+| `dark mode {page} ui {N}` | pinterest | 2 | 2/16 (12%) | 11/16 (69%) |
+| `{page} ui from web app {N}` | pinterest | 1 | 0/8 | 6/8 (no shipped web series) |
+| one word (`analytics`, `table`) | nicelydone | 2 | 0/16 | 15/16 (94%) |
+| two words (`analytics dashboard`) | nicelydone | 2 | 0/16 | 9/16 (56%) |
+| one or two words | refero | 4 | 0/32 | 15/32 (47%) |
+| one or two words | saasframe | 4 | 0/32 | 2/32 (6%) |
+| page words | darkdesign, cosmos, arena | 4 | 0 kept | |
+| `{page} ui {N}` | behance | 2 | 0/16 | 9/16 (56%) |
+
+The `dark mode minimal` rows by page:
+
+| Page | Great |
+| --- | --- |
+| Analytics dashboard | 5/8 |
+| Finance dashboard | 4/8 |
+| CRM dashboard (holdout) | 6/8 |
+| Admin table | 3/8 |
+| Data table | 1/5 |
+
+- **Dark plus minimal is the lever on web.** It returns the bar's quiet dark dashboards: dense tables,
+  thin bars, one accent, windows over landscape photos. "2025", "product design" and "saas" add nothing.
+- **Dark variants repeat each other.** The same shots (Faris, Xenit, Sohail Ahmed) came back from
+  `dark mode`, `dark mode minimal` and `dark mode ... 2025`. Send one dark wording per board, not three.
+- **Galleries give shipped screens that never reach great.** Nicelydone and Refero are full-page
+  screenshots, small and plain. They are fine for the "Shipped today" baseline. Nicelydone needs a single
+  head word: `analytics` gave 94% on page, `analytics dashboard` gave 56%.
+- **SaaSFrame indexes companies, not pages.** A page word matches analytics companies' landing pages,
+  pricing pages, settings, docs and emails: 2 of 32 on page.
+
+### Below-bar title patterns seen
+
+1. **Listicles:**
+   - "40 Best Mobile App Onboarding UI Examples"
+   - "Onboarding design ideas | How to design app onboarding"
+   - "Data Table UI Design Guide & 30+ Examples"
+   - "Best Website Dashboard UI Examples for Design Inspiration #61"
+2. **Promo and resource pins:**
+   - "Design Resource / Onboarding screens"
+   - "ScreensDesign - App Design Library & UI Inspiration from Top iOS Apps"
+3. **Concept comps** (on page, generic, good at best):
+   - "Wallet App Concept Design", "Digital Wallet UI concept", "Checkout Screen Concept"
+   - "Exploration - Wallet App Dark Version"
+   - `quality.ts` scores "concept" **up** today (UNCLUTTERED_WORDS and DESIGN_WORDS).
+4. **Challenge shots:** "Daily UI #002", "Day 002 ( Credit Card Checkout )", "#DailyUI002",
+   "Day 349: Checkout Process".
+5. **Neighbour pages:**
+   - On a paywall: "Mobile Loading States & Shimmer UI", "Add Interests Screen", "Hypnotizing welcome
+     screen".
+   - From "subscription plan": "Subscription Tracker app", "Wallpaper ... Pricing Plans".
+6. **Wrong platform from "dark mode":**
+   - Web pages on a phone brief: "Checkout Page [Dark mode]", "Credit Card Checkout Page - Dark Theme".
+   - Phone screens on a web brief: "SaaS Dashboard Mobile App", "Table in a mobile view".
+7. **Gallery shapes:**
+   - SaaSFrame: "{Product} Landing Page UI Design", "Pricing Page", "Danger Zone Settings",
+     "Account Verification Email".
+   - ScreensDesign: "{App}: {Category} UI Breakdown" is a whole-app breakdown, so its image is often
+     another screen (tracking prompt, home).
+
+**Positive title pattern:** "{Page} UI from {App} iOS App", a shipped screen. It gave most of the great
+mobile results.
+
+### Proposal for step 3 (no code yet: the bend agent owns `lib/bend` and `quality.ts` today)
+
+1. **Taste lane wording per platform** (`lib/bend/queries.ts`, `lib/sources/plan.ts`):
+   - **Mobile, taste lane:** `dark {phrase} ui ios app {N}` on `pinterest.com/pin`. `{phrase}` maps the
+     page noun to the series phrase:
+     - paywall, plan picker → "paywall subscription"
+     - onboarding, welcome, sign up → "welcome screen"
+     - wallet, finance home, balance → "wallet balance"
+     - otherwise → the page noun
+   - **Mobile, light twin:** `{phrase} ui ios app {N}` replaces the Pinterest fidelity page.
+   - **Mobile, hero lane:** drop `{style} {domain} app single screen`. It kept 0 and 1 of 10 for paywall
+     and wallet. Spend its request on the light twin.
+   - **Web app, taste lane:** `dark mode minimal {domain} {page} ui {N}` on `dribbble.com/shots`.
+     Fallback: `dark {page} web app ui {N}`.
+   - **Style words:** the user's taste words replace "dark" or "dark mode minimal" when given. The dark
+     default is the owner's bar, not a house style.
+   - **Never send:** "2025", "product design", "saas", "single screen".
+2. **Source order:**
+   - **Mobile:**
+     1. Pinterest dark ios app
+     2. Pinterest light ios app
+     3. Dribbble fidelity with domain words ("{domain} app {page} ui")
+     4. 60fps, only when the page is checkout, pay, card or wallet (searched as "pay" or "card")
+   - **Mobile, drop from default routing:** ScreensDesign (0 great, 31% on page). Behance and Cosmos
+     stay off mobile UI lanes.
+   - **Web app:**
+     1. Dribbble `dark mode minimal`
+     2. Dribbble fidelity
+     3. Nicelydone with one head word ("Shipped today" baseline)
+     4. Refero with one head word
+   - **Web app, drop from default routing:** SaaSFrame. Pinterest is a fallback only (old shots).
+     `galleryWords` should cut the topic to its head word for Nicelydone and Refero.
+3. **Title rules in `quality.ts`:**
+   - **Drop as junk:**
+     - listicles: `\b\d+\+?\s+(?:best|top)\b`, `\bexamples\b`, `\bdesign ideas\b`, `\bhow to\b`,
+       `\bui design guide\b`, `\binspiration #\d+`
+     - promos: `\bdesign (?:resource|library)\b`, `\bui inspiration from\b`
+   - **Rank down by 1.5:**
+     - `\bconcept\b`, `\bexploration\b`, `\bdaily ?ui\b`, `#dailyui`, `\bday\s*#?\d{1,3}\b`,
+       `\bchallenge\b`
+     - Remove "concept" from UNCLUTTERED_WORDS and DESIGN_WORDS.
+   - **Rank up by 2:** `\bui from [^|]{2,40}\b(?:ios|android) app\b`.
+   - **Recency:** extend `recencyScore` to Pinterest pins that carry a title year, since Pinterest UI
+     results lean 2018 to 2020.
+4. **Tests to add:**
+   - `lib/bend/queries.test.ts`, mobile:
+     - a paywall brief's taste lane is `dark paywall subscription ui ios app` on Pinterest;
+     - a wallet brief maps to "wallet balance", an onboarding brief to "welcome screen";
+     - no mobile lane contains "single screen", "2025" or "product design".
+   - `lib/bend/queries.test.ts`, web app: the taste lane starts with "dark mode minimal" and names the
+     page; the user's taste words replace "dark mode minimal" when given.
+   - `lib/sources/registry.test.ts`:
+     - `pickGalleries` for mobile never returns ScreensDesign without a tag;
+     - for webapp it never returns SaaSFrame;
+     - for checkout or wallet pages, mobile picks 60fps.
+   - `lib/sources/plan.test.ts`: `galleryWords("nicelydone", "analytics dashboard ui")` is "analytics".
+   - `lib/sources/quality.test.ts`:
+     - the listicle and promo titles above are junk;
+     - "Wallet & Balance UI from Revolut iOS App" ranks above "Wallet App Concept Design" at the same
+       size;
+     - "Daily UI #002 - Credit Card Checkout" ranks below a plain titled shot;
+     - "concept" no longer scores up.
+   - **Bench:** rerun the same briefs. Done when the share of great UI references rises and no brief's
+     bend quality drops (P0-17).
+
+**Risks:**
+- One judge rated these. The owner should spot check a sheet before the wording ships.
+- The Pinterest series is someone else's repost account. If it stops, the light Dribbble fidelity lane
+  still gives 88% on page.
+- Android briefs were not tested. "ios app" may need an "android app" twin.
