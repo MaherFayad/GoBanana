@@ -1,0 +1,1 @@
+ALTER TABLE "usage" ADD COLUMN "serper_credits" integer DEFAULT 0 NOT NULL;

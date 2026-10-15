@@ -44,6 +44,8 @@
     // Payments are off: every free user gets Pro limits. Remove at launch.
     "BETA_PLAN": "pro",
     // Search learning from rate_references across users ("off": each user's own ratings only).
-    "GLOBAL_LEARNING": "on"
+    "GLOBAL_LEARNING": "on",
+    // Most Serper credits all users together may spend per UTC month (owner decision D2). Empty: no cap.
+    "SERPER_MONTHLY_CREDIT_CAP": "2500"
   }
 }

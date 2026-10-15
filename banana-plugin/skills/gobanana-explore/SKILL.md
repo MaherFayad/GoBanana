@@ -213,7 +213,7 @@ Then:
 
 ## When things go wrong
 
-- **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs.
+- **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs. The shared monthly search budget message ("searches are paused until ...") has no link: show it once the same way, and do not suggest upgrading.
 - **Canvas limit:** see step 6.4. Never delete without an explicit yes.
 - **An art lane comes back empty or all junk after 2 retries:** place no art for that direction and say so in one line. The direction can still pass on UI.
 - **Tool error or timeout:** retry once at most, then tell the user in one line and continue with what you have.

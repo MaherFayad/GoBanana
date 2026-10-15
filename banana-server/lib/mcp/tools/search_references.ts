@@ -9,7 +9,7 @@ import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
-import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
+import { canSpendCredits, checkSearchQuota, serperCreditCap, type Plan, type UsageStore } from "@/lib/quota";
 import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts } from "@/lib/bend/queries";
 import type { DirectionDetail } from "@/lib/direction-detail";
 import {
@@ -145,6 +145,8 @@ export type SearchReferencesDeps = {
   getArmStats?(userId: string, termKeys: string[]): Promise<ArmStatRow[]>;
   /** GLOBAL_LEARNING: false means only the user's own ratings steer their searches. Default true. */
   globalLearning?(): boolean;
+  /** SERPER_MONTHLY_CREDIT_CAP: most Serper credits all users may spend in a month, or null for no cap. */
+  creditCap?(): number | null;
   upgradeUrl(): string;
   now?(): Date;
 };
@@ -424,6 +426,12 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       const plan = await deps.getPlan(userId);
       const quota = await checkSearchQuota(deps.usage, userId, plan, { upgradeUrl: deps.upgradeUrl(), now });
       if (!quota.ok) return toolMessage(quota.message);
+      // Global guard on provider spend (D2): checked before any request, same graceful message shape.
+      const cap = deps.creditCap?.() ?? null;
+      if (cap !== null) {
+        const credit = canSpendCredits(await deps.usage.creditsUsed(quota.period), cap, { now });
+        if (!credit.ok) return toolMessage(credit.message);
+      }
 
       // New style words are saved on the canvas so later searches and bends reuse them.
       const tasteCanvas = input.canvasId ?? directionCanvasId;
@@ -515,9 +523,11 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       }
       const { result } = searched;
 
-      // One tool call is one search for the quota, whatever the lanes cost in provider credits.
-      // Counted only when the search provider answered.
+      // One tool call is one search for the visible quota, counted only when the provider answered.
+      // The credits it really spent (one per Serper request sent, up to 10) are stored apart, even
+      // when the provider failed, so the global cap sees every request.
       if (result.ok) await deps.usage.addSearches(userId, quota.period, 1);
+      if (result.requests) await deps.usage.addCredits(userId, quota.period, result.requests);
 
       // Every result carries its zone ("art" for the art lane, "ui" otherwise).
       const references = result.references.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
@@ -605,6 +615,8 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
     usage: {
       get: (userId, period) => r().usage.get(userId, period),
       addSearches: (userId, period, by) => r().usage.addSearches(userId, period, by),
+      addCredits: (userId, period, by) => r().usage.addCredits(userId, period, by),
+      creditsUsed: (period) => r().usage.creditsUsed(period),
     },
     getPlan: (userId) => r().users.getPlan(userId),
     getDirection: async (userId, directionId, canvasId) => {
@@ -635,6 +647,7 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
     },
     getArmStats: (userId, termKeys) => r().feedback.armStats(userId, termKeys),
     globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
+    creditCap: () => serperCreditCap(),
     getCanvasSourceUrls: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];

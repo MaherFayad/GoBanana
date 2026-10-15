@@ -36,6 +36,13 @@
       "when": 1791787863591,
       "tag": "0004_directions_detail",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792077779181,
+      "tag": "0005_usage_serper_credits",
+      "breakpoints": true
     }
   ]
 }
