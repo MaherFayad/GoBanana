@@ -124,8 +124,9 @@ describe("wildness rules", () => {
           const briefLayout = words(brief.toLowerCase()).filter((x) => LAYOUT_WORDS.has(x));
           for (const lw of briefLayout) expect(words(d.searchQuery.toLowerCase())).not.toContain(lw);
           expect(d.searchQueries).not.toContain(d.searchQuery);
-          expect(d.searchQueries[0]).toBe(fidelityQuery(brief));
-          expect(d.searchQueries.length).toBeGreaterThanOrEqual(2);
+          // P0-05: the brief's page lane is the canvas baseline, never a direction's own query.
+          expect(d.searchQueries).not.toContain(fidelityQuery(brief));
+          expect(d.searchQueries.length).toBeGreaterThanOrEqual(1);
         }
       }
     }

@@ -6,7 +6,7 @@ import { cleanTaste } from "@/lib/taste";
 import { allowedOn, PLATFORM_PROFILES, resolvePlatform, type Platform } from "@/lib/platform";
 import { weightedOrder } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
-import { briefComponents, inspirationQuery, laneTexts } from "./queries";
+import { briefComponents, ideaMechanicQuery, inspirationQuery, laneTexts, MAX_FOCUSED_QUERY_WORDS, queryKey } from "./queries";
 import { artQueries, buildSpec, fixCase } from "./spec";
 import { CLASH_FROM_WILDNESS, detectDomain, MAX_WEIRD, moodClashes, moodFits, noClash, type Domain } from "./tone";
 import wildSpotsJson from "./wild-spots.json";
@@ -53,6 +53,10 @@ export {
   fidelityCoreQuery,
   fidelityQuery,
   heroQuery,
+  ideaMechanicQuery,
+  mechanicQuery,
+  queryKey,
+  ELEMENT_NOUN,
   inspirationFromQuery,
   inspirationQuery,
   isArabicBrief,
@@ -541,6 +545,8 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   // or main button. Never part of the seed, so ids never move.
   const protect = protectedElements(input.brief, input.mustKeep ?? []);
   const mechanicUse = new Map<MechanicElement, number>();
+  /** Query keys (queryKey) earlier directions already search: no two directions share one. */
+  const usedQueries = new Set<string>();
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
   const fit = (rotationKey: string, list: readonly string[], vars: TemplateVars, maxWords: number, taken?: Set<string>): string | null => {
@@ -676,14 +682,28 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       component: signatureComponent(input.brief, platform),
       arabic: locale.arabic,
     });
-    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages });
-    const searchQueries = [
-      ...new Set(
-        [lanes.fidelity, lanes.taste, ...(lanes.component ?? []), lanes.hero, lanes.bridge, lanes.locale].filter((q): q is string =>
-          Boolean(q),
-        ),
-      ),
+    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages, mechanic: mechanic.element });
+    // P0-05: a direction's queries are its own. The brief's page lanes (fidelity) run once per
+    // canvas as the baseline, so they are left out; the mechanic and the ingredient lead; a query
+    // an earlier direction of this bend already has, in any word order, is dropped.
+    const own = [
+      lanes.component?.[0],
+      lead === "constraint" ? null : ideaMechanicQuery(searchQuery, mechanic.element),
+      lanes.bridge ?? `${searchQuery} interface`,
+      lanes.taste,
+      ...(lanes.component ?? []).slice(1),
+      lanes.hero,
+      lanes.locale,
     ];
+    const shared = new Set([lanes.fidelity, lanes.fidelityCore].filter(Boolean).map((q) => queryKey(q!)));
+    const searchQueries: string[] = [];
+    for (const q of own) {
+      if (!q || wordCount(q) > MAX_FOCUSED_QUERY_WORDS) continue;
+      const k = queryKey(q);
+      if (shared.has(k) || usedQueries.has(k)) continue;
+      usedQueries.add(k);
+      searchQueries.push(q);
+    }
 
     directions.push({
       id,

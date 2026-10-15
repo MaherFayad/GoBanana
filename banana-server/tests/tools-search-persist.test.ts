@@ -59,7 +59,10 @@ describe("taste on the canvas", () => {
     const c = await seedCanvas(repos, ALICE);
     const bent = await bend({ brief: "flight checkout screen", wildness: 3, canvasId: c.id, taste: ["Monochrome", "luxury"] }, ALICE);
     const dirs = (bent.structuredContent as { directions: { id: string; searchQueries: string[] }[] }).directions;
-    expect(dirs.every((d) => /^(monochrome|luxury) flight checkout ui design$/.test(d.searchQueries[1]!))).toBe(true);
+    // Each taste wording is the brief's, so it shows once across the bend (P0-05: no shared queries).
+    const tastes = dirs.flatMap((d) => d.searchQueries).filter((q) => /^(monochrome|luxury) flight checkout ui design$/.test(q));
+    expect(tastes.length).toBeGreaterThan(0);
+    expect(new Set(tastes).size).toBe(tastes.length);
     const stateOf = async () => (await repos.canvases.getOwned(ALICE, c.id))!.state as CanvasState;
     expect((await stateOf()).taste).toEqual(["monochrome", "luxury"]);
 

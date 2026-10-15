@@ -238,7 +238,21 @@ function domainWord(t: Token): boolean {
   );
 }
 
+/** Recent briefParts answers: one bend reads the same brief about 50 times. Small, pure, never stale. */
+const partsCache = new Map<string, BriefParts>();
+const PARTS_CACHE_SIZE = 32;
+
 function briefParts(brief: string, platform?: Platform): BriefParts {
+  const key = `${platform ?? ""}|${brief}`;
+  const hit = partsCache.get(key);
+  if (hit) return hit;
+  const parts = readBriefParts(brief, platform);
+  if (partsCache.size >= PARTS_CACHE_SIZE) partsCache.delete(partsCache.keys().next().value!);
+  partsCache.set(key, parts);
+  return parts;
+}
+
+function readBriefParts(brief: string, platform?: Platform): BriefParts {
   // Asides in brackets are detail ("(mobile, bilingual)"): they set the surface, never the domain.
   const main = brief.replace(/\([^)]*\)?|\[[^\]]*\]?/g, " ");
   const all = tokens(brief);
@@ -535,6 +549,47 @@ export function componentQueries(brief: string, platform?: Platform, pages?: rea
   return out;
 }
 
+/** A mechanic element (lib/bend/mechanic.ts) as the UI noun designers search for. */
+export const ELEMENT_NOUN: Readonly<Record<string, string>> = {
+  progress: "progress bar",
+  total: "price summary",
+  cta: "button",
+  divider: "section divider",
+  "section-nav": "tabs",
+  header: "header",
+  "empty-state": "empty state",
+};
+
+/**
+ * Mechanic lane (P0-05): "{core} {page} {element noun} {surface}" ("flight checkout progress bar
+ * app ui"), the brief's page with the part this direction's idea becomes. Over the word cap the
+ * page goes, then the core noun. Null for briefs that name no UI or an unknown element.
+ */
+export function mechanicQuery(brief: string, element: string, platform?: Platform): string | null {
+  const noun = ELEMENT_NOUN[element];
+  const p = briefParts(brief, platform);
+  if (!noun || !p.ui) return null;
+  const core = coreNoun(p.domain) ?? "";
+  const page = briefPage(p);
+  const surface = SURFACE_WORDS[p.surface];
+  const pg = page && !noun.split(" ").includes(page) ? page : "";
+  const options = [`${core} ${pg} ${noun} ${surface}`, `${core} ${noun} ${surface}`, `${noun} ${surface}`];
+  return capWords(options.find((o) => words(o).length <= MAX_FOCUSED_QUERY_WORDS) ?? options.at(-1)!);
+}
+
+/** The idea on its mechanic part: "{ingredient} {element noun} ui" ("sadu weaving progress bar ui"), or null. */
+export function ideaMechanicQuery(idea: string, element: string): string | null {
+  const noun = ELEMENT_NOUN[element];
+  if (!noun || !idea.trim()) return null;
+  const ideaWords = words(idea.toLowerCase()).slice(0, Math.max(1, MAX_FOCUSED_QUERY_WORDS - words(noun).length - 1));
+  return capWords(`${ideaWords.join(" ")} ${noun} ui`);
+}
+
+/** Order-free key of a query: "plan picker app ui" and "picker plan app ui" are one query. */
+export function queryKey(text: string): string {
+  return [...new Set(words(text.toLowerCase()))].sort().join(" ");
+}
+
 /** Component lane words for the `app` arm: "{core} {component} app ui". */
 export function componentAppText(text: string): string {
   return / (?:app|ipad app|website|dashboard) ui$/.test(text) ? text : text.replace(/ ui$/, " app ui");
@@ -583,6 +638,11 @@ export type LaneOptions = {
   styleWords?: readonly string[];
   /** Pages given to bend_brief ("fare summary"): their components lead the component lanes. */
   pages?: readonly string[];
+  /**
+   * The direction's mechanic element ("progress"): its lane ("flight checkout progress bar app ui")
+   * leads the component lanes, so directions of one brief search different parts (P0-05).
+   */
+  mechanic?: string;
 };
 
 /** Taste lane variants for a direction (same style pick as laneTexts; no taste lane, none). */
@@ -624,7 +684,10 @@ export function laneTexts(
   lanes.fidelity = fidelityQuery(b, platform);
   const core = fidelityCoreQuery(b, platform);
   if (core && core !== lanes.fidelity) lanes.fidelityCore = core;
-  const components = componentQueries(b, platform, opts.pages);
+  const mechanic = opts.mechanic ? mechanicQuery(b, opts.mechanic, platform) : null;
+  const components = [...(mechanic ? [mechanic] : []), ...componentQueries(b, platform, opts.pages)]
+    .filter((q, i, all) => q !== lanes.fidelity && all.findIndex((o) => queryKey(o) === queryKey(q)) === i)
+    .slice(0, MAX_COMPONENT_LANES);
   if (components.length > 0) lanes.component = components;
   const bridge = bridgeQuery(b, idea);
   if (bridge) lanes.bridge = bridge;

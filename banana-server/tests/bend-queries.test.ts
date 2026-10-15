@@ -20,8 +20,10 @@ import {
   pickStyle,
   tasteQuery,
   tasteVariants,
+  type Wildness,
 } from "@/lib/bend";
-import { briefComponents, componentAppText } from "@/lib/bend/queries";
+import { briefComponents, componentAppText, ELEMENT_NOUN, ideaMechanicQuery, mechanicQuery, queryKey } from "@/lib/bend/queries";
+import { mulberry32 } from "@/lib/bend/prng";
 import { lensEntries } from "@/lib/bend/lists";
 import type { LaneTexts } from "@/lib/sources";
 import { MOVE_DEFS } from "@/lib/bend/moves";
@@ -249,9 +251,10 @@ describe("bend output", () => {
     for (const id of ["bd-8dti7s7c", "bd-8hfupzvw", "bd-mwz3t0yp"]) {
       const d = byId.get(id)!;
       // No taste given: the taste lane gets the direction's own style words, never DEFAULT_TASTE as the user's taste.
-      expect(d.searchQueries).toEqual(
-        uiLaneWords(laneTexts("Flight checkout screen", d.searchQuery, [], id, { platform: d.platform, styleWords: d.spec.styleWords })),
-      );
+      const lanes = laneTexts("Flight checkout screen", d.searchQuery, [], id, { platform: d.platform, styleWords: d.spec.styleWords, mechanic: d.mechanic.element });
+      const allowed = [...uiLaneWords(lanes), ideaMechanicQuery(d.searchQuery, d.mechanic.element), `${d.searchQuery} interface`];
+      for (const q of d.searchQueries) expect(allowed, q).toContain(q);
+      expect(d.searchQueries).not.toContain(lanes.fidelity);
       expect(d.searchQueries).not.toContain(d.searchQuery);
     }
   });
@@ -260,15 +263,76 @@ describe("bend output", () => {
     const base = bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8 });
     const tasted = bendBrief({ brief: "flight checkout screen", wildness: 4, count: 8, taste: ["monochrome"] });
     expect(tasted.directions.map((d) => d.id)).toEqual(base.directions.map((d) => d.id));
-    for (const d of tasted.directions) {
-      expect(d.searchQueries).toEqual([
-        "flight checkout app ui",
-        "monochrome flight checkout ui design",
-        "flight checkout fare summary app ui",
-        "flight checkout payment bottom sheet app ui",
-        "monochrome flight app single screen",
-        `${d.searchQuery} ui design`,
-      ]);
+    const all = tasted.directions.flatMap((d) => d.searchQueries);
+    // The taste lane is the brief's, so only the first direction keeps it (P0-05: no shared queries).
+    expect(all.filter((q) => q === "monochrome flight checkout ui design")).toHaveLength(1);
+    expect(all).toContain("monochrome flight app single screen");
+    expect(all).not.toContain("flight checkout app ui");
+    // Every direction searches its own idea.
+    for (const d of tasted.directions) expect(d.searchQueries.some((q) => q.toLowerCase().startsWith(d.searchQuery.toLowerCase()))).toBe(true);
+  });
+});
+
+describe("P0-05 mechanic and ingredient in direction queries", () => {
+  const BRIEFS = [
+    "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy",
+    "flight checkout for a GCC OTA",
+    "coffee shop landing page",
+    "banking onboarding",
+    "fitness app empty state",
+    "meditation app onboarding",
+    "food delivery cart",
+    "Retail banking mobile app homepage: balance, quick actions, recent transactions",
+    "logistics fleet management dashboard",
+    "poster for a jazz festival",
+  ];
+  const LENS_POOL = [undefined, undefined, "sadu", "talli"] as const;
+
+  it("no two directions of a bend share a query, in any word order (200 seeds x 10 briefs)", () => {
+    const rng = mulberry32(20261015);
+    const problems: string[] = [];
+    for (const brief of BRIEFS) {
+      for (let seed = 0; seed < 200; seed++) {
+        const wildness = (1 + Math.floor(rng() * 5)) as Wildness;
+        const moves = MOVES.filter(() => rng() < 0.7);
+        const lens = LENS_POOL[Math.floor(rng() * LENS_POOL.length)];
+        const r = bendBrief({ brief, wildness, count: 4, ...(moves.length ? { moves } : {}), ...(lens ? { lens } : {}) });
+        const seen = new Map<string, string>();
+        for (const d of r.directions) {
+          if (d.searchQueries.length === 0) problems.push(`${brief}: ${d.id} has no query`);
+          if (d.searchQueries.includes(fidelityQuery(brief, d.platform))) problems.push(`${brief}: ${d.id} searches the fidelity lane`);
+          for (const q of d.searchQueries) {
+            const k = queryKey(q);
+            if (seen.has(k)) problems.push(`${brief} w${wildness}: "${q}" in ${d.id} and ${seen.get(k)}`);
+            seen.set(k, d.id);
+            if (words(q).length > MAX_FOCUSED_QUERY_WORDS) problems.push(`too long: ${q}`);
+          }
+        }
+      }
     }
+    expect(problems).toEqual([]);
+  }, 120_000);
+
+  it("leads with the page plus the mechanic's part, then the idea on that part", () => {
+    const brief = "flight checkout for a GCC OTA";
+    const r = bendBrief({ brief, wildness: 3, count: 4, platform: "mobile" });
+    for (const [i, d] of r.directions.entries()) {
+      const noun = ELEMENT_NOUN[d.mechanic.element]!;
+      if (i === 0) expect(d.searchQueries[0]).toBe(mechanicQuery(brief, d.mechanic.element, "mobile"));
+      expect(d.searchQueries.some((q) => q.includes(noun)), d.searchQueries.join(" | ")).toBe(true);
+    }
+    expect(mechanicQuery("flight checkout screen", "progress", "mobile")).toBe("flight checkout progress bar app ui");
+    expect(mechanicQuery("poster for a jazz festival", "progress")).toBeNull();
+    expect(ideaMechanicQuery("Sadu weaving", "divider")).toBe("sadu weaving section divider ui");
+    expect(queryKey("plan picker app ui")).toBe(queryKey("picker plan app ui"));
+  });
+
+  it("puts the mechanic lane first among a saved direction's component lanes", () => {
+    const lanes = laneTexts("GCC mobile flight checkout", "crushed velvet", [], "bd-1", { mechanic: "progress" });
+    expect(lanes.component).toEqual(["flight checkout progress bar app ui", "flight checkout fare summary app ui"]);
+    expect(laneTexts("GCC mobile flight checkout", "crushed velvet", [], "bd-1").component).toEqual([
+      "flight checkout fare summary app ui",
+      "flight checkout payment bottom sheet app ui",
+    ]);
   });
 });
