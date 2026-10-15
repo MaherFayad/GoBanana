@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
+import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState, type CanvasState } from "@/lib/canvas/store";
 import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
 import { canSpendCredits, checkSearchQuota, serperCreditCap, type Plan, type UsageStore } from "@/lib/quota";
 import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts } from "@/lib/bend/queries";
@@ -25,6 +25,7 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
+import { BASELINE_LANE, baselineKey, isFreshBaseline, mergeBaseline, withoutBaselineLane, type CanvasBaseline } from "@/lib/sources/baseline";
 import { ART_SITES, artQuota, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import {
@@ -127,8 +128,18 @@ export type SearchReferencesDeps = {
   /**
    * Save references (URLs and metadata only) and put them in the canvas tray, tagged with
    * the direction they were found for. Returns false when the canvas is not the user's.
+   * With `opts.baseline`, the baseline's results go in with no direction and the baseline is
+   * saved on the canvas (lib/sources/baseline.ts).
    */
-  addToTray(userId: string, canvasId: string, references: SavedReference[], directionId?: string): Promise<boolean>;
+  addToTray(
+    userId: string,
+    canvasId: string,
+    references: SavedReference[],
+    directionId?: string,
+    opts?: { baseline?: CanvasBaseline },
+  ): Promise<boolean>;
+  /** The canvas's saved baseline search, or null. A failure runs the baseline lane again. */
+  getBaseline?(userId: string, canvasId: string): Promise<CanvasBaseline | null>;
   /** Save style words on the user's canvas for later searches. Returns false when it is not theirs. */
   saveTaste?(userId: string, canvasId: string, taste: string[]): Promise<boolean>;
   /**
@@ -176,6 +187,11 @@ export type SearchReferencesOutput = {
   dropped?: number;
   /** Of those, the ones dropped as another tradition (lens), as music and merch, or as shop listings (art). */
   droppedWhy?: DropWhy;
+  /**
+   * Direction searches on a canvas: the baseline (fidelity) lane, run once per canvas. `reused`
+   * means it was skipped because it already ran; its results are in the tray with no direction.
+   */
+  baseline?: { referenceIds: string[]; at: string; reused: boolean };
   /** Style words given in this call, and whether they were saved on the canvas. */
   taste?: string[];
   tasteSaved?: boolean;
@@ -213,23 +229,34 @@ function resultText(out: SearchReferencesOutput): string {
   }
   const searched = out.lane ? `the ${out.lane} lane "${out.query}"` : `"${out.query}"`;
   lines.push(`Found ${out.zones.ui} UI references and ${out.zones.art} art direction references for ${searched}. Show each source link with its image.`);
+  // Fresh baseline results are listed on their own: they go to the "Shipped today" section.
+  const shipped = new Set(out.baseline && !out.baseline.reused ? out.baseline.referenceIds : []);
   let n = 0;
-  const list = (zone: Zone, heading: string) => {
-    const refs = out.references.filter((r) => (r.zone ?? "ui") === zone);
+  const list = (zone: Zone | "shipped", heading: string) => {
+    const refs = out.references.filter((r) =>
+      zone === "shipped" ? shipped.has(r.id) : (r.zone ?? "ui") === zone && !shipped.has(r.id),
+    );
     if (refs.length === 0) return;
     lines.push(heading);
     for (const r of refs) {
       const tag = r.lane ? `${r.id}, ${r.lane}` : r.id;
-      lines.push(`${++n}. [${tag}] ${r.title ?? "Untitled"} (${r.sourceSite}, ${zone}): ${r.sourceUrl}`);
+      lines.push(`${++n}. [${tag}] ${r.title ?? "Untitled"} (${r.sourceSite}, ${zone === "shipped" ? "ui" : zone}): ${r.sourceUrl}`);
     }
   };
   list("ui", "UI references:");
   list("art", "Art direction (place these in the art row, not with the UI references):");
-  if (out.zones.art > 0 || out.zones.ui > 0) {
+  list("shipped", 'Shipped today (the page as apps ship it, found once per canvas): place these in one "Shipped today" section, never in a direction:');
+  const directionUi = out.zones.ui - shipped.size;
+  if (out.zones.art > 0 || directionUi > 0) {
     lines.push(
-      out.zones.ui < 6
-        ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${out.zones.ui} UI came back: search a UI lane (fidelity, component or hero) with other words first, so art does not outnumber UI.`
+      directionUi < 6
+        ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${directionUi} UI came back for this direction: search a UI lane (component, bridge or hero) with other words first, so art does not outnumber UI.`
         : "Place 6 to 8 UI references per direction and at most 4 art items: UI is the main grid, art is the accent row.",
+    );
+  }
+  if (out.baseline?.reused) {
+    lines.push(
+      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped. Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
     );
   }
   // The bridge is the direction's own UI lane: say so when it found nothing, with a retry that works.
@@ -457,6 +484,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
       const preferCreators = preferredCreators(learning.creatorRatings);
       let searched: Searched;
+      /** The baseline key of a direction search on a canvas, and the saved baseline when it was reused. */
+      let baseline: { key: string; reused?: CanvasBaseline } | undefined;
       if (lanes) {
         const picked = input.sources ? sources : undefined;
         const termKeys = laneTermKeys(lanes);
@@ -474,6 +503,21 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         }
         // One path-scoped request per lane and source, at most SERPER_MAX_REQUESTS in all (fallbacks included).
         plan = plan.slice(0, SERPER_MAX_REQUESTS);
+        // The baseline (fidelity) lane runs once per canvas: skip it when it ran for this key lately.
+        const baseCanvas = input.canvasId ?? directionCanvasId;
+        const key = input.lane ? null : baselineKey(lanes);
+        if (key && baseCanvas) {
+          let saved: CanvasBaseline | null = null;
+          try {
+            saved = (await deps.getBaseline?.(userId, baseCanvas)) ?? null;
+          } catch {
+            console.error("[search_references] could not read the baseline");
+          }
+          if (isFreshBaseline(saved, key, now)) {
+            plan = withoutBaselineLane(plan);
+            baseline = { key, reused: saved };
+          } else baseline = { key };
+        }
         // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
         const excludeCanvas = input.canvasId ?? directionCanvasId;
         const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
@@ -559,6 +603,17 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (note) out.note = note;
       if (result.dropped) out.dropped = result.dropped;
       if (result.droppedWhy) out.droppedWhy = result.droppedWhy;
+      // A new baseline: the ids of what the fidelity lane found (saved below with the tray).
+      let newBaseline: CanvasBaseline | undefined;
+      if (baseline?.reused) {
+        out.baseline = { referenceIds: baseline.reused.referenceIds, at: baseline.reused.at, reused: true };
+      } else if (baseline) {
+        const ids = references.filter((r) => r.lane === BASELINE_LANE).map((r) => r.id);
+        if (ids.length > 0) {
+          newBaseline = { key: baseline.key, referenceIds: ids, at: now.toISOString() };
+          out.baseline = { referenceIds: ids, at: newBaseline.at, reused: false };
+        }
+      }
 
       if (input.canvasId && references.length > 0) {
         out.canvasId = input.canvasId;
@@ -574,9 +629,11 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
             ...(tk && arm ? { arm } : {}),
           };
         });
-        const added = directionKey
-          ? await deps.addToTray(userId, input.canvasId, saved, directionKey)
-          : await deps.addToTray(userId, input.canvasId, saved);
+        const added = newBaseline
+          ? await deps.addToTray(userId, input.canvasId, saved, directionKey, { baseline: newBaseline })
+          : directionKey
+            ? await deps.addToTray(userId, input.canvasId, saved, directionKey)
+            : await deps.addToTray(userId, input.canvasId, saved);
         if (added) out.addedToTray = true;
         else out.note = [out.note, "That canvas was not found, so the results were not added to a tray."].filter(Boolean).join(" ");
       }
@@ -652,19 +709,41 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];
     },
-    addToTray: async (userId, canvasId, references, directionId) => {
+    addToTray: async (userId, canvasId, references, directionId, opts) => {
       const db = r();
       const owned = await db.canvases.getOwned(userId, canvasId);
       if (!owned) return false;
       await db.references.insertMany(canvasId, references);
       const outcome = await mutateCanvas(db, userId, canvasId, takedownLoader(canvasDeps), (state) => ({
-        state: addToCanvasTray(state, references, directionId),
+        state: trayWithBaseline(state, references, directionId, opts?.baseline),
         value: true,
       }));
       return outcome.ok;
     },
+    getBaseline: async (userId, canvasId) => {
+      const canvas = await r().canvases.getOwned(userId, canvasId);
+      return canvas ? (parseState(canvas.state).baseline ?? null) : null;
+    },
     upgradeUrl: () => upgradeUrl(canvasDeps),
   };
+}
+
+/**
+ * Tray write for a search: the direction's results tagged with it, the baseline's results with no
+ * direction (they belong to the "Shipped today" section), and the baseline saved on the canvas.
+ */
+export function trayWithBaseline(
+  state: CanvasState,
+  references: readonly SavedReference[],
+  directionId: string | undefined,
+  baseline: CanvasBaseline | undefined,
+): CanvasState {
+  if (!baseline) return addToCanvasTray(state, references, directionId);
+  const shipped = new Set(baseline.referenceIds);
+  const own = references.filter((ref) => !shipped.has(ref.id));
+  const base = references.filter((ref) => shipped.has(ref.id));
+  const next = addToCanvasTray(addToCanvasTray(state, base), own, directionId);
+  return { ...next, baseline: mergeBaseline(state.baseline, baseline, new Date(baseline.at)) };
 }
 
 /** Live deps: the database is reached lazily, so input checks still run without it. */

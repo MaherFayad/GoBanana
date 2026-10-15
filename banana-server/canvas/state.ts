@@ -15,6 +15,7 @@ import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
 import type { Part } from "@/lib/stitch/types";
 import { cleanTaste } from "@/lib/taste";
 import {
+  type CanvasBaseline,
   type CanvasFlowNode,
   type CanvasNodeType,
   type CanvasState,
@@ -268,6 +269,7 @@ export function parseState(raw: unknown): CanvasState {
   // UI) keeps the stored library (lib/db/keep.ts) instead of wiping it.
   const hasParts = Array.isArray(src.parts);
   const parts = hasParts ? parseParts(src.parts, safeUrl, siteFromUrl) : [];
+  const baseline = parseBaseline(src.baseline);
   return {
     version: STATE_VERSION,
     viewport: parseViewport(src.viewport),
@@ -275,7 +277,18 @@ export function parseState(raw: unknown): CanvasState {
     tray,
     ...(taste.length > 0 ? { taste } : {}),
     ...(hasParts ? { parts } : {}),
+    ...(baseline ? { baseline } : {}),
   };
+}
+
+/** The saved baseline search, or undefined when missing or malformed. Ids only, at most 24. */
+function parseBaseline(v: unknown): CanvasBaseline | undefined {
+  if (!isObject(v)) return undefined;
+  const key = str(v.key, 300);
+  const at = str(v.at, 40);
+  if (!key || !at || !Number.isFinite(Date.parse(at)) || !Array.isArray(v.referenceIds)) return undefined;
+  const referenceIds = [...new Set(v.referenceIds.filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80))].slice(0, 24);
+  return { key, referenceIds, at };
 }
 
 /** Drop stitch slots whose part is not in the library. */
