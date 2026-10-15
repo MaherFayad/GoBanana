@@ -6,7 +6,7 @@
  * crop's aspect ratio, and the image inside it scaled to 1 / crop.w of the box width and moved
  * by -crop.x and -crop.y of its own size (translate percentages are relative to the image).
  */
-import { clampCrop, type Crop, type PartTheme, type StitchMode, type StitchPlatform } from "@/lib/stitch/types";
+import { clampCrop, type Crop, type StitchMode, type StitchPlatform } from "@/lib/stitch/types";
 
 /** Image aspect (width / height) to assume before the image has loaded and has no known size. */
 export const FALLBACK_IMAGE_ASPECT: Record<StitchPlatform, number> = {
@@ -77,10 +77,14 @@ export function cropStyles(crop: Crop, imageAspect: number): CropStyles {
   };
 }
 
-/** CSS filter for a slot in a view mode. Collage shows parts as they are. */
-export function slotFilter(mode: StitchMode, theme: PartTheme | undefined): string | undefined {
+/**
+ * CSS filter for a slot in a view mode. Collage shows parts as they are. Harmonize points at the
+ * page's inline SVG duotone filter (`HarmonizeFilter`, id from `harmonizeFilterId`), so every part
+ * gets the same two colors whether it was light or dark (no inverting).
+ */
+export function slotFilter(mode: StitchMode, filterId?: string): string | undefined {
   if (mode === "wireframe") return "grayscale(1) contrast(0.9) blur(0.4px) brightness(1.08)";
-  if (mode === "even") return theme === "dark" ? "invert(1) hue-rotate(180deg) saturate(0.8)" : "saturate(0.8)";
+  if (mode === "harmonize") return filterId ? `url(#${filterId})` : "grayscale(1)";
   return undefined;
 }
 

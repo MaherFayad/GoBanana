@@ -20,7 +20,7 @@ Frames go side by side in a **Frankenstein pages** section on the board, created
 | `rows[].widths` | number[] | No | one per slot, 2 to 3 values, each above 0 up to 12 | Relative widths, like `[1, 3]` for a sidebar. Default equal |
 | `variants` | integer | No | 1 to 6 | With a recipe: how many pages. Each mixes at least 3 sources when the library allows |
 | `platform` | enum | No | `mobile` (390px), `tablet` (834px), `website`, `webapp` (1440px) | Frame width. Default: the direction's platform, else website |
-| `mode` | enum | No | `collage` (default), `wireframe`, `even` | The view |
+| `mode` | enum | No | `collage` (default), `wireframe`, `harmonize` (`even` still works for one release) | The view |
 | `title` | string | No | up to 120 characters | Page title |
 | `note` | string | No | up to 280 characters | The idea in one line |
 | `directionId` | string | No | 1 to 100 characters | The kept direction this page serves |

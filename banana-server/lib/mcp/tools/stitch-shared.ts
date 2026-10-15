@@ -9,14 +9,15 @@ import type { CanvasState, StoredNode } from "@/canvas/types";
 import { GAP } from "@/lib/layout";
 import { skeleton, skeletonLines, type SkeletonRow } from "@/lib/stitch/skeleton";
 import { stitchSize, STITCH_DISPLAY_WIDTH, STITCH_HEADER } from "@/lib/stitch/size";
-import { PART_ROLES, STITCH_MODES, type Part, type StitchData } from "@/lib/stitch/types";
+import { PART_ROLES, STITCH_MODE_INPUTS, type HarmonizeColors, type Part, type StitchData } from "@/lib/stitch/types";
 
 /** Title of the canvas section that holds Frankenstein pages. */
 export const STITCH_SECTION_TITLE = "Frankenstein pages";
 export const SECTION_PAD = 16;
 
 export const roleSchema = z.enum(PART_ROLES);
-export const modeSchema = z.enum(STITCH_MODES);
+/** collage, wireframe or harmonize; "even" is still accepted for one release and means harmonize. */
+export const modeSchema = z.enum(STITCH_MODE_INPUTS);
 export const platformSchema = z.enum(["mobile", "tablet", "website", "webapp"]);
 export const cropSchema = z
   .object({
@@ -55,6 +56,23 @@ export function stitchSectionId(state: CanvasState): string | undefined {
 
 export function stitchNodes(state: CanvasState): Extract<StoredNode, { type: "stitch" }>[] {
   return state.nodes.filter((n): n is Extract<StoredNode, { type: "stitch" }> => n.type === "stitch");
+}
+
+/**
+ * Set (or clear) the harmonize duotone colors on every Frankenstein page of a direction (P0-11).
+ * `directionIds` holds the direction's row id and bend id. Returns null when nothing changed.
+ */
+export function withHarmonize(state: CanvasState, directionIds: ReadonlySet<string>, colors: HarmonizeColors | undefined): CanvasState | null {
+  let changed = false;
+  const nodes = state.nodes.map((n) => {
+    if (n.type !== "stitch" || !n.data.directionId || !directionIds.has(n.data.directionId)) return n;
+    const cur = n.data.harmonize;
+    if (cur?.ink === colors?.ink && cur?.surface === colors?.surface) return n;
+    changed = true;
+    const { harmonize: _old, ...rest } = n.data;
+    return { ...n, data: { ...rest, ...(colors ? { harmonize: colors } : {}) } };
+  });
+  return changed ? { ...state, nodes } : null;
 }
 
 /**

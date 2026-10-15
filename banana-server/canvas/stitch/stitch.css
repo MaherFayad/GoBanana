@@ -332,6 +332,12 @@
   z-index: 5;
 }
 
+/* Harmonize: the page shows the surface color between parts (the direction's surface, set
+   inline as data, else the surface token). The SVG filter defs are positioned inline. */
+.bn-stitch[data-mode="harmonize"] .bn-stitch-page {
+  background: var(--bn-harmonize-surface, var(--st-bg-surface));
+}
+
 /* Wireframe: a light wash and big role labels over the grey parts. */
 .bn-stitch[data-mode="wireframe"] .bn-crop::after {
   content: "";

@@ -256,7 +256,7 @@ export const en = {
       made: "Made on {date} with the real engine: {n} live image searches, then picked by eye.",
       all: "See all examples",
       openBoard: "Open the board",
-      modes: { collage: "Collage", wireframe: "Wireframe", even: "Even" },
+      modes: { collage: "Collage", wireframe: "Wireframe", harmonize: "Harmonize" },
       modesLabel: "View",
       pagesLabel: "Page",
       roles: { nav: "Nav", hero: "Hero", cards: "Cards", content: "Content", features: "Features", testimonial: "Reviews", footer: "Footer", other: "Part" },

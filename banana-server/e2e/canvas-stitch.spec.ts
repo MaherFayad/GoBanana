@@ -5,7 +5,9 @@
  *
  * The API and the image host are mocked with page.route; images are synthetic gradients.
  */
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { decodeImage } from "../lib/palette/decode";
 import { gradientPng } from "./support/seed-canvas";
 
 const CANVAS_ID = "e2e-stitch";
@@ -74,7 +76,11 @@ function boardState() {
   };
 }
 
-async function open(page: Page, state: ReturnType<typeof boardState> = boardState()): Promise<{ puts: Array<{ nodes: Array<{ id: string; data: { rows?: Array<{ slots: Array<{ id: string }> }> } }>; parts?: unknown[] }> }> {
+async function open(
+  page: Page,
+  state: ReturnType<typeof boardState> = boardState(),
+  image: (url: string) => Buffer = () => gradientPng(60, 120, [240, 220, 180], [40, 50, 90]),
+): Promise<{ puts: Array<{ nodes: Array<{ id: string; data: { rows?: Array<{ slots: Array<{ id: string }> }> } }>; parts?: unknown[] }> }> {
   const api = { puts: [] as never[] };
   await page.route(`**/api/canvas/${CANVAS_ID}`, async (route) => {
     if (route.request().method() === "PUT") {
@@ -85,7 +91,7 @@ async function open(page: Page, state: ReturnType<typeof boardState> = boardStat
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ state, updatedAt: "2026-10-12T10:00:00.000Z" }) });
   });
   await page.route(/^https:\/\/i\.pinimg\.com\//, (route) =>
-    route.fulfill({ status: 200, contentType: "image/png", body: gradientPng(60, 120, [240, 220, 180], [40, 50, 90]) }),
+    route.fulfill({ status: 200, contentType: "image/png", body: image(route.request().url()) }),
   );
   await page.goto(`/c/${CANVAS_ID}`);
   await expect(page.locator('.react-flow__node[data-id="st1"]')).toBeVisible();
@@ -140,7 +146,7 @@ test.describe("Frankenstein pages", () => {
     }
   });
 
-  test("views: wireframe shows role labels and notes, even inverts dark parts", async ({ page }) => {
+  test("views: wireframe shows role labels and notes, harmonize uses one duotone filter and never inverts", async ({ page }) => {
     const api = await open(page);
     const frame = page.locator('.react-flow__node[data-id="st1"]');
     await frame.getByRole("radio", { name: "Wireframe" }).click();
@@ -148,12 +154,87 @@ test.describe("Frankenstein pages", () => {
     await expect(frame.locator(".bn-stitch-note")).toBeVisible();
     // Arrow keys move through the view switch.
     await frame.getByRole("radio", { name: "Wireframe" }).press("ArrowRight");
-    await expect(frame.getByRole("radio", { name: "Even" })).toHaveAttribute("aria-checked", "true");
-    const filter = await slots(page).nth(1).locator(".bn-crop").evaluate((el) => (el as HTMLElement).style.filter);
-    expect(filter).toContain("invert(1)");
-    const light = await slots(page).nth(0).locator(".bn-crop").evaluate((el) => (el as HTMLElement).style.filter);
-    expect(light).not.toContain("invert");
-    await expect.poll(() => JSON.stringify(api.puts.at(-1) ?? {}), { timeout: 5_000 }).toContain('"mode":"even"');
+    await expect(frame.getByRole("radio", { name: "Harmonize" })).toHaveAttribute("aria-checked", "true");
+    await expect(frame.getByRole("radio", { name: "Harmonize" })).toBeFocused();
+    const filters = await slots(page).locator(".bn-crop").evaluateAll((els) => els.map((el) => (el as HTMLElement).style.filter));
+    expect(new Set(filters).size).toBe(1);
+    expect(filters[0]).toMatch(/^url\("?#bn-harmonize-/);
+    expect(filters.join(" ")).not.toContain("invert");
+    // No direction colors on this page: the neutral ink and surface tokens.
+    await expect(frame.locator(".bn-stitch")).toHaveAttribute("data-harmonize", "neutral");
+    await expect.poll(() => JSON.stringify(api.puts.at(-1) ?? {}), { timeout: 5_000 }).toContain('"mode":"harmonize"');
+  });
+
+  test("a page saved in the legacy even view opens and saves as harmonize", async ({ page }) => {
+    const state = boardState();
+    (state.nodes[1] as { data: { mode: string } }).data.mode = "even";
+    await open(page, state);
+    const frame = page.locator('.react-flow__node[data-id="st1"]');
+    // Pages open in collage; the saved view is still read as harmonize, never as an unknown mode.
+    await expect(frame.getByRole("radio", { name: "Collage" })).toHaveAttribute("aria-checked", "true");
+    await expect(frame.getByRole("radio")).toHaveText(["Collage", "Wireframe", "Harmonize"]);
+  });
+
+  test("harmonize: a page cut from 3 sources reads as one palette; keyboard switches views; axe passes @a11y", async ({ page }, testInfo) => {
+    const ink = [26, 26, 46] as const;
+    const surface = [244, 241, 222] as const;
+    const state = boardState();
+    const stitch = state.nodes[1] as { data: Record<string, unknown> };
+    stitch.data.harmonize = { ink: "#1a1a2e", surface: "#f4f1de" };
+    // Three sources with clashing colors: warm orange, a dark green, a saturated violet.
+    const looks: Record<string, [[number, number, number], [number, number, number]]> = {
+      s1: [[250, 140, 30], [120, 40, 0]],
+      s2: [[10, 60, 30], [90, 200, 120]],
+      s3: [[200, 60, 240], [30, 0, 80]],
+    };
+    await open(page, state, (url) => {
+      const key = /\/(s\d+)\.jpg/.exec(url)?.[1] ?? "s1";
+      const [from, to] = looks[key] ?? looks.s1!;
+      return gradientPng(60, 120, from, to);
+    });
+    const frame = page.locator('.react-flow__node[data-id="st1"]');
+    const pageEl = frame.locator(".bn-stitch-page");
+    await expect(slots(page).locator("img")).toHaveCount(3);
+    await expect.poll(() => slots(page).locator("img").evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete && (e as HTMLImageElement).naturalWidth > 0))).toBe(true);
+
+    // Measure only the parts: hide the chips and notes that sit over them.
+    await page.addStyleTag({ content: ".bn-stitch-slot-bar, .bn-stitch-note { visibility: hidden !important; }" });
+    // Distance of each pixel from the ink to surface line, in RGB units (0 means on the duotone).
+    const offPalette = async (name: string) => {
+      const png = await pageEl.screenshot({ path: testInfo.outputPath(`${name}.png`), animations: "disabled" });
+      if (process.env.STITCH_SHOTS) await pageEl.screenshot({ path: `${process.env.STITCH_SHOTS}/${name}.png`, animations: "disabled" });
+      const img = decodeImage(new Uint8Array(png));
+      if (!img.ok) throw new Error("screenshot did not decode");
+      const d = [surface[0] - ink[0], surface[1] - ink[1], surface[2] - ink[2]];
+      const len2 = d[0]! ** 2 + d[1]! ** 2 + d[2]! ** 2;
+      const dist: number[] = [];
+      for (let i = 0; i < img.rgba.length; i += 4) {
+        const p = [img.rgba[i]! - ink[0], img.rgba[i + 1]! - ink[1], img.rgba[i + 2]! - ink[2]];
+        const t = Math.max(0, Math.min(1, (p[0]! * d[0]! + p[1]! * d[1]! + p[2]! * d[2]!) / len2));
+        dist.push(Math.hypot(p[0]! - t * d[0]!, p[1]! - t * d[1]!, p[2]! - t * d[2]!));
+      }
+      dist.sort((a, b) => a - b);
+      return dist[Math.floor(dist.length * 0.98)]!;
+    };
+    const collage = await offPalette("harmonize-off-collage");
+    expect(collage).toBeGreaterThan(60);
+
+    // Keyboard: Tab-reachable radio group, arrows pick the view.
+    await frame.getByRole("radio", { name: "Collage" }).focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(frame.getByRole("radio", { name: "Harmonize" })).toHaveAttribute("aria-checked", "true");
+    await expect(frame.getByRole("radio", { name: "Harmonize" })).toBeFocused();
+    await expect(frame.locator(".bn-stitch")).toHaveAttribute("data-harmonize", "direction");
+    await expect(frame.locator("svg.bn-harmonize-defs feFuncR")).toHaveAttribute("tableValues", /^0\.102 0\.9569$/);
+    const harmonized = await offPalette("harmonize-on-direction");
+    expect(harmonized).toBeLessThan(12);
+
+    const results = await new AxeBuilder({ page }).include('.react-flow__node[data-id="st1"]').withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    expect(results.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
+
+    await page.keyboard.press("Home");
+    await expect(frame.getByRole("radio", { name: "Collage" })).toHaveAttribute("aria-checked", "true");
+    await expect(frame.locator("svg.bn-harmonize-defs")).toHaveCount(0);
   });
 
   test("keyboard: arrows move between parts, Alt and arrows reorder, and it is saved", async ({ page }) => {

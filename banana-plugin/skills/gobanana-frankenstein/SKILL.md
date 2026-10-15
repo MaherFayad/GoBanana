@@ -78,7 +78,7 @@ Read each variant from the `frankenstein_page` answer: its rows, slots, parts an
 
 - **Rhythm:** dense and airy bands alternate; no three busy bands in a row.
 - **Hierarchy:** one clear hero; no second hero fighting it from a `features` band.
-- **Contrast jumps:** light next to dark is fine for ideas. A thin dark sliver between two light bands usually reads as a bug; swap it or try mode `even`.
+- **Contrast jumps:** light next to dark is fine for ideas. A thin dark sliver between two light bands usually reads as a bug; swap it or try mode `harmonize`.
 - **Seams:** neighbours agree on margins and density; a full bleed band next to a boxed one needs a reason.
 - **Sources:** no two neighbouring bands from the same site; at least 3 sources per variant.
 - **One page:** it reads as one product, and you can say its idea in one line.
@@ -92,7 +92,7 @@ Fix what fails with `update_frankenstein` (`canvasId`, `stitchId`, `ops`), for e
 
 When one variant has rows you love, call `remix_frankenstein` with `stitchId`, `count` 2 to 4, `lock` set to those slot ids or roles (`["nav", "hero"]`), and `vary` for the roles to swap. It is seeded, so the same call gives the same result. A slot that gets a new part drops the note written for the old one, so read the new labels from the reply.
 
-Pages open in the `collage` view (the parts as they are); do not set a mode. The user can switch to `even` (dark parts inverted, one theme) or `wireframe` (grey with role labels) on the board; set one with `{ "op": "mode", "mode": "wireframe" }` only when the user asks.
+Pages open in the `collage` view (the parts as they are); do not set a mode. The user can switch to `harmonize` (a duotone in the direction's ink and surface colors, so parts from different sources read as one palette; run `reconcile_direction` first so it uses the board's colors) or `wireframe` (grey with role labels) on the board; set one with `{ "op": "mode", "mode": "wireframe" }` only when the user asks.
 
 Stop after two rounds of fixes. Ideas, not polish.
 

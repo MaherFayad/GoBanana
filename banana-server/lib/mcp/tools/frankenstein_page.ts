@@ -10,9 +10,11 @@ import { canvasWebUrl, itemCount, mutateCanvas, newNodeId, type PlacedNode } fro
 import { isPlatform } from "@/lib/direction-detail";
 import { canAddItems } from "@/lib/quota";
 import { fillRecipe, hashSeed } from "@/lib/stitch/fill";
+import { harmonizeFromPalette } from "@/lib/stitch/harmonize";
 import { MAX_PART_NOTE, MAX_STITCH_NOTE, MAX_STITCH_TITLE } from "@/lib/stitch/parse";
 import {
   clampCrop,
+  toStitchMode,
   MAX_SLOTS_PER_ROW,
   MAX_STITCH_ROWS,
   MAX_VARIANTS,
@@ -63,7 +65,7 @@ export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100),
   title: z.string().trim().min(1).max(MAX_STITCH_TITLE).optional(),
   platform: platformSchema.optional().describe("Frame: mobile 390, tablet 834, website or webapp 1440 px. Default: the direction's platform, else website."),
-  mode: modeSchema.optional().describe("Leave unset: pages open in the collage view (parts as they are) and the user switches to wireframe or even on the board."),
+  mode: modeSchema.optional().describe("Leave unset: pages open in the collage view (parts as they are) and the user switches to wireframe or harmonize on the board."),
   directionId: z.string().min(1).max(100).optional(),
   note: z.string().trim().min(1).max(MAX_STITCH_NOTE).optional().describe("The idea in one line."),
   rows: z
@@ -84,7 +86,7 @@ const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
   title: `title is up to ${MAX_STITCH_TITLE} characters.`,
   platform: "platform must be mobile, tablet, website or webapp.",
-  mode: "mode must be collage, wireframe or even.",
+  mode: "mode must be collage, wireframe or harmonize.",
   directionId: "Pass a directionId from get_canvas, or leave it out.",
   note: `note is the idea in one line, up to ${MAX_STITCH_NOTE} characters.`,
   rows: `rows is a list of 1 to ${MAX_STITCH_ROWS} rows, each { slots: [{ partId, crop?, note? }] (1 to ${MAX_SLOTS_PER_ROW}), widths? (one number per slot) }.`,
@@ -125,7 +127,9 @@ export function createStitchPageTool(deps: CanvasToolDeps) {
       if (input.directionId && !direction) return toolMessage("This canvas has no direction with that id. Call get_canvas to see the direction ids.");
       const dirPlatform = direction?.detail?.platform;
       const platform: StitchPlatform = input.platform ?? (dirPlatform && isPlatform(dirPlatform) ? PLATFORM_OF[dirPlatform] : undefined) ?? "website";
-      const mode = input.mode ?? "collage";
+      const mode = toStitchMode(input.mode) ?? "collage";
+      // Duotone colors for the harmonize view, from the direction's reconciled palette when it has one.
+      const harmonize = harmonizeFromPalette(direction?.detail?.reconciled?.palette);
       const makeId = deps.makeId ?? newNodeId;
 
       const outcome = await mutateCanvas<{ placed: PlacedNode[]; datas: StitchData[]; notes: string[]; sectionId: string }>(
@@ -143,6 +147,7 @@ export function createStitchPageTool(deps: CanvasToolDeps) {
             mode,
             ...(direction ? { directionId: direction.bendId ?? direction.id } : {}),
             ...(input.note ? { note: input.note } : {}),
+            ...(harmonize ? { harmonize } : {}),
           };
           if (input.rows) {
             const missing = input.rows.flatMap((r) => r.slots.filter((s) => !byId.has(s.partId)).map((s) => s.partId));

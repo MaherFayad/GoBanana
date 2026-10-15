@@ -3,17 +3,19 @@
 /**
  * A Frankenstein page from the examples (lib/site/examples.json): parts cut from real references
  * and stacked into one page, with the canvas's three views (docs/stitch-spec.md): collage (the
- * parts as they are), wireframe (grey, softened, role labels) and even (dark parts inverted so
- * the page reads as one theme).
+ * parts as they are), wireframe (grey, softened, role labels) and harmonize (a duotone in the
+ * page's ink and surface colors, so parts from different sources read as one palette).
  *
  * A part is a crop rectangle over a hotlinked image, cropped with CSS only (the canvas's own
  * math, canvas/stitch/crop.ts); nothing is fetched or cut. Every slot shows its source as a link.
  * Slots in a row get widths in proportion to their aspect, so a row is one height. A slot whose
  * image fails keeps its place as a plain box with its role, never a broken image icon.
  */
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ExternalIcon } from "@/components/studio/icons";
 import { cropStyles, slotFilter } from "@/canvas/stitch/crop";
+import { HarmonizeFilter } from "@/canvas/stitch/HarmonizeFilter";
+import { harmonizeFilterId } from "@/lib/stitch/harmonize";
 import type { ExampleStitch } from "@/lib/site/examples";
 import { STITCH_MODES, type StitchMode } from "@/lib/stitch/types";
 
@@ -32,14 +34,14 @@ type Item = { key: string; stitch: ExampleStitch };
 
 const fill = (s: string, v: Record<string, string>) => s.replace(/\{(\w+)\}/g, (m, k: string) => v[k] ?? m);
 
-function Slot({ part, mode, role, label, newTab }: { part: ExampleStitch["parts"][number]; mode: StitchMode; role: string; label: string; newTab: string }) {
+function Slot({ part, mode, filterId, role, label, newTab }: { part: ExampleStitch["parts"][number]; mode: StitchMode; filterId: string; role: string; label: string; newTab: string }) {
   const [failed, setFailed] = useState(false);
   const aspect = part.ref.w && part.ref.h ? part.ref.w / part.ref.h : 16 / 10;
   const s = cropStyles(part.crop, aspect);
   const boxAspect = Number(s.box.aspectRatio) || 1;
   return (
     <figure className="ex-slot" style={{ flexGrow: boxAspect }} data-theme={part.theme} data-failed={failed ? "" : undefined}>
-      <div className="ex-crop" style={{ aspectRatio: s.box.aspectRatio, filter: failed ? undefined : slotFilter(mode, part.theme) }}>
+      <div className="ex-crop" style={{ aspectRatio: s.box.aspectRatio, filter: failed ? undefined : slotFilter(mode, filterId) }}>
         {failed ? null : (
           // eslint-disable-next-line @next/next/no-img-element -- third-party image hotlinked from its source on purpose (hard rule 2)
           <img
@@ -73,6 +75,7 @@ function Slot({ part, mode, role, label, newTab }: { part: ExampleStitch["parts"
 export function StitchView({ items, labels, en }: { items: Item[]; labels: StitchLabels; en?: string }) {
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<StitchMode>("collage");
+  const filterId = harmonizeFilterId(`ex-${useId()}`);
   const item = items[index] ?? items[0];
   if (!item) return null;
   const { stitch } = item;
@@ -101,13 +104,14 @@ export function StitchView({ items, labels, en }: { items: Item[]; labels: Stitc
       <p className="ex-stitch-note ex-en" lang={en} dir="auto">
         {stitch.note}
       </p>
+      {mode === "harmonize" && <HarmonizeFilter id={filterId} />}
       <div className="ex-frame" dir="ltr" data-platform={stitch.platform} key={item.key}>
         {stitch.rows.map((row, ri) => (
           <div key={ri} className="ex-srow">
             {row.parts.map((pi) => {
               const part = stitch.parts[pi];
               if (!part) return null;
-              return <Slot key={pi} part={part} mode={mode} role={roleName(part.role)} label={fill(labels.slot, { role: roleName(part.role), site: part.ref.site })} newTab={labels.newTab} />;
+              return <Slot key={pi} part={part} mode={mode} filterId={filterId} role={roleName(part.role)} label={fill(labels.slot, { role: roleName(part.role), site: part.ref.site })} newTab={labels.newTab} />;
             })}
           </div>
         ))}

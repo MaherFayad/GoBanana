@@ -26,7 +26,7 @@ description: Change one Frankenstein page with a list of ops - swap, move, moveR
 | `insert` | `slots` (1 to 3: `partId`, `role?`, `crop?`, `note?`), `index?` or `afterRowId?`, `widths?` | Add a new row. Default at the end |
 | `crop` | `slotId`, `crop` `{x, y, w, h}` | Recrop a slot without a new part |
 | `widths` | `rowId`, `widths` (1 to 3 numbers, each up to 12) | Relative slot widths |
-| `mode` | `mode`: `collage`, `wireframe`, `even` | Switch the view |
+| `mode` | `mode`: `collage`, `wireframe`, `harmonize` (`even` still works for one release) | Switch the view |
 | `note` | `note` (up to 280), `slotId?` | With `slotId`: the slot's steal note. Without: the page's one line idea. Empty clears it |
 | `title` | `title` (1 to 120) | Rename the page |
 
