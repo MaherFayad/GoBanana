@@ -15,3 +15,4 @@ test-results/
 banana-docs/dist/
 banana-docs/.astro/
 banana-server/public/docs/
+.claude/.pause

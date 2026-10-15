@@ -1,0 +1,6 @@
+.env
+node_modules/
+rejects/
+review/
+costs.csv
+out/
