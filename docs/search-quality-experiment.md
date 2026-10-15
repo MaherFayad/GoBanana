@@ -237,7 +237,7 @@ Flagged lanes (add rows as the log shows them):
 | --- | --- | --- | --- | --- |
 | 2026-10-13 | fidelity and component (eSIM brief, before the topic guard) | dribbble, pinterest | plan picker app ui | 27 and 35 per call (whole calls) |
 
-## Round 12 (2026-10-15): the taste bar (P0-17 steps 1 and 2)
+## Round 13 (2026-10-15): the taste bar (P0-17 steps 1 and 2)
 
 **Goal:** references at the quality of the owner's boards (`docs/taste-bar.md`). The boards were looked at
 once in headless Chrome (first screen only, nothing saved).
