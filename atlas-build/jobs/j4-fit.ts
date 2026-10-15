@@ -17,7 +17,7 @@ import { PROMPT_RULES } from "../lib/prompt.ts";
 import { extractJson } from "../lib/validate.ts";
 import { FitScoreSchema, type DomainEntry, type FitScore, type IngredientCard } from "../schema.ts";
 
-export const CARDS_PER_REQUEST = 8;
+export const CARDS_PER_REQUEST = 24;
 
 type Input = { n: number; cards: IngredientCard[] };
 
@@ -36,12 +36,15 @@ export function cardBrief(c: IngredientCard): string {
   ].join("\n");
 }
 
+/** The first sentence, so 60 domains fit a small cached prefix. */
+const firstSentence = (s: string) => (/^.*?[.!?](?=\s|$)/.exec(s.trim())?.[0] ?? s.trim());
+
 function domainLines(): string {
   return domains()
-    .map((d) =>
+    .map((d, i) =>
       [
-        `- ${d.id}: ${d.names.en.join(", ")}. Products: ${d.productNouns.join(", ")}. Audience: ${d.audience}.`,
-        d.regionNotes ? ` Region: ${d.regionNotes}.` : "",
+        `${i + 1}. ${d.id}: ${d.names.en.slice(0, 2).join(", ")}. Products: ${d.productNouns.slice(0, 6).join(", ")}. Audience: ${firstSentence(d.audience)}`,
+        d.regionNotes ? ` Region: ${firstSentence(d.regionNotes)}` : "",
         d.fitsFamilies.length ? ` Fits: ${d.fitsFamilies.join("; ")}.` : "",
         d.clashFamilies.length ? ` Clashes on purpose: ${d.clashFamilies.join("; ")}.` : "",
       ].join(""),
@@ -58,14 +61,14 @@ Scores:
 - 2: fits. A clear, defensible bridge; it would surprise in a good way.
 - 1: a stretch. Only for a deliberately wild bend; the bridge is thin or the mood fights the domain's trust needs.
 - 0: wrong. It undermines the domain (playful kitsch for a cancer clinic, gambling cues for kids or finance, a sacred or care-tier tradition used where it would offend), or a culture card is out of place for the domain's region.
-Use the whole range. Most pairs are 1 or 2; give 3 and 0 when they are earned. A domain's "Fits" and "Clashes on purpose" family lists are hints, not rules.
+Use the whole range. Most pairs are 1 or 2; give 3 and 0 when they are earned. 0 is rare: only when the card would actively harm that domain. A card that is simply unrelated is a 1. A domain's "Fits" and "Clashes on purpose" family lists are hints, not rules.
 
-reason: 3 to 8 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). No em dashes.
+reason: 2 to 5 plain words naming the bridge or the problem ("boarding pass rhythm suits fares", "casino cues clash with savings"). Every reason is specific to the pair; never a bare "misfit" or "no fit". No em dashes.
 
 The domains:
 ${domainLines()}
 
-Reply with one \`\`\`json block: {"cards": [{"id": "<card id>", "fit": {"<domain id>": [<score>, "<reason>"], ...}}]}. Score every card against every domain id listed above, using the ids exactly.`;
+Reply with one \`\`\`json block: {"cards": [{"id": "<card id>", "fit": {"<domain number>": [<score>, "<reason>"], ...}}]}, keyed by the domain's number in the list above ("1" to "${domains().length}"). Score every card against every domain.`;
 
 export default defineJob<Input, FitScore>({
   id: "j4-fit",
@@ -76,8 +79,8 @@ export default defineJob<Input, FitScore>({
   get system() {
     return system();
   },
-  maxTokens: 20000,
-  expectedOutputTokens: 8000,
+  maxTokens: 48000,
+  expectedOutputTokens: 20000,
   effort: "low",
 
   loadInputs: () => {
@@ -95,7 +98,9 @@ export default defineJob<Input, FitScore>({
     const out: unknown[] = [];
     for (const c of v.cards ?? []) {
       if (!c.id || !ids.has(c.id)) continue;
-      for (const [domainId, pair] of Object.entries(c.fit ?? {})) {
+      for (const [key, pair] of Object.entries(c.fit ?? {})) {
+        // Keys are the domain's 1-based number in the prompt list (an id is accepted too).
+        const domainId = /^\d+$/.test(key) ? (domains()[Number(key) - 1]?.id ?? `unknown-${key}`) : key;
         out.push({ cardId: c.id, domainId, score: Array.isArray(pair) ? pair[0] : pair, reason: Array.isArray(pair) ? pair[1] : "" });
       }
     }
