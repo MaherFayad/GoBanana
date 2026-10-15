@@ -36,6 +36,7 @@ import {
   TRY_AGAIN,
   type CanvasToolDeps,
 } from "./canvas-shared";
+import { recordFunnel } from "@/lib/funnel";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "rate_directions";
@@ -192,6 +193,7 @@ export function createRateDirectionsTool(deps: CanvasToolDeps) {
       // Kept directions record the verdict on the row (directions.detail.verdict), for get_canvas and exports.
       const keeps = rated.filter((r) => r.verdict === "keep").map((r) => r.direction.id);
       if (keeps.length > 0) await repos.directions.setVerdict(input.canvasId, keeps, "keep");
+      if (keeps.length > 0) await recordFunnel(userId, "keep");
 
       const rows: NewFeedback[] = rated.map(({ direction, verdict, reasons }) => {
         const ingredient = queryWords(inspirationFromQuery(direction.searchQuery));
