@@ -76,6 +76,7 @@ describe("exportKit", () => {
       ["CLAUDE.md", "text/markdown", "CLAUDE.md", true],
       ["FRANKENSTEIN.md", "text/markdown", `${dir}/FRANKENSTEIN.md`, false],
       ["frankenstein-wireframe.html", "text/html", `${dir}/frankenstein-wireframe.html`, false],
+      ["settings.json", "application/json", ".claude/settings.json", false],
     ]);
     for (const f of files) expect(f.content.length).toBeGreaterThan(100);
   });
@@ -85,7 +86,8 @@ describe("exportKit", () => {
   });
 });
 
-const STITCH_FILES = ["FRANKENSTEIN.md", "frankenstein-wireframe.html"];
+// settings.json (claude_settings) is setup, not design content: no scope block, no source links.
+const STITCH_FILES = ["FRANKENSTEIN.md", "frankenstein-wireframe.html", "settings.json"];
 
 describe.each(fixtures)("fixture %s", (_name, snapshot) => {
   const files = exportKit(snapshot, EXPORT_FORMATS);
@@ -218,6 +220,7 @@ describe.each(fixtures)("fixture %s", (_name, snapshot) => {
 
   it("opens every page scope file with the scope block", () => {
     for (const f of files) {
+      if (f.name === "settings.json") continue;
       if (f.name.endsWith(".json")) {
         expect(f.content, f.name).toContain("Scope: one wild page, not the product design system.");
         continue;

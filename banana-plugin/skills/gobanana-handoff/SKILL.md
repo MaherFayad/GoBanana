@@ -1,6 +1,6 @@
 ---
 name: gobanana-handoff
-description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md) from the GoBanana MCP server.
+description: Hand one kept GoBanana direction to the user's coding tools as a scoped harness pack - DIRECTION.md, BUILD-PROMPT.md, REVIEW.md and DESIGN.md under design/explorations/<slug>/, plus Cursor rules, Copilot instructions and AGENTS.md or CLAUDE.md sections that apply only to the target pages. Detects Claude Code, Cursor, Copilot, Codex, v0 and Lovable from the repo, writes every file at its suggested path, and merges into existing AGENTS.md or CLAUDE.md instead of overwriting. Use when the user says "hand this off", "harness pack", "set up my agents for this page", "build prompt", "Cursor rules for this", "Copilot instructions", "prompt for v0", "prompt for Lovable", "get this ready to build", or "export the direction". Runs get_canvas (summary first), reconcile_direction and export_kit (direction_md, build_prompt, review, design_md, cursor_rules, copilot, agents_md, claude_md, and claude_settings when the user says yes) from the GoBanana MCP server.
 ---
 
 # GoBanana handoff
@@ -39,6 +39,8 @@ Look in the repo, then confirm in one line ("I see Cursor and Claude Code; I'll 
 
 Always include `direction_md`, `build_prompt` and `review`. Add `design_md` when the user wants a DESIGN.md too. When the canvas has Frankenstein pages (stitches in `get_canvas`) and the user wants to build one, add `stitch_md` (FRANKENSTEIN.md, Free) and, on Pro, `wireframe_html` (frankenstein-wireframe.html); with no kept direction, export only those two plus `build_prompt` and leave out `directionId`.
 
+**Team plugin offer (Claude Code only).** Only when the repo shows Claude Code (the table above), ask once before you export it: "Add GoBanana to this repo's .claude/settings.json, so teammates who trust the folder are offered the plugin?" Add `claude_settings` to the formats only on a yes. Never ask for it in a repo with no sign of Claude Code, and never ask twice.
+
 ### 3. Reconcile, then export
 
 Call `reconcile_direction` with `canvasId` and `directionId` first. It reads the colors of the direction's placed images (great ratings count more), saves the palette with WCAG checks (ship at 4.5:1 for text, 3:1 for UI parts) and rewrites the spec's color line, so the pack matches the board. Tell the user about every conflict it lists. (`export_kit` also reconciles a direction that changed since its last run.)
@@ -57,18 +59,20 @@ Call `export_kit` with `canvasId`, `directionId`, `pages`, `scope: "page"` and t
 | `claude_md` | a section for `CLAUDE.md` | Pro |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md`: a skeleton per Frankenstein page with source links | Free |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html`: grey boxes, no reference images | Pro |
+| `claude_settings` | `.claude/settings.json`: keys that offer this plugin to teammates (Claude Code only, ask first) | Free |
 
 ### 4. Write the files
 
 - New files: write at `path`.
 - `agents_md` and `claude_md`: if the file exists, merge the section inside its markers (replace only the text between markers for the same slug). If it does not exist, create it with just the section. Show the user the diff for any file that existed before.
+- `claude_settings`: JSON, not a marked section. Read `.claude/settings.json` if it exists, add the `extraKnownMarketplaces` and `enabledPlugins` keys from the file (merge into the objects that are already there, keep every other key, marketplace and plugin), show the diff, then write it. If the file is missing, create it from the content. If `gobanana@gobanana` is already enabled, say so and write nothing.
 - If DESIGN.md or DIRECTION.md sits elsewhere, fix the pointers in the other files.
 
 ### 5. Report
 
 A short list of written files with paths, then one line on scope: "These apply only to /pricing and /launch. They inherit your design system and do not change it." Then how to use them:
 
-- **Claude Code, Codex:** they read the AGENTS.md or CLAUDE.md section on their own; or paste BUILD-PROMPT.md.
+- **Claude Code, Codex:** they read the AGENTS.md or CLAUDE.md section on their own; or paste BUILD-PROMPT.md. If you wrote `.claude/settings.json`, say that teammates are offered the plugin after they trust the folder, and that the file is theirs to commit.
 - **Cursor:** the rule attaches when you edit files matching the globs.
 - **Copilot:** the instructions apply to files matching `applyTo`.
 - **v0, Lovable:** paste BUILD-PROMPT.md into a new chat.

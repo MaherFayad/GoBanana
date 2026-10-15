@@ -61,6 +61,7 @@ Names and paths for scope "page" (<slug> from the direction):
 - html_board: board.html at design/explorations/<slug>/board.html
 - brief: BRIEF.md at design/explorations/<slug>/BRIEF.md
 - stitch_md: FRANKENSTEIN.md at design/explorations/<slug>/FRANKENSTEIN.md (one skeleton per Frankenstein page on the canvas: title, idea, numbered slots with role, steal note and source link; then build guidance: take the structure, not the pixels; unify to one theme; never copy reference images into the repo). With no directionId, <slug> is the canvas title in kebab case.
+- claude_settings: settings.json at .claude/settings.json (JSON keys to merge into the project's existing .claude/settings.json, never to replace it: extraKnownMarketplaces gobanana from github MaherFayad/GoBanana, enabledPlugins gobanana@gobanana true)
 - wireframe_html: frankenstein-wireframe.html at design/explorations/<slug>/frankenstein-wireframe.html (standalone low fi HTML: grey boxes per slot with role labels and notes, a sources list, no reference images)
 For scope "page", every file except tokens.json, figjam-spec.json, board.html and frankenstein-wireframe.html includes the line "Applies only to: <pages>. Inherits the project's design system. Does not change it."
 For scope "system", DESIGN.md goes to DESIGN.md at the root, agents and claude sections apply to the whole product, and no scope line is added.

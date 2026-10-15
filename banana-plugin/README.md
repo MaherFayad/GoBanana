@@ -121,6 +121,7 @@ If your client cannot show the canvas inline, every skill gives you the web link
 | `figjam_spec`, `html_board` | Board as FigJam spec or HTML | Pro |
 | `stitch_md` | `design/explorations/<slug>/FRANKENSTEIN.md` | Free |
 | `wireframe_html` | `design/explorations/<slug>/frankenstein-wireframe.html` | Pro |
+| `claude_settings` | Keys to merge into `.claude/settings.json` so teammates are offered the plugin | Free |
 
 Free also covers `bend_brief` (unlimited), 30 searches a month and 3 canvases. When you hit a limit, the skills show the plain upgrade message once and stop; they never retry in a loop. At the canvas limit they offer to add to an existing board or delete an old one, and delete only after you say yes.
 

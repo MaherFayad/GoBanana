@@ -31,7 +31,7 @@ description: كل الأدوات الـ 17 التي يعطيها خادم GoBana
 | [`update_frankenstein`](/docs/ar/reference/tools/update-frankenstein/) | تغير صفحة واحدة بعمليات | الكل | لا | نعم |
 | **الألوان والملفات** | | | | |
 | [`extract_palette`](/docs/ar/reference/tools/extract-palette/) | ألوان مع أدوارها وتباين WCAG | الكل | لا | تحفظ لوحة الألوان، وعينات الألوان مع `addSwatches` |
-| [`export_kit`](/docs/ar/reference/tools/export-kit/) | تعيد ملفات: DIRECTION.md، BUILD-PROMPT.md، قواعد... | المجانية: 5 صيغ، Pro: كل الصيغ الـ 15 | لا | لا |
+| [`export_kit`](/docs/ar/reference/tools/export-kit/) | تعيد ملفات: DIRECTION.md، BUILD-PROMPT.md، قواعد... | المجانية: 6 صيغ، Pro: كل الصيغ الـ 16 | لا | لا |
 
 توجد أداتان إضافيتان لعرض اللوحة فقط: `save_canvas_state` و`load_canvas_state`. مضيفات MCP Apps تخفيهما عن النموذج، ويجب ألا يستدعيهما الوكلاء.
 

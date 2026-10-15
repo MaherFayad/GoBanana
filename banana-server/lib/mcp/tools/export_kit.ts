@@ -28,14 +28,15 @@ import {
 import { exportLimitMessage, splitExportFormats } from "@/lib/quota";
 import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, upgradeUrl } from "./canvas-shared";
 import { directionStates, reconcileDirection, type ReconcileDeps } from "./reconcile_direction";
+import { recordFunnel } from "@/lib/funnel";
 import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
   "Export a canvas as files for one wild page (default) or the design system. Formats: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
-  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html. " +
-  "Kept directions get a folder each. Big exports list files: fetch each with file. Free: design_md, brief, direction_md, build_prompt, stitch_md.";
+  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, claude_settings. " +
+  "Kept directions get a folder each. Big exports list files: fetch each with file. Pro formats come back as a plan message.";
 
 /** Inline output cap in characters (file contents plus headers), so results stay readable. */
 export const INLINE_CAP = 20_000;
@@ -126,6 +127,7 @@ export function createExportKitTool(deps: ExportKitDeps) {
         snapshot = snap();
       }
 
+      if (allowed.length > 0) await recordFunnel(userId, "export");
       const opts = { scope, pages: input.pages } as const;
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
@@ -176,7 +178,7 @@ export function createExportKitTool(deps: ExportKitDeps) {
         scope === "page"
           ? "Scope: one wild page. These files sit on top of the project's own design system and do not replace it or its DESIGN.md."
           : "Scope: the whole design system.",
-        `Write each file below to its path in the user's project. AGENTS.md and CLAUDE.md are sections between ${appSlug()}:<slug> markers: replace the marked block if it exists, else append it. Keep the source links.`,
+        `Write each file below to its path in the user's project. AGENTS.md and CLAUDE.md are sections between ${appSlug()}:<slug> markers: replace the marked block if it exists, else append it. Keep the source links. A .claude/settings.json file is JSON: add its keys to the existing file and keep everything already in it.`,
         ...(later.length > 0
           ? [
               `The export is larger than ${INLINE_CAP.toLocaleString("en")} characters, so ${later.length} file${later.length === 1 ? " is" : "s are"} not inline. Fetch each with export_kit and the same arguments plus file:`,
@@ -197,7 +199,7 @@ export function createExportKitTool(deps: ExportKitDeps) {
 }
 
 function fileBlock(f: ExportFile): string {
-  return `File: ${f.name} (${f.mime})\npath: ${f.path}${f.append ? " (merge into the existing file by its markers)" : ""}\n\n${f.content}`;
+  return `File: ${f.name} (${f.mime})\npath: ${f.path}${f.append ? " (merge into the existing file by its markers)" : f.merge ? " (merge these keys into the existing JSON file, never replace it)" : ""}\n\n${f.content}`;
 }
 
 const live = lazyTool(createExportKitTool);
@@ -210,7 +212,7 @@ export const register: RegisterTool = (server) => {
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
       // Not read only: it reconciles changed directions (saves their board palette) before building.
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );
