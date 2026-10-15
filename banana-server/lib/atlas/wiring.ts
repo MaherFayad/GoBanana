@@ -6,7 +6,8 @@
 import type { DirectionDetail } from "@/lib/direction-detail";
 import { parsePage } from "./bend";
 import type { AtlasSource } from "./source";
-import type { IngredientCard, MotionRecipe, PageAnatomy, ShaderRecipe } from "./types";
+import type { IngredientCard, MotionRecipe, PageAnatomy, ShaderRecipe, TypePair } from "./types";
+import { voiceOf } from "@/lib/arabic";
 
 /** Most card ids one export reads (lead and second card of up to 8 directions). */
 export const MAX_EXPORT_CARDS = 16;
@@ -56,6 +57,28 @@ export async function loadDirectionStunning(
     console.error("[atlas] could not read the stunning layer");
     return null;
   }
+}
+
+/**
+ * The J12 type pairs of the voices these directions ask for (VAL-08), one shard per voice, or null
+ * when the Atlas has none to give (no Atlas, no pair for the voices, shards that cannot be read).
+ * The Arabic pack then uses the voice's own fonts.
+ */
+export async function loadTypePairs(
+  source: AtlasSource | null | undefined,
+  directions: readonly { detail?: DirectionDetail | null }[],
+): Promise<TypePair[] | null> {
+  if (!source) return null;
+  const voices = [...new Set(directions.map((d) => voiceOf(d.detail)))];
+  const out: TypePair[] = [];
+  for (const v of voices) {
+    try {
+      out.push(...((await source.typePairs(v)) ?? []));
+    } catch {
+      console.error("[atlas] could not read the type pairs");
+    }
+  }
+  return out.length > 0 ? out : null;
 }
 
 /** What a cut is guessed from: each direction's page anatomy, and the canvas brief's page. */

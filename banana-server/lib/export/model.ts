@@ -2,7 +2,8 @@
  * Turns a CanvasSnapshot into one derived "kit model" that every export reads,
  * so DESIGN.md, tokens and Tailwind always agree on the same values.
  */
-import type { MotionRecipe, ShaderRecipe, SlopRule } from "../atlas/types";
+import type { MotionRecipe, ShaderRecipe, SlopRule, TypePair } from "../atlas/types";
+import { buildArabicPack } from "../arabic";
 import type {
   CanvasDirection,
   CanvasItem,
@@ -20,6 +21,7 @@ import {
   isPlatform,
   isTypeVoice,
   zoneOf,
+  type ArabicPack,
   type DirectionDetail,
   type Platform,
   type TypeVoice,
@@ -196,6 +198,8 @@ export interface KitOptions {
    * `detail.atlas.shaderIds` and `motionIds` name. BUILD-PROMPT.md writes their code.
    */
   stunning?: StunningRecipes | null;
+  /** J12 bilingual type pairs (VAL-08) for the focus directions' voices, loaded by the caller. Without them the Arabic pack uses the voice's fonts. */
+  typePairs?: readonly TypePair[] | null;
 }
 
 /** The J13 recipes an export can write out, by id. */
@@ -256,6 +260,8 @@ export interface KitModel {
   slop: SlopRule[];
   /** J13 recipes by id (VAL-14); null without an Atlas stunning layer. */
   stunning: StunningRecipes | null;
+  /** The Arabic-first pack (VAL-08) of each focus direction, by direction id. */
+  arabicPacks: ReadonlyMap<string, ArabicPack>;
   scope: Scope;
   /** Directions this kit is about (see KitOptions.directionId). */
   focus: DirectionSummary[];
@@ -512,6 +518,8 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
   const rec = parseReconciled(r.reconciled);
   if (rec) d.reconciled = rec;
+  const mech = r.mechanic as { element?: unknown; how?: unknown } | null | undefined;
+  if (mech && typeof mech === "object" && typeof mech.element === "string" && typeof mech.how === "string" && oneLine(mech.element) && oneLine(mech.how)) d.mechanic = { element: oneLine(mech.element, 40), how: oneLine(mech.how, 400) };
   const atlas = parseDirectionAtlas(r);
   if (atlas) d.atlas = atlas;
   return d;
@@ -800,6 +808,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     motion: cardMotion(card),
     slop: cleanSlop(opts.slop),
     stunning: opts.stunning ?? null,
+    arabicPacks: new Map(focus.map((d) => [d.direction.id, buildArabicPack({ seed: d.direction.id, detail: d.detail, brief, pairs: opts.typePairs })] as const)),
     scope,
     focus,
     focusRefs,

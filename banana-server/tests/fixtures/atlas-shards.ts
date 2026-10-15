@@ -4,6 +4,7 @@
  */
 import { bucketOf, recipeKeyString, sha256Hex, shardPath, type AtlasKind, type AtlasManifest, type CacheLike, type ManifestShard } from "@/lib/atlas/loader";
 import { MOTION, SHADERS } from "./stunning";
+import { TYPE_PAIRS } from "./type-pairs";
 import { CARDS, CC0, DOMAINS, FIT, LINES, MECHANICS, PAGES, RECIPES } from "./atlas";
 
 export type ShardFiles = Map<string, string>;
@@ -28,7 +29,7 @@ function buckets<T>(rows: readonly T[], count: number, idOf: (r: T) => string): 
 }
 
 /** Every fixture shard by kind and name. */
-export function fixtureShardRows(stunning = false): Map<AtlasKind, Map<string, unknown[]>> {
+export function fixtureShardRows(stunning = false, typePairs = false): Map<AtlasKind, Map<string, unknown[]>> {
   const rows = new Map<AtlasKind, Map<string, unknown[]>>([
     ["pages", new Map([["00", PAGES]])],
     ["domains", new Map([["00", DOMAINS]])],
@@ -44,14 +45,16 @@ export function fixtureShardRows(stunning = false): Map<AtlasKind, Map<string, u
     rows.set("shaders", new Map([["00", SHADERS]]));
     rows.set("motion", new Map([["00", MOTION]]));
   }
+  // The J12 type atlas: one named shard per type voice.
+  if (typePairs) rows.set("type-pairs", group(TYPE_PAIRS, (p) => p.voice));
   return rows;
 }
 
 /** Shard files (R2 keys to text) and their manifest. */
-export async function buildFixtureAtlas(version = "v1", stunning = false): Promise<{ manifest: AtlasManifest; files: ShardFiles }> {
+export async function buildFixtureAtlas(version = "v1", stunning = false, typePairs = false): Promise<{ manifest: AtlasManifest; files: ShardFiles }> {
   const files: ShardFiles = new Map();
   const shards: ManifestShard[] = [];
-  for (const [kind, byName] of fixtureShardRows(stunning)) {
+  for (const [kind, byName] of fixtureShardRows(stunning, typePairs)) {
     for (const [shard, rows] of byName) {
       const text = JSON.stringify(rows);
       files.set(shardPath(version, kind, shard), text);

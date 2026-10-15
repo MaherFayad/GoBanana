@@ -33,6 +33,16 @@ description: Every export_kit format - the file, where it goes in your repo, wha
 
 When a kept direction has items with a `culture` object, or the board has a lens, `DIRECTION.md` starts with a **Cultural brief**: tradition, tier, what we use, what we avoid, credit, sources and a suggested reviewer. See [Culture and heritage](/docs/guides/culture/).
 
+## Arabic-first pack
+
+Every direction in `DIRECTION.md` and `BUILD-PROMPT.md` carries an **Arabic-first pack** (Free, no extra format):
+
+- Sample copy for the page's headline, main action and one supporting line, in white Saudi dialect without tashkeel, with the English meaning beside it. It comes from a small reviewed phrase bank per page type, not from a model call, so the same direction always gets the same words. Replace it with the product's own copy.
+- RTL notes for each part of the page: what flips (navigation, chevrons, progress, swipe) and what must not (media controls, numbers, charts with a time axis, logos).
+- An Arabic type pair from the bilingual type atlas, chosen by the direction's type voice. When the atlas has no pair for the voice, the voice's own Arabic fonts are used and the file says so.
+
+`get_canvas` shows the headline and the type pair under each direction.
+
 ## Scope block
 
 In page scope (the default) every Markdown file opens with:
