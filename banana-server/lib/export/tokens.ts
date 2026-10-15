@@ -61,6 +61,8 @@ export function tokensJson(model: KitModel): string {
       ...(model.platform.fluid ? { fluidType: model.platform.fluid } : {}),
     },
     sources: model.references.map((r) => ({ n: r.n, title: r.title, site: r.site, url: r.url })),
+    ...(model.motion ? { motion: { verb: model.motion.verb, duration: { value: model.motion.ms, unit: "ms" }, reduced: model.motion.reduced } } : {}),
+    ...(model.card ? { card: model.card } : {}),
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 }

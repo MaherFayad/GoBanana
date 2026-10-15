@@ -86,6 +86,12 @@ export interface DirectionDetail {
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */
   reconciled?: Reconciled;
+  /** Atlas ingredient card ids, lead card first (bend engine v2). Exports read the lead card. */
+  cardIds?: string[];
+  /** Atlas mechanic id for the page's wild spot (bend engine v2). */
+  mechanicId?: string;
+  /** Atlas query recipe ids the direction's searches use (bend engine v2). */
+  recipeIds?: string[];
 }
 
 /** One contrast pair as reconcile_direction saves it. ship: passes 4.5:1 (text) or 3:1 (UI parts only). */

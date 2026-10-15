@@ -105,6 +105,11 @@ function colors(m: KitModel): string {
         ? "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board. Use them only on the pages this file applies to, as overrides on top of the project's own colors."
         : "These colors are tagged ship. They passed the WCAG 2.2 contrast checks on the board and are the only colors for production.",
     );
+    if (m.colorsFrom === "card") {
+      out.push(
+        `They come from the direction's ${m.card ? `"${mdText(m.card.name, 80)}" ` : ""}card. Colors from this direction's images on the board take a card color's place only when every pair still passes: 4.5:1 for text, 3:1 for UI parts.${m.mood ? ` Board mood: ${mdText(m.mood, 300)}` : ""}`,
+      );
+    }
     if (m.colorsFrom === "board") {
       out.push(
         `They come from this direction's own placed images (reconcile_direction), with images rated great counted more. A pair is ship at 4.5:1 for text, or at 3:1 for UI parts, large text and icons only.${m.mood ? ` Board mood: ${mdText(m.mood, 300)}` : ""}`,
@@ -116,17 +121,14 @@ function colors(m: KitModel): string {
           const parts = [`**${c.name} (${c.hex}):**`];
           if (c.oklch) parts.push(`${mdText(c.oklch)}.`);
           if (c.canvasRole) parts.push(`Called "${mdText(c.canvasRole)}" on the board.`);
-          parts.push(
-            c.from === "contrast"
-              ? "Text color from a passing contrast check."
-              : c.from === "swatch"
-                ? "From a swatch on the board."
-                : c.from === "fallback"
-                  ? "Neutral placeholder."
-                  : m.colorsFrom === "board"
-                    ? "From this direction's images on the board."
-                    : "From the extracted palette.",
-          );
+          const source: Record<string, string> = {
+            contrast: "Text color from a passing contrast check.",
+            swatch: "From a swatch on the board.",
+            fallback: "Neutral placeholder.",
+            card: "From the direction's card.",
+            board: "From this direction's images on the board, in place of the card color.",
+          };
+          parts.push(source[c.from] ?? (m.colorsFrom === "board" ? "From this direction's images on the board." : "From the extracted palette."));
           return parts.join(" ");
         }),
       ),
@@ -200,6 +202,8 @@ export function fontsList(m: KitModel): string {
 
 export function pairingSource(m: KitModel): string {
   if (m.pairingFrom === "canvas") return "This pairing was picked on the board.";
+  if (m.pairingFrom === "card") return `From the direction's ${m.card ? `"${mdText(m.card.name, 80)}" ` : ""}card.`;
+  if (m.pairingFrom === "distinct") return "Another direction on this board already uses this direction's first pick, so it gets its own pairing.";
   const voice = m.focus.find((d) => d.detail?.spec)?.detail?.spec?.typeVoice;
   if (m.pairingFrom === "voice" && voice) return `Picked for the direction's ${voice.replace(/-/g, " ")} type voice.`;
   return "No type sample was on the board, so this is the default pairing.";

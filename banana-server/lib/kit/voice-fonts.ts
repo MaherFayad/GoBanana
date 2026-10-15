@@ -41,6 +41,30 @@ export function voiceFonts(voice: TypeVoice | null | undefined): VoiceFonts {
   return { voice: v, ...TABLE[v] };
 }
 
+/** The type block of an Atlas ingredient card (lib/atlas/types.ts IngredientCard["type"]). */
+export interface CardType {
+  voice: string;
+  latin: { display: string; body: string };
+  arabic: { display: string; body: string };
+}
+
+/**
+ * A card's four fonts (P1-I5): its named families, display 700 and body 400 (the voice's Arabic
+ * weights), with the fallbacks of its voice. A family the card leaves empty comes from the voice.
+ */
+export function cardVoiceFonts(type: CardType | null | undefined): VoiceFonts {
+  const base = voiceFonts(TABLE[type?.voice as TypeVoice] ? (type?.voice as TypeVoice) : null);
+  const named = (family: string | undefined, from: VoiceFont, weight = from.weight): VoiceFont =>
+    family?.trim() ? { family: family.trim(), weight, fallback: from.fallback } : from;
+  return {
+    voice: base.voice,
+    latinDisplay: named(type?.latin?.display, base.latinDisplay, 700),
+    latinBody: named(type?.latin?.body, base.latinBody, 400),
+    arabicDisplay: named(type?.arabic?.display, base.arabicDisplay),
+    arabicBody: named(type?.arabic?.body, base.arabicBody),
+  };
+}
+
 /** One Google Fonts css2 link that loads all four families. */
 export function voiceFontsUrl(fonts: VoiceFonts): string {
   const byFamily = new Map<string, Set<number>>();

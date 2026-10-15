@@ -27,6 +27,7 @@ import {
 import { parseReconciled } from "../db/detail";
 import fontsData from "../kit/fonts.json";
 import { voiceFonts, voiceFontsUrl, type VoiceFonts } from "../kit/voice-fonts";
+import { cardColors, cardFonts, cardMotion, cardPairing, cardRounded, cardVoice, pairKey, voicesAfter, type KitMotion, type LeadCard } from "./card";
 import { EXPORT_PLATFORMS, platformOf, type ExportPlatform } from "./platform";
 import { cleanPages, explorationDir, globsFor, inferPages, kitSlug, type Scope } from "./scope";
 import { contrastRatio, finite, normalizeHex, oneLine, plainBlock, safeUrl, tokenName } from "./util";
@@ -97,8 +98,11 @@ export interface ColorToken {
   oklch: string | null;
   /** Role as written on the canvas, when it differs from the token name. */
   canvasRole: string | null;
-  /** fallback: neutral placeholders when a direction has images but none could be read for color. */
-  from: "palette" | "swatch" | "contrast" | "fallback";
+  /**
+   * fallback: neutral placeholders when a direction has images but none could be read for color.
+   * card: the lead Atlas card's palette. board: a board color that refined a card color.
+   */
+  from: "palette" | "swatch" | "contrast" | "fallback" | "card" | "board";
 }
 
 export interface ExploreColor {
@@ -178,6 +182,11 @@ export interface KitOptions {
   directionId?: string | null;
   /** Pages or globs the kit applies to (up to 5). Default: the directions' pages, else the brief's screen. */
   pages?: readonly string[] | null;
+  /**
+   * Atlas ingredient cards by id (P1-I5), loaded by the caller. A direction whose saved
+   * `detail.cardIds` starts with a card here exports that card's fonts, radius, motion and palette.
+   */
+  cards?: ReadonlyMap<string, LeadCard> | null;
 }
 
 export interface KitNote {
@@ -204,8 +213,16 @@ export interface KitModel {
   contrast: ContrastResult[];
   pairing: FontPairing;
   pairingFromCanvas: boolean;
-  /** Where the pairing came from: a type sample on the canvas, the direction's type voice, or the default. */
-  pairingFrom: "canvas" | "voice" | "default";
+  /**
+   * Where the pairing came from: a type sample on the canvas, the lead Atlas card, the direction's
+   * type voice, the default, or "distinct" (its first pick was taken by another direction on the
+   * board, so it got the next free pairing).
+   */
+  pairingFrom: "canvas" | "card" | "voice" | "default" | "distinct";
+  /** The lead direction's Atlas card, when one was found. */
+  card: { id: string; name: string } | null;
+  /** The lead card's motion, when there is one. */
+  motion: KitMotion | null;
   scope: Scope;
   /** Directions this kit is about (see KitOptions.directionId). */
   focus: DirectionSummary[];
@@ -230,10 +247,11 @@ export interface KitModel {
   /** One Google Fonts link for those four. */
   fontsUrl: string;
   /**
-   * Where the ship colors came from: "board" (reconcile_direction on the focus directions),
-   * "canvas" (extract_palette runs and swatches), "fallback" (neutral placeholders) or "none".
+   * Where the ship colors came from: "card" (the lead Atlas card, refined by the board when
+   * reconcile_direction ran), "board" (reconcile_direction on the focus directions), "canvas"
+   * (extract_palette runs and swatches), "fallback" (neutral placeholders) or "none".
    */
-  colorsFrom: "board" | "canvas" | "fallback" | "none";
+  colorsFrom: "card" | "board" | "canvas" | "fallback" | "none";
   /** Board mood line from reconcile_direction, when it ran. */
   mood: string | null;
   /** Main colors inside each Frankenstein part's crop (reconcile_direction), by part id. */
@@ -461,7 +479,64 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
   const rec = parseReconciled(r.reconciled);
   if (rec) d.reconciled = rec;
+  const cardIds = lines(r.cardIds, 80, 4);
+  if (cardIds.length) d.cardIds = cardIds;
   return d;
+}
+
+// ---------- fonts per direction ----------
+
+interface FontChoice {
+  pairing: FontPairing;
+  fonts: VoiceFonts;
+  from: "card" | "voice" | "default" | "distinct";
+}
+
+const LATIN_PAIRINGS = FONTS.pairings.filter((p) => !p.scripts.includes("arabic"));
+
+function voiceChoice(voice: TypeVoice | null | undefined, pairing: FontPairing, from: FontChoice["from"]): FontChoice {
+  // Latin fonts follow the pairing; Arabic follow the voice.
+  return { pairing, fonts: { ...voiceFonts(voice), latinDisplay: { ...pairing.display }, latinBody: { ...pairing.body } }, from };
+}
+
+/** A direction's first font pick: its lead card's fonts, then its type voice, then the default. */
+function firstFontChoice(detail: DirectionDetail | null, card: LeadCard | undefined): FontChoice {
+  const fromCard = card ? cardPairing(card) : null;
+  if (card && fromCard) return { pairing: fromCard, fonts: cardFonts(card, fromCard), from: "card" };
+  const voice = detail?.spec?.typeVoice;
+  const p = pairingForVoice(voice);
+  return voiceChoice(voice, p ?? defaultPairing(), p ? "voice" : "default");
+}
+
+const leadCardOf = (detail: DirectionDetail | null, cards: ReadonlyMap<string, LeadCard> | null | undefined) => {
+  const id = detail?.cardIds?.[0];
+  return id ? cards?.get(id) : undefined;
+};
+
+/**
+ * Fonts for every direction on the board, so no two directions export the same Latin pair (P1-I5).
+ * Directions are taken in board order; a direction whose first pick is taken gets its card's voice
+ * pairing, then the next free open licence Latin pairing, keeping its own Arabic fonts.
+ */
+function distinctFontChoices(directions: readonly DirectionSummary[], cards: ReadonlyMap<string, LeadCard> | null | undefined): Map<string, FontChoice> {
+  const out = new Map<string, FontChoice>();
+  const taken = new Set<string>();
+  for (const d of directions) {
+    const card = leadCardOf(d.detail, cards);
+    let choice = firstFontChoice(d.detail, card);
+    if (taken.has(pairKey(choice.pairing))) {
+      const voice = (card ? cardVoice(card) : null) ?? d.detail?.spec?.typeVoice ?? null;
+      const candidates = [
+        ...[voice, ...voicesAfter(voice)].flatMap((v) => pairingForVoice(v) ?? []),
+        ...LATIN_PAIRINGS,
+      ];
+      const free = candidates.find((p) => !taken.has(pairKey(p)));
+      if (free) choice = { pairing: free, fonts: { ...choice.fonts, latinDisplay: { ...free.display }, latinBody: { ...free.body } }, from: "distinct" };
+    }
+    taken.add(pairKey(choice.pairing));
+    out.set(d.direction.id, choice);
+  }
+  return out;
 }
 
 
@@ -582,13 +657,20 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const inOtherDirections = new Set(
     sections.filter((s) => s.directionId && knownIds.has(s.directionId) && !focusIds.has(s.directionId)).flatMap((s) => s.items.map((i) => i.id)),
   );
+  // The lead direction's Atlas card (P1-I5) wins: its palette is the base, and the lead's board
+  // palette only refines it where contrast still passes (lib/export/card.ts).
+  const card = leadCardOf(lead?.detail ?? null, opts.cards);
+  const fromCard = card ? cardColors(card, lead?.detail?.reconciled?.palette ?? []) : null;
   const colors =
-    boardPalettes.length > 0
-      ? buildColors(boardPalettes, allItems.filter((i) => !inOtherDirections.has(i.id)))
-      : buildColors(snapshot.palettes ?? [], allItems);
+    fromCard && fromCard.ship.length > 0
+      ? { ship: fromCard.ship, contrast: fromCard.contrast, explore: fromCard.unused.map((hex): ExploreColor => ({ hex, oklch: null, role: null })) }
+      : boardPalettes.length > 0
+        ? buildColors(boardPalettes, allItems.filter((i) => !inOtherDirections.has(i.id)))
+        : buildColors(snapshot.palettes ?? [], allItems);
   const { explore, contrast } = colors;
   let ship = colors.ship;
-  let colorsFrom: KitModel["colorsFrom"] = ship.length === 0 ? "none" : boardPalettes.length > 0 ? "board" : "canvas";
+  let colorsFrom: KitModel["colorsFrom"] =
+    ship.length === 0 ? "none" : fromCard && fromCard.ship.length > 0 ? "card" : boardPalettes.length > 0 ? "board" : "canvas";
   // A direction with images always gets named colors: neutral placeholders when none could be read.
   const focusImages = focusRefs.filter((r) => r.directionId && focusIds.has(r.directionId)).length;
   if (ship.length === 0 && focusImages >= 3) {
@@ -601,17 +683,16 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const partColors = new Map<string, string[]>();
   for (const d of directions) for (const [id, hexes] of Object.entries(d.detail?.reconciled?.parts ?? {})) if (!partColors.has(id)) partColors.set(id, hexes);
 
-  // A type sample placed on the canvas is the user's own pick and wins; then the direction's
-  // type voice; then the default.
+  // A type sample placed on the canvas is the user's own pick and wins; then the lead card's fonts,
+  // then the direction's type voice, then the default, each kept apart from the other directions'.
   const sample = allItems.find((i) => i.type === "typeSample" && findPairing(i.pairingId));
   const fromSample = sample?.type === "typeSample" ? findPairing(sample.pairingId) : undefined;
-  const fromVoice = fromSample ? undefined : pairingForVoice(lead?.detail?.spec?.typeVoice);
-  const pairing = fromSample ?? fromVoice ?? defaultPairing();
-  const pairingFrom = fromSample ? "canvas" : fromVoice ? "voice" : "default";
+  const choice = (lead && distinctFontChoices(directions, opts.cards).get(lead.direction.id)) ?? firstFontChoice(lead?.detail ?? null, card);
+  const pairing = fromSample ?? choice.pairing;
+  const pairingFrom: KitModel["pairingFrom"] = fromSample ? "canvas" : choice.from;
   const arabic = pairing.scripts.includes("arabic");
-  // Latin fonts follow the pairing in use (a type sample on the board wins); Arabic follow the voice.
-  const voice = voiceFonts(lead?.detail?.spec?.typeVoice);
-  const fonts: VoiceFonts = { ...voice, latinDisplay: { ...pairing.display }, latinBody: { ...pairing.body } };
+  // Latin fonts follow the pairing in use (a type sample on the board wins); Arabic follow the card or voice.
+  const fonts: VoiceFonts = { ...choice.fonts, latinDisplay: { ...pairing.display }, latinBody: { ...pairing.body } };
 
   const title = oneLine(snapshot.title, 80) || "Untitled canvas";
   const brief = oneLine(snapshot.brief, 500);
@@ -652,6 +733,8 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     pairing,
     pairingFromCanvas: !!sample,
     pairingFrom,
+    card: card ? { id: card.id, name: oneLine(card.name, 80) } : null,
+    motion: cardMotion(card),
     scope,
     focus,
     focusRefs,
@@ -663,13 +746,8 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     dir: explorationDir(slug),
     arabic,
     typography: buildTypography(pairing, arabic, platform),
-    rounded: [
-      ["none", { value: 0, unit: "px" }],
-      ["sm", { value: 4, unit: "px" }],
-      ["md", { value: 8, unit: "px" }],
-      ["lg", { value: 16, unit: "px" }],
-      ["full", { value: 9999, unit: "px" }],
-    ],
+    // The lead card's radius word; "soft" (4, 8, 16) without a card.
+    rounded: cardRounded(card),
     spacing: platform.spacing.map(([k, d]): [string, Dim] => [k, { ...d }]),
     components: buildComponents(ship),
     stitches: (snapshot.stitches ?? []).filter((st) => !st.directionId || !knownIds.has(st.directionId) || focusIds.has(st.directionId)),
