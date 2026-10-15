@@ -6,6 +6,7 @@
  * (lib/web-session.ts; proxy.ts runs AuthKit on /api/canvas/*).
  */
 import { authkitOptionsFromEnv, verifyAuthKitToken, type AuthExtra } from "@/lib/auth";
+import { getConfig } from "@/lib/config";
 import { getWebUser } from "@/lib/web-session";
 
 /** users.id of the caller, or null when signed out or the token is bad. */
@@ -26,13 +27,16 @@ export async function authenticateRequest(req: Request): Promise<string | null> 
  * is a second check. Requests without an Origin header (non-browser clients) pass.
  */
 export function isSameOrigin(req: Request, appUrl?: string): boolean {
+  const { legacyAppUrl } = getConfig();
   if (req.headers.has("authorization")) return true;
   const origin = req.headers.get("origin");
   if (!origin) return true;
   const allowed = new Set<string>([new URL(req.url).origin]);
-  if (appUrl) {
+  // While a custom domain is on, the workers.dev site is still the same site (it redirects).
+  for (const url of [appUrl, legacyAppUrl]) {
+    if (!url) continue;
     try {
-      allowed.add(new URL(appUrl).origin);
+      allowed.add(new URL(url).origin);
     } catch {
       // ignore a malformed APP_URL
     }

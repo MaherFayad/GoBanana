@@ -5,6 +5,7 @@
  */
 import type { CanvasItem } from "@/lib/canvas/types";
 import { MOBBIN_SITE, isMobbinSource } from "@/lib/sources/mobbin";
+import { webTitle } from "@/lib/mcp/untrusted";
 import { MAX_THUMBS, type ThumbTarget } from "./thumbs";
 
 /** Mobbin image links expire about 30 days after the connector returns them; flag them a little earlier. */
@@ -21,7 +22,7 @@ function refTarget(r: RefLike, prefix: string): ThumbTarget | null {
   const imageUrl = str(r.imageUrl);
   if (!imageUrl) return null;
   return {
-    label: `${prefix} ${str(r.id) ?? ""}: ${str(r.title) ?? "Untitled"} (${str(r.sourceSite) ?? "source"})`,
+    label: `${prefix} ${str(r.id) ?? ""}: ${webTitle(str(r.title))} (${str(r.sourceSite) ?? "source"})`,
     imageUrl,
     thumbUrl: str(r.thumbUrl) ?? null,
   };

@@ -13,7 +13,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { ToastViewport } from "@/components/studio/Toast";
-import { APP_NAME } from "@/lib/config";
+import { APP_NAME, getConfig } from "@/lib/config";
 import { getDict } from "@/lib/site/dict";
 import { dirOf, isLocale, LOCALES } from "@/lib/site/i18n";
 import "../site.css";
@@ -31,7 +31,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = getDict(locale);
+  // Canonical and hreflang URLs resolve against the custom domain once PUBLIC_ORIGIN is set (DIST-02).
+  const { publicOrigin } = getConfig();
   return {
+    ...(publicOrigin ? { metadataBase: new URL(publicOrigin) } : {}),
     title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
     description: t.meta.siteDescription,
     alternates: { languages: { en: "/en", ar: "/ar" } },

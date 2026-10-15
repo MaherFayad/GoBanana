@@ -402,7 +402,7 @@ export const register: RegisterTool = (server) => {
       title: "Add to canvas",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
     async (args, ctx) => placedWithThumbs(await live(args, authExtra(ctx)?.userId), args),
   );

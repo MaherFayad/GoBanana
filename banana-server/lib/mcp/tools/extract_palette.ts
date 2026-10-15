@@ -215,7 +215,7 @@ export const register: RegisterTool = (server) => {
       title: "Extract palette",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

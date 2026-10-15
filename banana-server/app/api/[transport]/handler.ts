@@ -5,7 +5,7 @@
  */
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import type { AuthInfo } from "@modelcontextprotocol/server";
-import { APP_NAME, RESOURCE_METADATA_PATH } from "@/lib/config";
+import { APP_NAME, readAppUrl, RESOURCE_METADATA_PATH } from "@/lib/config";
 import { tools as defaultTools } from "@/lib/mcp/tools";
 import type { RegisterTool } from "@/lib/mcp/tools/types";
 import { registerCanvasResource } from "@/lib/mcp/resources/canvas";
@@ -21,7 +21,7 @@ export const defaultResources: RegisterTool[] = [(server) => registerCanvasResou
  * URLs on APP_URL; left out when APP_URL is not set (tests, local dev without it).
  */
 function serverIcons() {
-  const appUrl = process.env.APP_URL?.trim().replace(/\/+$/, "");
+  const appUrl = readAppUrl();
   if (!appUrl) return undefined;
   return [
     { src: `${appUrl}/brand/app-icon-192.png`, mimeType: "image/png", sizes: ["192x192"] },

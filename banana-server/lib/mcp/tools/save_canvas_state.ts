@@ -104,7 +104,7 @@ export const register: RegisterTool = (server) => {
   server.registerTool(
     TOOL_NAME,
     {
-      title: "Save canvas (canvas view only)",
+      title: "Save canvas for the view",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },

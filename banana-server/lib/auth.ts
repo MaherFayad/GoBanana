@@ -22,6 +22,8 @@ export type AccessClaims = JWTPayload & {
 export type VerifyOptions = {
   issuer: string;
   audience: string;
+  /** More accepted audiences: the workers.dev resource URL while a custom domain is on. */
+  extraAudiences?: string[];
   /** Key set. Defaults to the AuthKit remote JWKS; tests inject a local one. */
   jwks?: JWTVerifyGetKey;
   /** Seconds of clock skew to allow. */
@@ -61,11 +63,11 @@ export async function verifyAccessToken(
   opts: VerifyOptions,
 ): Promise<AccessClaims | null> {
   if (!token) return null;
-  const audience = stripSlash(opts.audience);
+  const audiences = [opts.audience, ...(opts.extraAudiences ?? [])].map(stripSlash);
   try {
     const { payload } = await jwtVerify(token, opts.jwks ?? authkitJwks(opts.issuer), {
       issuer: [stripSlash(opts.issuer), `${stripSlash(opts.issuer)}/`],
-      audience: [audience, `${audience}/`],
+      audience: audiences.flatMap((a) => [a, `${a}/`]),
       algorithms: ["RS256"],
       clockTolerance: opts.clockTolerance ?? 5,
       requiredClaims: ["sub", "exp"],
@@ -139,9 +141,9 @@ export function createTokenVerifier(deps: TokenVerifierDeps) {
 
 /** Verify options from env, or null when auth is not configured. */
 export function authkitOptionsFromEnv(): VerifyOptions | null {
-  const { authkitIssuer, mcpResourceUrl } = getConfig();
+  const { authkitIssuer, mcpResourceUrl, legacyMcpResourceUrl } = getConfig();
   if (!authkitIssuer || !mcpResourceUrl) return null;
-  return { issuer: authkitIssuer, audience: mcpResourceUrl };
+  return { issuer: authkitIssuer, audience: mcpResourceUrl, ...(legacyMcpResourceUrl ? { extraAudiences: [legacyMcpResourceUrl] } : {}) };
 }
 
 /** The production verifier: AuthKit JWKS + users row upsert. */

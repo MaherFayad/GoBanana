@@ -58,6 +58,7 @@ import { compileTakedowns } from "@/lib/takedown";
 import { getConfig } from "@/lib/config";
 import { getRepos } from "@/lib/db";
 import { plausibleId, takedownLoader, tasteInputSchema, upgradeUrl } from "./canvas-shared";
+import { UNTRUSTED_NOTE, webTitle } from "@/lib/mcp/untrusted";
 import { lenient, toolMessage, type RegisterTool } from "./types";
 import { searchWithThumbs } from "@/lib/vision/wrap";
 
@@ -246,7 +247,7 @@ function resultText(out: SearchReferencesOutput): string {
     lines.push(heading);
     for (const r of refs) {
       const tag = r.lane ? `${r.id}, ${r.lane}` : r.id;
-      lines.push(`${++n}. [${tag}] ${r.title ?? "Untitled"} (${r.sourceSite}, ${zone === "shipped" ? "ui" : zone}): ${r.sourceUrl}`);
+      lines.push(`${++n}. [${tag}] ${webTitle(r.title)} (${r.sourceSite}, ${zone === "shipped" ? "ui" : zone}): ${r.sourceUrl}`);
     }
   };
   list("ui", "UI references:");
@@ -280,7 +281,7 @@ function resultText(out: SearchReferencesOutput): string {
   if (drops) lines.push(drops);
   if (out.addedToTray && out.canvasId) lines.push(`Added to the tray of canvas ${out.canvasId}.`);
   if (out.learned) lines.push("Some lanes used wording that rated better before.");
-  lines.push("Rate standouts and misses with rate_references (ids in brackets).");
+  lines.push("Rate standouts and misses with rate_references (ids in brackets).", UNTRUSTED_NOTE);
   return lines.join("\n");
 }
 
@@ -822,7 +823,7 @@ export const register: RegisterTool = (server) => {
       description: TOOL_DESCRIPTION,
       // Validated in the handler so bad input gets a plain message, not the SDK's raw dump.
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args, ctx) => {
       defaultTool ??= createSearchReferencesTool(createDefaultDeps());

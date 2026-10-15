@@ -223,7 +223,7 @@ export const register: RegisterTool = (server) => {
       title: "Bend a design brief",
       description: BEND_BRIEF_DESCRIPTION,
       inputSchema: advertisedInput,
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
     async (args, ctx) => {
       liveTool ??= createBendBriefTool(liveBendDeps);

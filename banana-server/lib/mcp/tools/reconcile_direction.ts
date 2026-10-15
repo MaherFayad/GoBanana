@@ -329,7 +329,7 @@ export const register: RegisterTool = (server) => {
       title: "Reconcile direction",
       description: TOOL_DESCRIPTION,
       inputSchema: lenient(inputSchema),
-      annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
     async (args, ctx) => live(args, authExtra(ctx)?.userId),
   );

@@ -15,8 +15,19 @@ export const RESOURCE_METADATA_PATH = "/.well-known/oauth-protected-resource";
 
 export type ServerConfig = {
   appName: string;
-  /** Public origin, no trailing slash. Undefined means "derive from the request". */
+  /**
+   * Public origin of the site, no trailing slash. PUBLIC_ORIGIN (the custom domain) wins over
+   * APP_URL (the workers.dev URL). Undefined means "derive from the request".
+   */
   appUrl?: string;
+  /** Custom domain origin. Undefined while the custom domain is switched off (the default). */
+  publicOrigin?: string;
+  /** Origin that serves the MCP endpoint: MCP_ORIGIN, else PUBLIC_ORIGIN. Undefined while off. */
+  mcpOrigin?: string;
+  /** The workers.dev APP_URL, only while a custom domain is on: it still works and redirects. */
+  legacyAppUrl?: string;
+  /** The workers.dev MCP resource URL, only while a custom domain is on: old tokens keep working. */
+  legacyMcpResourceUrl?: string;
   /** RFC 8707 resource id of the MCP endpoint. Tokens must carry it as `aud`. */
   mcpResourceUrl?: string;
   /** AuthKit issuer, for example https://example.authkit.app (no trailing slash). */
@@ -41,14 +52,45 @@ export function normalizeIssuer(domain: string): string {
   return stripSlash(withScheme);
 }
 
+/** The https origin of a URL, or undefined for anything else (so a typo leaves the custom domain off). */
+export function httpsOrigin(value: string | undefined): string | undefined {
+  if (!value?.trim()) return undefined;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" ? url.origin : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The site origin from the environment: PUBLIC_ORIGIN (custom domain) when set, else APP_URL.
+ * For code that cannot call getConfig (module scope, the Worker entry).
+ */
+export function readAppUrl(): string | undefined {
+  const origin = httpsOrigin(read("PUBLIC_ORIGIN"));
+  const url = origin ?? read("APP_URL");
+  return url ? stripSlash(url) : undefined;
+}
+
 export function getConfig(): ServerConfig {
-  const appUrl = read("APP_URL");
-  const resource = read("MCP_RESOURCE_URL");
+  const appUrlEnv = read("APP_URL");
+  const publicOrigin = httpsOrigin(read("PUBLIC_ORIGIN"));
+  const mcpOrigin = httpsOrigin(read("MCP_ORIGIN")) ?? publicOrigin;
+  const appUrl = publicOrigin ?? (appUrlEnv ? stripSlash(appUrlEnv) : undefined);
+  const resourceEnv = read("MCP_RESOURCE_URL");
+  const oldResource = resourceEnv ? stripSlash(resourceEnv) : appUrlEnv ? `${stripSlash(appUrlEnv)}/api/mcp` : undefined;
+  const mcpResourceUrl = mcpOrigin ? `${mcpOrigin}/api/mcp` : oldResource;
   const authkit = read("WORKOS_AUTHKIT_DOMAIN");
+  const customOn = !!(publicOrigin || mcpOrigin);
   return {
     appName: APP_NAME,
-    appUrl: appUrl ? stripSlash(appUrl) : undefined,
-    mcpResourceUrl: resource ? stripSlash(resource) : appUrl ? `${stripSlash(appUrl)}/api/mcp` : undefined,
+    appUrl,
+    ...(publicOrigin ? { publicOrigin } : {}),
+    ...(mcpOrigin ? { mcpOrigin } : {}),
+    ...(customOn && appUrlEnv && stripSlash(appUrlEnv) !== appUrl ? { legacyAppUrl: stripSlash(appUrlEnv) } : {}),
+    ...(customOn && oldResource && oldResource !== mcpResourceUrl ? { legacyMcpResourceUrl: oldResource } : {}),
+    mcpResourceUrl,
     authkitIssuer: authkit ? normalizeIssuer(authkit) : undefined,
     workosClientId: read("WORKOS_CLIENT_ID"),
     workosApiKey: read("WORKOS_API_KEY"),
