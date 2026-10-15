@@ -1,0 +1,1413 @@
+{
+  "note": "Owner edit list for Atlas job J1 (page anatomy). Derived from banana-server/lib/bend/wild-spots.json, banana-server/bench/briefs.json, banana-plugin/evals and common product pages. Edit names or platforms, add or remove rows, then rerun j1.",
+  "pages": [
+    {
+      "id": "onboarding",
+      "name": "onboarding",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "empty-state",
+      "name": "empty state",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "streak-moment",
+      "name": "achievement or streak moment",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "paywall",
+      "name": "paywall",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "splash-screen",
+      "name": "splash screen",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "year-in-review",
+      "name": "year in review",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "offline-error",
+      "name": "error or offline state",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "easter-egg",
+      "name": "settings easter egg",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "success-screen",
+      "name": "success screen",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "reading-mode",
+      "name": "reading or focus mode",
+      "platforms": [
+        "tablet",
+        "mobile"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "launch-page",
+      "name": "launch page",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "campaign-page",
+      "name": "campaign page",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "not-found",
+      "name": "404 page",
+      "platforms": [
+        "website",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "manifesto-page",
+      "name": "about or manifesto page",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "pricing-page",
+      "name": "pricing page",
+      "platforms": [
+        "website",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "footer",
+      "name": "footer",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "careers-page",
+      "name": "careers page",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "changelog",
+      "name": "changelog",
+      "platforms": [
+        "website",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "event-page",
+      "name": "event or conference page",
+      "platforms": [
+        "website"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "first-run",
+      "name": "first run",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "upgrade-modal",
+      "name": "upgrade modal",
+      "platforms": [
+        "webapp",
+        "mobile"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "loading-state",
+      "name": "loading states",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "milestone-celebration",
+      "name": "milestone celebration",
+      "platforms": [
+        "webapp",
+        "mobile"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "login",
+      "name": "login page",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "wild-spots"
+    },
+    {
+      "id": "plan-picker",
+      "name": "eSIM or data plan picker",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "checkout",
+      "name": "checkout",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "flight-checkout",
+      "name": "flight checkout with bags and seats",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "landing-page",
+      "name": "landing page",
+      "platforms": [
+        "website"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "bank-onboarding",
+      "name": "banking onboarding and account opening",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "offers-page",
+      "name": "seasonal offers page",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "property-listing",
+      "name": "real estate listing page",
+      "platforms": [
+        "website",
+        "mobile"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "kids-home",
+      "name": "kids app home screen",
+      "platforms": [
+        "tablet",
+        "mobile"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "gov-services-dashboard",
+      "name": "government services dashboard",
+      "platforms": [
+        "webapp",
+        "mobile"
+      ],
+      "from": "bench"
+    },
+    {
+      "id": "bank-home",
+      "name": "banking home",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "evals"
+    },
+    {
+      "id": "podcast-player",
+      "name": "podcast player",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "evals"
+    },
+    {
+      "id": "analytics-dashboard",
+      "name": "analytics dashboard",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "evals"
+    },
+    {
+      "id": "fintech-home",
+      "name": "fintech app home",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "evals"
+    },
+    {
+      "id": "home-feed",
+      "name": "home feed",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "app-home",
+      "name": "app home screen",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "search",
+      "name": "search",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "search-results",
+      "name": "search results",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "filters-sheet",
+      "name": "filters and sort",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "product-detail",
+      "name": "product detail",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "product-listing",
+      "name": "product listing or category",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "cart",
+      "name": "cart",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "payment",
+      "name": "payment method",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "order-confirmation",
+      "name": "order confirmation",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "order-tracking",
+      "name": "order tracking",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "order-history",
+      "name": "order history",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "returns",
+      "name": "returns and refunds",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "wishlist",
+      "name": "wishlist or saved items",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "reviews",
+      "name": "ratings and reviews",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "restaurant-menu",
+      "name": "restaurant menu",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "food-delivery-home",
+      "name": "food delivery home",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "grocery-home",
+      "name": "grocery store home",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "ride-booking",
+      "name": "ride booking map",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "trip-in-progress",
+      "name": "trip in progress",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "rate-driver",
+      "name": "rate the trip",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "sign-up",
+      "name": "sign up",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "otp-verification",
+      "name": "one time code verification",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "forgot-password",
+      "name": "forgot password",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "identity-verification",
+      "name": "identity verification",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "permissions",
+      "name": "permissions request",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "profile",
+      "name": "profile",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "edit-profile",
+      "name": "edit profile",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "settings",
+      "name": "settings",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "notification-settings",
+      "name": "notification settings",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "account-deletion",
+      "name": "delete account",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "notifications",
+      "name": "notifications center",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "inbox",
+      "name": "inbox",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "chat-list",
+      "name": "chat list",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "chat-thread",
+      "name": "chat conversation",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "support-chat",
+      "name": "support chat",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "help-center",
+      "name": "help center",
+      "platforms": [
+        "website",
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "faq-page",
+      "name": "FAQ page",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "contact-page",
+      "name": "contact page",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "calendar",
+      "name": "calendar",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "booking",
+      "name": "booking",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "appointment-booking",
+      "name": "appointment booking",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "hotel-detail",
+      "name": "hotel detail",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "hotel-search",
+      "name": "hotel search results",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "flight-search",
+      "name": "flight search",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "flight-results",
+      "name": "flight results",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "seat-map",
+      "name": "seat selection",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "boarding-pass",
+      "name": "boarding pass",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "trip-itinerary",
+      "name": "trip itinerary",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "event-tickets",
+      "name": "event ticket purchase",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "ticket-wallet",
+      "name": "tickets wallet",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "wallet",
+      "name": "wallet",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "card-details",
+      "name": "card details",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "send-money",
+      "name": "send money",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "transfer-confirmation",
+      "name": "transfer confirmation",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "transactions",
+      "name": "transactions list",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "transaction-detail",
+      "name": "transaction detail",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "bill-payment",
+      "name": "bill payment",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "budget-overview",
+      "name": "budget overview",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "investment-portfolio",
+      "name": "investment portfolio",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "stock-detail",
+      "name": "stock detail",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "crypto-trade",
+      "name": "buy and sell crypto",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "loan-application",
+      "name": "loan application",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "insurance-quote",
+      "name": "insurance quote",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "loyalty-rewards",
+      "name": "loyalty and rewards",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "referral",
+      "name": "invite friends",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "subscription-management",
+      "name": "manage subscription",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "billing",
+      "name": "billing and invoices",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "plan-comparison",
+      "name": "plan comparison table",
+      "platforms": [
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "music-player",
+      "name": "music player",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "playlist",
+      "name": "playlist",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "video-player",
+      "name": "video player",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "streaming-home",
+      "name": "streaming home",
+      "platforms": [
+        "tablet",
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "content-detail",
+      "name": "show or movie detail",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "article",
+      "name": "article page",
+      "platforms": [
+        "website",
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "blog-index",
+      "name": "blog index",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "news-home",
+      "name": "news home",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "course-lesson",
+      "name": "course lesson",
+      "platforms": [
+        "mobile",
+        "tablet",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "quiz",
+      "name": "quiz",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "course-catalog",
+      "name": "course catalog",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "workout-player",
+      "name": "workout in progress",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "activity-summary",
+      "name": "activity summary",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "habit-tracker",
+      "name": "habit tracker",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "meditation-session",
+      "name": "meditation session",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "health-records",
+      "name": "health records",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "doctor-booking",
+      "name": "doctor booking",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "prayer-times",
+      "name": "prayer times",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "weather",
+      "name": "weather",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "maps-directions",
+      "name": "map directions",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "place-detail",
+      "name": "place detail",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "social-profile",
+      "name": "social profile",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "post-composer",
+      "name": "create a post",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "story-viewer",
+      "name": "story viewer",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "comments",
+      "name": "comments",
+      "platforms": [
+        "mobile",
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "camera-capture",
+      "name": "camera capture",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "photo-editor",
+      "name": "photo editor",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "gallery-grid",
+      "name": "photo gallery",
+      "platforms": [
+        "mobile",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "file-browser",
+      "name": "file browser",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "document-editor",
+      "name": "document editor",
+      "platforms": [
+        "webapp",
+        "tablet"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "kanban-board",
+      "name": "kanban board",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "task-list",
+      "name": "task list",
+      "platforms": [
+        "mobile",
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "project-overview",
+      "name": "project overview",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "team-members",
+      "name": "team members",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "admin-table",
+      "name": "admin data table",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "crm-contact",
+      "name": "CRM contact detail",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "invoice-builder",
+      "name": "invoice builder",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "integrations",
+      "name": "integrations",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "api-keys",
+      "name": "API keys and developer settings",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "command-palette",
+      "name": "command palette",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "workspace-switcher",
+      "name": "workspace switcher",
+      "platforms": [
+        "webapp"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "product-tour",
+      "name": "product tour",
+      "platforms": [
+        "webapp",
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "feature-page",
+      "name": "feature page",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "customer-stories",
+      "name": "customer stories",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "app-download-page",
+      "name": "app download page",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "waitlist",
+      "name": "waitlist sign up",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "portfolio",
+      "name": "portfolio site",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "restaurant-site",
+      "name": "restaurant website",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "hotel-site",
+      "name": "hotel website home",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "ecommerce-home",
+      "name": "online store home",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "docs-page",
+      "name": "documentation page",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "legal-page",
+      "name": "terms and privacy",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "newsletter-signup",
+      "name": "newsletter sign up",
+      "platforms": [
+        "website"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "charity-donation",
+      "name": "donation page",
+      "platforms": [
+        "website",
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "rate-the-app",
+      "name": "rate the app prompt",
+      "platforms": [
+        "mobile"
+      ],
+      "from": "common"
+    },
+    {
+      "id": "maintenance-page",
+      "name": "maintenance page",
+      "platforms": [
+        "website",
+        "webapp"
+      ],
+      "from": "common"
+    }
+  ]
+}

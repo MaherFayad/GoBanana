@@ -203,7 +203,11 @@ export async function main(argv: readonly string[]): Promise<number> {
     job.mode === "batch"
       ? await runBatches(client, job.id, requests, statePath, { pollMs: args.pollMs, log: ctx.log, onReply })
       : await runDirect(client, requests, { log: ctx.log, onReply });
-  writeFileSync(rawPath, rawLines.join("\n") + "\n");
+  // Keep earlier replies for requests this run did not send, so a partial rerun (--offset/--limit)
+  // followed by --from-raw rebuilds the whole job.
+  const sent = new Set(inputs.keys());
+  const kept = existsSync(rawPath) ? [...readRaw(rawPath).values()].filter((r) => !sent.has(r.id)).map((r) => JSON.stringify(r)) : [];
+  writeFileSync(rawPath, [...kept, ...rawLines].join("\n") + "\n");
   clearState(statePath);
   ctx.log(`Spent this run: $${runUsd.toFixed(4)} (logged to ${PATHS.costs}). Replies saved to ${rawPath}.`);
 
