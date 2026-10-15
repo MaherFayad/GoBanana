@@ -12,7 +12,8 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": { "@/*": ["../banana-server/*"] }
   },
   "include": ["*.ts", "lib/**/*.ts", "jobs/**/*.ts", "tests/**/*.ts"]
 }

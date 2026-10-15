@@ -14,7 +14,9 @@ Rules:
 - Subject: the template is worded for a checkout. In directions 1, 2, 3, 5 and 6, rewrite only the words that name parts of the screen (summary, total, fare, price, confirm, receipt lines) so each Pattern, Signature and Steal names a real part of the brief's page ("the episode card slides out of a sleeve" for a podcast player). Titles name the idea in at most 4 words and never the brief; keep them as written. Keep ids, moves, types, colors, textures, art queries and everything else as written.
 - Lens: if a lens is given, direction 4 becomes a full direction with move material + lens, titled with the lens craft in at most 4 words (for sadu: "Sadu weaving"; for talli: "Talli gold braid"), with mechanic "divider = <craft> as the band between sections, never behind text", with every spec line like direction 1, built from that craft's motifs, colors and texture, and art queries naming the craft close up. Never use sacred text or religious verses. Without a lens, direction 4 stays as written.
 - Directions 7 and 8 always stay as written: weak ideas with no clear pattern.
+- The Card story line of direction 1 always stays as written (a Banana Atlas direction).
 - Lens suggestion: if no lens is given and the brief names a Gulf or Arab market or Arabic (GCC, Saudi, UAE, Dubai, Kuwait, Arabic, RTL), add this line right after the first line: 'This brief names an Arab or Gulf market and no lens is set. Try bend_brief again with lens "sadu", "talli", "qatt-asiri" to pull a real local craft into every direction.'
+- Brand: if a `brand` is given, find the primary hex (a tokens key named primary, else a DESIGN.md line that names "primary" and a hex) and the DESIGN.md lines that name the logo. Add this line right after the first line: "Brand stretch <stretch>: Read: primary <hex or 'no primary color found'>, <n> logo rules." For keep-logo-and-primary and keep-primary, start every Color line with "Brand primary <hex> stays the main action and accent color;" and add "Keep the brand primary <hex>." to every direction. For keep-logo-and-primary, also start every Avoid line with "changing, recoloring or crowding the logo: <logo rules>". For free, change nothing else.
 - If a canvasId was given, end with "Saved to canvas <canvasId>." Otherwise "Not saved: no canvasId."
 - Plain text only, no commentary, no em dashes.
 
@@ -24,6 +26,7 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
 8 directions:
 1. id d1, move transplant + material: "Frosted vinyl sleeve". Search: vinyl record sleeve
    Mechanic: build this direction around total = Frosted vinyl sleeve frames the total; the amount itself stays plain, large and readable. Search for UI that has this element.
+   Card story (frosted-vinyl-sleeve): A clear record sleeve shows what is inside without opening it. Nobody expects a record sleeve to hold a payment. Tell it in the idea note.
    Pattern: the summary slides out of a sleeve card. Signature: sleeve card with a half-moon cutout for the total.
    Type (condensed): condensed grotesk, big tabular numerals. Color: frosted off-white, one ink blue accent, 1 in 10.
    Layout: <layout>. Imagery: none, the sleeve is the image. Motion: sleeve slides 200ms on confirm, still with reduced motion.

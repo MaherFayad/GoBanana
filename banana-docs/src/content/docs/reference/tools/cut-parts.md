@@ -21,6 +21,8 @@ A part is a role, a crop rectangle over a hotlinked image, a light or dark tag a
 | `cuts[].crop` | object | No | `x`, `y` 0 to 1; `w`, `h` above 0 up to 1 | Fractions of the image, from the top left. Leave out and the server guesses a band by role |
 | `cuts[].theme` | enum | No | `light`, `dark`, `unknown` | As seen |
 | `cuts[].note` | string | No | 1 to 280 characters | What to take, starting with `steal:` |
+| `cuts[].cardId` | string | No | 1 to 60 characters | An Atlas card id, kept with the swipe file item |
+| `save` | boolean | No | | Also keep the cut parts in your [swipe file](/docs/guides/canvases/#your-swipe-file): links, roles and crops only |
 
 **Roles.** Web and shared: `nav`, `hero`, `logos`, `features`, `cards`, `gallery`, `stats`, `testimonial`, `pricing`, `cta`, `form`, `faq`, `content`, `footer`. Web app: `sidebar`, `toolbar`, `table`, `chart`, `filters`. Mobile: `status-header`, `tabbar`, `list`, `detail`, `sheet`, `empty`. Anything else: `other`. Any role works on any platform.
 

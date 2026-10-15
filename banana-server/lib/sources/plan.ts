@@ -100,6 +100,16 @@ export type LaneTexts = {
    * Pinterest pins and Behance galleries with the art junk gate. 1 to 3.
    */
   art?: string[];
+  /**
+   * Search plan v2 (P1-I3): the source an Atlas query recipe was judged on, per lane. The lane's
+   * first request goes there instead of the lane's usual site.
+   */
+  recipeSites?: Partial<Record<LaneName, SourceSite>>;
+  /**
+   * False when the bridge words are an Atlas concept recipe (judged good as worded): its titles are
+   * not filtered by the idea's head word.
+   */
+  bridgeTitleFilter?: boolean;
 };
 
 /** True when the lanes have anything to search (a brief gave them UI lanes). */
@@ -257,12 +267,20 @@ export type PlanOptions = {
 function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
   const out: PlannedRequest[] = [];
   const avoid = lanes.avoid?.length ? lanes.avoid : undefined;
+  // A lane's first request goes to its recipe's source (search plan v2), once.
+  const recipeSiteUsed = new Set<LaneName>();
+  const siteFor = (lane: LaneName, site: SourceSite): SourceSite => {
+    const r = lanes.recipeSites?.[lane];
+    if (!r || recipeSiteUsed.has(lane)) return site;
+    recipeSiteUsed.add(lane);
+    return r;
+  };
   const add = (lane: LaneName, text: string | undefined, site: SourceSite, neg: boolean, fallback?: string, titleWord?: string) => {
     if (!text) return;
     out.push({
       lane,
       query: neg ? withNeg(text) : text,
-      site,
+      site: siteFor(lane, site),
       ...(fallback ? { fallback: neg ? withNeg(fallback) : fallback } : {}),
       ...(titleWord ? { titleWord } : {}),
       ...(avoid ? { avoidWords: avoid } : {}),
@@ -289,7 +307,7 @@ function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
   const addBridge = () => {
     if (!head || !lanes.bridge) return;
     const alt = lanes.bridge.replace(/ ui design$/, " app ui");
-    add("bridge", lanes.bridge, "dribbble", true, alt !== lanes.bridge ? alt : undefined, head);
+    add("bridge", lanes.bridge, "dribbble", true, alt !== lanes.bridge ? alt : undefined, lanes.bridgeTitleFilter === false ? undefined : head);
   };
   if (tasteFirst) {
     addTaste();

@@ -3,7 +3,7 @@
  * Unknown keys are dropped, wrong types are dropped field by field, and anything that is not an
  * object reads as null. Strings are trimmed and capped so a bad caller cannot bloat the row.
  */
-import { isPlatform, isTypeVoice, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
+import { isPlatform, isTypeVoice, type DirectionAtlas, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -84,6 +84,30 @@ export function parseReconciled(v: unknown): Reconciled | undefined {
   return out;
 }
 
+/** The Atlas id fields of one object: short id strings only, capped. Undefined without a card id. */
+function atlasFields(v: Record<string, unknown>): DirectionAtlas | undefined {
+  const cardIds = strs(v.cardIds, 4, 80) ?? [];
+  if (cardIds.length === 0) return undefined;
+  const out: DirectionAtlas = { cardIds, recipeIds: strs(v.recipeIds, 12, 80) ?? [] };
+  const mechanicId = str(v.mechanicId, 80);
+  if (mechanicId) out.mechanicId = mechanicId;
+  for (const k of ["pageId", "domainId", "productNoun"] as const) {
+    const s = str(v[k], 80);
+    if (s) out[k] = s;
+  }
+  return out;
+}
+
+/**
+ * The Atlas ids of a saved direction (BEND_ENGINE=atlas). `detail.atlas` is the one place they
+ * live; rows saved before that kept flat `cardIds`, `mechanicId` and `recipeIds` on the detail,
+ * which are read into the same shape.
+ */
+export function parseDirectionAtlas(raw: unknown): DirectionAtlas | undefined {
+  if (!isObj(raw)) return undefined;
+  return (isObj(raw.atlas) ? atlasFields(raw.atlas) : undefined) ?? atlasFields(raw);
+}
+
 /** Clean detail, or null when `raw` is not an object or has nothing usable. */
 export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (!isObj(raw)) return null;
@@ -105,12 +129,13 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (raw.verdict === "keep" || raw.verdict === "drop") out.verdict = raw.verdict;
   const rec = parseReconciled(raw.reconciled);
   if (rec) out.reconciled = rec;
-  // Atlas ids (bend engine v2): exports read the lead card, learning updates their weights.
-  const cardIds = strs(raw.cardIds, 4, 80);
-  if (cardIds?.length) out.cardIds = cardIds;
-  const mechanicId = str(raw.mechanicId, 80);
-  if (mechanicId) out.mechanicId = mechanicId;
-  const recipeIds = strs(raw.recipeIds, 12, 80);
-  if (recipeIds?.length) out.recipeIds = recipeIds;
+  if (isObj(raw.mechanic)) {
+    const element = str(raw.mechanic.element, 40);
+    const how = str(raw.mechanic.how, 400);
+    if (element && how) out.mechanic = { element, how };
+  }
+  // Atlas ids (bend engine v2), flat fields of old rows included.
+  const atlas = parseDirectionAtlas(raw);
+  if (atlas) out.atlas = atlas;
   return Object.keys(out).length > 0 ? out : null;
 }

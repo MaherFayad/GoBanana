@@ -17,6 +17,7 @@ import { parseCreator } from "@/lib/learning/creator";
 import { atlasFeedbackRows, referenceAtlasIds } from "@/lib/learning/directions";
 import { badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, type FeedbackReason } from "@/lib/learning/hints";
 import { itemKey } from "@/lib/sources/web-search";
+import { MAX_SWIPE_ITEMS } from "@/lib/swipe";
 import { LANE_NAMES, type LaneName } from "@/lib/sources/types";
 import {
   CANVAS_NOT_FOUND,
@@ -38,6 +39,7 @@ export const TOOL_DESCRIPTION =
   "Bad results leave the canvas tray and never come back in this user's searches. " +
   "Rate art direction results the same way (shop or off idea is bad). " +
   "Each bad rating returns a hint for re-searching its lane. " +
+  "save: true keeps the great ones in the user's swipe file. " +
   "Rate from the thumbnails search_references returned, never from the titles alone.";
 
 export const MAX_RATINGS = 50;
@@ -54,6 +56,7 @@ export const inputSchema = z.object({
     )
     .min(1)
     .max(MAX_RATINGS),
+  save: z.boolean().optional().describe("Also keep the great ones in the user's swipe file (links only), to reuse on other boards."),
 });
 
 export type RateReferencesInput = z.input<typeof inputSchema>;
@@ -77,6 +80,8 @@ export type RateReferencesOutput = {
   notFound: string[];
   hints: RateHint[];
   canvasId?: string;
+  /** Great references newly kept in the swipe file (save: true). */
+  swipeSaved?: number;
 };
 
 const asLane = (lane: string | null): LaneName | null => (LANE_NAMES as readonly string[]).includes(lane ?? "") ? (lane as LaneName) : null;
@@ -165,6 +170,40 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         return ref ? atlasFeedbackRows(row, referenceAtlasIds(ref, row.verdict)) : [];
       });
       if (rows.length > 0) await deps.repos.feedback.insertMany([...rows, ...atlasRows]);
+
+      // save: true keeps the great ones in the user's swipe file (links only; takedowns are checked).
+      let swipeSaved: number | undefined;
+      let swipeNote = "";
+      if (input.save && great > 0) {
+        try {
+          const repo = deps.swipe?.();
+          if (!repo) throw new Error("no swipe repo");
+          const matcher = await takedownLoader(deps)();
+          const items = ids.flatMap((id) => {
+            const ref = found.get(id);
+            if (!ref || byId.get(id)?.verdict !== "great" || matcher.isReferenceBlocked(ref)) return [];
+            return [
+              {
+                kind: "reference" as const,
+                sourceSite: ref.sourceSite,
+                sourceUrl: ref.sourceUrl,
+                imageUrl: ref.imageUrl,
+                thumbUrl: ref.thumbUrl,
+                title: ref.title,
+                fromCanvasId: ref.canvasId,
+              },
+            ];
+          });
+          const res = await repo.addMany(userId, items);
+          swipeSaved = res.added;
+          swipeNote = res.full
+            ? `Swipe file: saved ${res.added}; it is full (${MAX_SWIPE_ITEMS} items). Ask the user which items to remove on the library page.`
+            : `Swipe file: saved ${res.added} great reference${res.added === 1 ? "" : "s"}${res.skipped > 0 ? `, ${res.skipped} already there` : ""}.`;
+        } catch {
+          console.error("[rate_references] swipe save failed");
+          swipeNote = "Swipe file: could not save this time. The ratings are saved.";
+        }
+      }
       if (badKeys.size > 0) await deps.repos.blocklist.add(userId, [...badKeys]);
 
       let removedFromTray = 0;
@@ -187,6 +226,7 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         notFound,
         hints,
         ...(input.canvasId ? { canvasId: input.canvasId } : {}),
+        ...(swipeSaved !== undefined ? { swipeSaved } : {}),
       };
       // Great ratings change a direction's palette weights: nudge a reconcile when one is due.
       let hint: string | null = null;
@@ -194,7 +234,7 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         const loaded = await loadCanvas(deps.repos, userId, input.canvasId, takedownLoader(deps));
         if (loaded) hint = await reconcileHintFor(deps.repos, userId, loaded.canvas, loaded.state);
       }
-      return toolResult(`${text(out)}${hint ? `\n${hint}` : ""}`, out);
+      return toolResult(`${text(out)}${swipeNote ? `\n${swipeNote}` : ""}${hint ? `\n${hint}` : ""}`, out);
     } catch {
       console.error("[rate_references] failed");
       return toolMessage(TRY_AGAIN);

@@ -21,7 +21,9 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `moves` | enum[] | لا | `transplant`، `material`، `era`، `constraint`، `scale`، `lens` | يحصر الحركات المستخدمة. الافتراضي الست كلها |
 | `lens` | enum | لا | `sadu`، `najdi`، `kufic`، `mashrabiya`، `talli`، `qatt-asiri`، `desert-modern`، `memphis`، `swiss-international`، `japanese-ma` | كل اتجاه يستلهم من هذا التقليد |
 | `mustKeep` | string[] | لا | من 1 إلى 6، وكل واحد حتى 60 حرفا | أنماط يعتمد عليها المستخدمون ("clear total"، "one primary action"، "step indicator"). يسقط أي اتجاه قد يكسر واحدا منها. موجزات الدفع والسلة والحجز تحافظ افتراضيا على إجمالي واضح وإجراء رئيسي واحد |
+| `brand` | object | لا | `designMd` حتى 20,000 حرف، و`tokens` كائن JSON حتى 20,000 حرف، و`stretch` مطلوب | هوية منتجك، وكم تقدر الاتجاهات تبعد عنها. شوف [مرونة الهوية](#مرونة-الهوية) |
 | `taste` | string[] | لا | من 1 إلى 5 كلمات، وكل كلمة حتى 40 حرفا | كلمات الذوق، تحفظ على اللوحة مع `canvasId` |
+| `fromUpload` | object | لا | `uploadId` (من رفوعاتك أنت)، و`roles` اختيارية (من 1 إلى 12 دورا من [أدوار الأجزاء](/docs/ar/reference/tools/cut-parts/)) | حوّل صفحتك أنت. بدون `roles` تعرض الإجابة لقطة الشاشة (حتى 1.5 ميغابايت) وتطلب من الوكيل سرد أجزائها من الأعلى إلى الأسفل. ومع `roles` تكتب سطر الأساس منها. تعمل رفوعاتك أنت فقط |
 | `canvasId` | string | لا | من 1 إلى 100 حرف | يحفظ الاتجاهات على تلك اللوحة، فيقبل `search_references` معرف `directionId` |
 
 ## المخرجات
@@ -45,6 +47,37 @@ description: يحول موجز التصميم إلى اتجاهات جامحة �
 | `styleWords[]`، `whyItFits` | minimal; "A dusty matte mood suits hungry people deciding fast" |
 
 ويضاف إليها `platform`، و`pages`، و`wildness`، و`wildnessLabel`، و`lens` (مع `arabicFont`، خط عرض عربي من Google Fonts، ومع `culture`: `tier` و`meaning` و`uiMappings` كصفوف من العنصر والقواعد وآلية الواجهة، وأسطر `care` و`sources` الموثقة، وتنطبق على كل اتجاه)، و`suggestedLenses` (حتى 3 معرفات عدسات عندما يذكر الموجز سوقا خليجية أو عربية أو العربية ولم تحدد عدسة)، و`wildSpots` (خمسة مواضع، وتكون فارغة إذا مررت `pages`). ومع `canvasId`: يضاف `canvasId` و`saved`.
+
+## مرونة الهوية
+
+الشغل الجامح ما ينشر إلا إذا وافق عليه فريق الهوية. مرر ملف DESIGN.md حق المنتج (`designMd`)، أو رموز التصميم (`tokens`)، أو الاثنين، مع `stretch`:
+
+| `stretch` | وش يحافظ عليه كل اتجاه |
+| --- | --- |
+| `keep-logo-and-primary` | اللون الأساسي للهوية يبقى لون الإجراء الرئيسي واللون المميز، والشعار يبقى مثل ما تنشره الهوية. قواعد الشعار من DESIGN.md تنضاف لقائمة `avoid` ولنص الأمر في كل اتجاه. والاتجاه اللي آليته الترويسة يخلي الشعار فيها بدون أي تغيير |
+| `keep-primary` | اللون الأساسي للهوية يبقى لون الإجراء الرئيسي واللون المميز. الشعار وكل شي ثاني يقدر يتغير |
+| `free` | ولا شي. اللون الأساسي ينذكر في نص الأمر كمرجع، مو كقاعدة |
+
+اللون الأساسي ينقرأ من رمز اسمه `primary` (مثل `color.brand.primary` مع `$value`)، وإذا ما لقاه ياخذه من أول سطر في DESIGN.md يذكر "primary" ومعه لون hex. الخادم ما يخمن لون أبدا: إذا ما لقى شي يقول لك في النتيجة، وتقدر تمرر الرموز أو سطر مثل `Primary: #1A56DB`. بعدها يصير سطر اللون: "Brand primary #1A56DB stays the main action and accent color, with #FFFFFF text on it (6.18 to 1); the idea's palette supports it: ...". الهوية ما تغير معرفات الاتجاهات ولا الأفكار اللي تطلع لك.
+
+```json
+{
+  "name": "bend_brief",
+  "arguments": {
+    "brief": "checkout for a payments app",
+    "wildness": 3,
+    "platform": "mobile",
+    "brand": {
+      "designMd": "## Colors\n- Primary: #1A56DB\n\n## Logo\n- Keep clear space of 16px around the logo.",
+      "stretch": "keep-logo-and-primary"
+    }
+  }
+}
+```
+
+```text
+Brand stretch keep-logo-and-primary: every direction keeps the brand primary and the logo as shipped. Read: primary #1A56DB, 1 logo rule.
+```
 
 ## مثال على الاستدعاء
 
@@ -109,6 +142,7 @@ Pages: none given. Where weirdness pays off (wildSpots):
 | "brief must be 1 to 500 characters, for example "flight checkout screen"." | اختصر الموجز |
 | "wildness must be a whole number from 1 (Fresh) to 5 (Bananas)." | مرر قيمة من 1 إلى 5 |
 | "pages must be 1 to 3 page names, each up to 60 characters." | صفحات أقل وأسماء أقصر |
+| "brand needs a stretch (keep-logo-and-primary, keep-primary, free), with designMd up to 20000 characters and tokens as a JSON object up to 20000 characters." | أضف `stretch`، أو قص DESIGN.md أو الرموز على أجزاء الألوان والشعار بس |
 | "canvasId must be an id from open_canvas." | استخدم معرف لوحة حقيقيا |
 | "The directions were not saved: that canvas was not found or could not be reached..." | الاتجاهات تعود رغم ذلك. ابحث بنص بحثها، أو أعد الثني بمعرف صالح |
 

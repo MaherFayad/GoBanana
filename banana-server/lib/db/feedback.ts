@@ -9,7 +9,7 @@ import type { Db } from "@/db/client";
 import { blockedItems, searchFeedback } from "@/db/schema";
 import type { FeedbackVerdict } from "@/lib/learning/hints";
 import { isUuid } from "./ids";
-import type { ArmStatRow, BlocklistRepo, FeedbackRepo, IngredientStatRow, NewFeedback } from "./types";
+import type { ArmStatRow, BlocklistRepo, FeedbackRepo, IngredientStatRow, NewFeedback, NightlyAtlasRow } from "./types";
 
 /** Most rows one armStats read groups (term keys of one search, a handful of arms each). */
 const MAX_TERM_KEYS = 16;
@@ -150,6 +150,19 @@ export async function readAtlasStats(db: Db, userId: string, k: number): Promise
   return statRows(await db.execute(atlasStatsSql(userId, k)));
 }
 
+/** Most nightly Atlas weight rows read per call (lib/learning/nightly.ts writes at most 5000 rows). */
+const MAX_NIGHTLY_ATLAS = 5000;
+
+/** The nightly Atlas weights query. Exported for SQL tests. */
+export function nightlyAtlasSql() {
+  return sql`select id, alpha, beta from "atlas_weights" where kind = 'atlas' limit ${MAX_NIGHTLY_ATLAS}`;
+}
+
+export async function readNightlyAtlas(db: Db): Promise<NightlyAtlasRow[]> {
+  const result = await db.execute(nightlyAtlasSql());
+  return (result.rows as Record<string, unknown>[]).map((r) => ({ termKey: String(r.id), alpha: Number(r.alpha ?? 0), beta: Number(r.beta ?? 0) }));
+}
+
 function statRows(result: { rows: unknown[] }): IngredientStatRow[] {
   return (result.rows as Record<string, unknown>[]).map((r) => ({
     termKey: String(r.term_key),
@@ -168,6 +181,7 @@ export function feedbackRepo(db: Db): FeedbackRepo {
     armStats: (userId, termKeys) => readArmStats(db, userId, termKeys),
     directionStats: (userId, k) => readDirectionStats(db, userId, k),
     atlasStats: (userId, k) => readAtlasStats(db, userId, k),
+    nightlyAtlas: () => readNightlyAtlas(db),
     verdictsFor: (userId, itemKeys) => readVerdictsFor(db, userId, itemKeys),
   };
 }

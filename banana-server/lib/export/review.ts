@@ -63,6 +63,19 @@ export function reviewMd(m: KitModel): string {
     "",
   );
 
+  // Distance from slop (Atlas J8): features most default AI built pages share. Matching fewer
+  // than 2 of them is the Bench target (docs/next-step-plan.md section 8).
+  if (m.slop.length > 0) {
+    out.push(
+      "## Distance from slop",
+      "",
+      "Features most default pages share (Banana Atlas, J8). A page that matches 2 or more of them reads as a default page; change the ones it matches unless the direction asks for them.",
+      "",
+    );
+    for (const r of m.slop) out.push(item(`Slop ${r.feature}`, `The page does not use ${mdText(r.value, 120)} (on ${Math.round(r.share * 100)}% of default pages)`));
+    out.push("");
+  }
+
   out.push("## Scope", "");
   if (m.scope === "page") {
     out.push(

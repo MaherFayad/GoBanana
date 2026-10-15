@@ -1,5 +1,6 @@
 import type { Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { Mechanic } from "./mechanic";
+import type { BrandInput, BrandRead } from "./brand";
 
 export type { Platform, VisualSpec } from "@/lib/direction-detail";
 
@@ -33,6 +34,11 @@ export interface BendInput {
    * Never changes ids: a direction that breaks one is dropped, and mechanics avoid them.
    */
   mustKeep?: string[];
+  /**
+   * The product's brand and how far directions may stretch it (VAL-07, lib/bend/brand.ts). Never
+   * changes ids or picks: it rewrites what each direction must keep.
+   */
+  brand?: BrandInput;
 }
 
 /** Tones a list entry can carry; subjects map to compatible tones (lib/bend/tone.ts). */
@@ -130,6 +136,14 @@ export interface Direction {
   artQueries: string[];
   /** The working UI part the wild idea becomes (lib/bend/mechanic.ts): build the direction around it. */
   mechanic: Mechanic;
+  /** Atlas engine only (P1-I2): the lead card first, then the card that adds texture or motion. */
+  cardIds?: string[];
+  /** Atlas engine only: the Atlas mechanic the direction is built on. */
+  mechanicId?: string;
+  /** Atlas engine only: the query recipes its queries came from (lib/atlas/loader.ts recipeId). */
+  recipeIds?: string[];
+  /** Atlas engine only (P1-I7): the lead card's story, its idea and why it surprises, for the idea note. */
+  story?: string;
 }
 
 /** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */
@@ -197,4 +211,8 @@ export interface BendResult {
   /** Top places for one wild page on this platform. Empty when pages were given. */
   wildSpots: WildSpot[];
   directions: Direction[];
+  /** What bend_brief read from `brand` (VAL-07): the primary, the logo rules and the stretch. */
+  brand?: BrandRead;
+  /** Set when the Atlas engine made the directions (BEND_ENGINE=atlas); absent for the word lists. */
+  atlas?: { pageId: string; domainId: string; productNoun: string };
 }

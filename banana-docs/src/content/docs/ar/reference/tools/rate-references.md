@@ -23,6 +23,7 @@ description: قيّم نتائج البحث بـ great أو bad لتتحسن ع�
 | `ratings[].referenceId` | string | نعم | من 1 إلى 100 حرف | المعرف الذي بين القوسين في مخرجات البحث |
 | `ratings[].verdict` | enum | نعم | `great`، `bad` | |
 | `ratings[].reasons` | enum[] | لا | انظر أدناه | السبب |
+| `save` | boolean | لا | | احفظ المراجع `great` أيضا في [مكتبتك](/docs/ar/guides/canvases/#مكتبتك): روابط فقط، وليس الصور أبدا |
 
 **أسباب bad:** `off_topic`، `stock_or_shop`، `cluttered`، `duplicate`، `low_craft`، `wrong_style`، `not_ui` (لمنطقة الواجهات فقط). **أسباب great:** `great_craft`، `on_style`، `on_brief`.
 

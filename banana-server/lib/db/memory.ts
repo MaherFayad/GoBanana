@@ -15,6 +15,7 @@ import type {
   DirectionRecord,
   IngredientStatRow,
   NewFeedback,
+  NightlyAtlasRow,
   PaletteRecord,
   ReferenceRecord,
   Repos,
@@ -34,6 +35,8 @@ export type MemoryRepos = Repos & {
     takedowns: string[];
     plans: Map<string, Plan>;
     feedback: MemoryFeedback[];
+    /** `atlas_weights` rows of kind "atlas" (the nightly cron's output). */
+    nightlyAtlas: NightlyAtlasRow[];
     /** user id to blocked item keys */
     blocked: Map<string, Set<string>>;
   };
@@ -85,6 +88,7 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
     takedowns: [...(seed.takedowns ?? [])],
     plans: new Map(Object.entries(seed.plans ?? {})),
     feedback: [],
+    nightlyAtlas: [],
     blocked: new Map(),
   };
   let clock = Date.UTC(2026, 9, 1);
@@ -252,6 +256,8 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
             existing.query = r.query ?? existing.query;
             existing.termKey = r.termKey ?? existing.termKey;
             existing.arm = r.arm ?? existing.arm;
+            existing.recipeId = r.recipeId ?? existing.recipeId ?? null;
+            existing.cardId = r.cardId ?? existing.cardId ?? null;
             continue;
           }
           data.references.set(id, {
@@ -269,6 +275,8 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
             query: r.query ?? null,
             termKey: r.termKey ?? null,
             arm: r.arm ?? null,
+            recipeId: r.recipeId ?? null,
+            cardId: r.cardId ?? null,
           });
           created.set(id, tick());
         }
@@ -384,6 +392,9 @@ export function createMemoryRepos(seed: { takedowns?: string[]; plans?: Record<s
       },
       async atlasStats(userId, k) {
         return laneStats(data.feedback, userId, k, (f) => f.lane === "atlas" && !!f.termKey);
+      },
+      async nightlyAtlas() {
+        return data.nightlyAtlas.map((r) => ({ ...r }));
       },
       async verdictsFor(userId, itemKeys) {
         const keys = new Set(itemKeys);

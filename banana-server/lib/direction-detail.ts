@@ -82,16 +82,30 @@ export interface DirectionDetail {
   wildness?: number;
   /** The working UI part the wild idea becomes ("progress", "Sadu weaving as the progress bar ..."). */
   mechanic?: { element: string; how: string };
+  /**
+   * Atlas ids (P1-I2, BEND_ENGINE=atlas only): the one place a direction keeps them. Search plan
+   * v2 (P1-I3) reads the recipes, exports (P1-I5) the lead card, learning (P1-I6) credits the ids.
+   * Old rows that saved flat `cardIds`, `mechanicId` and `recipeIds` are read into this field.
+   */
+  atlas?: DirectionAtlas;
   /** "keep" or "drop" from rate_directions; missing means not rated yet. */
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */
   reconciled?: Reconciled;
-  /** Atlas ingredient card ids, lead card first (bend engine v2). Exports read the lead card. */
-  cardIds?: string[];
-  /** Atlas mechanic id for the page's wild spot (bend engine v2). */
+}
+
+/** The Atlas ids of one direction (bend engine v2). */
+export interface DirectionAtlas {
+  /** Ingredient card ids, lead card first; the second card adds only texture or motion. */
+  cardIds: string[];
+  /** Mechanic id for the page's wild spot. */
   mechanicId?: string;
-  /** Atlas query recipe ids the direction's searches use (bend engine v2). */
-  recipeIds?: string[];
+  /** Query recipe ids the direction's searches use. */
+  recipeIds: string[];
+  /** The PageAnatomy id the brief was parsed into (crops read its bands). */
+  pageId?: string;
+  domainId?: string;
+  productNoun?: string;
 }
 
 /** One contrast pair as reconcile_direction saves it. ship: passes 4.5:1 (text) or 3:1 (UI parts only). */

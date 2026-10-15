@@ -13,6 +13,8 @@ description: Read a board - brief, directions with their spec, sections, items w
 | --- | --- | --- | --- | --- |
 | `canvasId` | string | No | 1 to 100 characters | The board to read. Leave out to list your recent boards |
 | `thumbs` | boolean | No | default `true` | Small thumbnails of up to 12 placed references after the text (see [get_snapshot](/docs/reference/tools/get-snapshot/)) |
+| `summary` | boolean | No | | Compact view: ids, titles, roles, notes and direction ids only. Counts of client review votes are added |
+| `library` | object | No | `role`, `cardId`, `query` (up to 80 characters), `limit` (1 to 50, default 20) | With no `canvasId`, searches your [swipe file](/docs/guides/canvases/#your-swipe-file) instead of reading a board. Newest first, each item with its source link |
 
 ## List mode
 

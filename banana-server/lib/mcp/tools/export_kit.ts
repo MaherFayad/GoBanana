@@ -14,6 +14,7 @@ import { z } from "zod";
 import { authExtra } from "@/lib/auth";
 import { canvasWebUrl, loadCanvas, toSnapshot } from "@/lib/canvas/store";
 import {
+  CROSS_DIRECTION_FORMATS,
   EXPORT_FORMATS,
   MAX_PAGES,
   SCOPES,
@@ -29,13 +30,15 @@ import { exportLimitMessage, splitExportFormats } from "@/lib/quota";
 import { CANVAS_NOT_FOUND, lazyTool, plausibleId, takedownLoader, TRY_AGAIN, upgradeUrl } from "./canvas-shared";
 import { directionStates, reconcileDirection, type ReconcileDeps } from "./reconcile_direction";
 import { recordFunnel } from "@/lib/funnel";
+import { loadDirectionCards } from "@/lib/atlas/wiring";
+import type { SlopRule } from "@/lib/atlas/types";
 import { lenient, parseArgs, toolMessage, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "export_kit";
 
 export const TOOL_DESCRIPTION =
   "Export a canvas as files for one wild page (default) or the design system: design_md, direction_md, build_prompt, review, agents_md, claude_md, cursor_rules, copilot, " +
-  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, culture_md, claude_settings. " +
+  "tokens, tailwind, figjam_spec, html_board, brief, stitch_md, wireframe_html, culture_md, claude_settings, pitch_md, experiment_md. " +
   "One folder per kept direction. Big exports list files: fetch each with file.";
 
 /** Inline output cap in characters (file contents plus headers), so results stay readable. */
@@ -128,12 +131,37 @@ export function createExportKitTool(deps: ExportKitDeps) {
       }
 
       if (allowed.length > 0) await recordFunnel(userId, "export");
-      const opts = { scope, pages: input.pages } as const;
+      // The lead and second Atlas cards of the exported directions (P1-I5 fonts, radii, motion and
+      // palette). No Atlas, or cards that cannot be read: the type voice exports as before.
+      const exportedRows = directions.filter((d) => (exported.length > 0 ? exported.includes(d.bendId ?? d.id) : true));
+      let cards: Awaited<ReturnType<typeof loadDirectionCards>> = null;
+      try {
+        cards = await loadDirectionCards(deps.atlasSource?.() ?? null, exportedRows);
+      } catch {
+        cards = null;
+      }
+      // Slop rules (Atlas J8) for REVIEW.md, read only when the review is exported.
+      let slop: SlopRule[] | null = null;
+      if (allowed.includes("review")) {
+        try {
+          slop = (await deps.atlasSource?.()?.slop()) ?? null;
+        } catch {
+          slop = null;
+        }
+      }
+      const opts = { scope, pages: input.pages, cards, slop } as const;
       let sets: DirectionFileSet[] | null = null;
       let files: (ExportFile & { directionId?: string })[];
       if (!directionId && kept.length > 1) {
-        sets = exportKitByDirection(snapshot, allowed, kept, opts);
-        files = sets.flatMap((s) => s.files.map((f) => ({ ...f, directionId: s.directionId })));
+        // pitch_md and experiment_md cover the kept directions together: one file, not one per folder.
+        const together = allowed.filter((f) => CROSS_DIRECTION_FORMATS.includes(f));
+        const apart = allowed.filter((f) => !CROSS_DIRECTION_FORMATS.includes(f));
+        files = [];
+        if (apart.length > 0) {
+          sets = exportKitByDirection(snapshot, apart, kept, opts);
+          files = sets.flatMap((s) => s.files.map((f) => ({ ...f, directionId: s.directionId })));
+        }
+        if (together.length > 0) files.push(...exportKit(snapshot, together, opts));
       } else {
         files = exportKit(snapshot, allowed, { ...opts, directionId });
       }

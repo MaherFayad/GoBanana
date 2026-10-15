@@ -21,6 +21,8 @@ import {
 import type { Culture } from "@/lib/culture";
 import { canvasWithThumbs } from "@/lib/vision/wrap";
 import { UNTRUSTED_NOTE, webTitle } from "@/lib/mcp/untrusted";
+import { loadReviews, reviewLines, type DirectionReview } from "@/lib/review";
+import { DEFAULT_SWIPE_LIMIT, MAX_SWIPE_LIMIT, swipeLines, type SwipeItem } from "@/lib/swipe";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "get_canvas";
@@ -28,7 +30,7 @@ export const TOOL_NAME = "get_canvas";
 export const TOOL_DESCRIPTION =
   "Read a canvas: brief, directions with spec, sections, items with source links and notes, palettes, parts and Frankenstein pages. " +
   "Call it with summary: true first (ids, titles, roles, notes, directionIds only), then the full view only when you need the details. " +
-  "Leave out canvasId to list the user's recent canvases, so you can add to one instead of creating another.";
+  "Leave out canvasId to list recent canvases and add to one. library searches the swipe file.";
 
 export const inputSchema = z.object({
   canvasId: z.string().min(1).max(100).optional().describe("Canvas to read. Leave out to list recent canvases."),
@@ -37,6 +39,15 @@ export const inputSchema = z.object({
     .optional()
     .describe("Show small thumbnails of up to 12 placed references; look at them before you judge the board. Default true. Mobbin images that need a refresh are flagged either way."),
   summary: z.boolean().optional().describe("Compact view: ids, titles, roles, notes and directionIds only. Use it first."),
+  library: z
+    .object({
+      role: z.string().trim().min(1).max(30).optional().describe("A part role: nav, hero, pricing..."),
+      cardId: z.string().trim().min(1).max(60).optional().describe("An Atlas card id."),
+      query: z.string().trim().min(1).max(80).optional().describe("Words in the title, site or note."),
+      limit: z.number().int().min(1).max(MAX_SWIPE_LIMIT).optional().describe(`Up to ${MAX_SWIPE_LIMIT}, default ${DEFAULT_SWIPE_LIMIT}.`),
+    })
+    .optional()
+    .describe("Search the user's swipe file (parts and great references saved across boards) instead of reading a canvas."),
 });
 
 /** A full get_canvas text above this many characters ends with a hint to use summary mode. */
@@ -125,6 +136,8 @@ export type GetCanvasOutput = {
   parts: { role: PartRole; parts: PartSummary[] }[];
   /** Frankenstein pages (stitch frames), compact. */
   stitches: StitchOverview[];
+  /** Client review from the share link (VAL-04), only when someone voted or commented. */
+  reviews?: DirectionReview[];
 };
 
 export function partsByRole(c: CanvasSnapshot): GetCanvasOutput["parts"] {
@@ -291,12 +304,46 @@ async function listRecent(deps: CanvasToolDeps, userId: string): Promise<ToolRes
   }
 }
 
+/** The user's swipe file (VAL-09): newest first, takedown list applied on every read. */
+async function readLibrary(
+  deps: CanvasToolDeps,
+  userId: string,
+  q: { role?: string; cardId?: string; query?: string; limit?: number },
+): Promise<ToolResult> {
+  try {
+    const repo = deps.swipe?.();
+    if (!repo) return toolMessage(TRY_AGAIN);
+    const matcher = await takedownLoader(deps)();
+    const [found, total] = await Promise.all([repo.search(userId, q), repo.count(userId)]);
+    const items: SwipeItem[] = found.filter((i) => !matcher.isReferenceBlocked(i));
+    const out = {
+      library: {
+        total,
+        items: items.map((i) => ({ ...i, createdAt: i.createdAt.toISOString() })),
+      },
+    };
+    if (items.length === 0) {
+      return toolResult(total === 0 ? "The swipe file is empty. Pass save: true to cut_parts or rate_references to keep parts and great references here." : "Nothing in the swipe file matches that.", out);
+    }
+    const lines = [
+      `Swipe file: ${items.length} of ${total} item${total === 1 ? "" : "s"}${q.role ? `, role ${q.role}` : ""}${q.cardId ? `, card ${q.cardId}` : ""}${q.query ? `, matching "${q.query}"` : ""}, newest first.`,
+      ...swipeLines(items),
+      "To reuse one: add_to_canvas it as an image (imageUrl and sourceUrl from the structured result), then cut_parts with the crop for a part. Always show the source link.",
+    ];
+    return toolResult(lines.join("\n"), out);
+  } catch {
+    console.error("[get_canvas] library failed");
+    return toolMessage(TRY_AGAIN);
+  }
+}
+
 export function createGetCanvasTool(deps: CanvasToolDeps) {
   return async function getCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
     const parsed = parseArgs(inputSchema, raw, {}, "Pass a canvasId, or nothing to list recent canvases.");
     if (!parsed.ok) return toolMessage(parsed.message);
-    const { canvasId, summary } = parsed.data;
+    const { canvasId, summary, library } = parsed.data;
+    if (library && !canvasId) return readLibrary(deps, userId, library);
     if (!canvasId) return listRecent(deps, userId);
     if (!plausibleId(canvasId)) return toolMessage(CANVAS_NOT_FOUND);
 
@@ -314,13 +361,20 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
         palettes,
         webUrl: canvasWebUrl(deps.appUrl(), canvasId),
       });
+      const reviews = await loadReviews(deps.review, canvasId);
+      const voted = reviews.filter((r) => r.keep + r.drop + r.commentCount > 0);
       if (summary) {
         const s = canvasSummary(canvas);
-        return toolResult(summaryText(s), s);
+        // Counts only here; the comments (text from other people) are in the full view.
+        const counts = voted.length > 0 ? `\nClient review: ${voted.map((r) => `${r.directionKey} ${r.keep} keep, ${r.drop} drop, ${r.commentCount} comments`).join("; ")}. Call get_canvas without summary to read the comments.` : "";
+        return toolResult(summaryText(s) + counts, voted.length > 0 ? { ...s, reviews: voted } : s);
       }
       const { parts: _p, stitches: _s, ...rest } = compactDirections(canvas);
-      const out: GetCanvasOutput = { canvas: rest, tray: loaded.state.tray, parts: partsByRole(canvas), stitches: stitchOverview(canvas) };
+      const out: GetCanvasOutput = { canvas: rest, tray: loaded.state.tray, parts: partsByRole(canvas), stitches: stitchOverview(canvas), ...(voted.length > 0 ? { reviews: voted } : {}) };
       let text = canvasText(canvas, loaded.state.tray.length);
+      const titles = new Map(canvas.directions.map((d) => [d.id, d.title]));
+      const review = reviewLines(voted, (k) => titles.get(k));
+      if (review.length > 0) text += `\n${review.join("\n")}`;
       if (text.length > LARGE_RESULT) text += "\nThis board is large: next time call get_canvas with summary: true first, then read the full view only when you need the details.";
       return toolResult(text, out);
     } catch {

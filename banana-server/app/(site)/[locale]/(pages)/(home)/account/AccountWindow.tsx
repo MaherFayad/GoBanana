@@ -249,6 +249,12 @@ export async function AccountWindow({ locale, lights }: { locale: Locale; lights
               </Link>
             </div>
             <div className="settings-row">
+              <span className="settings-row-label">{bidi(t.libraryBody)}</span>
+              <Link className="st-btn" data-variant="secondary" data-size="sm" href={href(locale, "library")}>
+                {t.libraryLink}
+              </Link>
+            </div>
+            <div className="settings-row">
               <span className="settings-row-label">{bidi(t.canvasesBody)}</span>
               <Link className="st-btn" data-variant="secondary" data-size="sm" href={canvases}>
                 {t.canvasesLink}

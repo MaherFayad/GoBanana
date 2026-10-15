@@ -40,6 +40,7 @@ import { familyOf } from "./families";
 import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, WIDER_REGION_FROM_WILDNESS, type Market } from "./market";
 import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
 import { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
+import { applyBrand, brandLine } from "./brand";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -78,6 +79,8 @@ export { detectDomain } from "./tone";
 export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
 export type { Mechanic, MechanicElement } from "./mechanic";
 export { checkCoherence, MAX_COHERENCE_TRIES } from "./coherence";
+export { applyBrand, brandLine, readBrand, BRAND_STRETCHES } from "./brand";
+export type { BrandInput, BrandRead, BrandStretch } from "./brand";
 
 /** How many wild spots a result suggests. */
 export const WILD_SPOTS_SHOWN = 5;
@@ -407,7 +410,7 @@ function regionFilter(list: string, wildness: Wildness, locale: Locale): ((e: Li
 }
 
 /** Clean page names: trimmed, single spaces, at most 3, no repeats. */
-function cleanPages(pages: readonly string[] | undefined): string[] {
+export function cleanPages(pages: readonly string[] | undefined): string[] {
   const out: string[] = [];
   for (const p of pages ?? []) {
     const t = p.trim().replace(/\s+/g, " ");
@@ -417,7 +420,7 @@ function cleanPages(pages: readonly string[] | undefined): string[] {
 }
 
 /** "a, b and c". */
-function joinList(items: readonly string[]): string {
+export function joinList(items: readonly string[]): string {
   return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
 }
 
@@ -722,27 +725,10 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     }
     const { mechanic, spec } = drawn;
     mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
-    const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages, mechanic: mechanic.element });
-    // P0-05: a direction's queries are its own. The brief's page lanes (fidelity) run once per
-    // canvas as the baseline, so they are left out; the mechanic and the ingredient lead; a query
-    // an earlier direction of this bend already has, in any word order, is dropped.
-    const own = [
-      lanes.component?.[0],
-      lead === "constraint" ? null : ideaMechanicQuery(searchQuery, mechanic.element),
-      lanes.bridge ?? `${searchQuery} interface`,
-      lanes.taste,
-      ...(lanes.component ?? []).slice(1),
-      lanes.locale,
-    ];
-    const shared = new Set([lanes.fidelity, lanes.fidelityCore].filter(Boolean).map((q) => queryKey(q!)));
-    const searchQueries: string[] = [];
-    for (const q of own) {
-      if (!q || wordCount(q) > MAX_FOCUSED_QUERY_WORDS) continue;
-      const k = queryKey(q);
-      if (shared.has(k) || usedQueries.has(k)) continue;
-      usedQueries.add(k);
-      searchQueries.push(q);
-    }
+    const searchQueries = takeQueries(
+      phase0Queries({ brief: input.brief, idea: searchQuery, taste, id, platform, styleWords: spec.styleWords, pages, element: mechanic.element, rule: lead === "constraint" }),
+      usedQueries,
+    );
 
     directions.push({
       id,
@@ -762,18 +748,74 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     });
   });
 
-  return {
-    brief: input.brief,
-    subject: fixCase(subject.title),
-    wildness,
-    wildnessLabel: rule.label,
-    lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont, culture: lensCulture(lens) } : null,
-    suggestedLenses: lens ? [] : suggestLenses(input.brief),
-    platform,
-    pages,
-    wildSpots,
-    directions: directions.slice(0, input.count),
-  };
+  return applyBrand(
+    {
+      brief: input.brief,
+      subject: fixCase(subject.title),
+      wildness,
+      wildnessLabel: rule.label,
+      lens: lens ? { id: lens.id, name: lens.name, arabicFont: lens.arabicFont, culture: lensCulture(lens) } : null,
+      suggestedLenses: lens ? [] : suggestLenses(input.brief),
+      platform,
+      pages,
+      wildSpots,
+      directions: directions.slice(0, input.count),
+    },
+    input.brand,
+  );
+}
+
+/**
+ * A direction's Phase 0 query candidates (P0-05), best first, plus the brief's page lanes
+ * (fidelity) that run once per canvas as the baseline and so never become a direction query:
+ * the mechanic lane, the idea on its part (not for a rule), the bridge, taste, the brief's other
+ * component lane and locale.
+ */
+export function phase0Queries(input: {
+  brief: string;
+  idea: string;
+  taste: readonly string[];
+  id: string;
+  platform: Platform;
+  styleWords: readonly string[];
+  pages: readonly string[];
+  element: string;
+  /** True when a constraint (a rule) leads: no "idea on its part" query. */
+  rule: boolean;
+}): { own: (string | null | undefined)[]; shared: Set<string> } {
+  const lanes = laneTexts(input.brief, input.idea, input.taste, input.id, {
+    platform: input.platform,
+    styleWords: input.styleWords,
+    pages: input.pages,
+    mechanic: input.element,
+  });
+  const own = [
+    lanes.component?.[0],
+    input.rule ? null : ideaMechanicQuery(input.idea, input.element),
+    lanes.bridge ?? `${input.idea} interface`,
+    lanes.taste,
+    ...(lanes.component ?? []).slice(1),
+    lanes.locale,
+  ];
+  const shared = new Set([lanes.fidelity, lanes.fidelityCore].filter(Boolean).map((q) => queryKey(q!)));
+  return { own, shared };
+}
+
+/**
+ * P0-05: a direction's queries are its own. Candidates over the word cap, the brief's page lanes
+ * (`shared`) and a query an earlier direction of this bend already has (`used`, any word order)
+ * are dropped; the kept ones are added to `used`.
+ */
+export function takeQueries(c: { own: readonly (string | null | undefined)[]; shared: ReadonlySet<string> }, used: Set<string>): string[] {
+  const out: string[] = [];
+  for (const q of c.own) {
+    if (!q || wordCount(q) > MAX_FOCUSED_QUERY_WORDS) continue;
+    const k = queryKey(q);
+    if (c.shared.has(k) || used.has(k)) continue;
+    used.add(k);
+    out.push(q);
+  }
+  return out;
 }
 
 /** Strip a spec line's closing period so lines can be joined compactly. */
@@ -798,6 +840,8 @@ export function formatDirections(result: BendResult): string {
   ];
   if (lensLine) lines.push(lensLine);
   if (result.lens) lines.push(...lensCultureLines(result.lens.culture));
+  const brand = brandLine(result.brand);
+  if (brand) lines.push(brand);
   if (result.pages.length > 0) lines.push(`Pages: ${result.pages.join(", ")}.`);
   else if (result.wildSpots.length > 0) {
     lines.push("Pages: none given. Where weirdness pays off (wildSpots):");
@@ -810,6 +854,7 @@ export function formatDirections(result: BendResult): string {
     lines.push(`${i + 1}. ${d.title}${twist} [${d.move}] query: ${d.searchQuery}`);
     lines.push(`   id: ${d.id}. Prompt: ${d.prompt}`);
     lines.push(`   Mechanic: build this direction around ${d.mechanic.element} = ${bare(d.mechanic.how)}. Search for UI that has this element.`);
+    if (d.story && d.cardIds?.[0]) lines.push(`   Card story (${d.cardIds[0]}): ${d.story} Tell it in the idea note.`);
     lines.push(
       `   Spec: type ${sp.typeVoice}: ${bare(sp.typography)} | color: ${bare(sp.color)} | layout: ${bare(sp.layout)} | imagery: ${bare(sp.imagery)} | motion: ${bare(sp.motion)} | texture: ${bare(sp.texture)} | icons: ${bare(sp.iconography)} | density: ${bare(sp.density)}`,
     );

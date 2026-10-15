@@ -50,12 +50,12 @@ Names and paths for scope "page" (<slug> from the direction):
 - design_md: DESIGN.md at design/explorations/<slug>/DESIGN.md (DESIGN.md format, front matter first, ship colors only as tokens; the scope lines go at the top of the Overview section)
 - direction_md: DIRECTION.md at design/explorations/<slug>/DIRECTION.md (every spec field, steal and avoid lists, source links)
 - build_prompt: BUILD-PROMPT.md at design/explorations/<slug>/BUILD-PROMPT.md (a prompt to paste into Claude Code, Cursor, v0 or Lovable; names the pages and platform)
-- review: REVIEW.md at design/explorations/<slug>/REVIEW.md (a checklist: signature, pattern, type, color, layout, motion, avoid lines, WCAG 2.2 AA contrast 4.5:1 and 3:1, 44pt targets, reduced motion)
+- review: REVIEW.md at design/explorations/<slug>/REVIEW.md (a checklist: signature, pattern, type, color, layout, motion, avoid lines, WCAG 2.2 AA contrast 4.5:1 and 3:1, 44pt targets, reduced motion), then a "Distance from slop" section with these items, each "- [ ] **Slop <feature>:** The page does not use <value> (on <share> of default pages). Pass or fix:": font "Inter for everything" 82%; accent-hue "violet to indigo accent" 64%; gradient "purple to blue hero gradient" 58%; radius "16px on every card" 55%; layout "centered hero, three feature cards below" 71%; copy "headline with Unlock or Supercharge" 47%
 - cursor_rules: gobanana-<slug>.mdc at .cursor/rules/gobanana-<slug>.mdc (front matter with description, globs set to the pages, alwaysApply false)
 - copilot: gobanana-<slug>.instructions.md at .github/instructions/gobanana-<slug>.instructions.md (front matter applyTo set to the pages)
 - agents_md: AGENTS.md at AGENTS.md (one section between <!-- gobanana:<slug> --> and <!-- /gobanana:<slug> --> markers; points to DIRECTION.md and DESIGN.md; ship vs explore; "Never copy reference images into the repo.")
 - claude_md: CLAUDE.md at CLAUDE.md (same section as agents_md, for Claude Code)
-- tokens: tokens.json at design/explorations/<slug>/kit/tokens.json (W3C DTCG JSON, ship colors only, as overrides)
+- tokens: tokens.json at design/explorations/<slug>/kit/tokens.json (W3C DTCG JSON, ship colors only, as overrides; a `rounded` group with sm 2, md 4, lg 8 px from the direction's card radius "small", fonts Fraunces and Work Sans with El Messiri and Noto Naskh Arabic from the card, and `$extensions.motion` { verb "unfold", ms 240, reduced "fade in place" })
 - tailwind: theme.css at design/explorations/<slug>/kit/theme.css (Tailwind v4 @theme for the pages only)
 - figjam_spec: figjam-spec.json at design/explorations/<slug>/figjam-spec.json
 - html_board: board.html at design/explorations/<slug>/board.html

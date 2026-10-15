@@ -19,7 +19,11 @@ export const WEIGHT_PRIOR = { alpha: 2, beta: 2 } as const;
 export const MAX_WEIGHT_ROWS = 5000;
 const CHUNK = 500;
 
-export type WeightKind = "ingredient" | "arm";
+/**
+ * ingredient: rate_directions ratings (`direction|{ingredient}`); arm: rate_references lane arms
+ * (`{termKey}#{arm}`); atlas: Atlas ids (`card|...`, `mechanic|...`, `recipe|...`, lane "atlas").
+ */
+export type WeightKind = "ingredient" | "arm" | "atlas";
 
 /** One grouped count: users who net-kept (great) and net-dropped (bad) an id. */
 export type WeightCount = { kind: WeightKind; id: string; great: number; bad: number; users: number };
@@ -32,7 +36,7 @@ export interface WeightsStore {
   replaceAll(rows: readonly WeightRow[], now: Date): Promise<void>;
 }
 
-export type NightlyResult = { written: number; ingredients: number; arms: number };
+export type NightlyResult = { written: number; ingredients: number; arms: number; atlas: number };
 
 /** Pure: counts to Beta parameters. Drops counts below k users or without any usable verdict. */
 export function weightsFromCounts(counts: readonly WeightCount[], k = WEIGHT_K_ANON): WeightRow[] {
@@ -54,8 +58,8 @@ export async function runNightlyWeights(store: WeightsStore, opts: { now?: Date;
   const k = opts.k ?? WEIGHT_K_ANON;
   const rows = weightsFromCounts(await store.readCounts(k), k);
   await store.replaceAll(rows, now);
-  const ingredients = rows.filter((r) => r.kind === "ingredient").length;
-  return { written: rows.length, ingredients, arms: rows.length - ingredients };
+  const count = (kind: WeightKind) => rows.filter((r) => r.kind === kind).length;
+  return { written: rows.length, ingredients: count("ingredient"), arms: count("arm"), atlas: count("atlas") };
 }
 
 /** The grouped read. Exported so tests can check the SQL without a database. */
@@ -67,13 +71,13 @@ export function weightCountsSql(k: number) {
       count(*)::int as users
     from (
       select
-        case when lane = 'direction' then 'ingredient' else 'arm' end as kind,
-        case when lane = 'direction' then term_key else term_key || '#' || arm end as id,
+        case when lane = 'direction' then 'ingredient' when lane = 'atlas' then 'atlas' else 'arm' end as kind,
+        case when lane in ('direction', 'atlas') then term_key else term_key || '#' || arm end as id,
         user_id,
         count(*) filter (where verdict = 'great') as g,
         count(*) filter (where verdict = 'bad') as b
       from "search_feedback"
-      where term_key is not null and (lane = 'direction' or arm is not null)
+      where term_key is not null and (lane in ('direction', 'atlas') or arm is not null)
       group by 1, 2, user_id
     ) per_user
     group by kind, id
@@ -102,7 +106,7 @@ export function createDbWeightsStore(db: NeonHttpDatabase<any>): WeightsStore {
     async readCounts(k) {
       const result = await db.execute(weightCountsSql(k));
       return (result.rows as Record<string, unknown>[]).map((r) => ({
-        kind: r.kind === "arm" ? "arm" : "ingredient",
+        kind: r.kind === "arm" ? "arm" : r.kind === "atlas" ? "atlas" : "ingredient",
         id: String(r.id),
         great: Number(r.great ?? 0),
         bad: Number(r.bad ?? 0),

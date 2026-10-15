@@ -9,10 +9,12 @@ import { buildPromptMd } from "./build-prompt";
 import { CULTURE_FILE, cultureMd } from "./culture";
 import { designMd } from "./design-md";
 import { directionMd } from "./direction-md";
+import { experimentMd } from "./experiment";
 import { figjamSpecJson } from "./figjam-spec";
 import { claudeMdSection, copilotInstructions, cursorRule } from "./harness";
 import { htmlBoard } from "./html-board";
 import { buildKitModel, type KitModel, type KitOptions } from "./model";
+import { pitchMd } from "./pitch";
 import { reviewMd } from "./review";
 import { STITCH_MD_FILE, stitchMd, WIREFRAME_FILE } from "./stitch-md";
 import { wireframeHtml } from "./wireframe-html";
@@ -39,6 +41,8 @@ export const EXPORT_FORMATS = [
   "wireframe_html",
   "culture_md",
   "claude_settings",
+  "pitch_md",
+  "experiment_md",
 ] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
@@ -107,7 +111,12 @@ const GENERATORS: Record<ExportFormat, Generator> = {
   wireframe_html: { name: fixed(WIREFRAME_FILE), mime: "text/html", build: wireframeHtml, path: inDir(WIREFRAME_FILE) },
   culture_md: { name: fixed(CULTURE_FILE), mime: "text/markdown", build: cultureMd, path: inDir(CULTURE_FILE) },
   claude_settings: { name: fixed("settings.json"), mime: "application/json", build: claudeSettingsJson, path: fixed(CLAUDE_SETTINGS_PATH), merge: "json" },
+  pitch_md: { name: fixed("PITCH.md"), mime: "text/markdown", build: pitchMd, path: inDir("PITCH.md") },
+  experiment_md: { name: fixed("EXPERIMENT.md"), mime: "text/markdown", build: experimentMd, path: inDir("EXPERIMENT.md") },
 };
+
+/** Formats that compare or present the kept directions together: one file, never one per direction. */
+export const CROSS_DIRECTION_FORMATS: readonly ExportFormat[] = ["pitch_md", "experiment_md"];
 
 export function isExportFormat(value: unknown): value is ExportFormat {
   return typeof value === "string" && (EXPORT_FORMATS as readonly string[]).includes(value);

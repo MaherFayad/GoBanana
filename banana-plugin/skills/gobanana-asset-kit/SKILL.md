@@ -52,7 +52,7 @@ Give a developer everything to build one wild page in the direction's style: ove
 
      Use the stop with the lower ratio as the solid fallback.
    - If no pair qualifies, write the file with a comment saying so, and say it in your reply.
-6. **One font pairing.** If the scoped DESIGN.md exists, use its `typography` fonts. If the export names a pairing (from the direction's card, else its `spec.typeVoice`), use that; each direction on a board gets its own pairing, so never copy one direction's fonts into another's kit. Otherwise pick one that fits the board's direction from GoBanana's curated list (all SIL Open Font License 1.1, on Google Fonts; the default is `space-grotesk-inter`). If the product is bilingual Arabic and English, pick a pairing with the `arabic` script.
+6. **One font pairing.** If the scoped DESIGN.md exists, use its `typography` fonts. If the export names a pairing (from the direction's card, else its `spec.typeVoice`), use that. **Card fonts:** a direction from the Banana Atlas exports its lead card's four families (Latin display and body, Arabic display and body); use all four exactly as exported, even when they are not in the table below (the Atlas checks every family against Google Fonts), and put the Arabic pair in `04-fonts.css` as `--font-display-ar` and `--font-body-ar` for `:lang(ar)`; each direction on a board gets its own pairing, so never copy one direction's fonts into another's kit. Otherwise pick one that fits the board's direction from GoBanana's curated list (all SIL Open Font License 1.1, on Google Fonts; the default is `space-grotesk-inter`). If the product is bilingual Arabic and English, pick a pairing with the `arabic` script.
 
    | Pairing id | Display | Body | Scripts | Mood |
    | --- | --- | --- | --- | --- |
@@ -76,7 +76,8 @@ Give a developer everything to build one wild page in the direction's style: ove
    | `reem-kufi-tajawal` | Reem Kufi | Tajawal | arabic, latin | geometric, cultural, signage |
 
    In `04-fonts.css`: a comment with the names, licence and Google Fonts links, `--font-display` and `--font-body` custom properties with sensible fallbacks, and a note that the team can self-host the files (for example with `@fontsource`) instead of loading from Google.
-7. **One icon set.** Pick one and say why in `05-icons.md`, matched to radius and stroke:
+   **Card radii and motion.** The `tokens` export carries the card's corner scale in `rounded` (radius word none 0/0/0, small 2/4/8, soft 4/8/16, round 8/16/24 for sm/md/lg) and, when the card has one, its motion in `$extensions.motion` (verb, duration, reduced motion fallback). Keep both as exported: write the radii as `--radius-sm`, `--radius-md` and `--radius-lg` in `02-tailwind-theme`, never round corners a `none` card keeps square, and give every animation the reduced motion fallback (WCAG 2.2 SC 2.3.3).
+7. **One icon set.** Pick one and say why in `05-icons.md`, matched to radius and stroke (with a card: `none` and `small` radius take Phosphor regular or Lucide at 1.5, `soft` takes Lucide, `round` takes Lucide or Phosphor fill):
    - **Lucide** (ISC): one consistent stroke on a 24 px grid, round caps. Pick it when corners are rounded (8 px or more) and the UI is calm. Set `strokeWidth` to match the body font: about 1.5 for light, 2 for regular, 2.5 for semibold.
    - **Phosphor** (MIT): six weights (thin, light, regular, bold, fill, duotone). Pick it for sharp corners, very thin or very heavy type, or wild directions that need fill or duotone.
    Include the install command (`npm i lucide-react` or `npm i @phosphor-icons/react`) and the chosen size, stroke or weight.

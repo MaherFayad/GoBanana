@@ -155,7 +155,7 @@ export type ReferenceRecord = {
   query: string | null;
   termKey: string | null;
   arm: string | null;
-  /** Atlas provenance (search plan v2, P1-I3): the recipe and card that found it. Missing on older rows. */
+  /** Atlas provenance (search plan v2, migration 0006): recipe and card ids; null on other rows. */
   recipeId?: string | null;
   cardId?: string | null;
 };
@@ -197,6 +197,8 @@ export type NewFeedback = {
 
 export type ArmStatRow = ArmStat;
 export type IngredientStatRow = IngredientStat;
+/** One `atlas_weights` row of kind "atlas": the term key and its Beta(alpha, beta). */
+export type NightlyAtlasRow = { termKey: string; alpha: number; beta: number };
 
 export interface FeedbackRepo {
   insertMany(rows: readonly NewFeedback[]): Promise<void>;
@@ -221,6 +223,11 @@ export interface FeedbackRepo {
    * like directionStats in one query, with the same `k` filter. Never returns user ids.
    */
   atlasStats(userId: string, k: number): Promise<IngredientStatRow[]>;
+  /**
+   * The nightly Atlas id weights (`atlas_weights` kind "atlas", P2-01): pooled Beta parameters per
+   * term key, no user ids. Empty until the cron has run.
+   */
+  nightlyAtlas(): Promise<NightlyAtlasRow[]>;
   /** This user's latest verdict per item key, for the given keys only (reconcile_direction weights). */
   verdictsFor(userId: string, itemKeys: readonly string[]): Promise<Map<string, FeedbackVerdict>>;
 }

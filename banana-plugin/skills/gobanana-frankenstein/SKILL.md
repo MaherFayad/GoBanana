@@ -40,6 +40,7 @@ You need to know where things sit on each image to cut it well.
 - **Look at the returned thumbnails before rating or noting.** `get_canvas` and `get_snapshot` (with a `sectionId`) carry a small image after each reference's line; after `frankenstein_page`, call `get_snapshot` with the `stitchId` and check each part's band against its crop. To judge the page as a whole, ask the user to press "Show in chat" in the inline canvas: you get the composed page as one image with their next message.
 - **If you can see the images** (a look, the thumbnails above, or screenshots the user attached), cut from what you see, with a measured `crop` and the `theme` you saw.
 - **If the user described them** ("nav is the top strip, the pricing cards sit in the middle"), use their words.
+- **Anatomy roles.** When the board's direction came from the Banana Atlas, the server knows the page's anatomy (its sections, top to bottom, with where each sits on a screen). A `cut_parts` answer with a guessed crop then says `Guessed bands follow the <page> page anatomy (Banana Atlas). Its sections top to bottom: ...`. Use those roles, in that order, for the recipe in step 4 instead of the generic table, and cut one part per role. The anatomy only makes guesses better: still look first, then cut with a measured crop; a measured crop always wins over a band.
 - **If a look shows no image** (its host is not on the image allowlist, it is an upload, or your client does not show tool images), say it once, plainly: "I can't see the images here, so I'm cutting by role and the server guesses each band (nav at the top, the pay button low and narrow, footer at the bottom; a phone presentation shot is cut from its middle phone). The crops are marked as guesses; adjust any of them in the canvas crop editor (Edit crop on a part), or tell me where things sit." Then cut with role only (no `crop`), set `theme` to `unknown`, and start each note with `guessed:` and what the title suggests. Keep the guessed crops: do not download or fetch the images to check them, and never pretend you saw them.
 
 ### 3. Pick the strongest parts and cut them
@@ -51,13 +52,15 @@ Work like a designer with a swipe file. For each reference, find the one or two 
 - **theme**: `light` or `dark`, as you saw it; `unknown` if you did not.
 - **note**: one line, up to 280 characters, starting with `steal:` and naming the move, not the look: `steal: the split nav with the search pill in the middle`, `steal: pricing cards where the middle plan breaks the grid`.
 
+Before cutting, look in the user's swipe file for roles you are short of: `get_canvas` with `library: { role: "pricing" }` and no canvasId. Items found there are links from earlier boards: add one to this board with `add_to_canvas` (image, with its source link), then cut it as below. When the user keeps a swipe file ("save these parts"), pass `save: true` to `cut_parts` so the new parts are kept for other boards; say how many were saved.
+
 Aim for **2 to 4 candidates per role** in the recipe (step 4), drawn from **at least 4 different sources** (sites or studios), so the variants can really differ. Skip a role rather than cut a weak part for it.
 
 Call `cut_parts` with `canvasId` and `cuts` (1 to 24 per call): `{ "itemId": "it_201", "role": "nav", "crop": {...}, "theme": "dark", "note": "steal: ..." }`. Use `itemId` for a placed board item, `referenceId` for a tray reference. The library holds 80 parts; if it is near full, reuse parts instead of cutting more. Parts the server cropped by guess come back with `guessedCrop`; keep that flag in mind when you present them.
 
 ### 4. Write the recipe and stitch the pages
 
-A recipe is the list of roles, top to bottom. Start from the page type and drop roles you have no good parts for:
+A recipe is the list of roles, top to bottom. If a `cut_parts` answer named the page anatomy's sections (step 2), use those roles in that order. Otherwise start from the page type and drop roles you have no good parts for:
 
 | Platform and page | Recipe |
 | --- | --- |

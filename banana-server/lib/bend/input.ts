@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { PLATFORMS } from "@/lib/direction-detail";
 import { LENS_IDS } from "./lists";
+import { BRAND_STRETCHES, MAX_DESIGN_MD, MAX_TOKENS_JSON } from "./brand";
 import { MOVES, type BendInput, type Wildness } from "./types";
 
 export const MAX_BRIEF = 500;
@@ -56,6 +57,20 @@ export const bendInputSchema = z.object({
     .max(MAX_MUST_KEEPS)
     .optional()
     .describe('Patterns users rely on that no direction may break, like "clear total" or "one primary action". Checkout briefs keep both by default.'),
+  brand: z
+    .object({
+      designMd: z.string().max(MAX_DESIGN_MD).optional().describe("The product's DESIGN.md as text."),
+      tokens: z
+        .record(z.string(), z.unknown())
+        .refine((t) => JSON.stringify(t).length <= MAX_TOKENS_JSON)
+        .optional()
+        .describe("The product's design tokens as JSON."),
+      stretch: z
+        .enum(BRAND_STRETCHES)
+        .describe("keep-logo-and-primary, keep-primary or free: how far directions may stretch the brand."),
+    })
+    .optional()
+    .describe("The product's brand (DESIGN.md or tokens) and how far directions may stretch it."),
 });
 
 const MESSAGES: Record<string, string> = {
@@ -67,6 +82,7 @@ const MESSAGES: Record<string, string> = {
   platform: `platform must be one of: ${PLATFORMS.join(", ")}.`,
   pages: `pages must be 1 to ${MAX_PAGES} page names, each up to ${MAX_PAGE_LENGTH} characters.`,
   mustKeep: `mustKeep must be 1 to ${MAX_MUST_KEEPS} short patterns, each up to ${MAX_PAGE_LENGTH} characters, like "clear total".`,
+  brand: `brand needs a stretch (${BRAND_STRETCHES.join(", ")}), with designMd up to ${MAX_DESIGN_MD} characters and tokens as a JSON object up to ${MAX_TOKENS_JSON} characters.`,
 };
 
 export type ParseResult =
@@ -83,7 +99,7 @@ export function parseBendInput(raw: unknown): ParseResult {
     const field = String(result.error.issues[0]?.path[0] ?? "");
     return { ok: false, message: MESSAGES[field] ?? "Send a brief and a wildness from 1 to 5." };
   }
-  const { brief, wildness, moves, lens, count, platform, pages, mustKeep } = result.data;
+  const { brief, wildness, moves, lens, count, platform, pages, mustKeep, brand } = result.data;
   return {
     ok: true,
     input: {
@@ -95,6 +111,7 @@ export function parseBendInput(raw: unknown): ParseResult {
       ...(platform ? { platform } : {}),
       ...(pages ? { pages } : {}),
       ...(mustKeep ? { mustKeep } : {}),
+      ...(brand ? { brand: { stretch: brand.stretch, ...(brand.designMd ? { designMd: brand.designMd } : {}), ...(brand.tokens ? { tokens: brand.tokens } : {}) } } : {}),
     },
   };
 }
