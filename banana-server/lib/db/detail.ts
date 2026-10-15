@@ -91,6 +91,10 @@ function atlasFields(v: Record<string, unknown>): DirectionAtlas | undefined {
   const out: DirectionAtlas = { cardIds, recipeIds: strs(v.recipeIds, 12, 80) ?? [] };
   const mechanicId = str(v.mechanicId, 80);
   if (mechanicId) out.mechanicId = mechanicId;
+  const shaderIds = strs(v.shaderIds, 1, 80);
+  if (shaderIds?.length) out.shaderIds = shaderIds;
+  const motionIds = strs(v.motionIds, 2, 80);
+  if (motionIds?.length) out.motionIds = motionIds;
   for (const k of ["pageId", "domainId", "productNoun"] as const) {
     const s = str(v[k], 80);
     if (s) out[k] = s;

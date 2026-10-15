@@ -4,7 +4,7 @@
  * back to the current engine or the Phase 0 lanes.
  */
 import { bucketOf, recipeKeyString, type AtlasLoader } from "./loader";
-import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, PageAnatomy, QueryRecipe, SlopRule, UiElement } from "./types";
+import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, SlopRule, UiElement } from "./types";
 
 export interface AtlasSource {
   pages(): Promise<PageAnatomy[] | null>;
@@ -21,6 +21,10 @@ export interface AtlasSource {
   cc0(regions: readonly string[]): Promise<CC0Item[] | null>;
   /** Slop rules (J8); an empty list when the Atlas has none. */
   slop(): Promise<SlopRule[] | null>;
+  /** J13 shader recipes (read whole); an empty list when the Atlas has none. */
+  shaders(): Promise<ShaderRecipe[] | null>;
+  /** J13 motion recipes (read whole); an empty list when the Atlas has none. */
+  motion(): Promise<MotionRecipe[] | null>;
 }
 
 /** Load each bucket an id list touches, once, and keep the rows `keep` accepts. */
@@ -62,6 +66,14 @@ export function loaderSource(loader: AtlasLoader): AtlasSource {
     async slop() {
       if (loader.names("slop").length === 0) return [];
       return loader.all<SlopRule>("slop");
+    },
+    async shaders() {
+      if (loader.names("shaders").length === 0) return [];
+      return loader.all<ShaderRecipe>("shaders");
+    },
+    async motion() {
+      if (loader.names("motion").length === 0) return [];
+      return loader.all<MotionRecipe>("motion");
     },
     async cc0(regions) {
       const names = new Set(loader.names("cc0"));

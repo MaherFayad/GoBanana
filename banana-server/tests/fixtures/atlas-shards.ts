@@ -3,6 +3,7 @@
  * (lib/atlas/loader.ts), plus a fetcher and a cache that count their calls.
  */
 import { bucketOf, recipeKeyString, sha256Hex, shardPath, type AtlasKind, type AtlasManifest, type CacheLike, type ManifestShard } from "@/lib/atlas/loader";
+import { MOTION, SHADERS } from "./stunning";
 import { CARDS, CC0, DOMAINS, FIT, LINES, MECHANICS, PAGES, RECIPES } from "./atlas";
 
 export type ShardFiles = Map<string, string>;
@@ -27,8 +28,8 @@ function buckets<T>(rows: readonly T[], count: number, idOf: (r: T) => string): 
 }
 
 /** Every fixture shard by kind and name. */
-export function fixtureShardRows(): Map<AtlasKind, Map<string, unknown[]>> {
-  return new Map<AtlasKind, Map<string, unknown[]>>([
+export function fixtureShardRows(stunning = false): Map<AtlasKind, Map<string, unknown[]>> {
+  const rows = new Map<AtlasKind, Map<string, unknown[]>>([
     ["pages", new Map([["00", PAGES]])],
     ["domains", new Map([["00", DOMAINS]])],
     ["fit", group(FIT, (f) => f.domainId)],
@@ -38,13 +39,19 @@ export function fixtureShardRows(): Map<AtlasKind, Map<string, unknown[]>> {
     ["recipes", buckets(RECIPES, FIXTURE_BUCKETS.recipes, (r) => recipeKeyString(r.key))],
     ["cc0", group(CC0, (c) => c.region ?? "global")],
   ]);
+  // The J13 stunning layer is read whole and split by size ("00", "01", ...): one shard each here.
+  if (stunning) {
+    rows.set("shaders", new Map([["00", SHADERS]]));
+    rows.set("motion", new Map([["00", MOTION]]));
+  }
+  return rows;
 }
 
 /** Shard files (R2 keys to text) and their manifest. */
-export async function buildFixtureAtlas(version = "v1"): Promise<{ manifest: AtlasManifest; files: ShardFiles }> {
+export async function buildFixtureAtlas(version = "v1", stunning = false): Promise<{ manifest: AtlasManifest; files: ShardFiles }> {
   const files: ShardFiles = new Map();
   const shards: ManifestShard[] = [];
-  for (const [kind, byName] of fixtureShardRows()) {
+  for (const [kind, byName] of fixtureShardRows(stunning)) {
     for (const [shard, rows] of byName) {
       const text = JSON.stringify(rows);
       files.set(shardPath(version, kind, shard), text);

@@ -16,6 +16,8 @@
  *   recipes/<bucket>     QueryRecipe[]      bucket = bucketOf(recipeKeyString(recipe.key), shard count)
  *   cc0/<region>         CC0Item[]          one shard per region slug ("gulf", "mena", "global", ...)
  *   slop/<n>             SlopRule[]
+ *   shaders/<n>          ShaderRecipe[]     J13 stunning layer, size split, read whole
+ *   motion/<n>           MotionRecipe[]     J13 stunning layer, size split, read whole
  *
  * Buckets are named "00", "01", ... and a kind's shard count is the number of its manifest
  * entries, so the server finds the shard of any id without an index.
@@ -30,7 +32,7 @@
 import { cyrb53 } from "@/lib/bend/prng";
 import type { QueryRecipe } from "./types";
 
-export const ATLAS_KINDS = ["pages", "domains", "fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop"] as const;
+export const ATLAS_KINDS = ["pages", "domains", "fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop", "shaders", "motion"] as const;
 export type AtlasKind = (typeof ATLAS_KINDS)[number];
 
 export interface ManifestShard {
