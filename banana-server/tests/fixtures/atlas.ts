@@ -299,6 +299,7 @@ export const CC0: CC0Item[] = [
     steal: ["rhythm", "border"],
     motif: ["sadu", "weaving", "stripes"],
     region: "gulf",
+    rights: { flag: "isPublicDomain", value: "true" },
   },
   {
     id: "aic-2",
@@ -308,6 +309,7 @@ export const CC0: CC0Item[] = [
     pageUrl: "https://www.artic.edu/artworks/2",
     steal: ["palette", "layout"],
     motif: ["luggage", "label", "tag"],
+    rights: { flag: "is_public_domain", value: "true" },
     region: "global",
   },
 ];

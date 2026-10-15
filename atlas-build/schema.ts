@@ -164,6 +164,8 @@ export interface MotionRecipe {
   families: string[];                           // COMPUTED from cardIds by the script
   lensIds: string[];
   culturalNotes?: string;
+}
+
 // Added for P1-J12 (not in section 6.2): one bilingual type pair judged from a rendered specimen.
 export interface TypePair {
   id: string;
@@ -417,6 +419,8 @@ export const MotionRecipeSchema = z.object({
   css: text,
   reduced: z.object({ kind: z.enum(["static", "fade"]), ms: z.number().int().min(100).max(600).optional(), note: text }),
   ...ties,
+});
+
 export const TypePairSchema = z.object({
   id,
   voice: typeSpec.shape.voice,
