@@ -15,6 +15,7 @@ import { z } from "zod";
 import { TYPE_VOICES } from "../banana-server/lib/direction-detail.ts";
 import { PART_ROLES } from "../banana-server/lib/stitch/types.ts";
 import { SOURCE_REGISTRY } from "../banana-server/lib/sources/registry.ts";
+import { SHOWCASE_TAGS } from "../banana-server/lib/sources/showcase.ts";
 
 // ---------------------------------------------------------------------------------------------
 // Section 6.2 types, verbatim.
@@ -106,7 +107,7 @@ export interface LensPack {
 }
 
 export interface QueryRecipe {
-  key: { lane: "concept" | "component" | "art" | "baseline"; page?: string; platform?: Platform; element?: UiElement; cardId?: string };
+  key: { lane: "concept" | "component" | "art" | "baseline"; page?: string; platform?: Platform; element?: UiElement; cardId?: string; style?: string }; // style: a web showcase style id (lib/sources/showcase.ts), website baseline keys only
   query: string;
   source: string;                               // a SourceId from lib/sources/registry.ts
   precision: number;                            // share of top 8 judged good or great, 0 to 1
@@ -315,6 +316,7 @@ export const QueryRecipeSchema = z.object({
     platform: PlatformSchema.optional(),
     element: UiElementSchema.optional(),
     cardId: id.optional(),
+    style: z.string().refine((s) => SHOWCASE_TAGS.includes(s), "style must be a showcase style id from lib/sources/showcase.ts").optional(),
   }),
   query: text,
   source: z.string().refine((s) => SOURCE_IDS.includes(s), "source must be a SourceId from lib/sources/registry.ts"),

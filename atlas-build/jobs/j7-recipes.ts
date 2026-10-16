@@ -32,6 +32,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { recipeId, recipeKeyString } from "../../banana-server/lib/atlas/loader.ts";
 import { isItemPage } from "../../banana-server/lib/sources/item-page.ts";
 import { SOURCE_REGISTRY } from "../../banana-server/lib/sources/registry.ts";
+import { SHOWCASE_STYLES } from "../../banana-server/lib/sources/showcase.ts";
 import { JUDGE, PATHS, ROOT } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
@@ -169,6 +170,30 @@ export function artWordings(card: Pick<IngredientCard, "artQueries">, count = AR
   return out;
 }
 
+/**
+ * Web showcase styles J7 judges per website page (2026-10-16, owner request: "too fun", 3D and
+ * motion-led award sites). Their keys carry `style`, so they never compete with a page's plain
+ * baseline wordings and the server does not read them until a lane asks for a style.
+ */
+export const SHOWCASE_RECIPE_STYLES = ["playful", "3d", "webgl", "animation"] as const;
+
+/**
+ * The wordings of one website page in one showcase style: Awwwards "{style} {page}" and "{style}
+ * {page} website", and Dribbble "{style} {page} website ui". The style's page-free phrase
+ * ("playful illustration", lib/sources/showcase.ts) is not judged here: its results are the same
+ * for every page. Craftwork is never a J7 source: its license bars testing AI models on its previews.
+ */
+export function showcaseWordings(p0: string, styleId: string): Wording[] {
+  const style = SHOWCASE_STYLES.find((s) => s.id === styleId);
+  if (!style) return [];
+  const out: Wording[] = [
+    { source: "awwwards", query: `${style.id} ${p0}` },
+    { source: "awwwards", query: `${style.id} ${p0} website` },
+    { source: "dribbble", query: `${style.id} ${p0} website ui` },
+  ];
+  return out.filter((w) => words(w.query).length <= MAX_WORDS);
+}
+
 export type PageMeta = { id: string; from?: string };
 
 /**
@@ -193,6 +218,23 @@ export function buildInputs(pages: readonly PageLike[], meta: readonly PageMeta[
     const key: QueryRecipe["key"] = { lane: "art", cardId: c.id };
     for (const wording of artWordings(c)) {
       out.push({ kind: "art", key, wording, priority: 3, context: `the ingredient card "${c.name}" (texture: ${c.texture}; imagery: ${c.imagery})` });
+    }
+  }
+  // Web showcase wordings go last, so chunked runs (--offset) keep their old positions.
+  for (const { p } of ordered) {
+    if (!p.platforms.includes("website")) continue;
+    const { p0 } = pagePhrases(p);
+    for (const style of SHOWCASE_RECIPE_STYLES) {
+      const key: QueryRecipe["key"] = { lane: "baseline", page: p.id, platform: "website", style };
+      for (const wording of showcaseWordings(p0, style)) {
+        out.push({
+          kind: "page",
+          key,
+          wording,
+          priority: 4,
+          context: `the ${p.names.en[0] ?? p.id} page (${p.id}) on website, in a ${style} web showcase style: award-level sites like Awwwards Sites of the Year, where the ${style} look is the point`,
+        });
+      }
     }
   }
   return out;
@@ -321,7 +363,7 @@ function prefetch(id: string, input: Input, ctx: JobContext): Promise<Shown> {
 
 function recipeHead(input: Input): string {
   const k = input.key;
-  const lane = k.lane === "art" ? "art lane" : "UI lane (baseline: a page and platform)";
+  const lane = k.lane === "art" ? "art lane" : k.style ? `UI lane (web showcase: a website page in the ${k.style} style)` : "UI lane (baseline: a page and platform)";
   return `Recipe: ${lane}. Judge for ${input.context}. Wording "${input.wording.query}", searched on ${input.wording.source}. The top results follow.`;
 }
 

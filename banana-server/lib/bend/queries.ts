@@ -32,6 +32,7 @@ import type { Platform } from "@/lib/direction-detail";
 import { detectPlatform } from "@/lib/platform";
 import { bridgeHead, MAX_COMPONENT_LANES, type LaneTexts } from "@/lib/sources/plan";
 import { pickGalleries } from "@/lib/sources/registry";
+import { showcaseLane } from "@/lib/sources/showcase";
 import { DEFAULT_TASTE } from "@/lib/taste";
 import { LAYOUT_WORDS, LENSES, LISTS, STOP_WORDS, USABILITY_WORDS, lensEntries } from "./lists";
 import { MOVE_DEFS } from "./moves";
@@ -871,7 +872,15 @@ export function laneTexts(
   // calendar date pickers). Galleries search it.
   const topic = briefTopic(b, platform);
   if (topic) lanes.topic = topic;
-  const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? [])], brief: b, key, artText: [idea] });
+  // Website briefs that name a showcase style ("playful", "too fun", "3d", "webgl", "motion"):
+  // showcase galleries search the style's words (lib/sources/showcase.ts), and the style's tag
+  // pulls them. Other platforms never get this, so mobile, tablet and web app lanes are unchanged.
+  const showcase = platform === "website" ? showcaseLane([...styles, ...(opts.styleWords ?? [])], b) : null;
+  if (showcase) {
+    lanes.showcase = showcase.phrase;
+    if (showcase.word) lanes.showcaseWord = showcase.word;
+  }
+  const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? []), ...(showcase?.ids ?? [])], brief: b, key, artText: [idea], ...(showcase ? { prefer: showcase.ids } : {}) });
   if (picked.ui.length > 0) lanes.galleries = picked.ui;
   if (picked.baseline.length > 0) lanes.baselineGalleries = picked.baseline;
   if (picked.art.length > 0) lanes.artGalleries = picked.art;
