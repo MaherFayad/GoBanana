@@ -1,0 +1,32 @@
+{
+  "style": "photographic-hero",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b031",
+    "b057",
+    "b092",
+    "c010",
+    "pr021",
+    "br001",
+    "b021",
+    "b047"
+  ],
+  "edge": [
+    "b003",
+    "b053",
+    "b075",
+    "b086",
+    "c124",
+    "c301",
+    "c457",
+    "pr026",
+    "pr043",
+    "pr055",
+    "br046",
+    "br009",
+    "br022",
+    "br024",
+    "w005"
+  ]
+}

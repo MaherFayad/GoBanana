@@ -1,0 +1,8 @@
+{
+  "style": "gulf-arabic-first",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [],
+  "edge": [],
+  "gap": "The owner's 211 picks hold no Arabic or Gulf work. The Gulf/Arabic picker tab (ids ga001 onward) holds candidates; exemplars come from the owner's picks there."
+}

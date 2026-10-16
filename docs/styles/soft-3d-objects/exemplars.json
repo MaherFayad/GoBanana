@@ -1,0 +1,24 @@
+{
+  "style": "soft-3d-objects",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b012",
+    "b028",
+    "b044",
+    "b050",
+    "b051",
+    "b063",
+    "b014",
+    "b070"
+  ],
+  "edge": [
+    "b087",
+    "c312",
+    "c538",
+    "pr016",
+    "b082",
+    "d143",
+    "w044"
+  ]
+}

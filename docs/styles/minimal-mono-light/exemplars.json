@@ -1,0 +1,32 @@
+{
+  "style": "minimal-mono-light",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b008",
+    "b025",
+    "b032",
+    "b065",
+    "b093",
+    "c053",
+    "c096",
+    "b002"
+  ],
+  "edge": [
+    "pr015",
+    "pr035",
+    "pr046",
+    "br025",
+    "b007",
+    "b021",
+    "b026",
+    "b036",
+    "b040",
+    "b045",
+    "b046",
+    "b049",
+    "b053",
+    "b057",
+    "b078"
+  ]
+}

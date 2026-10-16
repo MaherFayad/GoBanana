@@ -1,0 +1,27 @@
+{
+  "style": "type-led-brand-system",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "br005",
+    "br006",
+    "br014",
+    "br027",
+    "br028",
+    "b030",
+    "b060",
+    "br007"
+  ],
+  "edge": [
+    "br008",
+    "br038",
+    "br049",
+    "br060",
+    "b055",
+    "br016",
+    "br018",
+    "br025",
+    "br044",
+    "br063"
+  ]
+}

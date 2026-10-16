@@ -1,0 +1,23 @@
+{
+  "style": "editorial-serif",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "pr026",
+    "pr036",
+    "pr054",
+    "pr055",
+    "pr056",
+    "pr063",
+    "br012",
+    "w010"
+  ],
+  "edge": [
+    "b042",
+    "c052",
+    "w038",
+    "b054",
+    "pr058",
+    "br001"
+  ]
+}
