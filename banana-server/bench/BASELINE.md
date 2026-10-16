@@ -378,3 +378,60 @@ Notes:
   second card fix above should move both raters, and costs nothing.
 - Spend: Serper 287 credits (144 and 143; budget 300; the account went from 1,200 to 713 while another agent also
   used it). Claude $1.29 (J10; cap $3). No J job for the bend.
+
+## Gate 2 final (2026-10-17)
+
+- Branch `next/gate2-final` (from `next/phase-1`, 9369400, which holds the second card fix of round 3b). One run, `g2l`,
+  the same 10 briefs, budget 150, product setup (canvas baseline wired, `--atlas`). Atlas: rebuilt locally with every
+  job `--from-raw` and `ops.ts layout` (288 shards, manifest `c0d5a6a01cfe`, no API calls, not uploaded). A dry bend
+  before the run gave the same 30 leads as g2j and g2k; 17 of the 18 second cards differ, as in the round 3b dry run.
+- Rated by Claude (agent) as in g2j and g2k, against `docs/taste-bar.md` and the owner's picks (`bench/taste/picks.json`,
+  UI genres). References rated on the same brief in an earlier run reuse that rating (138 of 147); 9 new ones were
+  rated by eye from a contact sheet (7 good, 2 bad: a SaaS landing page with no pricing section, a wireframe style gov
+  page). Directions were rated from their specs, all 30 fresh since the second card changed their ids. Craftwork, Best
+  Designs on X and x.com items were never model inputs (none were in the new set). The same agent wrote the fixes, so
+  the J10 judge is the independent check. Not the owner's ratings: spot check.
+
+| Metric | Phase 0 (10-15b) | R3 g2j | R3 g2k | Final g2l | Target |
+| --- | --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5), agent | 13.3% (4 of 30) | 83.3% (25 of 30) | 83.3% (25 of 30) | **86.7% (26 of 30)** | 80% or more |
+| Brief relevance (4 or 5), J10 judge | n/a | 73.3% (22 of 30) | 73.3% (22 of 30) | 90% (27 of 30), not trusted this round | 80% or more |
+| Relevance mean (1 to 5), agent | 3.03 | 3.83 | 3.83 | 3.87 | |
+| Spec coherence (failures; rated median) | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 4 | 0 |
+| Query overlap (shared UI queries) | 21 | 0 | 0 | **0** | 0 |
+| Reference precision (good or great, top 8 UI), agent | 69.5% (98 of 141) | 68.1% (96 of 141) | 62.8% (91 of 145) | 70.7% (104 of 147) | 75% or more |
+| Great share (top 8 UI), agent | 13.5% (19 of 141) | 11.3% (16 of 141) | 11.7% (17 of 145) | 12.9% (19 of 147) | rising |
+| Reference precision; great share, J10 | n/a | 51.8%; 7.8% | 48.3%; 6.2% | 47.6% (70 of 147); 7.5% (11 of 147) | |
+| Directions searched | 18 | 21 | 21 | 21 | |
+| Wow (median) | 3 | 3 | 3 | 3 | 4 |
+| Serper credits (per search) | 144 (8) | 144 (6.9) | 143 (6.8) | 143 (6.8) | |
+
+J10 calibration this time (one scored run, $0.89, batch): relevance 69% agreement with the gold (20 of 29), under the 75%
+trust bar and down from 76.7% in round 3. Over four calibrations on the same gold directions it has been 70%, 80%,
+76.7% and 69%, so relevance sits on the trust line. Coherence 96.6%, wow 93.1%, precision 81.4% and great 85.7% are
+trusted. One calibration record was rejected as malformed. Because relevance is not trusted, the judge's 90% is
+indicative only.
+
+Notes:
+
+- **The second card fix moved both raters up.** Agent relevance 83.3% to 86.7%, judge 73.3% to 90%. The foreign second
+  cards the judge marked down in round 3 (tiffin carrier on the Saudi souq sign, Ankara 1930s on the Dubai wind towers)
+  are gone. Off brief for the agent: Walnut Veneer, Arcade Cabinet, Dotted Leaders and Game Cartridge, all leads with
+  no tie to the brief's world (the same four as round 3; Ruler Ticks moved up with a marble texture).
+- **The raters agree on 25 of 30 directions** on the line at 4. The judge marks down Fingerprint (Nafath reason on a
+  global banking brief), Dotted Leaders and Wool Felt (a back button on a home screen); it marks up Walnut Veneer,
+  Arcade Cabinet and Game Cartridge.
+- **References are back near Phase 0 on the agent rater** (70.7% against 69.5%, great share 12.9% against 13.5%) and
+  above g2j and g2k. 138 of 147 were seen before, so this is mostly the same pool; the SaaS pricing and Qatar boards
+  stay the weakest.
+- **The judge is stricter on references** (47.6% against 70.7%), as in every round; use it to compare runs.
+
+### Gate 2 final verdict (plan section 9: 80% on brief, 0 shared queries, 0 coherence failures)
+
+- **Agent rater: met.** 86.7% on brief, 0 shared queries, 0 coherence failures.
+- **J10 judge: met on the number (90%), but relevance is not a trusted metric this round (69% agreement).**
+- **Gate 2 passes on both raters, with the caveat that the judge's relevance is untrusted.** The owner's spot check of
+  g2l is still the deciding evidence, since the agent that rated also wrote the fixes.
+- Not a gate criterion: reference precision 70.7% (agent) is under the 75% target.
+- Spend: Serper 143 credits (the bench count; the account stays above the 350 floor). Claude $0.89 (J10, cap $2); no
+  other API calls, no J job for the bend.
