@@ -126,11 +126,6 @@ export type Reference = {
   recipeId?: string;
   /** Search plan v2: the Atlas card of the direction it was found for. */
   cardId?: string;
-  /**
-   * The designer's own page, when the source link is a post that someone else's site curated
-   * (Best Designs on X: sourceUrl is the X post, creditUrl the designer's X profile).
-   */
-  creditUrl?: string;
 };
 
 /** Search outcome with an optional plain note for the agent (for example when Serper fails). */

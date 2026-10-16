@@ -18,7 +18,7 @@
  *   baseline galleries  one head word on Nicelydone, then Refero (web app, baseline lane only)
  *   showcase     website briefs that name a showcase style (playful, 3D, WebGL, motion, ...):
  *                showcase galleries search the style's words, not the topic: Awwwards "playful
- *                illustration", Craftwork "playful" (lib/sources/showcase.ts)
+ *                illustration" (lib/sources/showcase.ts)
  *
  * The hero lane ("{style} {domain} app single screen") is no longer planned (P0-17); an agent can
  * still re-search the hero lane with its own words.
@@ -97,8 +97,6 @@ export type LaneTexts = {
    * showcase gallery searches in place of the topic ("playful illustration" on Awwwards).
    */
   showcase?: string;
-  /** The same for one-word showcase galleries ("playful" on Craftwork), when a named style has one. */
-  showcaseWord?: string;
   /** Platform the UI lanes were worded for (lib/platform.ts). */
   platform?: Platform;
   /**
@@ -167,13 +165,11 @@ export function galleryWords(site: SourceSite, topic: string): string {
 }
 
 /**
- * A showcase gallery's words for these lanes: the showcase phrase or one word when the lanes name a
+ * A showcase gallery's words for these lanes: the showcase phrase when the lanes name a
  * showcase style and the gallery is a showcase gallery of that kind, else null (topic words).
  */
-export function showcaseWords(site: SourceSite, lanes: Pick<LaneTexts, "showcase" | "showcaseWord">): string | null {
-  const kind = sourceEntry(site).showcase;
-  if (!kind || !lanes.showcase) return null;
-  return (kind === "phrase" ? lanes.showcase : lanes.showcaseWord) ?? null;
+export function showcaseWords(site: SourceSite, lanes: Pick<LaneTexts, "showcase">): string | null {
+  return sourceEntry(site).showcase && lanes.showcase ? lanes.showcase : null;
 }
 
 /** Words that are never a gallery's head word: the surface and page shells. */

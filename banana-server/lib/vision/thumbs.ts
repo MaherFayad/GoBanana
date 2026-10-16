@@ -102,7 +102,7 @@ export function pickThumbUrl(t: Pick<ThumbTarget, "imageUrl" | "thumbUrl">, allo
  * The hosts thumbnails may come from: the image allowlist plus Mobbin's image hosts (the
  * connector's short link and the CDN it redirects to), so agents see the Mobbin screens they
  * placed. Thumbnails only; search and extract_palette keep the plain allowlist. Hosts whose images
- * are never a model input (NO_MODEL_IMAGE_HOSTS: Best Designs on X) are left out, so their
+ * are never a model input (NO_MODEL_IMAGE_HOSTS: Craftwork, Best Designs on X) are left out, so their
  * results show on the canvas and in the tray but never reach the agent as pictures.
  */
 export function thumbAllowlist(base: ImageHostAllowlist = allowlistFromEnv()): ImageHostAllowlist {
@@ -138,7 +138,7 @@ const REASONS: Record<string, string> = {
   network_error: "the image did not load from its source",
   too_many_redirects: "the image link redirects too many times",
   format: "its format is not one agents can read (JPEG, PNG, GIF or WebP)",
-  no_model: "its source is link out only (Best Designs on X: the designer's X post), so it is never shown to a model; it is on the board for people, rate it from its title or leave it unrated",
+  no_model: "its source is never shown to a model (Craftwork, Best Designs on X); it is on the board for people, rate it from its title or leave it unrated",
   over_cap: "over the 12 thumbnails per call",
   over_budget: "over the size budget for one call",
 };

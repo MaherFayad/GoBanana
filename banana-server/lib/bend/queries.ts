@@ -894,10 +894,7 @@ export function laneTexts(
   // showcase galleries search the style's words (lib/sources/showcase.ts), and the style's tag
   // pulls them. Other platforms never get this, so mobile, tablet and web app lanes are unchanged.
   const showcase = platform === "website" ? showcaseLane([...styles, ...(opts.styleWords ?? [])], b) : null;
-  if (showcase) {
-    lanes.showcase = showcase.phrase;
-    if (showcase.word) lanes.showcaseWord = showcase.word;
-  }
+  if (showcase) lanes.showcase = showcase.phrase;
   const picked = pickGalleries({ platform, styleWords: [...styles, ...(opts.styleWords ?? []), ...(showcase?.ids ?? [])], brief: b, key, artText: [idea], ...(showcase ? { prefer: showcase.ids } : {}) });
   if (picked.ui.length > 0) lanes.galleries = picked.ui;
   if (picked.baseline.length > 0) lanes.baselineGalleries = picked.baseline;

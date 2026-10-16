@@ -162,7 +162,7 @@ Each result line shows `[referenceId, lane]` and its zone. Do not pass a directi
 The server does not look at images. You do.
 
 **Look at the returned thumbnails before rating or noting.** `search_references` and `add_to_canvas` results carry a small thumbnail after the line that names each reference: name the colors and layout you see, and base every rating and `steal:` note on the image, not the title.
-Results from Best Designs on X (site `x.com`, title ending "via Best Designs on X") never carry a thumbnail: they are link out only and never shown to a model. Place them for people with their X link and the designer named in the note (`@handle`), and leave them unrated unless the user rates them.
+A result with no thumbnail (the server skips it for size, format or a host it cannot load) cannot be seen: rate it from its title and site, or leave it unrated.
 
 1. **Judge every result** from its title, site and URL, and the image when you can see it.
 2. **Call `rate_references`** with the `canvasId`, once per search. Rate only two kinds of result: the junk (`bad`) and the 1 to 3 standouts (`great`). Pass `save: true` on the call that rates the `great` ones when the user keeps a swipe file (they said "save the great ones", or they already have items there): it keeps their links in the user's swipe file for other boards. Never save without that, and say how many were saved. Leave ordinary good results unrated; there is no "ok" verdict, so never mark every usable result `great`. Always rate the junk so it leaves the tray:

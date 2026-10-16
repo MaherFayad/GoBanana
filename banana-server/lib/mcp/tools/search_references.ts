@@ -27,9 +27,8 @@ import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
 import { BASELINE_LANE, baselineKey, isFreshBaseline, withoutBaselineLane, type CanvasBaseline } from "@/lib/sources/baseline";
 import { writeSearchTray } from "@/lib/sources/tray";
-import { ART_SITES, artQuota, artWords, bridgeHead, byZone, forceUi, hasUiLanes, laneValue, plainGenre, planRequests, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
+import { ART_SITES, artQuota, artWords, bridgeHead, byZone, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
-import { bdoxReference, mergeBdox, searchBdox } from "@/lib/sources/bdox";
 import {
   DEFAULT_SOURCES,
   LANE_NAMES,
@@ -51,7 +50,6 @@ import {
   countNote,
   createWebSearchAdapter,
   itemKey,
-  referenceId,
   sumWhy,
   type DropWhy,
   type WebSearchAdapter,
@@ -181,20 +179,6 @@ export type SearchReferencesDeps = {
   /** Takedown list for results that skip the search adapter (CC0 index). Missing or failing: none are shown. */
   loadTakedowns?(): Promise<TakedownMatcher>;
 };
-
-/**
- * The component words a search gives Best Designs on X (lib/sources/bdox.ts): a direction's
- * component lanes, a component lane re-search's words, or a plain query that is not a genre query.
- * Null for every other search (a genre brief, another lane's re-search), which then adds nothing.
- */
-export function bdoxWords(s: { lanes?: LaneTexts; lane?: LaneName; laneUiWords?: string; query?: string }): string | null {
-  if (s.lanes) {
-    if (s.lanes.genre) return null;
-    if (s.lane) return s.lane === "component" ? (s.laneUiWords ?? null) : null;
-    return s.lanes.component?.length ? s.lanes.component.join(" | ") : null;
-  }
-  return s.query && !plainGenre(s.query) ? s.query : null;
-}
 
 /**
  * CC0 index results join the art zone: UI first, then CC0, then the web art results. Over `count`,
@@ -718,29 +702,6 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
               .filter((r) => !seen.has(r.sourceUrl) && !takedowns!.isReferenceBlocked(r) && !blocked.has(itemKey(r.sourceUrl)))
               .map((r) => ({ ...r, ...(lead ? { cardId: lead } : {}) }));
             references = mergeCc0(references, fresh, input.count);
-          }
-        }
-      }
-      // Best Designs on X (lib/sources/bdox.ts): component words that name a part add up to two
-      // curated matches to the UI zone, checked against the takedown list (fails closed). Words that
-      // name no part, picked sources, genre briefs and art-only searches add nothing.
-      const bdoxText = bdoxWords({ lanes, lane: input.lane, laneUiWords, query });
-      if (bdoxText && zone !== "art" && !input.sources && deps.loadTakedowns) {
-        const matches = searchBdox(bdoxText, { platform: lanes?.platform, allowImage: deps.allowImage ?? (() => false) });
-        if (matches.length > 0) {
-          let takedowns: TakedownMatcher | null = null;
-          try {
-            takedowns = await deps.loadTakedowns();
-          } catch {
-            console.error("[search_references] could not load takedowns for Best Designs on X results");
-          }
-          if (takedowns) {
-            const seen = new Set([...references.map((r) => r.sourceUrl), ...canvasUrls]);
-            const blocked = new Set(learning.blocked);
-            const fresh = matches
-              .map((m) => bdoxReference(m, referenceId))
-              .filter((r) => !seen.has(r.sourceUrl) && !takedowns!.isReferenceBlocked(r) && !blocked.has(itemKey(r.sourceUrl)));
-            references = mergeBdox(references, fresh, input.count);
           }
         }
       }

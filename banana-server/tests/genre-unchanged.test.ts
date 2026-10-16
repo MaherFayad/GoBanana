@@ -12,9 +12,6 @@ import { laneTexts } from "@/lib/bend/queries";
 import { DEFAULT_IMAGE_HOSTS, parseAllowlist } from "@/lib/sources/allowlist";
 import { artQueryPlan, plainQueryPlan, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { pickGalleries } from "@/lib/sources/registry";
-import { bdoxParts, searchBdox } from "@/lib/sources/bdox";
-import { bdoxWords } from "@/lib/mcp/tools/search_references";
-import { isAllowedImageUrl } from "@/lib/sources/allowlist";
 import { mapSerperImagesWithStats } from "@/lib/sources/web-search";
 import { EMPTY_TAKEDOWNS } from "@/lib/takedown";
 import type { Platform } from "@/lib/direction-detail";
@@ -90,32 +87,5 @@ describe("mobile and web search is unchanged by the deck and brand genres", () =
     }
     // A Windows checkout may turn the fixture's line ends into CRLF; the bytes compared are LF.
     expect(text === readFileSync(FIXTURE, "utf8").replace(/\r\n/g, "\n")).toBe(true);
-  });
-});
-
-/**
- * Best Designs on X (lib/sources/bdox.ts) only adds results after the search: the plans above are
- * untouched, and a brief or query whose component words name no part gets nothing from it, so its
- * results stay byte for byte as before.
- */
-describe("Best Designs on X leaves briefs that touch no component unchanged", () => {
-  const allowlist = parseAllowlist(DEFAULT_IMAGE_HOSTS);
-  const allowImage = (url: string) => isAllowedImageUrl(url, allowlist);
-  it("adds nothing to a brief or plain query that names no part", () => {
-    let touched = 0;
-    for (const b of BRIEFS) {
-      for (const platform of [b.platform, undefined]) {
-        for (const taste of TASTES) {
-          const lanes = laneTexts(b.brief, "sadu weaving", taste, "d1", platform ? { platform } : {});
-          const words = bdoxWords({ lanes });
-          const got = searchBdox(words, { platform: lanes.platform, allowImage });
-          if (bdoxParts(words).length === 0) expect(got).toEqual([]);
-          else touched++;
-        }
-      }
-    }
-    // Only the component briefs ("fitness app empty state") get matches.
-    expect(touched).toBeGreaterThan(0);
-    for (const q of QUERIES) expect(searchBdox(bdoxWords({ query: q }), { allowImage })).toEqual([]);
   });
 });

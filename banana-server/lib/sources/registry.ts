@@ -23,21 +23,16 @@
  *   order, never as a direction's gallery (P0-17: shipped screens that never reach the taste bar).
  * - oneWord: searched with the topic's one head word ("analytics", not "analytics dashboard").
  * - pages: picked only when the brief names one of these pages (60fps: pay, card, checkout, wallet).
- * - showcase: a web showcase gallery (Awwwards, Craftwork). When a website brief names a showcase
+ * - showcase: a web showcase gallery (Awwwards). When a website brief names a showcase
  *   style (lib/sources/showcase.ts: playful, 3D, WebGL, motion, ...), it is searched with that
- *   style's words, its "phrase" or its one "word", instead of the topic.
- * - styleOnly: picked only when a style word names one of its tags, never by platform alone.
+ *   style's phrase instead of the topic.
  * - genres: the non-UI genres (lib/sources/genre.ts) whose lane may search this gallery. A genre
  *   gallery has no platforms and no tags of its own, so pickGalleries never picks it for a UI brief.
  * - templatesOk: every item is a template by design (Pitch's gallery): the kit filter is skipped.
  * - httpsImages: the site still links some images over http; they are asked for over https.
- * - noModelInput: its license bars testing or training AI models on its previews (Craftwork), so
- *   none of its images or picks may reach a model input: atlas-build's thumbnail fetch leaves its
- *   hosts out and j7-taste drops its picks (noModelInputHosts). otherHosts lists the source's own
- *   hosts that are not image allowlist hosts (the taste picker's video previews, icons).
  */
 import type { Platform, Zone } from "../direction-detail";
-import { SHOWCASE_TAGS, SHOWCASE_WORD_TAGS } from "./showcase";
+import { SHOWCASE_TAGS } from "./showcase";
 import type { Genre } from "./genre";
 
 export type SourceMeasure = {
@@ -80,15 +75,11 @@ export type SourceEntry = {
   baseline?: number;
   oneWord?: boolean;
   pages?: readonly string[];
-  /** Web showcase gallery: searched with the showcase style's phrase or one word (see the header). */
-  showcase?: "phrase" | "word";
-  /** Picked by a style tag only, never as one of the platform's default galleries. */
-  styleOnly?: boolean;
+  /** Web showcase gallery: searched with the showcase style's phrase (see the header). */
+  showcase?: "phrase";
   genres?: readonly Genre[];
   templatesOk?: boolean;
   httpsImages?: boolean;
-  noModelInput?: boolean;
-  otherHosts?: readonly string[];
   measured: SourceMeasure;
 };
 
@@ -179,37 +170,6 @@ export const SOURCE_REGISTRY = [
       items: 90,
       unique: 70,
       note: "showcase phrases 10 of 10 item pages each; topic plus style (\"3d coffee shop\", \"playful coffee shop\") 0 of 20, Google dropped the site filter; 2026-10-12: 8 of 8 through the deployed server",
-    },
-  },
-  {
-    id: "craftwork",
-    name: "Craftwork",
-    domain: "craftwork.design",
-    scope: "craftwork.design/curated/website",
-    item: /^\/curated\/website\/[a-z0-9][a-z0-9-]*\/?$/i,
-    // Bunny CDN pull zones of Craftwork's own account (exact hosts). cfw6.b-cdn.net is left out: it
-    // serves 512 px icons the size rule drops anyway.
-    imageHosts: ["craftwork-products.b-cdn.net", "marketstorage.b-cdn.net", "curated-images.b-cdn.net"],
-    role: "gallery",
-    zone: "ui",
-    // Owner request 2026-10-16. Pulled only by a showcase style on a website brief (styleOnly):
-    // topic words matched badly ("fintech" and "coffee" gave 2 unique sites each), the style's one
-    // word well ("3d", "interactive", "animation": 10 of 10).
-    platforms: ["website"],
-    tags: SHOWCASE_WORD_TAGS,
-    showcase: "word",
-    styleOnly: true,
-    // License: "not to test or train AI models on previews" (2026-10-16). curated-video.b-cdn.net
-    // serves its video previews (bench/taste picker only, not an image allowlist host).
-    noModelInput: true,
-    otherHosts: ["curated-video.b-cdn.net", "cfw6.b-cdn.net"],
-    measured: {
-      date: "2026-10-16",
-      queries: 12,
-      results: 81,
-      items: 81,
-      unique: 46,
-      note: "license allows saving references and sharing links, not republishing; hotlinked thumbnails link back to the item page, which links the live site. Not used in J7 (its license bars testing AI models on its previews)",
     },
   },
   // Website galleries.
@@ -627,23 +587,30 @@ export function registryImageHosts(): string[] {
 }
 
 /**
- * Link-out only sources outside the registry (searched from a curated local index, not Serper):
- * Best Designs on X (lib/sources/bdox.ts, 2026-10-16), whose items are X posts by third-party
- * designers with no license for AI use. Its site, its media CDN and X itself (every item's source
- * link is the X post) never reach a model input.
+ * Hosts whose images and pages must never reach a model input. Craftwork and Best Designs on X
+ * were link-out only sources; the owner removed both from search (DECISIONS.md 2026-10-16) and
+ * keeps their picks in the taste picker as a private reference only, so the guard stays:
+ * atlas-build/lib/thumbs.ts and j7-taste.ts read it. Craftwork: license bars testing or training
+ * AI models on its previews. Best Designs on X: X posts by third-party designers (its site, its
+ * media CDN and X itself, since every item's source link is the X post), no license for AI use.
  */
-export const NO_MODEL_INDEX_HOSTS: readonly string[] = ["bestdesignsonx.com", "www.bestdesignsonx.com", "cdn.bestdesignsonx.com", "x.com", "www.x.com"];
+const NO_MODEL_INPUT_HOSTS: readonly string[] = [
+  "craftwork.design",
+  "www.craftwork.design",
+  "craftwork-products.b-cdn.net",
+  "marketstorage.b-cdn.net",
+  "curated-images.b-cdn.net",
+  "curated-video.b-cdn.net",
+  "cfw6.b-cdn.net",
+  "bestdesignsonx.com",
+  "www.bestdesignsonx.com",
+  "cdn.bestdesignsonx.com",
+  "x.com",
+  "www.x.com",
+];
 
-/**
- * Hosts whose images and pages must never reach a model input (sources with noModelInput: its
- * domain, www. form, image hosts and other hosts; plus NO_MODEL_INDEX_HOSTS).
- * atlas-build/lib/thumbs.ts and j7-taste.ts read it.
- */
 export function noModelInputHosts(): string[] {
-  const out = (SOURCE_REGISTRY as readonly SourceEntry[])
-    .filter((s) => s.noModelInput)
-    .flatMap((s) => [s.domain, `www.${s.domain}`, ...s.imageHosts, ...(s.otherHosts ?? [])]);
-  return [...new Set([...out, ...NO_MODEL_INDEX_HOSTS].map((h) => h.toLowerCase()))];
+  return [...NO_MODEL_INPUT_HOSTS];
 }
 
 /** True when the path is one piece of work on this site (Awwwards list paths excluded). */
@@ -717,7 +684,7 @@ export function pickGalleries(input: {
   artText?: readonly string[];
   /**
    * Tags whose galleries go before every other tag match (a website brief's showcase styles, so
-   * "landing page" in the brief does not crowd Awwwards and Craftwork out). None: no change.
+   * "landing page" in the brief does not crowd Awwwards out). None: no change.
    */
   prefer?: readonly string[];
 }): GalleryPick {
@@ -732,7 +699,7 @@ export function pickGalleries(input: {
   const directionUi = uiAll.filter((s) => !("baseline" in s));
   const tagged = directionUi.filter((s) => matchesTags(s, words));
   const platform = input.platform && input.platform !== "any" ? input.platform : undefined;
-  const forPlatform = platform ? directionUi.filter((s) => !("styleOnly" in s) && (s.platforms as readonly string[]).includes(platform)) : [];
+  const forPlatform = platform ? directionUi.filter((s) => (s.platforms as readonly string[]).includes(platform)) : [];
   const baseline = platform
     ? uiAll
         .filter((s): s is Extract<(typeof uiAll)[number], { baseline: number }> => "baseline" in s && (s.platforms as readonly string[]).includes(platform))

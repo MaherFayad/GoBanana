@@ -18,18 +18,18 @@ description: كل موقع يمكن أن يبحث فيه search_references، و�
 
 ## أساليب المواقع الاستعراضية
 
-إذا كان الموجز لـ**موقع** وذكر واحدا من هذه الأساليب، تجي المعارض الاستعراضية (Awwwards وCraftwork) أول، ويُبحث فيها بكلمات الأسلوب نفسه بدل موضوع الموجز. موجزات الجوال والجهاز اللوحي وتطبيقات الويب ما تتأثر.
+إذا كان الموجز لـ**موقع** وذكر واحدا من هذه الأساليب، تجي المعارض الاستعراضية (Awwwards) أول، ويُبحث فيها بكلمات الأسلوب نفسه بدل موضوع الموجز. موجزات الجوال والجهاز اللوحي وتطبيقات الويب ما تتأثر.
 
-| الأسلوب | الكلمات اللي تدل عليه | يبحث في Awwwards عن | يبحث في Craftwork عن |
-| --- | --- | --- | --- |
-| مرح | playful، fun، too fun، whimsical، quirky، cartoon | playful illustration | playful |
-| WebGL | webgl، three.js، shader، real time 3d | webgl portfolio | webgl |
-| ثلاثي الأبعاد | 3d، three dimensional | 3d landing page | 3d |
-| قصة بالتمرير | scroll story، scrollytelling، storytelling، immersive scroll، parallax | scroll storytelling | interactive |
-| خط متحرك | kinetic type، kinetic typography، animated type | kinetic typography | (ما يُبحث فيه) |
-| حركة | motion، motion first، animated، animation، micro interactions | animation | animation |
-| تفاعلي | interactive، gamified، playable | interactive | interactive |
-| تجريبي | experimental، avant garde، unconventional | experimental | (ما يُبحث فيه) |
+| الأسلوب | الكلمات اللي تدل عليه | يبحث في Awwwards عن |
+| --- | --- | --- |
+| مرح | playful، fun، too fun، whimsical، quirky، cartoon | playful illustration |
+| WebGL | webgl، three.js، shader، real time 3d | webgl portfolio |
+| ثلاثي الأبعاد | 3d، three dimensional | 3d landing page |
+| قصة بالتمرير | scroll story، scrollytelling، storytelling، immersive scroll، parallax | scroll storytelling |
+| خط متحرك | kinetic type، kinetic typography، animated type | kinetic typography |
+| حركة | motion، motion first، animated، animation، micro interactions | animation |
+| تفاعلي | interactive، gamified، playable | interactive |
+| تجريبي | experimental، avant garde، unconventional | experimental |
 
 ## معارض الواجهات حسب المنصة
 
@@ -44,7 +44,6 @@ description: كل موقع يمكن أن يبحث فيه search_references، و�
 | `thefwa` | The FWA | موقع | immersive، 3d، motion، award |
 | `httpster` | Httpster | موقع | brutalist، typography، big typography، editorial |
 | `darkdesign` | Dark Design | موقع | dark mode، dark |
-| `craftwork` | Craftwork (إلهام المواقع) | موقع، بأسلوب استعراضي فقط | playful، 3d، webgl، motion، interactive، scroll story |
 | `21st` | 21st.dev (مكونات React وTailwind) | موقع، تطبيق ويب | component، react، shadcn، hero section، animated |
 | `refero` | Refero | تطبيق ويب | |
 | `saasframe` | SaaSFrame | تطبيق ويب | |
@@ -83,15 +82,6 @@ description: كل موقع يمكن أن يبحث فيه search_references، و�
 | `pitch` | قوالب Pitch | العروض التقديمية | `pitch.com/templates/…` |
 | `brandnew` | Brand New (UnderConsideration) | الهوية | `underconsideration.com/brandnew/archives/….php` |
 
-## مكونات من Best Designs on X
-
-[Best Designs on X](https://bestdesignsonx.com/) يجمع منشورات تصميم من X مرتبة حسب المكون: أزرار وبطاقات ورسوم بيانية ومفاتيح تبديل ومنزلقات وحقول إدخال وحالات فارغة وتنقل وإشعارات وغيرها، وكثير منها مقاطع حركة قصيرة. صفحاته ما تطلع في البحث عن الصور، فـGoBanana يحتفظ بفهرس صغير فيه حوالي 50 منشور منتقاة باليد من وسوم المكونات (روابط بس) بدل ما يبحث في الموقع.
-
-- **متى يظهر:** لما تذكر كلمات المكونات في البحث جزء يغطيه: موجز مثل "settings screen with toggles and sliders"، أو إعادة بحث في مسار المكونات، أو استعلام عادي مثل "dark toggle switch". يضيف لحد نتيجتين في منطقة الواجهات بعد أول نتيجتين. البحث اللي ما يذكر أي جزء، أو اللي تختار فيه `sources`، وموجزات العروض والهويات، والبحث في الاتجاه الفني بس، ما يجيه منه شي.
-- **الأجزاء اللي يغطيها:** button وtoggle وslider وinput وform وempty state وcard وchart وwidget وmodal وdropdown وsidebar وnavigation وnotification وtable وtabs وpricing. موجز الجوال ما يجيه أبدا جزء خاص بالويب (sidebar وtable وtabs وpricing).
-- **النسبة لصاحبها:** كل نتيجة ترتبط **بمنشور X الأصلي** وتذكر المصمم (`@handle`)، و`creditUrl` يودّي لحسابه في X.
-- **روابط بس:** صوره ومقاطعه تتحمل في متصفحك من CDN الموقع نفسه وما تنسخ أبدا. وما ترسل أبدا لنموذج ذكاء اصطناعي: لا صور مصغرة للوكيل، ولا تصير مثال ذوق، ولا يحكم عليها (منشورات X شغل المصممين، وما فيه ترخيص لاستخدامها مع الذكاء الاصطناعي).
-
 ## كيف يختار البحث مصادره
 
 في عملية بحث واحدة لاتجاه واحد يختار الخادم:
@@ -108,7 +98,7 @@ description: كل موقع يمكن أن يبحث فيه search_references، و�
 
 `i.pinimg.com` · `cdn.dribbble.com` · `mir-s3-cdn-cf.behance.net` · `mir-cdn.behance.net` · `assets.awwwards.com` · `cdn.lapa.ninja` · `r2.siteinspire.com` · `www.cssdesignawards.com` · `cssdesignawards.com` · `cdn.landing.love` · `unsection.b-cdn.net` · `pub-26e6aa63ed7942ecb7e9dbc72f09f164.r2.dev` (Supahero) · `thefwa.com` · `httpster.net` · `sidhvpjhuucqcehkevrl.supabase.co` (Dark Design) · `craftwork-products.b-cdn.net` و`marketstorage.b-cdn.net` و`curated-images.b-cdn.net` (Craftwork) · `bentogrids.com` · `cdn.21st.dev` · `images.refero.design` · `cdn.prod.website-files.com` (SaaSFrame) · `assets.nicelydone.club` · `media.screensdesign.com` · `video.gumlet.io` و`framerusercontent.com` (60fps) · `s3-alpha.figma.com` · `s3-figma-hubfile-images-production-cdn-cgi.figma.com` · `original.fontsinuse.com` · `assets.fontsinuse.com` · `images.typographicposters.com` · `assets.typographicposters.com` · `www.swissted.com` · `the-brandidentity.com` · `bpando.org` · `cdn.cosmos.so` · `d2w9rnfcy7mm78.cloudfront.net` و`images.are.na` (Are.na) · `dspncdn.com`
 
-معارض العروض والهويات تتحمل صورها كمان من `imgproxy.services.pitch.com` و`pitch-static-assets.imgix.net` (Pitch) و`www.underconsideration.com` (Brand New). وBest Designs on X يتحمل من `cdn.bestdesignsonx.com`.
+معارض العروض والهويات تتحمل صورها كمان من `imgproxy.services.pitch.com` و`pitch-static-assets.imgix.net` (Pitch) و`www.underconsideration.com` (Brand New).
 
 ## إضافة معرض مصدرا
 

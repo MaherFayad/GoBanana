@@ -16,19 +16,20 @@ export const THUMBNAIL_HOSTS: readonly string[] = [
 export const MUSEUM_IMAGE_HOSTS: readonly string[] = ["images.metmuseum.org", "openaccess-cdn.clevelandart.org"];
 
 /**
- * Best Designs on X (bestdesignsonx.com, owner request 2026-10-16): design posts from X, mirrored
- * on the site's own Cloudflare CDN (posters, photos and clips; measured on 288 posts: every media
- * URL on this one host). Searched from a curated local index (lib/sources/bdox.ts), never Serper.
- */
-export const BDOX_IMAGE_HOSTS: readonly string[] = ["cdn.bestdesignsonx.com"];
-
-/**
  * Image hosts whose pictures are never a model input: no thumbnail pass-through to the agent
  * (lib/vision), no Atlas judging job (atlas-build/lib/thumbs.ts). They still show on the canvas,
- * linked to their source. Best Designs on X: X posts by third-party designers, no license for AI
- * use (X's terms bar using its content to train or fine-tune models). DECISIONS.md 2026-10-16.
+ * linked to their source. Best Designs on X and Craftwork are out of search (DECISIONS.md
+ * 2026-10-16) and only in the owner's private taste picker; X's terms bar using its content to
+ * train or fine-tune models, and Craftwork's license bars testing AI models on its previews.
  */
-export const NO_MODEL_IMAGE_HOSTS: readonly string[] = [...BDOX_IMAGE_HOSTS];
+export const NO_MODEL_IMAGE_HOSTS: readonly string[] = [
+  "cdn.bestdesignsonx.com",
+  "craftwork-products.b-cdn.net",
+  "marketstorage.b-cdn.net",
+  "curated-images.b-cdn.net",
+  "curated-video.b-cdn.net",
+  "cfw6.b-cdn.net",
+];
 
 /** The allowlist without the hosts in `drop` (exact entries): for model inputs. */
 export function withoutHosts(allowlist: ImageHostAllowlist, drop: readonly string[] = NO_MODEL_IMAGE_HOSTS): ImageHostAllowlist {
@@ -42,7 +43,7 @@ export function withoutHosts(allowlist: ImageHostAllowlist, drop: readonly strin
  * live Serper results. Exact hosts only. Shared CDNs in the list, flagged in the registry:
  * framerusercontent.com and video.gumlet.io (60fps), cdn.prod.website-files.com (SaaSFrame).
  * Bunny CDN hosts (*.b-cdn.net) are listed one exact pull zone at a time, each the source's own
- * (Unsection; Craftwork's craftwork-products, marketstorage and curated-images), never the zone.
+ * (Unsection), never the zone.
  *
  * The same list feeds `_meta.ui.csp.resourceDomains` for the inline canvas, so any
  * search result whose image would load from another host is changed or dropped
@@ -54,7 +55,7 @@ export function withoutHosts(allowlist: ImageHostAllowlist, drop: readonly strin
  *   A leading dot (`.example.com`) means the same thing.
  * Matching is exact host or listed suffix, never a loose substring.
  */
-export const DEFAULT_IMAGE_HOSTS: readonly string[] = [...THUMBNAIL_HOSTS, ...registryImageHosts(), ...MUSEUM_IMAGE_HOSTS, ...BDOX_IMAGE_HOSTS];
+export const DEFAULT_IMAGE_HOSTS: readonly string[] = [...THUMBNAIL_HOSTS, ...registryImageHosts(), ...MUSEUM_IMAGE_HOSTS];
 
 export type ImageHostAllowlist = {
   /** Exact hosts. */

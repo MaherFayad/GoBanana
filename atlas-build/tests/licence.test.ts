@@ -28,8 +28,8 @@ describe("Craftwork never reaches a model input", () => {
     expect(hosts).not.toContain("assets.awwwards.com");
   });
 
-  it("keeps Craftwork images on the canvas allowlist but off the judging thumbnail allowlist", () => {
-    expect(DEFAULT_IMAGE_HOSTS).toContain("curated-images.b-cdn.net");
+  it("keeps Craftwork images off the canvas allowlist (removed from search) and off the judging thumbnail allowlist", () => {
+    expect(DEFAULT_IMAGE_HOSTS).not.toContain("curated-images.b-cdn.net");
     const allow = thumbAllowlist();
     for (const c of craftwork) {
       expect(isAllowedImageUrl(c.imageUrl, allow)).toBe(false);

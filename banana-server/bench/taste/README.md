@@ -54,6 +54,9 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
     - One frame only: Brand New (post bodies are for subscribers), Dribbble (shot pages answer
       automated requests with a challenge), Behance (robots.txt disallows Claude agents) and
       Pinterest (never scraped).
+  - **Craftwork and Best Designs on X are picker only, never in search, never a model input.** The
+    owner removed both from the product's search on 2026-10-16 ("remove anything that's just
+    links"); their candidates stay here as the owner's private taste reference, not product output.
   - Craftwork's license allows saving references and sharing links, but not testing or training AI
     models on its previews. So no Craftwork candidate, pick or media may reach a model input:
     atlas-build's thumbnail fetch leaves out every Craftwork host (`noModelInputHosts` in
@@ -66,7 +69,7 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
     screens and heroes, filed under Mobile UI, Web UI or Web showcase. Each has `component` (the
     part), `media` (up to 8 `{ type: "video" | "image", url, poster?, label? }` items, 33 of 58
     with a clip), `creator` and `creatorUrl` (the designer on X), `sourceUrl` (the original X
-    post) and `foundOn` (the post on Best Designs on X). Link out only: these are never sent to a
+    post) and `foundOn` (the post on Best Designs on X). Picker only: these are never in search and never sent to a
     model (no j7-taste notes, no judge), even when picked.
 - `genres.mjs` (types in `genres.d.mts`): the genres and `genreOf`.
 - `picker.html`: the page you pick in. `build-picker.mjs` rebuilds its data line.

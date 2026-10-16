@@ -18,18 +18,18 @@ Searched with UI wording on every platform. Pinterest and Behance also feed the 
 
 ## Web showcase styles
 
-For a **website** brief that names one of these styles, the showcase galleries (Awwwards and Craftwork) come first and are searched with the style's own words, not the brief's topic. Mobile, tablet and web app briefs are not affected.
+For a **website** brief that names one of these styles, the showcase galleries (Awwwards) come first and are searched with the style's own words, not the brief's topic. Mobile, tablet and web app briefs are not affected.
 
-| Style | Words that name it | Awwwards searches | Craftwork searches |
-| --- | --- | --- | --- |
-| Playful | playful, fun, too fun, whimsical, quirky, cartoon | playful illustration | playful |
-| WebGL | webgl, three.js, shader, real time 3d | webgl portfolio | webgl |
-| 3D | 3d, three dimensional | 3d landing page | 3d |
-| Scroll story | scroll story, scrollytelling, storytelling, immersive scroll, parallax | scroll storytelling | interactive |
-| Kinetic type | kinetic type, kinetic typography, animated type | kinetic typography | (not searched) |
-| Motion | motion, motion first, animated, animation, micro interactions | animation | animation |
-| Interactive | interactive, gamified, playable | interactive | interactive |
-| Experimental | experimental, avant garde, unconventional | experimental | (not searched) |
+| Style | Words that name it | Awwwards searches |
+| --- | --- | --- |
+| Playful | playful, fun, too fun, whimsical, quirky, cartoon | playful illustration |
+| WebGL | webgl, three.js, shader, real time 3d | webgl portfolio |
+| 3D | 3d, three dimensional | 3d landing page |
+| Scroll story | scroll story, scrollytelling, storytelling, immersive scroll, parallax | scroll storytelling |
+| Kinetic type | kinetic type, kinetic typography, animated type | kinetic typography |
+| Motion | motion, motion first, animated, animation, micro interactions | animation |
+| Interactive | interactive, gamified, playable | interactive |
+| Experimental | experimental, avant garde, unconventional | experimental |
 
 ## UI galleries by platform
 
@@ -44,7 +44,6 @@ For a **website** brief that names one of these styles, the showcase galleries (
 | `thefwa` | The FWA | Website | immersive, 3d, motion, award |
 | `httpster` | Httpster | Website | brutalist, typography, big typography, editorial |
 | `darkdesign` | Dark Design | Website | dark mode, dark |
-| `craftwork` | Craftwork (website inspiration) | Website, by showcase style only | playful, 3d, webgl, motion, interactive, scroll story |
 | `21st` | 21st.dev (React and Tailwind components) | Website, web app | component, react, shadcn, hero section, animated |
 | `refero` | Refero | Web app | |
 | `saasframe` | SaaSFrame | Web app | |
@@ -83,15 +82,6 @@ Results must name the kind of work in their titles (a screen or app result is dr
 | `pitch` | Pitch templates | Presentation | `pitch.com/templates/…` |
 | `brandnew` | Brand New (UnderConsideration) | Branding | `underconsideration.com/brandnew/archives/….php` |
 
-## Components from Best Designs on X
-
-[Best Designs on X](https://bestdesignsonx.com/) collects design posts from X, sorted by component: buttons, cards, charts, toggles, sliders, inputs, empty states, navigation, notifications and more, many of them short motion clips. Its pages do not show up in web image search, so GoBanana keeps a small index of about 50 posts picked by hand from its component tags (URLs only) instead of searching the site.
-
-- **When it shows up:** a UI search whose component words name a part it covers: a brief like "settings screen with toggles and sliders", a component lane re-search, or a plain query like "dark toggle switch". It adds up to 2 results to the UI zone, after the first two. Searches that name no part, searches with `sources` picked, deck and brand briefs and art-only searches get nothing from it.
-- **Parts it covers:** button, toggle, slider, input, form, empty state, card, chart, widget, modal, dropdown, sidebar, navigation, notification, table, tabs, pricing. A phone brief never gets web-only parts (sidebar, table, tabs, pricing).
-- **Credit:** every result links the **original X post** and names the designer (`@handle`), with `creditUrl` pointing to their X profile.
-- **Link out only:** its images and clips load from the site's own CDN in your browser and are never copied. They are never sent to an AI model: no thumbnails for the agent, never a taste exemplar, never judged (X posts are the designers' work, with no license for AI use).
-
 ## How a search picks sources
 
 For one direction search the server picks:
@@ -108,7 +98,7 @@ Images load in your browser straight from these hosts (also the canvas content s
 
 `i.pinimg.com` · `cdn.dribbble.com` · `mir-s3-cdn-cf.behance.net` · `mir-cdn.behance.net` · `assets.awwwards.com` · `cdn.lapa.ninja` · `r2.siteinspire.com` · `www.cssdesignawards.com` · `cssdesignawards.com` · `cdn.landing.love` · `unsection.b-cdn.net` · `pub-26e6aa63ed7942ecb7e9dbc72f09f164.r2.dev` (Supahero) · `thefwa.com` · `httpster.net` · `sidhvpjhuucqcehkevrl.supabase.co` (Dark Design) · `craftwork-products.b-cdn.net`, `marketstorage.b-cdn.net` and `curated-images.b-cdn.net` (Craftwork) · `bentogrids.com` · `cdn.21st.dev` · `images.refero.design` · `cdn.prod.website-files.com` (SaaSFrame) · `assets.nicelydone.club` · `media.screensdesign.com` · `video.gumlet.io` and `framerusercontent.com` (60fps) · `s3-alpha.figma.com` · `s3-figma-hubfile-images-production-cdn-cgi.figma.com` · `original.fontsinuse.com` · `assets.fontsinuse.com` · `images.typographicposters.com` · `assets.typographicposters.com` · `www.swissted.com` · `the-brandidentity.com` · `bpando.org` · `cdn.cosmos.so` · `d2w9rnfcy7mm78.cloudfront.net` and `images.are.na` (Are.na) · `dspncdn.com`
 
-Deck and brand galleries also load from `imgproxy.services.pitch.com` and `pitch-static-assets.imgix.net` (Pitch) and `www.underconsideration.com` (Brand New). Best Designs on X loads from `cdn.bestdesignsonx.com`.
+Deck and brand galleries also load from `imgproxy.services.pitch.com` and `pitch-static-assets.imgix.net` (Pitch) and `www.underconsideration.com` (Brand New).
 
 ## Adding a gallery source
 
