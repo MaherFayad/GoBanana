@@ -213,6 +213,11 @@ describe("one deep shared request per board: helpers", () => {
     const out = withPoolShare(own, [r("p1"), r("p2")], 5);
     expect(out.map((x) => x.id)).toEqual(["p1", "u1", "p2", "u2", "a1"]);
     expect(withPoolShare(own, [], 5)).toEqual(own);
+    // With no UI of its own, pooled results push out art past the art quota (a third of count, at least 3).
+    const artOnly = Array.from({ length: 11 }, (_, i) => r(`a${i}`, "art", "art"));
+    const filled = withPoolShare(artOnly, [r("p1"), r("p2"), r("p3"), r("p4")], 12);
+    expect(filled.filter((x) => x.zone === "ui").map((x) => x.id)).toEqual(["p1", "p2", "p3", "p4"]);
+    expect(filled.filter((x) => x.zone === "art")).toHaveLength(8);
     // A pooled result the direction already found is not added twice.
     expect(withPoolShare(own, [r("u1", "fidelity")], 12).filter((x) => x.id === "u1")).toHaveLength(1);
   });
@@ -297,6 +302,42 @@ describe("one deep shared request per board: on a canvas", () => {
     // Each pooled result goes to one direction.
     expect(bPooled.filter((id) => cPooled.includes(id))).toEqual([]);
     expect(state().tray.filter((t) => bPooled.includes(t.id)).every((t) => t.directionId === "bd-b")).toBe(true);
+  });
+});
+
+describe("an empty fidelity lane is still saved", () => {
+  it("a later direction never sends the empty lane again", async () => {
+    // Reuse the board of the block above through a fresh describe: the same directions and fake adapter.
+    const BRIEF = "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy";
+    const dirs: Record<string, Direction> = {
+      "bd-a": { id: "row-a", bendId: "bd-a", canvasId: "c1", searchQuery: "letterpress texture", brief: BRIEF, detail: { platform: "mobile", brief: BRIEF, artQueries: ["letterpress"] } as never },
+      "bd-b": { id: "row-b", bendId: "bd-b", canvasId: "c1", searchQuery: "ruler ticks", brief: BRIEF, detail: { platform: "mobile", brief: BRIEF, artQueries: ["ruler"] } as never },
+    };
+    let state: CanvasState = emptyState();
+    const runPlan = vi.fn(async (plan: readonly PlannedRequest[]) => ({
+      references: plan.filter((q) => q.lane !== "fidelity").map((q, i) => r(`x_${q.lane}_${i}_${q.query.length}`, q.lane, q.lane === "art" ? "art" : "ui")),
+      ok: true,
+      requests: plan.length,
+    }));
+    const tool = createSearchReferencesTool({
+      adapter: { run: vi.fn(), runPlan } as never,
+      usage: createMemoryUsageStore(),
+      getPlan: async () => "free",
+      getDirection: async (_u, id) => dirs[id] ?? null,
+      addToTray: async (_u, _c, refs, directionId, opts) => {
+        const written = writeSearchTray(state, refs, directionId, opts?.baseline);
+        state = written.state;
+        return { dropped: written.dropped };
+      },
+      getBaseline: async () => parseState(JSON.parse(JSON.stringify(state))).baseline ?? null,
+      upgradeUrl: () => "https://example.test/pricing",
+      now: () => new Date("2026-10-16T12:00:00Z"),
+    } as SearchReferencesDeps);
+    await tool({ directionId: "bd-a", canvasId: "c1" }, "u1");
+    expect(state.baseline?.referenceIds).toEqual([]);
+    const res = await tool({ directionId: "bd-b", canvasId: "c1" }, "u1");
+    expect(runPlan.mock.calls[1]![0].some((q) => q.lane === "fidelity")).toBe(false);
+    expect(res.content.map((c) => c.text).join("\n")).not.toContain("Shipped today");
   });
 });
 

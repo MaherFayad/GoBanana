@@ -308,7 +308,7 @@ function resultBody(out: SearchReferencesOutput): string {
   }
   if (out.baseline?.reused) {
     lines.push(
-      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped, as was every search another direction on this canvas already sent (their results are in the tray already). Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
+      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped, as was every search another direction on this canvas already sent (their results are in the tray already).${out.baseline.referenceIds.length > 0 ? ` Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.` : ""}`,
     );
   }
   // The bridge is the direction's own UI lane: say so when it found nothing, with a retry that works.
@@ -789,11 +789,11 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       } else if (baseline) {
         const ids = references.filter((r) => r.lane === BASELINE_LANE).map((r) => r.id);
         const pool = poolOf((result as { leftover?: Reference[] }).leftover);
-        if (ids.length > 0 || pool.length > 0) {
-          newBaseline = withSent({ key: baseline.key, referenceIds: ids, at: now.toISOString(), ...(pool.length > 0 ? { pool } : {}) }, baseline.sent ?? []);
-          baselineToSave = newBaseline;
-          out.baseline = { referenceIds: ids, at: newBaseline.at, reused: false };
-        }
+        // Saved even when the lane found nothing, so its requests (`sent`) are never sent again on
+        // this board (run 2026-10-16g2g: an empty gallery fidelity lane ran on two directions).
+        newBaseline = withSent({ key: baseline.key, referenceIds: ids, at: now.toISOString(), ...(pool.length > 0 ? { pool } : {}) }, baseline.sent ?? []);
+        baselineToSave = newBaseline;
+        out.baseline = { referenceIds: ids, at: newBaseline.at, reused: false };
       }
 
       if (input.canvasId && references.length > 0) {

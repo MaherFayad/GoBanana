@@ -284,13 +284,17 @@ export function isRuleCard(c: { kind: IngredientCard["kind"]; family: string }):
   return c.kind === "constraint" || (c.kind === "element" && LAYOUT_FAMILIES.has(c.family));
 }
 
-/** How much less a card counts when the domain's page fit (J4b) did not judge it on this page. */
-export const PAGE_UNJUDGED_DROP = 1;
+/**
+ * How much less a card counts when the domain's page fit (J4b) did not judge it on this page. Two: a
+ * fit 3 card outside the judged top cards ranks with a page 1, so a Gulf bonus alone never lifts an
+ * unjudged card over the cards judged for the page (the first round 2 dry run led Dubai listings
+ * with unjudged carvings, "suits property").
+ */
+export const PAGE_UNJUDGED_DROP = 2;
 
 /**
  * The fit a card leads this page with: its J4b page score when the page was judged for the domain,
- * else its domain fit less PAGE_UNJUDGED_DROP (a card outside the domain's judged top cards ranks with
- * a page 2, under the cards judged 3 for the page). `page` undefined: no page fit for this page, the
+ * else its domain fit less PAGE_UNJUDGED_DROP. `page` undefined: no page fit for this page, the
  * domain fit as before.
  */
 export function leadFit(domainFit: number, page: number | null | undefined): number {

@@ -318,10 +318,14 @@ export function searchQueryFor(input: Pick<Input, "key" | "wording">): string {
  * Gate 2 round 2: a kept page recipe becomes a template with a topic slot ("{topic} pricing page
  * website ui"), which the server fills with the brief's product noun (lib/atlas/recipe-fit.ts). Art
  * and genre recipes, and recipes with no page, are unchanged. The precision stays the page wording's.
+ * Only full-text sources (Pinterest, Dribbble, Behance) get the slot: a gallery's own search finds
+ * almost nothing for a topic phrase (run 2026-10-16g2g: "coffee shop landing page" on SiteInspire and
+ * "analytics SaaS pricing page" on Awwwards kept 0 results), so a gallery recipe stays page-only and
+ * the topic guard keeps the Phase 0 lane.
  */
 export function withTopicSlot(recipe: QueryRecipe, pages: ReadonlyMap<string, PageLike>): QueryRecipe {
   const lane = recipe.key.lane;
-  if (lane === "art" || isGenreLane(lane) || !recipe.key.page) return recipe;
+  if (lane === "art" || isGenreLane(lane) || !recipe.key.page || !CORE_SOURCES.has(recipe.source)) return recipe;
   const page = pages.get(recipe.key.page);
   const { p0, p1 } = page ? pagePhrases(page) : { p0: recipe.key.page.replace(/-/g, " "), p1: recipe.key.page.replace(/-/g, " ") };
   return { ...recipe, query: topicTemplate(recipe.query, [p1, p0]) };

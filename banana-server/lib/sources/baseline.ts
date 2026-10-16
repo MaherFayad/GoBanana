@@ -7,7 +7,7 @@
  * "Shipped today" section, never into a direction. Pure.
  */
 import { MAX_BASELINE_POOL, MAX_BASELINE_SENT, type CanvasBaseline, type PooledReference } from "@/canvas/types";
-import type { LaneTexts, PlannedRequest } from "./plan";
+import { artQuota, type LaneTexts, type PlannedRequest } from "./plan";
 import type { LaneName, Reference } from "./types";
 import { itemKey } from "./web-search";
 
@@ -134,9 +134,11 @@ export function takeFromPool(pool: readonly PooledReference[] | undefined, onCan
 }
 
 /**
- * The direction's results with its pool share: UI results alternate, pooled first, and the UI keeps
- * at most `count` minus the art results (pooled ones push out the direction's last UI results, never
- * its art). Results that repeat one already there are left out.
+ * The direction's results with its pool share: UI results alternate, pooled first. The UI keeps at
+ * most `count` minus the art zone's quota (artQuota), or all its own results when more: pooled ones
+ * push out the direction's last UI results, and art results past the art quota when the UI is short
+ * (run 2026-10-16g2g: a direction with no UI results of its own showed 11 art and 1 pooled). Results
+ * that repeat one already there are left out.
  */
 export function withPoolShare(refs: readonly Reference[], pooled: readonly Reference[], count: number): Reference[] {
   if (pooled.length === 0) return [...refs];
@@ -149,6 +151,8 @@ export function withPoolShare(refs: readonly Reference[], pooled: readonly Refer
     if (fresh[i]) mixed.push(fresh[i]!);
     if (ui[i]) mixed.push(ui[i]!);
   }
-  const room = Math.max(ui.length, count - art.length);
-  return [...mixed.slice(0, room), ...art];
+  const artKeep = Math.min(art.length, artQuota(count));
+  const room = Math.max(ui.length, count - artKeep);
+  const uiOut = mixed.slice(0, room);
+  return [...uiOut, ...art.slice(0, Math.max(artKeep, count - uiOut.length))];
 }

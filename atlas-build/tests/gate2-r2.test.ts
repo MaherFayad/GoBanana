@@ -96,6 +96,11 @@ describe("J7 topic slot", () => {
     expect(withTopicSlot(rec("pricing page", { lane: "baseline", page: "pricing-page", platform: "website" }), pages).query).toBe(`${TOPIC_SLOT} pricing page`);
   });
 
+  it("gallery recipes keep their page-only wording (a gallery's own search finds little for a topic phrase)", () => {
+    const r = { ...rec("pricing page", { lane: "baseline", page: "pricing-page", platform: "website" }), source: "awwwards" };
+    expect(withTopicSlot(r, pages)).toEqual(r);
+  });
+
   it("art, genre and page-less recipes are unchanged", () => {
     for (const r of [rec("brass dallah", { lane: "art", cardId: "dallah" }), rec("pitch deck slides", { lane: "deck", page: "pitch" }), rec("big header app ui", { lane: "component", platform: "mobile", element: "header" })]) {
       expect(withTopicSlot(r, pages)).toEqual(r);
