@@ -1,0 +1,31 @@
+{
+  "style": "big-type-display",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "pr007",
+    "pr021",
+    "pr024",
+    "pr027",
+    "pr035",
+    "br017",
+    "w025",
+    "b072"
+  ],
+  "edge": [
+    "br018",
+    "pr016",
+    "pr043",
+    "pr057",
+    "br023",
+    "br025",
+    "w026",
+    "w030",
+    "b013",
+    "c225",
+    "pr056",
+    "br038",
+    "w004",
+    "w038"
+  ]
+}

@@ -23,6 +23,7 @@ The server does not look at images. Your agent does, and this is how it teaches 
 | `ratings[].referenceId` | string | Yes | 1 to 100 characters | The id in brackets in the search output |
 | `ratings[].verdict` | enum | Yes | `great`, `bad` | |
 | `ratings[].reasons` | enum[] | No | see below | Why |
+| `ratings[].styles` | enum[] | No | 1 or 2 [style ids](/docs/guides/styles/), main first | The styles your agent reads from the thumbnail. Saved on the reference in the tray and on the board, where `get_canvas` checks each board's style mix |
 | `save` | boolean | No | | Also keep the `great` ones in your [swipe file](/docs/guides/canvases/#your-swipe-file): links only, never the images |
 
 **Reasons for bad:** `off_topic`, `stock_or_shop`, `cluttered`, `duplicate`, `low_craft`, `wrong_style`, `not_ui` (UI zone only). **Reasons for great:** `great_craft`, `on_style`, `on_brief`.
@@ -39,7 +40,7 @@ Rate only the junk and the 1 to 3 standouts per search. There is no "ok" verdict
     "ratings": [
       { "referenceId": "ref_3m7k", "verdict": "bad", "reasons": ["stock_or_shop"] },
       { "referenceId": "ref_9x1a", "verdict": "bad", "reasons": ["off_topic", "not_ui"] },
-      { "referenceId": "ref_8k2p", "verdict": "great", "reasons": ["on_brief"] }
+      { "referenceId": "ref_8k2p", "verdict": "great", "reasons": ["on_brief"], "styles": ["hero-numeral", "dark-quiet-matte"] }
     ]
   }
 }
@@ -50,6 +51,7 @@ Rate only the junk and the 1 to 3 standouts per search. There is no "ok" verdict
 ```text
 Rated 3: 1 great, 2 bad.
 Bad results will not come back in later searches. 2 removed from the tray.
+Style tags saved on 1 reference; get_canvas summary checks the style mix.
 Next:
 - bridge lane: search_references with directionId, lane "bridge" and new query words
 ```

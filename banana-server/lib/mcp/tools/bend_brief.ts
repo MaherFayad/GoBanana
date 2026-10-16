@@ -10,6 +10,7 @@ import { ingredientWeights } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
 import { inspirationFromQuery } from "@/lib/bend/queries";
 import { PART_ROLES, isPartRole, type PartRole } from "@/lib/stitch/types";
+import { directionStyleIds } from "@/lib/styles/directions";
 import { cleanTaste } from "@/lib/taste";
 import { EMPTY_TASTE, withProfileFallback, type UserTasteProfile } from "@/lib/taste-profile";
 import { createDbTasteStore } from "@/lib/taste-profile/store";
@@ -148,6 +149,13 @@ export function directionDetail(
   return detail;
 }
 
+/** The style line of a bend: each direction's style id, and the asked style when there is one. */
+export function styleLines(directions: readonly { id: string; title: string }[], ids: readonly string[], asked: readonly string[]): string {
+  const list = directions.map((d, i) => `${d.id} ${ids[i]}`).join("; ");
+  const lead = asked.length > 0 ? ` The brief asks for ${asked[0]}: at least 60% of each board is it or its neighbour.` : "";
+  return `Styles (one per direction, never shared; read docs/styles/<id>/STYLE.md through the gobanana-taste skill): ${list}.${lead}`;
+}
+
 export const UPLOAD_NOT_FOUND =
   "That upload was not found in your uploads. Upload the screenshot on your canvas first (Pro), or attach it to the chat and list its parts yourself.";
 
@@ -184,16 +192,17 @@ async function saveDirections(
   result: BendResult,
   newTaste: string[],
   pairs: readonly TypePair[] | null = null,
+  styleIds: readonly string[] = [],
 ): Promise<boolean> {
   const canvasId = canvas.id;
   await deps.repos.directions.upsertMany(
     canvasId,
-    result.directions.map((d) => ({
+    result.directions.map((d, i) => ({
       bendId: d.id,
       move: d.move,
       title: d.title,
       searchQuery: d.searchQuery,
-      detail: directionDetail(d, result.wildness, result.brief, result.atlas, { pairs }),
+      detail: { ...directionDetail(d, result.wildness, result.brief, result.atlas, { pairs }), ...(styleIds[i] ? { styleId: styleIds[i] } : {}) },
     })),
   );
   await deps.repos.canvases.update(userId, canvasId, {
@@ -312,14 +321,17 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendE
       }
     }
 
-    let text = formatDirections(result);
+    // Each direction names its style id, none shared (docs/styles, diversity rule 5).
+    const styled = directionStyleIds(result.directions, { brief: result.brief, taste, platform: result.platform });
+    let text = `${formatDirections(result)}
+${styleLines(result.directions, styled.ids, styled.asked)}`;
     let saved = false;
     if (canvasId && userId) {
       try {
         if (reachable && canvas) {
           // J12 Arabic type pairs for the directions' voices; none (or no Atlas) means the voice's fonts.
           const pairs = await loadTypePairs(engine?.source() ?? null, result.directions.map((d) => ({ detail: { spec: d.spec } as DirectionDetail }))).catch(() => null);
-          saved = await saveDirections(getDeps(), userId, canvas, result, newTaste, pairs);
+          saved = await saveDirections(getDeps(), userId, canvas, result, newTaste, pairs, styled.ids);
         } else {
           saved = false;
         }
@@ -364,7 +376,12 @@ export function createBendBriefTool(getDeps: () => BendBriefDeps, engine?: BendE
     }
     return {
       content: blocks,
-      structuredContent: { ...result, ...(canvasId ? { canvasId, saved } : {}), ...(baseline ? { baseline } : {}) },
+      structuredContent: {
+        ...result,
+        directions: result.directions.map((d, i) => ({ ...d, styleId: styled.ids[i] })),
+        ...(canvasId ? { canvasId, saved } : {}),
+        ...(baseline ? { baseline } : {}),
+      },
     };
   };
 }

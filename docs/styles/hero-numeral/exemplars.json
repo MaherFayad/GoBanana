@@ -1,0 +1,31 @@
+{
+  "style": "hero-numeral",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b007",
+    "b040",
+    "b093",
+    "c374",
+    "pr058",
+    "pr060",
+    "pr062",
+    "b013"
+  ],
+  "edge": [
+    "b079",
+    "b089",
+    "pr057",
+    "pr061",
+    "b028",
+    "b052",
+    "b053",
+    "b069",
+    "b073",
+    "b087",
+    "d014",
+    "c432",
+    "pr034",
+    "pr044"
+  ]
+}

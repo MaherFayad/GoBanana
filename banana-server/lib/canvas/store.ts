@@ -373,6 +373,7 @@ export function addToTray(state: CanvasState, refs: readonly Reference[], direct
     ...(directionId ? { directionId } : {}),
     // The search tags each result with its zone (art direction or UI); the tray keeps it.
     ...(isZone(zone) ? { zone } : {}),
+    ...(r.styles?.length ? { styles: r.styles } : {}),
     };
   });
   const ids = new Set(incoming.map((r) => r.id));

@@ -1,0 +1,1217 @@
+{
+  "version": 1,
+  "generated": "2026-10-16",
+  "note": "GoBanana visual styles (docs/styles). Read by banana-server lib/styles (a mirror of this file). Genres: mobile, web, showcase, deck, brand.",
+  "genres": [
+    "mobile",
+    "web",
+    "showcase",
+    "deck",
+    "brand"
+  ],
+  "merged": {
+    "packaging-product-shot": "photographic-hero",
+    "brutalist-raw": "retro-pixel-halftone",
+    "ai-orb-glow": "dark-luminous"
+  },
+  "showcase": {
+    "playful": [
+      "playful-too-fun",
+      "illustrative-handmade"
+    ],
+    "webgl": [
+      "webgl-3d-scene"
+    ],
+    "3d": [
+      "webgl-3d-scene",
+      "soft-3d-objects"
+    ],
+    "storytelling": [
+      "motion-first"
+    ],
+    "kinetic typography": [
+      "big-type-display",
+      "motion-first"
+    ],
+    "animation": [
+      "motion-first"
+    ],
+    "interactive": [
+      "motion-first"
+    ],
+    "experimental": [
+      "retro-pixel-halftone",
+      "webgl-3d-scene"
+    ]
+  },
+  "rule": {
+    "perDirectionMain": 3,
+    "perDirectionMainSmall": 2,
+    "smallBoard": 6,
+    "minMainStyles": 3,
+    "minMainStylesLarge": 4,
+    "largeBoard": 8,
+    "tagShare": 0.6,
+    "askedShare": 0.6,
+    "vividMax": 1,
+    "darkGroup": [
+      "dark-luminous",
+      "dark-quiet-matte"
+    ]
+  },
+  "styles": [
+    {
+      "id": "dark-luminous",
+      "name": "Dark luminous",
+      "definition": "A near-black screen where one glow, gradient bloom, lit object or AI orb is the only light.",
+      "signals": [
+        "Near-black ground (lightness under about 12%).",
+        "One luminous focal area: a glow rim, a gradient bloom, a lit object or an orb.",
+        "Thin, small grey labels around it.",
+        "A single accent hue (lime, orange, electric blue), never a rainbow."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "showcase",
+        "deck"
+      ],
+      "neighbour": "dark-quiet-matte",
+      "tellApart": "Look for the light. Dark luminous has a glow, bloom or orb you notice first; dark quiet matte has none, only surface tone steps and one hairline.",
+      "great": "One focal glow and everything else quiet, real data and tight type. An AI orb, when there is one, has a real state (listening, thinking) and is the only effect.",
+      "cheap": "Glow everywhere, neon on every control, purple to blue on every surface, glow used as a background wash, a generic purple blob with sparkle icons.",
+      "keywords": {
+        "mobile": [
+          "dark mode glow app ui",
+          "near black app ui neon accent",
+          "ai assistant orb app ui"
+        ],
+        "web": [
+          "dark dashboard glow accent ui",
+          "dark web app ui gradient glow"
+        ],
+        "showcase": [
+          "dark glow landing page",
+          "dark luminous website"
+        ],
+        "deck": [
+          "dark keynote slide glow",
+          "dark presentation gradient accent"
+        ],
+        "brand": []
+      },
+      "words": [
+        "glow",
+        "glowing",
+        "luminous",
+        "neon glow",
+        "ai orb",
+        "orb",
+        "ambient glow",
+        "dark luminous",
+        "dark",
+        "dark mode",
+        "dark ui",
+        "night mode",
+        "siri style"
+      ],
+      "group": "dark",
+      "mergedFrom": [
+        "ai-orb-glow"
+      ],
+      "exemplars": [
+        "b004",
+        "b016",
+        "b027",
+        "b029",
+        "b034",
+        "b039",
+        "c246",
+        "b066"
+      ]
+    },
+    {
+      "id": "dark-quiet-matte",
+      "name": "Dark quiet matte",
+      "definition": "A flat, matte, near-black product UI with no glow, built from tone steps and hairlines.",
+      "signals": [
+        "Matte black or charcoal ground.",
+        "Surfaces differ by 2 to 4% lightness; no glow, no bloom.",
+        "1 px borders and dividers.",
+        "One small accent: a green or blue dot, a status chip."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "deck"
+      ],
+      "neighbour": "dark-luminous",
+      "tellApart": "No light source at all. If something glows or blooms it is dark luminous; if the frame is about information load more than surface, it is data dense dashboard.",
+      "great": "Reads as a real tool: dense but calm tables, thin charts, one accent, every state resolved.",
+      "cheap": "A black skin on a light layout, grey on grey with no hierarchy, default chart colours on black.",
+      "keywords": {
+        "mobile": [
+          "dark matte app ui minimal",
+          "charcoal app ui hairline"
+        ],
+        "web": [
+          "dark mode minimal web app ui",
+          "dark saas dashboard matte ui"
+        ],
+        "showcase": [],
+        "deck": [
+          "dark minimal presentation slide"
+        ],
+        "brand": []
+      },
+      "words": [
+        "matte",
+        "dark matte",
+        "quiet dark",
+        "charcoal",
+        "graphite",
+        "dark minimal"
+      ],
+      "group": "dark",
+      "exemplars": [
+        "b035",
+        "b048",
+        "b071",
+        "b091",
+        "c005",
+        "c021",
+        "c080",
+        "c311"
+      ]
+    },
+    {
+      "id": "data-dense-dashboard",
+      "name": "Data dense dashboard",
+      "definition": "Many real numbers, tables and thin charts in one calm grid, with one figure that wins.",
+      "signals": [
+        "4 or more widgets in view.",
+        "Thin bar and line charts, small multiples.",
+        "Status chips and a table set in small type.",
+        "One hero metric among the small ones."
+      ],
+      "genres": [
+        "web",
+        "mobile",
+        "deck"
+      ],
+      "neighbour": "hero-numeral",
+      "tellApart": "Count the figures. Data dense has many figures with one dominant; hero numeral has one figure and little else.",
+      "great": "Real, believable data, a quiet palette, aligned columns and one number that wins.",
+      "cheap": "Rainbow pies, every card a different chart type, lorem numbers, icon rows, four equal KPI cards.",
+      "keywords": {
+        "mobile": [
+          "stats screen app ui charts",
+          "finance app ui data dense"
+        ],
+        "web": [
+          "analytics dashboard ui dense table",
+          "saas dashboard ui thin charts"
+        ],
+        "showcase": [],
+        "deck": [
+          "data slide presentation chart"
+        ],
+        "brand": []
+      },
+      "words": [
+        "data dense",
+        "dense dashboard",
+        "data heavy",
+        "information dense",
+        "dense data",
+        "data rich"
+      ],
+      "exemplars": [
+        "b018",
+        "b064",
+        "b078",
+        "b079",
+        "c380",
+        "c413",
+        "c423",
+        "c452"
+      ]
+    },
+    {
+      "id": "glass-frosted",
+      "name": "Glass and frosted",
+      "definition": "Frosted translucent panels layered over a colourful or photographic backdrop.",
+      "signals": [
+        "A blurred backdrop showing through a panel.",
+        "A soft white edge highlight on the panel.",
+        "Layered cards with soft shadow.",
+        "A landscape or colour field behind a window."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "showcase"
+      ],
+      "neighbour": "soft-3d-objects",
+      "tellApart": "Look at the material. Glass is a flat translucent sheet; soft 3D is a lit object with volume and a cast shadow.",
+      "great": "Glass used lightly over one rich backdrop, with the text still sharp and readable.",
+      "cheap": "Everything blurred, glass on a flat grey ground (it has nothing to show), five stacked glass cards.",
+      "keywords": {
+        "mobile": [
+          "glassmorphism app ui",
+          "liquid glass ios app ui",
+          "frosted glass widget app ui"
+        ],
+        "web": [
+          "glassmorphism dashboard ui",
+          "frosted glass web app ui"
+        ],
+        "showcase": [
+          "glassmorphism website"
+        ],
+        "deck": [],
+        "brand": []
+      },
+      "words": [
+        "glass",
+        "glassmorphism",
+        "frosted",
+        "frosted glass",
+        "liquid glass",
+        "translucent",
+        "glassy"
+      ],
+      "exemplars": [
+        "b045",
+        "b046",
+        "b049",
+        "b076",
+        "b077",
+        "b082",
+        "b084",
+        "c248"
+      ]
+    },
+    {
+      "id": "soft-3d-objects",
+      "name": "Soft 3D objects",
+      "definition": "UI widgets and cards rendered as lit, glossy or tactile 3D objects, in the Spline and Blender manner.",
+      "signals": [
+        "A rounded squircle slab with visible thickness.",
+        "Glossy gradient glass, rubber or clay material.",
+        "A cast shadow on a light or dark floor.",
+        "One object per frame."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "deck",
+        "brand"
+      ],
+      "neighbour": "webgl-3d-scene",
+      "tellApart": "Look at scale. Soft 3D is an object inside a UI or on a slide; WebGL 3D scene is a whole navigable world that is the page.",
+      "great": "One object, believable light, a real number or label on it.",
+      "cheap": "Stock 3D people, plastic icon packs, floating coins and padlocks.",
+      "keywords": {
+        "mobile": [
+          "3d card app ui spline",
+          "soft 3d widget app ui"
+        ],
+        "web": [
+          "3d object dashboard ui",
+          "spline 3d web app ui"
+        ],
+        "showcase": [],
+        "deck": [
+          "3d object presentation cover slide"
+        ],
+        "brand": [
+          "3d brand identity render"
+        ]
+      },
+      "words": [
+        "soft 3d",
+        "3d objects",
+        "3d object",
+        "3d icons",
+        "clay",
+        "claymorphism",
+        "spline",
+        "tactile 3d",
+        "3d",
+        "3d render"
+      ],
+      "exemplars": [
+        "b012",
+        "b028",
+        "b044",
+        "b050",
+        "b051",
+        "b063",
+        "b014",
+        "b070"
+      ]
+    },
+    {
+      "id": "vivid-gradient",
+      "name": "Vivid gradient field",
+      "definition": "A saturated, smooth gradient or mesh is the main surface of the screen or slide.",
+      "signals": [
+        "A full-bleed colour gradient or mesh.",
+        "Blue to violet or orange to red, saturated.",
+        "White type on the gradient.",
+        "Often one glassy card on top."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "deck",
+        "brand"
+      ],
+      "neighbour": "dark-luminous",
+      "tellApart": "Look at the area. Vivid gradient puts colour across most of the frame; dark luminous keeps the glow to one spot on black.",
+      "great": "One hue family with luminous depth, and the gradient has a job (a mood, a plan colour, a state).",
+      "cheap": "The default AI look: an indigo to violet gradient, gradient text, a gradient button on a gradient card.",
+      "keywords": {
+        "mobile": [
+          "vivid gradient app ui",
+          "mesh gradient app ui"
+        ],
+        "web": [
+          "gradient web app ui",
+          "mesh gradient dashboard ui"
+        ],
+        "showcase": [
+          "gradient landing page"
+        ],
+        "deck": [
+          "gradient presentation slide"
+        ],
+        "brand": [
+          "gradient brand identity"
+        ]
+      },
+      "words": [
+        "gradient",
+        "gradients",
+        "mesh gradient",
+        "vivid gradient",
+        "colorful gradient",
+        "colourful gradient",
+        "aurora"
+      ],
+      "exemplars": [
+        "b015",
+        "b042",
+        "b052",
+        "c002",
+        "d055",
+        "b051",
+        "c053",
+        "c360"
+      ]
+    },
+    {
+      "id": "photographic-hero",
+      "name": "Photographic hero",
+      "definition": "A real photograph is the material: a phone in a hand, a window over a mountain, a face, or a product family lit like a studio shot.",
+      "signals": [
+        "A full-bleed photo, or a device held in a photographed hand.",
+        "A UI window over a landscape.",
+        "Natural or studio light with shallow depth.",
+        "Type laid over the photo; or 3 to 6 packs in one palette on a seamless backdrop."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "showcase",
+        "deck",
+        "brand"
+      ],
+      "neighbour": "editorial-serif",
+      "tellApart": "Ask what leads. In photographic hero the picture leads; in editorial serif the type leads and the photo supports.",
+      "great": "One photo with a clear subject and a UI or type that fits it; a packaging family with one system, lit to feel real.",
+      "cheap": "Stock handshakes, a lone laptop with nothing on screen, a photo under a coloured wash, a shelf of generic bottles, a flat label pasted on a bottle render.",
+      "keywords": {
+        "mobile": [
+          "app ui in hand photo",
+          "app screen over landscape photo"
+        ],
+        "web": [
+          "web app window over landscape",
+          "dashboard mockup photo desk"
+        ],
+        "showcase": [
+          "photography website full bleed"
+        ],
+        "deck": [
+          "photo presentation slide full bleed"
+        ],
+        "brand": [
+          "packaging design family studio shot",
+          "brand identity in use photo"
+        ]
+      },
+      "words": [
+        "photographic",
+        "photography",
+        "photo led",
+        "photo-led",
+        "full bleed photo",
+        "product shot",
+        "packaging shot",
+        "studio shot",
+        "lifestyle photo"
+      ],
+      "mergedFrom": [
+        "packaging-product-shot"
+      ],
+      "exemplars": [
+        "b031",
+        "b057",
+        "b092",
+        "c010",
+        "pr021",
+        "br001",
+        "b021",
+        "b047"
+      ]
+    },
+    {
+      "id": "big-type-display",
+      "name": "Big type display",
+      "definition": "One word or short line set huge, in a condensed, bold or oversized sans, is the image.",
+      "signals": [
+        "Letters cropped by the frame or filling it.",
+        "One or two words (\"KPI REPORT\", \"WAKE UP WORLD\").",
+        "Tight leading.",
+        "Small grey meta text in a corner."
+      ],
+      "genres": [
+        "deck",
+        "brand",
+        "showcase",
+        "mobile"
+      ],
+      "neighbour": "editorial-serif",
+      "tellApart": "Look at the letterform. Big type is a heavy or condensed sans shouting; editorial serif is a refined serif speaking. A huge figure with data meaning is hero numeral.",
+      "great": "One idea, a real typeface with character, a calm margin.",
+      "cheap": "A big default sans plus three bullets, mixed display fonts, huge text that wraps badly.",
+      "keywords": {
+        "mobile": [
+          "big typography onboarding app ui",
+          "bold type app ui"
+        ],
+        "web": [
+          "big typography web app ui"
+        ],
+        "showcase": [
+          "big typography website",
+          "kinetic typography website"
+        ],
+        "deck": [
+          "big typography presentation slide",
+          "bold type cover slide"
+        ],
+        "brand": [
+          "bold typography poster",
+          "big type brand identity"
+        ]
+      },
+      "words": [
+        "big type",
+        "big typography",
+        "huge type",
+        "oversized type",
+        "bold typography",
+        "giant type",
+        "condensed type",
+        "type heavy",
+        "kinetic type",
+        "kinetic typography"
+      ],
+      "exemplars": [
+        "pr007",
+        "pr021",
+        "pr024",
+        "pr027",
+        "pr035",
+        "br017",
+        "w025",
+        "b072"
+      ]
+    },
+    {
+      "id": "hero-numeral",
+      "name": "Hero numeral",
+      "definition": "One huge figure carries the screen or slide, with small grey labels around it.",
+      "signals": [
+        "A number at 5 to 10 times the label size (\"$63,000\", \"13,143\").",
+        "A thin line or bar chart at most.",
+        "Large empty space around the figure.",
+        "One supporting label row."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "deck"
+      ],
+      "neighbour": "big-type-display",
+      "tellApart": "Look at the content. Hero numeral is a number with data meaning; big type is words. Many figures with one dominant is data dense dashboard.",
+      "great": "One real-feeling figure with its unit, one supporting label row, nothing else.",
+      "cheap": "Four equal KPI cards, icons beside each number, a donut with a number in the middle.",
+      "keywords": {
+        "mobile": [
+          "big number app ui balance",
+          "hero number finance app ui"
+        ],
+        "web": [
+          "big number dashboard ui"
+        ],
+        "showcase": [],
+        "deck": [
+          "big number slide presentation",
+          "data slide big numbers"
+        ],
+        "brand": []
+      },
+      "words": [
+        "big number",
+        "big numbers",
+        "hero number",
+        "hero numeral",
+        "huge numbers",
+        "numerals",
+        "big figures",
+        "large numbers"
+      ],
+      "exemplars": [
+        "b007",
+        "b040",
+        "b093",
+        "c374",
+        "pr058",
+        "pr060",
+        "pr062",
+        "b013"
+      ]
+    },
+    {
+      "id": "editorial-serif",
+      "name": "Editorial serif",
+      "definition": "A well cut serif and a calm grid, the way a magazine or annual report is set.",
+      "signals": [
+        "A serif display line (\"Pick your Plan\").",
+        "Pull quotes and small caps labels.",
+        "Generous margins on a visible grid.",
+        "Muted paper or cream grounds."
+      ],
+      "genres": [
+        "deck",
+        "brand",
+        "showcase",
+        "web",
+        "mobile"
+      ],
+      "neighbour": "minimal-mono-light",
+      "tellApart": "Look at the voice. Editorial has a serif as its voice; minimal mono light is sans or mono and almost silent. If the photo leads, it is photographic hero.",
+      "great": "A serif with real contrast and optical spacing, a visible grid and one image.",
+      "cheap": "Georgia or Times as the only serif, a serif heading on a gradient SaaS page.",
+      "keywords": {
+        "mobile": [
+          "editorial serif app ui"
+        ],
+        "web": [
+          "editorial web app ui serif"
+        ],
+        "showcase": [
+          "editorial website serif typography"
+        ],
+        "deck": [
+          "editorial presentation layout",
+          "annual report presentation layout"
+        ],
+        "brand": [
+          "editorial brand identity serif"
+        ]
+      },
+      "words": [
+        "editorial",
+        "serif",
+        "magazine",
+        "magazine style",
+        "literary",
+        "bookish"
+      ],
+      "exemplars": [
+        "pr026",
+        "pr036",
+        "pr054",
+        "pr055",
+        "pr056",
+        "pr063",
+        "br012",
+        "w010"
+      ]
+    },
+    {
+      "id": "minimal-mono-light",
+      "name": "Minimal mono light",
+      "definition": "A quiet light product UI in one tone with one accent and tight, real type.",
+      "signals": [
+        "White or light grey ground with black text.",
+        "One accent colour.",
+        "Thin dividers, no shadows to speak of.",
+        "One screen shown clean."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "deck",
+        "brand"
+      ],
+      "neighbour": "flat-color-field",
+      "tellApart": "Look at the ground. Minimal mono is neutral with an accent; flat colour field commits the whole frame to one bold colour.",
+      "great": "Shipped-grade: real data, tight type, every state resolved.",
+      "cheap": "A pastel concept with stock illustration and lorem, or an empty wireframe.",
+      "keywords": {
+        "mobile": [
+          "minimal light app ui",
+          "clean ios app ui light"
+        ],
+        "web": [
+          "minimal light web app ui",
+          "clean saas dashboard light"
+        ],
+        "showcase": [],
+        "deck": [
+          "minimal presentation slide white"
+        ],
+        "brand": [
+          "minimal brand identity"
+        ]
+      },
+      "words": [
+        "minimal",
+        "minimalist",
+        "minimalism",
+        "light mode",
+        "monochrome",
+        "swiss",
+        "quiet light"
+      ],
+      "exemplars": [
+        "b008",
+        "b025",
+        "b032",
+        "b065",
+        "b093",
+        "c053",
+        "c096",
+        "b002"
+      ]
+    },
+    {
+      "id": "flat-color-field",
+      "name": "Flat colour field",
+      "definition": "Flat, shadowless blocks of solid colour, with one bold ground and no gradients.",
+      "signals": [
+        "A solid saturated ground (lime, orange, red, cobalt, green).",
+        "Flat shapes with hard edges.",
+        "No shadow, no blur.",
+        "Black or white type."
+      ],
+      "genres": [
+        "deck",
+        "brand",
+        "web",
+        "showcase",
+        "mobile"
+      ],
+      "neighbour": "playful-too-fun",
+      "tellApart": "Look at the energy. Flat colour field is confident and static; playful adds character, bounce and surprise.",
+      "great": "2 or 3 flat colours and a strong type or mark.",
+      "cheap": "Six pastels, drop shadows creeping in, flat stock illustration characters.",
+      "keywords": {
+        "mobile": [
+          "bold color app ui flat"
+        ],
+        "web": [
+          "flat color landing page bold"
+        ],
+        "showcase": [
+          "bold color website flat"
+        ],
+        "deck": [
+          "bold color presentation slide"
+        ],
+        "brand": [
+          "bold color brand identity",
+          "color block poster"
+        ]
+      },
+      "words": [
+        "flat color",
+        "flat colour",
+        "flat design",
+        "color block",
+        "colour block",
+        "color blocking",
+        "colour blocking",
+        "bold color",
+        "bold colour",
+        "bauhaus"
+      ],
+      "exemplars": [
+        "pr007",
+        "pr024",
+        "br006",
+        "br016",
+        "br018",
+        "br023",
+        "b069",
+        "pr045"
+      ]
+    },
+    {
+      "id": "retro-pixel-halftone",
+      "name": "Retro, raw, pixel and halftone",
+      "definition": "A deliberate older or rougher look: halftone, dither, pixel, Art Deco, vintage badge, or raw brutalist type and grid.",
+      "signals": [
+        "Dot-screen or dither texture, or a pixelated image.",
+        "Deco display letters or a round badge, limited ink colours, paper grain.",
+        "Or raw: system or mono type used loud, a visible grid, harsh contrast.",
+        "Cut-off or overlapping text, visible table lines, noise or glitch."
+      ],
+      "genres": [
+        "brand",
+        "showcase",
+        "deck",
+        "mobile",
+        "web"
+      ],
+      "neighbour": "type-led-brand-system",
+      "tellApart": "Look at the cue. Retro quotes an older medium (print, pixel, CRT) or a raw unstyled one; a type-led brand system is about the mark and its system, any era.",
+      "great": "Texture as a second voice on one element (the \"BUDGET\" card), not a wash; raw on purpose and exact underneath (alignment is tight).",
+      "cheap": "A retro filter on everything, an 80s neon grid, fake worn textures; or just messy, or neo-brutalist cards with thick black borders and a pastel shadow.",
+      "keywords": {
+        "mobile": [
+          "halftone app ui texture",
+          "pixel retro app ui"
+        ],
+        "web": [
+          "brutalist web app ui",
+          "retro terminal ui"
+        ],
+        "showcase": [
+          "brutalist website",
+          "experimental website",
+          "retro website pixel"
+        ],
+        "deck": [
+          "brutalist presentation slide"
+        ],
+        "brand": [
+          "halftone poster design",
+          "retro brand identity",
+          "brutalist poster"
+        ]
+      },
+      "words": [
+        "retro",
+        "vintage",
+        "pixel",
+        "pixel art",
+        "8 bit",
+        "8-bit",
+        "halftone",
+        "dither",
+        "risograph",
+        "art deco",
+        "deco",
+        "grainy",
+        "grain",
+        "glitch",
+        "brutalist",
+        "brutalism",
+        "neubrutalism",
+        "neubrutalist",
+        "experimental",
+        "teletext"
+      ],
+      "mergedFrom": [
+        "brutalist-raw"
+      ],
+      "exemplars": [
+        "b038",
+        "b072",
+        "br011",
+        "br017",
+        "pr042",
+        "br008"
+      ]
+    },
+    {
+      "id": "playful-too-fun",
+      "name": "Playful, too fun",
+      "definition": "Character, colour and bounce first: the page is a toy.",
+      "signals": [
+        "Big rounded or bubble letters.",
+        "A character or mascot.",
+        "Saturated colour blocks and tilted elements.",
+        "Hand-drawn or toy-like 3D props."
+      ],
+      "genres": [
+        "showcase",
+        "brand",
+        "deck",
+        "mobile"
+      ],
+      "neighbour": "illustrative-handmade",
+      "tellApart": "Look at the feel. Playful is loud and energetic; illustrative handmade can be calm, quiet or literary. A static bold ground with no character is flat colour field.",
+      "great": "Joyful and still clear: one idea, tight craft, content still readable.",
+      "cheap": "Clip-art mascots, rainbow everything, comic fonts, stock cartoon people.",
+      "keywords": {
+        "mobile": [
+          "playful app ui mascot",
+          "fun app ui colorful"
+        ],
+        "web": [],
+        "showcase": [
+          "playful illustration website",
+          "fun website colorful"
+        ],
+        "deck": [
+          "playful presentation slide"
+        ],
+        "brand": [
+          "playful brand identity",
+          "bubble type brand identity"
+        ]
+      },
+      "words": [
+        "playful",
+        "fun",
+        "too fun",
+        "whimsical",
+        "quirky",
+        "joyful",
+        "cartoon",
+        "cartoony",
+        "toylike",
+        "toy like",
+        "goofy",
+        "cheeky",
+        "mascot",
+        "memphis",
+        "bubbly"
+      ],
+      "exemplars": [
+        "w002",
+        "w007",
+        "w014",
+        "w017",
+        "w018",
+        "br027",
+        "d047",
+        "br031"
+      ]
+    },
+    {
+      "id": "illustrative-handmade",
+      "name": "Illustrative and handmade",
+      "definition": "Drawn, printed or collaged artwork carries the identity.",
+      "signals": [
+        "A visible line or brush.",
+        "A limited ink palette.",
+        "Flat figures with texture, or botanical and folk drawing.",
+        "A collage of cut shapes."
+      ],
+      "genres": [
+        "brand",
+        "showcase",
+        "mobile",
+        "deck"
+      ],
+      "neighbour": "playful-too-fun",
+      "tellApart": "Look at the feel. Illustrative can be calm, quiet or literary; playful is loud and energetic.",
+      "great": "A recognisable hand and a system: one line weight, one palette.",
+      "cheap": "Flat vector stock people, Corporate Memphis, AI illustration with six-fingered hands.",
+      "keywords": {
+        "mobile": [
+          "illustrated app ui onboarding"
+        ],
+        "web": [],
+        "showcase": [
+          "illustration website hand drawn"
+        ],
+        "deck": [
+          "illustrated presentation slide"
+        ],
+        "brand": [
+          "illustrated brand identity",
+          "hand drawn packaging"
+        ]
+      },
+      "words": [
+        "illustration",
+        "illustrated",
+        "illustrative",
+        "hand drawn",
+        "hand-drawn",
+        "handmade",
+        "collage",
+        "botanical",
+        "folk art",
+        "linocut",
+        "woodcut"
+      ],
+      "exemplars": [
+        "w004",
+        "w007",
+        "w014",
+        "w021",
+        "br007",
+        "br011",
+        "c082",
+        "br026"
+      ]
+    },
+    {
+      "id": "webgl-3d-scene",
+      "name": "WebGL 3D scene",
+      "definition": "A real-time 3D object or world is the website itself, moved by scroll or mouse.",
+      "signals": [
+        "A rendered object centred in the frame (a helmet, an igloo, a planet, an isometric town).",
+        "Depth and light effects.",
+        "Sparse UI chrome on top.",
+        "Often a loader or an \"enter\" button."
+      ],
+      "genres": [
+        "showcase",
+        "web"
+      ],
+      "neighbour": "soft-3d-objects",
+      "tellApart": "Look at scale. WebGL 3D scene is a whole world that is the page; soft 3D is an object inside a UI.",
+      "great": "A bespoke object, one clear interaction, fast load.",
+      "cheap": "A stock 3D blob over a SaaS headline, a heavy scene with no content, a model that is not the product.",
+      "keywords": {
+        "mobile": [],
+        "web": [
+          "webgl hero web app"
+        ],
+        "showcase": [
+          "webgl portfolio",
+          "3d landing page",
+          "three js website"
+        ],
+        "deck": [],
+        "brand": []
+      },
+      "words": [
+        "webgl",
+        "3d",
+        "three js",
+        "threejs",
+        "three.js",
+        "shader",
+        "shaders",
+        "real time 3d",
+        "realtime 3d",
+        "3d scene",
+        "3d website",
+        "3d web",
+        "immersive 3d"
+      ],
+      "exemplars": [
+        "w001",
+        "w002",
+        "w003",
+        "w006",
+        "w017",
+        "w018",
+        "w033"
+      ]
+    },
+    {
+      "id": "motion-first",
+      "name": "Motion first",
+      "definition": "The design is the movement (scrub, drag, morph, kinetic type), and the still is the least of it.",
+      "signals": [
+        "A slider, dial or scrubber with a visible state.",
+        "Motion blur or a trail, or a mid-transition frame.",
+        "A before and after pair.",
+        "A \"0:07\" or 60fps mark on the shot."
+      ],
+      "genres": [
+        "mobile",
+        "showcase",
+        "web",
+        "deck"
+      ],
+      "neighbour": "webgl-3d-scene",
+      "tellApart": "Look at the carrier. Motion first is a UI gesture or a type move; WebGL 3D is a rendered world.",
+      "great": "One rehearsed gesture with a clear start and end state and a reason.",
+      "cheap": "Fades on everything, bouncing icons, parallax for its own sake.",
+      "keywords": {
+        "mobile": [
+          "micro interaction app ui animation",
+          "60fps app animation"
+        ],
+        "web": [
+          "interactive dashboard animation"
+        ],
+        "showcase": [
+          "scroll storytelling",
+          "animation",
+          "interactive"
+        ],
+        "deck": [
+          "animated presentation slides"
+        ],
+        "brand": [
+          "motion identity"
+        ]
+      },
+      "words": [
+        "motion",
+        "motion first",
+        "motion led",
+        "motion heavy",
+        "animated",
+        "animation",
+        "animations",
+        "micro interactions",
+        "microinteractions",
+        "lottie",
+        "scroll story",
+        "scroll storytelling",
+        "scrollytelling",
+        "storytelling",
+        "parallax",
+        "interactive",
+        "gamified"
+      ],
+      "layered": true,
+      "exemplars": [
+        "b010",
+        "b014",
+        "c137",
+        "d045",
+        "w006",
+        "w021"
+      ]
+    },
+    {
+      "id": "type-led-brand-system",
+      "name": "Type-led brand system",
+      "definition": "An identity built from one mark, one move and a pattern, applied to posters, signage and sets.",
+      "signals": [
+        "A wordmark or monogram.",
+        "A repeating pattern or wall of the wordmark.",
+        "One ground and one accent.",
+        "The mark on a banner, bag or billboard; a poster set in one palette."
+      ],
+      "genres": [
+        "brand",
+        "deck",
+        "showcase"
+      ],
+      "neighbour": "flat-color-field",
+      "tellApart": "Look at the scope. A type-led brand system is the mark and its system across things; flat colour field is the surface treatment.",
+      "great": "One idea carried through many applications.",
+      "cheap": "A logo floating on a mockup, twelve logo options on a page, a guideline template.",
+      "keywords": {
+        "mobile": [],
+        "web": [],
+        "showcase": [
+          "brand system website"
+        ],
+        "deck": [
+          "brand presentation slides"
+        ],
+        "brand": [
+          "logo system brand identity",
+          "wordmark brand identity",
+          "visual identity system poster"
+        ]
+      },
+      "words": [
+        "wordmark",
+        "logo system",
+        "type led",
+        "type-led",
+        "brand system",
+        "monogram",
+        "identity system",
+        "logotype"
+      ],
+      "exemplars": [
+        "br005",
+        "br006",
+        "br014",
+        "br027",
+        "br028",
+        "b030",
+        "b060",
+        "br007"
+      ]
+    },
+    {
+      "id": "gulf-arabic-first",
+      "name": "Gulf and Arabic first",
+      "definition": "Arabic type and Gulf craft lead the layout, right to left, with pattern or material taken from a named Gulf craft.",
+      "signals": [
+        "Arabic display, Naskh or Kufic type set large.",
+        "A right to left layout with mirrored flow.",
+        "Sadu, Talli, Najdi or roshan pattern used as a band or field, not a stamp.",
+        "Warm sand, indigo, saffron and black grounds."
+      ],
+      "genres": [
+        "mobile",
+        "web",
+        "showcase",
+        "deck",
+        "brand"
+      ],
+      "neighbour": "type-led-brand-system",
+      "tellApart": "Look at direction and script. Gulf and Arabic first changes the layout and the script; a brand system only changes the mark.",
+      "great": "Credits the craft, uses its real grammar, sets Arabic by a native eye and mirrors the layout.",
+      "cheap": "A mosque silhouette, gold crescents, a pattern as wallpaper, Arabic letters in a Latin layout, fake letterforms.",
+      "keywords": {
+        "mobile": [
+          "arabic app ui rtl",
+          "saudi app ui arabic"
+        ],
+        "web": [
+          "arabic dashboard ui rtl",
+          "arabic web app ui"
+        ],
+        "showcase": [
+          "arabic website design",
+          "saudi website design"
+        ],
+        "deck": [
+          "arabic presentation design"
+        ],
+        "brand": [
+          "arabic brand identity",
+          "arabic typography poster",
+          "saudi brand identity"
+        ]
+      },
+      "words": [
+        "arabic first",
+        "arabic-first",
+        "gulf style",
+        "khaleeji",
+        "arabic typography",
+        "arabic type",
+        "arabic calligraphy",
+        "khatt",
+        "arabic lettering"
+      ],
+      "exemplars": []
+    }
+  ]
+}

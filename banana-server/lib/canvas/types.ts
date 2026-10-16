@@ -8,6 +8,7 @@
  */
 import type { Culture } from "@/lib/culture";
 import type { DirectionDetail, Zone } from "@/lib/direction-detail";
+import type { StyleId } from "@/lib/styles/ids";
 import type { Crop, Part, PartRole, PartTheme, StitchMode, StitchPlatform } from "@/lib/stitch/types";
 
 export type { DirectionDetail, Zone } from "@/lib/direction-detail";
@@ -77,6 +78,8 @@ export interface ImageItem extends ItemBase {
   kind?: "build";
   /** The Frankenstein page (stitch) a build sits next to. */
   stitchId?: string;
+  /** Style tags (docs/styles), main style first, 1 or 2: read from the thumbnail by the agent. */
+  styles?: StyleId[];
 }
 
 /** The user's own image (stored in R2). `sourceUrl` points at the upload or its origin. */

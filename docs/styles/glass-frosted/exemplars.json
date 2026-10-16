@@ -1,0 +1,26 @@
+{
+  "style": "glass-frosted",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b045",
+    "b046",
+    "b049",
+    "b076",
+    "b077",
+    "b082",
+    "b084",
+    "c248"
+  ],
+  "edge": [
+    "b075",
+    "b086",
+    "c124",
+    "d222",
+    "d143",
+    "c457",
+    "b002",
+    "b029",
+    "d206"
+  ]
+}

@@ -19,6 +19,7 @@ import type {
   XPostItem,
 } from "@/lib/canvas/types";
 import type { Zone } from "@/lib/direction-detail";
+import type { StyleId } from "@/lib/styles/ids";
 import type { Part, StitchData } from "@/lib/stitch/types";
 
 export type { Tag } from "@/lib/canvas/types";
@@ -109,6 +110,8 @@ export type TrayReference = {
   directionId?: string;
   /** Board zone from the search ("art" for art direction results). Missing means "ui". */
   zone?: Zone;
+  /** Style tags (docs/styles), main style first: from the search or rate_references. */
+  styles?: StyleId[];
 };
 
 export interface StoredViewport {

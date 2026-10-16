@@ -25,6 +25,9 @@ import { UNTRUSTED_NOTE, webTitle } from "@/lib/mcp/untrusted";
 import { postCredit } from "@/lib/xpost";
 import { loadReviews, reviewLines, type DirectionReview } from "@/lib/review";
 import { DEFAULT_SWIPE_LIMIT, MAX_SWIPE_LIMIT, swipeLines, type SwipeItem } from "@/lib/swipe";
+import { detectStyles, type StyleId } from "@/lib/styles";
+import { briefStyleGenre } from "@/lib/styles/directions";
+import { checkBoard, checkDirectionStyles, type BoardCheck } from "@/lib/styles/diversity";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
 
 export const TOOL_NAME = "get_canvas";
@@ -59,12 +62,58 @@ export type CanvasSummary = {
   canvasId: string;
   title: string;
   webUrl: string | null;
-  directions: { id: string; title: string; verdict: "keep" | "drop" | null; reconciled: boolean }[];
+  directions: { id: string; title: string; verdict: "keep" | "drop" | null; reconciled: boolean; styleId?: string }[];
   sections: { id: string; title: string; directionId: string | null }[];
-  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string; culture?: string }[];
+  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string; culture?: string; styles?: string[] }[];
   parts: { id: string; role: string; note?: string }[];
   stitches: { id: string; title: string; directionId?: string }[];
+  /** The style mix check (docs/styles diversity rule), when the board has directions or style tags. */
+  styleCheck?: StyleCheck;
 };
+
+/** The diversity rule on a board: per direction (its UI references) and across directions. */
+export type StyleCheck = {
+  asked: StyleId[];
+  directions: { id: string; styleId?: string; check: BoardCheck }[];
+  /** Rule 5 problems (directions with no style id or sharing one). */
+  problems: string[];
+};
+
+/**
+ * The style mix of a board (lib/styles/diversity.ts): each direction's UI references against
+ * rules 1 to 4 and 6, and the directions against rule 5. `asked` comes from the brief and taste.
+ */
+export function styleCheck(c: CanvasSnapshot, asked: readonly StyleId[]): StyleCheck {
+  const sectionDir = new Map(c.sections.map((s) => [s.id, s.directionId ?? null]));
+  const byDir = new Map<string, { id: string; styles?: readonly string[] }[]>();
+  for (const it of c.items) {
+    if ((it.type !== "image" && it.type !== "upload") || it.zone === "art" || it.kind === "build") continue;
+    const dir = it.sectionId ? sectionDir.get(it.sectionId) : null;
+    if (!dir) continue;
+    byDir.set(dir, [...(byDir.get(dir) ?? []), { id: it.id, ...(it.styles ? { styles: it.styles } : {}) }]);
+  }
+  const kept = c.directions.filter((d) => d.detail?.verdict !== "drop");
+  return {
+    asked: [...asked],
+    directions: kept.map((d) => ({ id: d.id, ...(d.detail?.styleId ? { styleId: d.detail.styleId } : {}), check: checkBoard(byDir.get(d.id) ?? [], { asked }) })),
+    problems: checkDirectionStyles(kept.map((d) => ({ id: d.id, styleId: d.detail?.styleId ?? null }))),
+  };
+}
+
+/** Plain lines for the style check, or [] when there is nothing to say. */
+export function styleCheckLines(sc: StyleCheck): string[] {
+  const lines: string[] = [];
+  for (const d of sc.directions) {
+    const { check } = d;
+    if (check.size === 0) continue;
+    const mains = Object.entries(check.mains).map(([id, n]) => `${id} ${n}`).join(", ");
+    const head = `Style mix of direction ${d.id}${d.styleId ? ` (${d.styleId})` : ""}: ${check.tagged} of ${check.size} UI references tagged${mains ? ` (${mains})` : ""}.`;
+    lines.push(check.problems.length > 0 ? `${head} Fix: ${check.problems.join(" ")}` : `${head}${check.tagged >= 2 ? " Keeps the rule." : ""}`);
+    if (check.untagged.length > 0) lines.push(`  Untagged: ${check.untagged.join(", ")}. Read each style from its thumbnail and pass styles with rate_references.`);
+  }
+  lines.push(...sc.problems);
+  return lines.length > 0 ? ["Style mix (docs/styles, gobanana-taste skill):", ...lines] : [];
+}
 
 const clip = (s: string | null | undefined, max: number) => {
   const t = (s ?? "").replace(/\s+/g, " ").trim();
@@ -78,7 +127,7 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
     canvasId: c.id ?? "",
     title: c.title,
     webUrl: c.webUrl ?? null,
-    directions: c.directions.map((d) => ({ id: d.id, title: d.title, verdict: d.detail?.verdict ?? null, reconciled: !!d.detail?.reconciled })),
+    directions: c.directions.map((d) => ({ id: d.id, title: d.title, verdict: d.detail?.verdict ?? null, reconciled: !!d.detail?.reconciled, ...(d.detail?.styleId ? { styleId: d.detail.styleId } : {}) })),
     sections: c.sections.map((s) => ({ id: s.id, title: s.title, directionId: s.directionId ?? null })),
     items: c.items.map((it) => {
       const dir = it.sectionId ? sectionDir.get(it.sectionId) : null;
@@ -87,7 +136,7 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
       switch (it.type) {
         case "image":
         case "upload":
-          return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
+          return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}), ...(it.styles?.length ? { styles: it.styles } : {}) };
         case "xpost":
           // The credit only: the post text stays out of model inputs (lib/xpost).
           return { ...base, title: postCredit(it), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
@@ -109,16 +158,17 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
 export function summaryText(s: CanvasSummary): string {
   const lines = [`Canvas "${s.title}" (id ${s.canvasId}), summary. Web link: ${s.webUrl ?? ""}`];
   for (const d of s.directions) {
-    lines.push(`Direction ${d.id}: ${d.title} [${d.verdict === "keep" ? "kept" : d.verdict === "drop" ? "dropped" : "not rated"}${d.reconciled ? ", reconciled" : ""}]`);
+    lines.push(`Direction ${d.id}: ${d.title} [${d.verdict === "keep" ? "kept" : d.verdict === "drop" ? "dropped" : "not rated"}${d.reconciled ? ", reconciled" : ""}]${d.styleId ? ` style ${d.styleId}` : ""}`);
   }
   const byDir = new Map<string | null, CanvasSummary["items"]>();
   for (const it of s.items) byDir.set(it.directionId ?? null, [...(byDir.get(it.directionId ?? null) ?? []), it]);
   for (const [dir, items] of byDir) {
     lines.push(dir ? `Items of direction ${dir}:` : "Items with no direction:");
-    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${webTitle(it.title)}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${it.culture}` : ""}`);
+    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.styles?.length ? ` [${it.styles.join(" + ")}]` : ""}${it.title ? `: ${webTitle(it.title)}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${it.culture}` : ""}`);
   }
   if (s.parts.length > 0) lines.push(`Parts: ${s.parts.map((p) => `${p.id} (${p.role})`).join(", ")}`);
   for (const st of s.stitches) lines.push(`Frankenstein page ${st.id}: ${st.title}${st.directionId ? ` (direction ${st.directionId})` : ""}`);
+  if (s.styleCheck) lines.push(...styleCheckLines(s.styleCheck));
   lines.push("Call get_canvas without summary for specs, source links and palettes. Always show each reference's source link when you mention it.", UNTRUSTED_NOTE);
   return lines.join("\n");
 }
@@ -373,6 +423,10 @@ export function createGetCanvasTool(deps: CanvasToolDeps) {
       const voted = reviews.filter((r) => r.keep + r.drop + r.commentCount > 0);
       if (summary) {
         const s = canvasSummary(canvas);
+        if (canvas.directions.length > 0 || s.items.some((it) => it.styles?.length)) {
+          const asked = detectStyles([canvas.brief, ...(loaded.state.taste ?? [])], briefStyleGenre(canvas.brief, canvas.directions[0]?.detail?.platform ?? null));
+          s.styleCheck = styleCheck(canvas, asked);
+        }
         // Counts only here; the comments (text from other people) are in the full view.
         const counts = voted.length > 0 ? `\nClient review: ${voted.map((r) => `${r.directionKey} ${r.keep} keep, ${r.drop} drop, ${r.commentCount} comments`).join("; ")}. Call get_canvas without summary to read the comments.` : "";
         return toolResult(summaryText(s) + counts, voted.length > 0 ? { ...s, reviews: voted } : s);

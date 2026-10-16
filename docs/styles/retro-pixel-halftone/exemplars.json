@@ -1,0 +1,22 @@
+{
+  "style": "retro-pixel-halftone",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b038",
+    "b072",
+    "br011",
+    "br017",
+    "pr042",
+    "br008"
+  ],
+  "edge": [
+    "br007",
+    "br044",
+    "w033",
+    "br016",
+    "br006",
+    "w038",
+    "d168"
+  ]
+}

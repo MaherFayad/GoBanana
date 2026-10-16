@@ -82,3 +82,17 @@ The Brand Identity, BP&O, Mindsparkle, Brand New, Fonts In Use and Serper finds.
 - **Fails the bar:** logo service promos ("Custom Logo Design | 100+"), brand guideline templates,
   mockup packs, before and after sheets with nothing applied (Brand New's lead images are often
   these: fine as a source, rarely an exemplar), listicles ("Top 10 playful branding").
+
+## Gulf and Arabic (the `gulf-arabic-first` style)
+
+Added 2026-10-16 with the style round (docs/styles) and the picker's Gulf/Arabic tab (45
+candidates, judged by eye in contact sheets).
+
+- **Arabic leads.** Arabic display type set large and well, or a bilingual system where Arabic is
+  not an afterthought; the layout mirrors right to left.
+- **Real Gulf work.** Shipped identities (museums, festivals, cafes, banks), posters and type in
+  use, sites and apps that ship in Arabic.
+- **Craft with its grammar.** Sadu, Najdi, AlUla and other lenses used as a band, a mark or a
+  material, credited, not as wallpaper.
+- **Fails the bar:** mosque silhouettes, gold crescents and camels as decoration, pattern as
+  wallpaper, fake or broken Arabic, Latin layouts with Arabic sprinkled on, Ramadan stock kits.

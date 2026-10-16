@@ -1,0 +1,24 @@
+{
+  "style": "playful-too-fun",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "w002",
+    "w007",
+    "w014",
+    "w017",
+    "w018",
+    "br027",
+    "d047",
+    "br031"
+  ],
+  "edge": [
+    "w004",
+    "br018",
+    "w026",
+    "br023",
+    "br038",
+    "pr027",
+    "br028"
+  ]
+}

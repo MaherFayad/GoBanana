@@ -1,0 +1,24 @@
+{
+  "style": "motion-first",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b010",
+    "b014",
+    "c137",
+    "d045",
+    "w006",
+    "w021"
+  ],
+  "edge": [
+    "b004",
+    "b005",
+    "b012",
+    "b016",
+    "b027",
+    "c252",
+    "c292",
+    "d143",
+    "w017"
+  ]
+}

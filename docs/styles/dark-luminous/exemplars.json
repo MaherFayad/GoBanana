@@ -1,0 +1,32 @@
+{
+  "style": "dark-luminous",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b004",
+    "b016",
+    "b027",
+    "b029",
+    "b034",
+    "b039",
+    "c246",
+    "b066"
+  ],
+  "edge": [
+    "b005",
+    "b058",
+    "b089",
+    "c105",
+    "c137",
+    "c252",
+    "d014",
+    "d045",
+    "c292",
+    "c248",
+    "b036",
+    "pr005",
+    "pr034",
+    "pr059",
+    "w001"
+  ]
+}

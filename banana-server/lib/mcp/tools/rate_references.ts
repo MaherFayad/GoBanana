@@ -11,7 +11,7 @@
  */
 import { z } from "zod";
 import { authExtra } from "@/lib/auth";
-import { loadCanvas, mutateCanvas } from "@/lib/canvas/store";
+import { loadCanvas, mutateCanvas, type CanvasState } from "@/lib/canvas/store";
 import type { NewFeedback, ReferenceRecord } from "@/lib/db/types";
 import { parseCreator } from "@/lib/learning/creator";
 import { atlasFeedbackRows, referenceAtlasIds } from "@/lib/learning/directions";
@@ -19,6 +19,7 @@ import { badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, type FeedbackReason } fro
 import { itemKey } from "@/lib/sources/web-search";
 import { MAX_SWIPE_ITEMS } from "@/lib/swipe";
 import { LANE_NAMES, type LaneName } from "@/lib/sources/types";
+import { cleanStyles, MAX_STYLE_TAGS, STYLE_IDS, type StyleId } from "@/lib/styles/ids";
 import {
   CANVAS_NOT_FOUND,
   lazyTool,
@@ -40,6 +41,7 @@ export const TOOL_DESCRIPTION =
   "Rate art direction results the same way (shop or off idea is bad). " +
   "Each bad rating returns a hint for re-searching its lane. " +
   "save: true keeps the great ones in the user's swipe file. " +
+  "Add styles: 1 or 2 style ids read from the thumbnail, main first (docs/styles); the board's style mix uses them. " +
   "Rate from the thumbnails search_references returned, never from the titles alone.";
 
 export const MAX_RATINGS = 50;
@@ -52,6 +54,7 @@ export const inputSchema = z.object({
         referenceId: z.string().min(1).max(100),
         verdict: z.enum(FEEDBACK_VERDICTS),
         reasons: z.array(z.enum(FEEDBACK_REASONS)).max(FEEDBACK_REASONS.length).optional(),
+        styles: z.array(z.enum(STYLE_IDS)).min(1).max(MAX_STYLE_TAGS).optional().describe("Style ids read from the thumbnail, main style first."),
       }),
     )
     .min(1)
@@ -63,7 +66,7 @@ export type RateReferencesInput = z.input<typeof inputSchema>;
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas, or leave it out.",
-  ratings: `Pass 1 to ${MAX_RATINGS} ratings, each with a referenceId and a verdict of great or bad. Reasons: ${FEEDBACK_REASONS.join(", ")}.`,
+  ratings: `Pass 1 to ${MAX_RATINGS} ratings, each with a referenceId and a verdict of great or bad. Reasons: ${FEEDBACK_REASONS.join(", ")}. Styles: 1 or 2 of ${STYLE_IDS.join(", ")}.`,
 };
 
 export type RateHint = { referenceId: string; lane: LaneName | null; hint: string };
@@ -82,6 +85,8 @@ export type RateReferencesOutput = {
   canvasId?: string;
   /** Great references newly kept in the swipe file (save: true). */
   swipeSaved?: number;
+  /** References whose style tags were saved on their canvas (tray and board). */
+  styled?: number;
 };
 
 const asLane = (lane: string | null): LaneName | null => (LANE_NAMES as readonly string[]).includes(lane ?? "") ? (lane as LaneName) : null;
@@ -97,6 +102,7 @@ function text(out: RateReferencesOutput): string {
       lines.push(`Bad results will not come back in later searches.${tray}`);
     }
   }
+  if (out.styled) lines.push(`Style tags saved on ${out.styled} reference${out.styled === 1 ? "" : "s"}; get_canvas summary checks the style mix.`);
   if (out.notFound.length > 0) lines.push(`Not found on your canvases: ${out.notFound.join(", ")}.`);
   const hints = [...new Set(out.hints.map((h) => (h.lane ? `${h.lane} lane: ${h.hint}` : h.hint)))];
   if (hints.length > 0) lines.push("Next:", ...hints.map((h) => `- ${h}`));
@@ -104,6 +110,30 @@ function text(out: RateReferencesOutput): string {
 }
 
 const NOTHING_TO_REMOVE = "nothing to remove";
+
+/**
+ * Style tags onto a canvas: every tray result and placed image whose link has tags in `tags` (by
+ * item key). Returns the count of distinct links tagged, or an error when nothing matched (so the
+ * canvas is not saved for nothing).
+ */
+export function applyStyleTags(state: CanvasState, tags: ReadonlyMap<string, StyleId[]>): { state: CanvasState; value: number } | { error: string } {
+  const hit = new Set<string>();
+  const tray = state.tray.map((t) => {
+    const s = tags.get(itemKey(t.sourceUrl));
+    if (!s) return t;
+    hit.add(itemKey(t.sourceUrl));
+    return { ...t, styles: s };
+  });
+  const nodes = state.nodes.map((n) => {
+    if (n.type !== "image" && n.type !== "upload") return n;
+    const s = tags.get(itemKey(n.data.sourceUrl));
+    if (!s) return n;
+    hit.add(itemKey(n.data.sourceUrl));
+    return { ...n, data: { ...n.data, styles: s } } as typeof n;
+  });
+  if (hit.size === 0) return { error: NOTHING_TO_REMOVE };
+  return { state: { ...state, tray, nodes }, value: hit.size };
+}
 
 export function createRateReferencesTool(deps: CanvasToolDeps) {
   return async function rateReferences(raw: unknown, userId: string | undefined): Promise<ToolResult> {
@@ -206,6 +236,22 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
       }
       if (badKeys.size > 0) await deps.repos.blocklist.add(userId, [...badKeys]);
 
+      // Style tags read from the thumbnails: saved on the tray result and the placed reference, per canvas.
+      const styleByCanvas = new Map<string, Map<string, StyleId[]>>();
+      for (const id of ratedIds) {
+        const ref = found.get(id);
+        const styles = cleanStyles(byId.get(id)?.styles);
+        if (!ref || !styles) continue;
+        const m = styleByCanvas.get(ref.canvasId) ?? new Map<string, StyleId[]>();
+        m.set(itemKey(ref.sourceUrl), styles);
+        styleByCanvas.set(ref.canvasId, m);
+      }
+      let styled = 0;
+      for (const [canvasId, tags] of styleByCanvas) {
+        const outcome = await mutateCanvas<number>(deps.repos, userId, canvasId, takedownLoader(deps), (state) => applyStyleTags(state, tags));
+        if (outcome.ok) styled += outcome.value;
+      }
+
       let removedFromTray = 0;
       if (input.canvasId && badKeys.size > 0) {
         const outcome = await mutateCanvas<number>(deps.repos, userId, input.canvasId, takedownLoader(deps), (state) => {
@@ -227,6 +273,7 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         hints,
         ...(input.canvasId ? { canvasId: input.canvasId } : {}),
         ...(swipeSaved !== undefined ? { swipeSaved } : {}),
+        ...(styled > 0 ? { styled } : {}),
       };
       // Great ratings change a direction's palette weights: nudge a reconcile when one is due.
       let hint: string | null = null;

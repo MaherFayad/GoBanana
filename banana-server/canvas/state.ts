@@ -14,6 +14,7 @@ import { cleanCulture } from "@/lib/culture";
 import type { Zone } from "@/lib/direction-detail";
 import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
 import type { Part } from "@/lib/stitch/types";
+import { cleanStyles } from "@/lib/styles/ids";
 import { cleanTaste } from "@/lib/taste";
 import { MAX_POST_TEXT, parsePostUrl, X_SITE } from "@/lib/xpost";
 import {
@@ -126,6 +127,7 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
     kind: d.kind === "build" ? ("build" as const) : undefined,
     stitchId: str(d.stitchId, 120),
     culture: cleanCulture(d.culture),
+    styles: cleanStyles(d.styles),
     width: positiveNum(d.width) ?? null,
     height: positiveNum(d.height) ?? null,
   });
@@ -272,6 +274,7 @@ export function parseTrayReference(v: unknown): TrayReference | null {
     height: positiveNum(v.height),
     directionId: str(v.directionId, 80),
     zone: isZone(v.zone) ? v.zone : undefined,
+    styles: cleanStyles(v.styles),
   });
 }
 

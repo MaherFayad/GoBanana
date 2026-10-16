@@ -1,0 +1,29 @@
+{
+  "style": "data-dense-dashboard",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b018",
+    "b064",
+    "b078",
+    "b079",
+    "c380",
+    "c413",
+    "c423",
+    "c452"
+  ],
+  "edge": [
+    "c550",
+    "d168",
+    "c425",
+    "b058",
+    "pr060",
+    "b003",
+    "b081",
+    "b091",
+    "d009",
+    "d193",
+    "c538",
+    "c537"
+  ]
+}

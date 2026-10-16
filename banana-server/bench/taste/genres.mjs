@@ -16,6 +16,12 @@ export const GENRES = [
   { id: "web-showcase", label: "Web showcase", aim: [20, 40], note: "Award-level websites (Awwwards, Motion Sites, Craftwork)." },
   { id: "presentation", label: "Presentation", aim: [20, 40], note: "Pitch decks, keynote slides and editorial report layouts." },
   { id: "branding", label: "Branding", aim: [20, 40], note: "Identities, logo systems, guidelines, posters, packaging and type-led work." },
+  {
+    id: "gulf-arabic",
+    label: "Gulf/Arabic",
+    aim: [15, 30],
+    note: "Arabic typographic work, Gulf brands, apps and sites, and Gulf craft (Sadu, Najdi, AlUla) in modern design. Your picks become the exemplars of the gulf-arabic-first style.",
+  },
 ];
 
 export const GENRE_IDS = GENRES.map((g) => g.id);

@@ -23,6 +23,7 @@ description: قيّم نتائج البحث بـ great أو bad لتتحسن ع�
 | `ratings[].referenceId` | string | نعم | من 1 إلى 100 حرف | المعرف الذي بين القوسين في مخرجات البحث |
 | `ratings[].verdict` | enum | نعم | `great`، `bad` | |
 | `ratings[].reasons` | enum[] | لا | انظر أدناه | السبب |
+| `ratings[].styles` | enum[] | لا | واحد أو اثنين من [معرفات الستايلات](/docs/ar/guides/styles/)، الأساسي أول | الستايلات اللي يشوفها وكيلك في الصورة المصغرة. تنحفظ على المرجع في الدرج وعلى اللوحة، و`get_canvas` يفحص تنوع الستايلات في كل لوحة |
 | `save` | boolean | لا | | احفظ المراجع `great` أيضا في [مكتبتك](/docs/ar/guides/canvases/#مكتبتك): روابط فقط، وليس الصور أبدا |
 
 **أسباب bad:** `off_topic`، `stock_or_shop`، `cluttered`، `duplicate`، `low_craft`، `wrong_style`، `not_ui` (لمنطقة الواجهات فقط). **أسباب great:** `great_craft`، `on_style`، `on_brief`.
@@ -39,7 +40,7 @@ description: قيّم نتائج البحث بـ great أو bad لتتحسن ع�
     "ratings": [
       { "referenceId": "ref_3m7k", "verdict": "bad", "reasons": ["stock_or_shop"] },
       { "referenceId": "ref_9x1a", "verdict": "bad", "reasons": ["off_topic", "not_ui"] },
-      { "referenceId": "ref_8k2p", "verdict": "great", "reasons": ["on_brief"] }
+      { "referenceId": "ref_8k2p", "verdict": "great", "reasons": ["on_brief"], "styles": ["hero-numeral", "dark-quiet-matte"] }
     ]
   }
 }
@@ -50,6 +51,7 @@ description: قيّم نتائج البحث بـ great أو bad لتتحسن ع�
 ```text
 Rated 3: 1 great, 2 bad.
 Bad results will not come back in later searches. 2 removed from the tray.
+Style tags saved on 1 reference; get_canvas summary checks the style mix.
 Next:
 - bridge lane: search_references with directionId, lane "bridge" and new query words
 ```

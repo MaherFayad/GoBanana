@@ -1,0 +1,26 @@
+{
+  "style": "vivid-gradient",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "b015",
+    "b042",
+    "b052",
+    "c002",
+    "d055",
+    "b051",
+    "c053",
+    "c360"
+  ],
+  "edge": [
+    "c534",
+    "pr051",
+    "pr053",
+    "pr059",
+    "br063",
+    "b027",
+    "b063",
+    "b066",
+    "pr008"
+  ]
+}

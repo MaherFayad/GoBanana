@@ -1,0 +1,20 @@
+{
+  "style": "illustrative-handmade",
+  "source": "banana-server/bench/taste/picks.json",
+  "note": "Owner pick ids. core: the cleanest; edge: shows it with another style. Never Craftwork, Best Designs on X or x.com ids.",
+  "core": [
+    "w004",
+    "w007",
+    "w014",
+    "w021",
+    "br007",
+    "br011",
+    "c082",
+    "br026"
+  ],
+  "edge": [
+    "br014",
+    "br012",
+    "br046"
+  ]
+}

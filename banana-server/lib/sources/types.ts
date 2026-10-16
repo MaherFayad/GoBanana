@@ -5,6 +5,7 @@
  * image bytes (spec section 2, rules 2 and 4).
 */
 import type { Zone } from "../direction-detail";
+import type { StyleId } from "../styles/ids";
 import type { Genre } from "./genre";
 import { SOURCE_REGISTRY, sourceEntry, type RegistrySite } from "./registry";
 
@@ -126,6 +127,11 @@ export type Reference = {
   recipeId?: string;
   /** Search plan v2: the Atlas card of the direction it was found for. */
   cardId?: string;
+  /**
+   * Style tags (docs/styles), main style first, 1 or 2: from the style request that found it, or
+   * the agent's own tags from rate_references. A first guess until the agent checks the thumbnail.
+   */
+  styles?: StyleId[];
 };
 
 /** Search outcome with an optional plain note for the agent (for example when Serper fails). */

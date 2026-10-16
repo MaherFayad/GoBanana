@@ -1,9 +1,9 @@
 ---
 title: Plugin skills
-description: The 11 skills in the GoBanana Claude plugin, what to say to trigger each one, which tools it calls and what you get.
+description: The 12 skills in the GoBanana Claude plugin, what to say to trigger each one, which tools it calls and what you get.
 ---
 
-The plugin (`gobanana`, version 0.1.3) adds these skills on top of the MCP server. Claude picks one from what you say; you can also name it (`/gobanana-explore` in Claude Code). Every skill follows the same ground rules: source link for every reference, never download or copy images, plain words, one question at most per turn, show a plan or quota message once and stop.
+The plugin (`gobanana`, version 0.1.4) adds these skills on top of the MCP server. Claude picks one from what you say; you can also name it (`/gobanana-explore` in Claude Code). Every skill follows the same ground rules: source link for every reference, never download or copy images, plain words, one question at most per turn, show a plan or quota message once and stop.
 
 | Skill | Say something like | Tools | You get |
 | --- | --- | --- | --- |
@@ -18,6 +18,7 @@ The plugin (`gobanana`, version 0.1.3) adds these skills on top of the MCP serve
 | `gobanana-asset-kit` | "asset kit", "tokens for this page", "gradients from the palette", "which fonts and icons" | `get_canvas`, `extract_palette`, `export_kit` (`tokens`, `tailwind`) | `kit/00-readme.md` to `kit/06-sources.md` |
 | `gobanana-culture` | "make it feel Saudi", "use sadu", "Najdi doors", "Ramadan campaign", or any brief that names a culture, region, script or occasion | `get_canvas`, `get_snapshot`, `bend_brief`, `search_references`, `rate_references`, `add_to_canvas`, `export_kit` | Each cultural item named exactly, sorted by sensitivity, turned into a UI part, with meaning, steal, credit and care notes, and a Cultural brief in the hand-off |
 | `gobanana-weekly-drop` | "weekly drop", "a new idea for my pricing page every Monday", "schedule a bend" | `get_canvas`, `new_canvas`, `bend_brief`, `search_references`, `rate_references`, `add_to_canvas`, `arrange_canvas`, `open_canvas`, run on your own scheduler | After a yes, a scheduled task in your agent that adds one bend a week to a board and posts the link |
+| `gobanana-taste` | "what style is this", "tag the styles", "too samey", "all dark", "is this cheap" | `search_references`, `rate_references` (`styles`), `add_to_canvas`, `get_canvas` (`summary`), `bend_brief` | Every reference tagged with its [style](/docs/guides/styles/) from its thumbnail, each board kept varied, each direction in its own style, and a great or cheap call at the owner's bar |
 | `gobanana-critique` | "critique the build", "does this match the direction", "grade my page" | `get_canvas`, `export_kit` (`review`), a browser tool | A pass or fix table with evidence, the top 3 fixes, applied in page scope on yes |
 
 ## Font pairings in the asset kit
