@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bucketOf, StyleTagSchema } from "../jobs/r2-styles.ts";
+import { verdictOf } from "../jobs/r2-taste.ts";
 import { serverLayout } from "../lib/layout.ts";
 import { applyOverlays, overlaysFrom, recipeStyles } from "../lib/overlays.ts";
 import { MechanicSchema } from "../schema.ts";
@@ -64,6 +65,14 @@ describe("R2 overlays", () => {
     expect(MechanicSchema.safeParse({ ...mech, styles: ["neon"] }).success).toBe(false);
     expect(MechanicSchema.safeParse({ ...mech, styles: ["hero-numeral", "glass-frosted", "dark-luminous"] }).success).toBe(false);
     expect(StyleTagSchema.safeParse({ id: "x", kind: "mechanics", styles: [] }).success).toBe(true);
+  });
+
+  it("the taste verdict rewrites literal records, keeps 3 and up, and follows the judge under 3", () => {
+    expect(verdictOf({ advice: "keep", score: 4, literal: true })).toBe("rewrite");
+    expect(verdictOf({ advice: "drop", score: 2, literal: true })).toBe("drop");
+    expect(verdictOf({ advice: "rewrite", score: 3, literal: false })).toBe("keep");
+    expect(verdictOf({ advice: "keep", score: 2, literal: false })).toBe("rewrite");
+    expect(verdictOf({ advice: "drop", score: 1, literal: false })).toBe("drop");
   });
 
   it("buckets records by id, not by order", () => {

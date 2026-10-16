@@ -24,7 +24,7 @@ export const PER_GROUP = 5;
 export const PER_LENS = 3;
 const RENDER_DIR = join(PATHS.review, "j13-shaders");
 
-const SYSTEM = `You write GLSL fragment shaders for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. Each shader is a "stunning layer" a developer drops into a shipped product screen: a hero band, a loading or success moment, an empty state, a paywall plan card. It carries the idea of an ingredient card (a material, era, object, tradition, scale or rule) or a cultural lens, in motion.
+export const SYSTEM = `You write GLSL fragment shaders for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. Each shader is a "stunning layer" a developer drops into a shipped product screen: a hero band, a loading or success moment, an empty state, a paywall plan card. It carries the idea of an ingredient card (a material, era, object, tradition, scale or rule) or a cultural lens, in motion.
 
 ${PROMPT_RULES}
 
