@@ -34,6 +34,7 @@ Art direction (zone art) for art "<art query 1>", "<art query 2>":
 Shipped today (the page as apps ship it, found once per canvas): place these in one "Shipped today" section, never in a direction:
 <k>. [<id>, fidelity] <Title> (<site>): <link>
 In a direction search with a canvasId the fidelity results go under the Shipped today header, not under UI references. Leave out a header when it has no results. Number k from 1 across all headers.
+Styles: in a direction search, find the direction's style id in the bend_brief "Styles" line. Write each taste lane UI line as `<k>. [<id>, taste] <Title> (<site>, style <style id>): <link>`, and add this line after the results: Style: This direction's style is <style id>. Style tags are a first guess from the words that found them: check each on its thumbnail and pass styles with rate_references.
 In a later direction search on the same canvas, never repeat a result of another direction, and add: The baseline lane (fidelity) already ran for this canvas, so it was skipped, as was every search another direction on this canvas already sent (their results are in the tray already). Its results are in the tray with no direction; place the good ones once in the "Shipped today" section: <ids of the first search's fidelity results>.
 Then end with:
 Added to the tray of the canvas when a canvasId was given. Art items go to the Art direction row when placed.

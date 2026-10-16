@@ -1,1 +1,2 @@
 Ratings saved. Great ones stay in the tray. Bad ones are removed from the tray and will not come back in later searches.
+Style tags from ratings that carry styles are saved on those references; get_canvas summary checks the style mix.

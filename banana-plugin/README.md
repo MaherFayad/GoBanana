@@ -6,7 +6,7 @@ GoBanana is a Claude plugin for one crazy idea over a page or two: a launch page
 
 Ask your agent to "go wild" on a page. GoBanana bends the brief into unexpected directions, each with a full visual spec, fills a moodboard canvas with two zones of linked references (the wild idea as images, and real UI for your platform), and hands the direction you keep to Claude Code, Cursor, Copilot, Codex, v0 or Lovable as scoped files. Then it can screenshot what you built and grade it against the direction.
 
-The plugin connects your agent to the GoBanana MCP server and adds 11 skills that tell the agent which tools to call, in which order, and how to present the results.
+The plugin connects your agent to the GoBanana MCP server and adds 12 skills that tell the agent which tools to call, in which order, and how to present the results.
 
 > Status: v0.1.0, beta. The server runs at `https://gobanana-server.maherfayad55.workers.dev` until a custom domain is chosen. See [Placeholders](#placeholders).
 
@@ -65,6 +65,7 @@ Add the plugin from your organization's plugin settings or from Anthropic's dire
 | `gobanana-build` | "build this Frankenstein page", "code this screen from the parts" | Refreshes the direction from the board, looks at each part with get_snapshot, builds row by row against the parts with an RTL note per part, runs a drift check, and places a screenshot of the build next to the page |
 | `gobanana-weekly-drop` | "weekly drop", "a new idea for my pricing page every Monday" | After a yes, sets up a scheduled task in your own agent: one bend a week for a saved brief, a new board section, the board link posted |
 | `gobanana-critique` | "critique the build", "does this match the direction" | Screenshots at platform sizes, grades the REVIEW.md checklist with evidence, top 3 fixes inside page scope |
+| `gobanana-taste` | "what style is this", "tag the styles", "too samey", "all dark", "is this cheap" | Names the 19 visual styles, reads a style from each thumbnail, tags references with `rate_references` styles, keeps each board's style mix and gives every direction its own style; each style has its own page in `skills/gobanana-taste/styles/` |
 
 ### Platforms
 

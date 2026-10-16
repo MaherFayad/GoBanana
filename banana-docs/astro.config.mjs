@@ -142,6 +142,7 @@ export default defineConfig({
 						{ slug: 'guides/canvases' },
 						{ slug: 'guides/mobbin' },
 						{ slug: 'guides/taste-profile' },
+						{ slug: 'guides/styles' },
 					],
 				},
 				{

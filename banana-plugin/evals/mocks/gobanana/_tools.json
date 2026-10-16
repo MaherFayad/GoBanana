@@ -221,7 +221,7 @@
     {
       "name": "rate_references",
       "title": "Rate references",
-      "description": "Rate search results so later searches get better. Free. Pass referenceIds from search_references with verdict \"bad\" (off topic, shop or stock, cluttered, duplicate) or \"great\" (standouts only). Bad results leave the canvas tray and never come back in this user's searches. Each bad rating returns a hint for re-searching its lane.",
+      "description": "Rate search results so later searches get better. Free. Pass referenceIds from search_references with verdict \"bad\" (off topic, shop or stock, cluttered, duplicate) or \"great\" (standouts only). Bad results leave the canvas tray and never come back in this user's searches. Each bad rating returns a hint for re-searching its lane. Add styles: 1 or 2 style ids read from the thumbnail, main first (docs/styles); the board's style mix uses them.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -270,6 +270,13 @@
                       "on_brief"
                     ]
                   }
+                },
+                "styles": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 2,
+                  "description": "Style ids read from the thumbnail, main style first (docs/styles).",
+                  "items": { "type": "string", "enum": ["dark-luminous", "dark-quiet-matte", "data-dense-dashboard", "glass-frosted", "soft-3d-objects", "vivid-gradient", "photographic-hero", "big-type-display", "hero-numeral", "editorial-serif", "minimal-mono-light", "flat-color-field", "retro-pixel-halftone", "playful-too-fun", "illustrative-handmade", "webgl-3d-scene", "motion-first", "type-led-brand-system", "gulf-arabic-first"] }
                 }
               }
             }
@@ -465,6 +472,13 @@
                 },
                 "referenceId": {
                   "type": "string"
+                },
+                "styles": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 2,
+                  "description": "For reference items: style ids read from the thumbnail, main first (docs/styles).",
+                  "items": { "type": "string" }
                 },
                 "url": {
                   "type": "string",

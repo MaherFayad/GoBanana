@@ -51,6 +51,14 @@ describe("style data", () => {
     expect(dirs).toEqual([...STYLE_IDS].sort());
   });
 
+  it("ships each STYLE.md as a mini skill in the plugin's gobanana-taste skill, unchanged", () => {
+    const skill = join(ROOT, "banana-plugin", "skills", "gobanana-taste");
+    const norm = (f: string) => readFileSync(f, "utf8").replace(/\r\n/g, "\n");
+    expect(norm(join(skill, "SKILL.md"))).toContain("styles/<id>.md");
+    for (const id of STYLE_IDS) expect(norm(join(skill, "styles", `${id}.md`)), id).toBe(norm(join(DOCS, id, "STYLE.md")));
+    expect(readdirSync(join(skill, "styles")).sort()).toEqual(STYLE_IDS.map((id) => `${id}.md`).sort());
+  });
+
   it("notes where each merged draft style lives", () => {
     for (const [from, to] of Object.entries(MERGED_STYLE_IDS)) {
       expect(readFileSync(join(DOCS, to, "STYLE.md"), "utf8"), from).toContain(`\`${from}\``);
@@ -82,7 +90,7 @@ describe("style data", () => {
 
   it("has no em or en dashes in the style docs", () => {
     const files = [join(DOCS, "INDEX.md"), join(DOCS, "styles.json"), ...STYLE_IDS.flatMap((id) => [join(DOCS, id, "STYLE.md"), join(DOCS, id, "exemplars.json")])];
-    for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/[—–]/);
+    for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/[\u2014\u2013]/);
   });
 
   it("cleans style tags: known ids, merged ids read as their style, main first, at most 2", () => {
