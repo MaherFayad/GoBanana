@@ -85,7 +85,7 @@ export const PATHS = {
   rejects: join(ROOT, "rejects"),
   review: join(ROOT, "review"),
   raw: join(ROOT, "raw"),
-  state: join(ROOT, "state"),
+  state: process.env.ATLAS_STATE ?? join(ROOT, "state"),
   costs: costsPath(),
   fonts: join(ROOT, "data", "google-fonts.json"),
   models: join(ROOT, "data", "models.json"),
