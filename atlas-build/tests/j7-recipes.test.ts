@@ -5,7 +5,7 @@ import { CUSTOM_ID } from "../lib/job.ts";
 import { estimateCost, TOKENS_PER_IMAGE } from "../lib/guard.ts";
 import { DEFAULT_SERPER_FLOOR, SERPER_FLOOR, creditRoom, envValue, floorFrom } from "../lib/serper.ts";
 import { QueryRecipeSchema, type QueryRecipe } from "../schema.ts";
-import { ART_NEG, MAX_WORDS, SHOWCASE_RECIPE_STYLES, UI_NEG, artWordings, buildInputs, pagePhrases, pageWordings, requestIdOf, searchQueryFor, selectBest, showcaseWordings, type Input } from "../jobs/j7-recipes.ts";
+import { ART_NEG, MAX_WORDS, SHOWCASE_RECIPE_STYLES, UI_NEG, artWordings, artCardOrder, benchCardIds, buildInputs, pagePhrases, pageWordings, requestIdOf, searchQueryFor, selectBest, showcaseWordings, type Input } from "../jobs/j7-recipes.ts";
 
 const page = (id: string, platforms: Array<"mobile" | "tablet" | "website" | "webapp">, en: string[] = [id.replace(/-/g, " ")], nouns: string[] = []) => ({
   id,
@@ -208,5 +208,34 @@ describe("web showcase wordings (2026-10-16)", () => {
     const r = { key: { lane: "baseline", page: "pricing", platform: "website", style: "playful" }, query: "playful pricing", source: "awwwards", precision: 0.5, judged: 8, at: "2026-10-16" };
     expect(QueryRecipeSchema.safeParse(r).success).toBe(true);
     expect(QueryRecipeSchema.safeParse({ ...r, key: { ...r.key, style: "spooky" } }).success).toBe(false);
+  });
+});
+
+describe("art priority order", () => {
+  const cards = [card("c1", ["a1", "a2", "a3"]), card("c2", ["b1", "b2", "b3"]), card("c3", ["c1x", "c2x", "c3x"]), card("c4", ["d1", "d2", "d3"])];
+  const pages = [page("p-one", ["mobile"])];
+  const meta = [{ id: "p-one", from: "common" }];
+
+  it("puts bench cards first, then page fit, then fit, then input order", () => {
+    const order = artCardOrder(["c1", "c2", "c3", "c4"], { bench: new Set(["c4"]), pageFit3: new Map([["c3", 5], ["c2", 1]]), fit3: new Map([["c1", 9]]) });
+    expect(order).toEqual(["c4", "c3", "c2", "c1"]);
+  });
+  it("is stable for equal signals", () => {
+    expect(artCardOrder(["c1", "c2", "c3"], { bench: new Set(), pageFit3: new Map(), fit3: new Map() })).toEqual(["c1", "c2", "c3"]);
+  });
+  it("keeps every page input and the art block where it was, and the same set of inputs", () => {
+    const before = buildInputs(pages, meta, cards);
+    const after = buildInputs(pages, meta, cards, [], ["c4", "c3", "c2", "c1"]);
+    expect(after.map((i) => i.kind)).toEqual(before.map((i) => i.kind));
+    expect(after.filter((i) => i.kind !== "art")).toEqual(before.filter((i) => i.kind !== "art"));
+    const artIds = (xs: Input[]) => xs.filter((i) => i.kind === "art").map((i) => i.key.cardId);
+    expect(artIds(after).slice(0, 3)).toEqual(["c4", "c4", "c4"]);
+    expect(artIds(after).slice().sort()).toEqual(artIds(before).slice().sort());
+    expect(requestIdOf(after.find((i) => i.key.cardId === "c1")!)).toBe(requestIdOf(before.find((i) => i.key.cardId === "c1")!));
+  });
+  it("finds bench cards by lead name, first art query and texture twist", () => {
+    const named = [{ id: "gas", name: "Gas Station Price Sign", artQueries: ["gas station price sign"] }, { id: "baq", name: "Bilingual Baqala Receipt", artQueries: ["receipt"] }, { id: "zz", name: "Other", artQueries: ["other"] }];
+    const got = benchCardIds(named, [{ ingredients: { object: "Gas Station Price Sign" }, twist: "With the texture of Bilingual Baqala Receipt" }]);
+    expect([...got].sort()).toEqual(["baq", "gas"]);
   });
 });

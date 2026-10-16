@@ -247,6 +247,53 @@ export function showcaseWordings(p0: string, styleId: string): Wording[] {
 
 export type PageMeta = { id: string; from?: string };
 
+/** Bench runs whose directions mark the cards the bend actually used (Gate 2 rounds g, h, i). */
+export const BENCH_RUNS = ["2026-10-16g2g", "2026-10-16g2h", "2026-10-16g2i"];
+
+const nameKey = (s: unknown) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+type BenchDirection = { twist?: string; ingredients?: { object?: string }; artQueries?: string[] };
+
+/**
+ * Pure: the ids of cards that bench directions lead with (ingredients.object, or the first art
+ * query) or borrow a look from ("With the texture of X" in the twist).
+ */
+export function benchCardIds(cards: readonly Pick<IngredientCard, "id" | "name" | "artQueries">[], directions: readonly BenchDirection[]): Set<string> {
+  const byName = new Map(cards.map((c) => [nameKey(c.name), c.id]));
+  const byArt = new Map(cards.filter((c) => c.artQueries[0]).map((c) => [nameKey(c.artQueries[0]), c.id]));
+  const out = new Set<string>();
+  for (const d of directions) {
+    const lead = byName.get(nameKey(d.ingredients?.object)) ?? byArt.get(nameKey(d.artQueries?.[0]));
+    if (lead) out.add(lead);
+    const m = / of (.+)$/.exec(d.twist ?? "");
+    const twist = m ? byName.get(nameKey(m[1])) : undefined;
+    if (twist) out.add(twist);
+  }
+  return out;
+}
+
+export type ArtSignals = {
+  /** Cards bench directions used. */
+  bench: ReadonlySet<string>;
+  /** J4b page fit: score-3 rows per card across domains and pages. */
+  pageFit3: ReadonlyMap<string, number>;
+  /** J4 fit: score-3 rows per card across domains. */
+  fit3: ReadonlyMap<string, number>;
+};
+
+/**
+ * Pure: card ids in art priority order. Bench-used cards first, then by J4b score-3 rows, then J4
+ * score-3 rows (both across domains, more is better), then input order. A stable sort, so cards
+ * with equal signals keep their input order.
+ */
+export function artCardOrder(cardIds: readonly string[], s: ArtSignals): string[] {
+  const tier = (id: string) => (s.bench.has(id) ? 0 : 1);
+  return cardIds
+    .map((id, i) => ({ id, i }))
+    .sort((a, b) => tier(a.id) - tier(b.id) || (s.pageFit3.get(b.id) ?? 0) - (s.pageFit3.get(a.id) ?? 0) || (s.fit3.get(b.id) ?? 0) - (s.fit3.get(a.id) ?? 0) || a.i - b.i)
+    .map((x) => x.id);
+}
+
 /**
  * Pure: every input in value order. Bench pages first (pages.json "from: bench"), then the other
  * pages; within a page every platform, all wordings together so a key completes; then the art
@@ -257,6 +304,7 @@ export function buildInputs(
   meta: readonly PageMeta[],
   cards: readonly Pick<IngredientCard, "id" | "name" | "texture" | "imagery" | "artQueries">[],
   genre: readonly GenreInput[] = [],
+  artOrder?: readonly string[],
 ): Input[] {
   const from = new Map(meta.map((m) => [m.id, m.from ?? ""]));
   const rank = (id: string) => (from.get(id) === "bench" ? 0 : from.get(id) === "wild-spots" ? 1 : 2);
@@ -270,7 +318,10 @@ export function buildInputs(
       }
     }
   }
-  for (const c of cards) {
+  // The art block keeps its size and place; only the card order inside it follows artOrder (value first).
+  const cardRank = new Map((artOrder ?? []).map((id, i) => [id, i]));
+  const artCards = artOrder ? cards.map((c, i) => ({ c, i })).sort((a, b) => (cardRank.get(a.c.id) ?? Infinity) - (cardRank.get(b.c.id) ?? Infinity) || a.i - b.i).map((x) => x.c) : cards;
+  for (const c of artCards) {
     const key: QueryRecipe["key"] = { lane: "art", cardId: c.id };
     for (const wording of artWordings(c)) {
       out.push({ kind: "art", key, wording, priority: 3, context: `the ingredient card "${c.name}" (texture: ${c.texture}; imagery: ${c.imagery})` });
@@ -461,6 +512,27 @@ function loadPages(): { pages: PageAnatomy[]; meta: PageMeta[] } {
   return { pages, meta };
 }
 
+/** The art priority order from J4 fit, J4b page fit and the bench runs; input order when none of them is built. */
+function artOrderFor(cards: readonly IngredientCard[]): string[] {
+  const count = (kind: string) => {
+    const m = new Map<string, number>();
+    try {
+      for (const r of readKindRecords<{ cardId: string; score: number }>(kind)) if (r.score === 3) m.set(r.cardId, (m.get(r.cardId) ?? 0) + 1);
+    } catch {
+      /* not built yet: the order falls back to input order */
+    }
+    return m;
+  };
+  const directions: BenchDirection[] = [];
+  for (const run of BENCH_RUNS) {
+    const f = join(ROOT, "..", "banana-server", "bench", "runs", run, "run.json");
+    if (!existsSync(f)) continue;
+    const j = JSON.parse(readFileSync(f, "utf8")) as { briefs?: { directions?: BenchDirection[] }[] };
+    for (const b of j.briefs ?? []) directions.push(...(b.directions ?? []));
+  }
+  return artCardOrder(cards.map((c) => c.id), { bench: benchCardIds(cards, directions), pageFit3: count("page-fit"), fit3: count("fit") });
+}
+
 export default defineJob<Input, QueryRecipe>({
   id: "j7-recipes",
   kind: "recipes",
@@ -477,7 +549,7 @@ export default defineJob<Input, QueryRecipe>({
   async loadInputs(ctx) {
     const { pages, meta } = loadPages();
     const cards = readKindRecords<IngredientCard>("cards");
-    const all = buildInputs(pages, meta, cards, genreInputs());
+    const all = buildInputs(pages, meta, cards, genreInputs(), artOrderFor(cards));
     loadedKeys = new Set(all.map((i) => recipeKeyString(i.key)));
     const by = (f: (i: Input) => boolean) => all.filter(f).length;
     ctx.log(`Inputs: ${all.length} wordings (${by((i) => i.kind === "page")} for ${new Set(all.filter((i) => i.kind === "page").map((i) => recipeKeyString(i.key))).size} page and platform pairs, ${by((i) => i.kind === "art")} art wordings for ${new Set(all.filter((i) => i.kind === "art").map((i) => i.key.cardId)).size} cards). Serper credits needed: ${all.length}.`);
