@@ -298,6 +298,21 @@ export function leadFit(domainFit: number, page: number | null | undefined): num
   return page === null ? Math.max(0, domainFit - PAGE_UNJUDGED_DROP) : page;
 }
 
+/**
+ * What the brief is about, in its own words, for the J7 topic slot and the recipe guard: the product
+ * noun it names ("eSIM"), else the longest domain name it holds ("food delivery", "real estate"), else
+ * its words the domain's names share ("kids reading", "banking"), else the subject head. The subject
+ * head alone gave "fitness empty", "estate listing" and "services dashboard" (Gate 2 round 2).
+ */
+export function briefTopic(brief: string, domain: DomainEntry, noun: string | null, fallback: string): string {
+  if (noun) return briefCasing(brief, noun);
+  const named = domain.names.en.filter((n) => has(brief, n)).sort((a, b) => words(b).length - words(a).length || b.length - a.length)[0];
+  if (named) return briefCasing(brief, named);
+  const nameWords = new Set(domain.names.en.flatMap(contentWords));
+  const shared = [...new Set(contentWords(brief).filter((w) => nameWords.has(w)))];
+  return shared.length > 0 ? shared.slice(0, 3).join(" ") : fallback;
+}
+
 /** True when the card's avoid list names the other card (its name or family). */
 export function clashes(a: IngredientCard, b: IngredientCard): boolean {
   const hit = (x: IngredientCard, y: IngredientCard) => x.avoid.some((av) => has(av, y.name) || has(av, y.family));
@@ -527,7 +542,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const parsedDomain = parseDomain(input.brief, domains, page);
   if (!page || !parsedDomain) return null;
   const { domain } = parsedDomain;
-  const productNoun = parsedDomain.productNoun ? briefCasing(input.brief, parsedDomain.productNoun) : subject.head;
+  const productNoun = briefTopic(input.brief, domain, parsedDomain.productNoun, subject.head);
   const pageLabel = pagesIn[0] ?? page.names.en[0] ?? page.id.replace(/-/g, " ");
 
   // 2. Candidates by fit. A theme domain the brief also names ("Ramadan" on a food delivery page)

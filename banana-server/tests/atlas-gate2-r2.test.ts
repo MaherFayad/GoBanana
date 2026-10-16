@@ -8,12 +8,12 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { emptyState, parseState } from "@/canvas/state";
 import { MAX_BASELINE_POOL, type CanvasState } from "@/canvas/types";
-import { bendBriefAtlas, cardSpec, isRuleCard, leadFit, PAGE_UNJUDGED_DROP } from "@/lib/atlas/bend";
+import { bendBriefAtlas, briefTopic, cardSpec, isRuleCard, leadFit, PAGE_UNJUDGED_DROP } from "@/lib/atlas/bend";
 import { bucketOf, createAtlasLoader, recipeId, recipeKeyString, sha256Hex, shardPath, type AtlasKind, type AtlasManifest, type ManifestShard } from "@/lib/atlas/loader";
 import { fillRecipes, fillTopic, recipeHoldsTopic, TOPIC_SLOT, topicTemplate } from "@/lib/atlas/recipe-fit";
-import { atlasSearchPlan } from "@/lib/atlas/search";
+import { atlasSearchPlan, searchCc0 } from "@/lib/atlas/search";
 import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
-import type { PageFitScore, QueryRecipe } from "@/lib/atlas/types";
+import type { CC0Item, DomainEntry, PageFitScore, QueryRecipe } from "@/lib/atlas/types";
 import { createSearchReferencesTool, type Direction, type SearchReferencesDeps } from "@/lib/mcp/tools/search_references";
 import { createMemoryUsageStore } from "@/lib/quota";
 import { deepenBaseline, mergeBaseline, POOL_LANES, POOL_SHARE, poolOf, takeFromPool, withPoolShare } from "@/lib/sources/baseline";
@@ -137,6 +137,31 @@ describe("J7 topic slot", () => {
     const plan = (await atlasSearchPlan(base, { cardIds: d.cardIds!, recipeIds: d.recipeIds!, pageId: "plan-picker", domainId: "telecom-travel", productNoun: "eSIM" }, source, { market: "gulf", allowImage: () => true, withArt: false }))!;
     expect(plan.lanes.fidelity).toBe("eSIM plan picker app ui");
     expect(plan.provenance.find((p) => p.lane === "fidelity")?.recipeId).toBe(recipeId(filled));
+  });
+});
+
+describe("the topic a template is filled with", () => {
+  const dom = (names: string[]): DomainEntry => ({ id: "d", names: { en: names, ar: [] }, productNouns: [], audience: "", fitsFamilies: [], clashFamilies: [] });
+  it("the product noun, else the longest domain name, else shared name words, else the subject", () => {
+    expect(briefTopic("eSIM plan picker for a GCC travel app", dom(["telecom"]), "esim", "esim plan")).toBe("eSIM");
+    expect(briefTopic("Ramadan offers page for a Saudi food delivery app", dom(["food delivery", "meal delivery"]), null, "ramadan offers")).toBe("food delivery");
+    expect(briefTopic("luxury real estate listing page for Dubai apartments", dom(["real estate", "property"]), null, "estate listing")).toBe("real estate");
+    expect(briefTopic("kids reading app home screen", dom(["kids learning", "children's reading apps"]), null, "kids reading")).toBe("kids reading");
+    expect(briefTopic("fitness app empty state", dom(["fitness and gyms", "gym app"]), null, "fitness empty")).toBe("fitness");
+    expect(briefTopic("a page", dom(["coffee shop"]), null, "page")).toBe("page");
+  });
+});
+
+describe("CC0 index matching", () => {
+  const item = (title: string, motif: string[], culture = ""): CC0Item => ({ id: title, museum: "met", title, culture, imageUrl: `https://images.metmuseum.org/${encodeURIComponent(title)}.jpg`, pageUrl: `https://www.metmuseum.org/art/${encodeURIComponent(title)}`, steal: [], motif, rights: { flag: "isPublicDomain", value: "true" } });
+  it("needs two shared words or one telling word; weak museum words and years never match alone", () => {
+    const items = [item("Pierced Globe", ["medallion"]), item("Single Leaf Excised from a Gospel Book", ["figures"]), item("Millefiori Glass Tile Fragments", ["checker"]), item("Woven band with stripes", ["sadu", "weaving"])];
+    const titles = (art: string[]) => searchCc0(items, art, () => true, 4).map((r) => r.title);
+    expect(titles(["desk globe"])).toEqual(["Pierced Globe"]);
+    expect(titles(["saz leaf tile"])).toEqual([]);
+    expect(titles(["karak tea glass"])).toEqual([]);
+    expect(titles(["Swiss Style 1960s"])).toEqual([]);
+    expect(titles(["al sadu weaving bands"])).toEqual(["Woven band with stripes"]);
   });
 });
 
