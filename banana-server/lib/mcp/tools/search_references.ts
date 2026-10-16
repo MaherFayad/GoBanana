@@ -639,7 +639,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let searchStyle: SearchStyle | undefined;
       if (lanes && !input.lane) {
         asked = detectStyles(styleTexts, lanesGenre(lanes));
-        const styled = asked.length > 0 ? withStyleLane(lanes, asked[0], "asked") : withStyleLane(lanes, directionStyle, "direction");
+        const styled = asked.length > 0 ? withStyleLane(lanes, asked[0], "asked", asked) : withStyleLane(lanes, directionStyle, "direction");
         lanes = styled.lanes;
         searchStyle = styled.style;
       } else if (!lanes) {

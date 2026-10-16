@@ -101,6 +101,16 @@ describe("MCP contract", () => {
     expect(Object.keys(byName.search_references!.inputSchema.properties ?? {})).toContain("lane");
     expect(byName.rate_references!.inputSchema.required).toEqual(["ratings"]);
     expect(Object.keys(byName.rate_references!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings", "save"]);
+    // Style round: each rating can carry 1 or 2 style ids read from the thumbnail (docs/styles).
+    const rated = byName.rate_references!.inputSchema.properties!.ratings as {
+      items: { properties: Record<string, { minItems?: number; maxItems?: number; items?: { enum?: string[] } }>; required?: string[] };
+    };
+    expect(Object.keys(rated.items.properties).sort()).toEqual(["reasons", "referenceId", "styles", "verdict"]);
+    expect(rated.items.required?.sort()).toEqual(["referenceId", "verdict"]);
+    expect([rated.items.properties.styles!.minItems, rated.items.properties.styles!.maxItems]).toEqual([1, 2]);
+    expect(rated.items.properties.styles!.items!.enum).toHaveLength(19);
+    expect(rated.items.properties.styles!.items!.enum).toContain("dark-quiet-matte");
+    expect(byName.rate_references!.description!.length).toBeLessThan(700);
     expect(byName.rate_directions!.inputSchema.required?.sort()).toEqual(["canvasId", "ratings"]);
     expect(Object.keys(byName.rate_directions!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "ratings"]);
     const ratings = byName.rate_directions!.inputSchema.properties!.ratings as {

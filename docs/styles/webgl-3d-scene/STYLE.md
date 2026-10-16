@@ -57,7 +57,7 @@ sites itself.
 | Deck | not used |
 | Brand | not used |
 
-Words in a brief or taste that name this style: "webgl", "three js", "threejs", "three.js", "shader", "shaders", "real time 3d", "realtime 3d", "3d scene", "3d website", "3d web", "immersive 3d".
+Words in a brief or taste that name this style: "webgl", "3d", "three js", "threejs", "three.js", "shader", "shaders", "real time 3d", "realtime 3d", "3d scene", "3d website", "3d web", "immersive 3d".
 
 ## Judge rubric
 

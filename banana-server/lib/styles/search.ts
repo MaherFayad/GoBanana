@@ -16,7 +16,7 @@ import type { LaneTexts } from "@/lib/sources/plan";
 import { cleanQuery } from "@/lib/sources/query";
 import { queryWords } from "@/lib/learning/terms";
 import { orderByStyle } from "./diversity";
-import { cleanStyles, detectStyles, styleGenre, styleKeyword, type StyleGenre, type StyleId } from "./index";
+import { cleanStyles, detectStyles, neighbourOf, styleGenre, styleKeyword, type StyleGenre, type StyleId } from "./index";
 
 /** The board a search result list is ordered for: a direction places 6 to 8 UI references. */
 export const SEARCH_BOARD = 8;
@@ -44,7 +44,13 @@ export function styleWords(lanes: Pick<LaneTexts, "platform" | "genre" | "topic"
  * Lanes with a style's words. `asked` replaces the taste lane (or adds the first genre request);
  * `direction` sets only `tasteAlt`. No style, or no keyword for the genre: the same lanes object.
  */
-export function withStyleLane(lanes: LaneTexts, id: StyleId | null | undefined, mode: "asked" | "direction"): { lanes: LaneTexts; style?: SearchStyle } {
+export function withStyleLane(
+  lanes: LaneTexts,
+  id: StyleId | null | undefined,
+  mode: "asked" | "direction",
+  /** Other asked styles: a taste lane that names one of them keeps its wording too. */
+  alsoAsked: readonly StyleId[] = [],
+): { lanes: LaneTexts; style?: SearchStyle } {
   if (!id) return { lanes };
   const words = styleWords(lanes, id);
   if (!words) return { lanes };
@@ -56,8 +62,11 @@ export function withStyleLane(lanes: LaneTexts, id: StyleId | null | undefined, 
     return { lanes: { ...lanes, genreRequests: [{ lane, query, site: "pinterest" }, ...lanes.genreRequests] }, style: { id, words } };
   }
   if (mode === "asked") {
-    // A taste lane that already names the style keeps its measured wording; its results carry the style.
-    if (lanes.taste && detectStyles([lanes.taste], lanesGenre(lanes)).includes(id)) return { lanes, style: { id, words: lanes.taste } };
+    // A taste lane that already names an asked style (or the lead's neighbour: "dark minimal" is
+    // the matte neighbour of "dark") keeps its measured wording; its results carry the style it names.
+    const named = lanes.taste ? detectStyles([lanes.taste], lanesGenre(lanes)) : [];
+    const same = named.find((n) => n === id || n === neighbourOf(id) || alsoAsked.includes(n));
+    if (lanes.taste && same) return { lanes, style: { id: same, words: lanes.taste } };
     return { lanes: { ...lanes, taste: words }, style: { id, words } };
   }
   if (!lanes.tasteAlt) return { lanes };
