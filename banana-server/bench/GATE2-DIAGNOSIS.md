@@ -157,3 +157,48 @@ J7 round should word recipes with a topic slot ("{topic} pricing page website ui
 - 80% on brief: **not met** (20%). Cause 5 is the gap.
 - Not a gate criterion, but tracked: precision 59.5% and great share 7.6% with zero shared queries (g2e),
   65.7% and 13.6% with the old bench setup (g2f).
+
+## Round 2 (2026-10-16, branch `next/gate2-r2`)
+
+What was done for each remaining cause, and what three new runs (`g2g`, `g2h`, `g2i`, product setup) measured. Table
+and method: `BASELINE.md`, "Gate 2 round 2".
+
+| Cause | Fix | Measured |
+| --- | --- | --- |
+| 5. Generic lead card inside the right domain | J4b page fit (`atlas-build/jobs/j4b-page-fit.ts`): top 40 cards of each domain against its 12 pages, score and a short reason; the bend leads with the page score and gives the page reason as the why | On brief 20% to 53.3% (g2g), relevance mean 2.73 to 3.53; whys name the page job |
+| 5. Rule cards leading ("Everything in a Bento Grid", "One Thing Moves") | `isRuleCard`: never a lead, only a second card that adds its rule | 0 of 30 leads are rule or layout cards (6 in g2d) |
+| J7 recipes have no topic | Template slot on full-text sources, filled by `briefTopic`; galleries stay page-only (g2g: topic phrases on SiteInspire and Awwwards kept 0) | A filled template takes the fidelity lane on 3 boards (coffee, SaaS pricing, real estate: "dark minimal coffee shop landing page website ui"); real estate is 15 of 16 good, SaaS pricing still finds dashboards; Ramadan's "{topic} offers page ui ios app" is judged 0.75, under the 0.76 guard |
+| 4. Zero shared queries costs directions 2 and 3 | One deep shared request: fidelity page 2 on the first search, unplaced brief-level results pooled on the canvas, 4 per later direction | 0 shared queries (g2h, g2i); later directions show 69 to 74 UI results (51 in g2e) at 51 to 53% good (55% in g2e); the pool itself is 55 to 58% good |
+| 6. No CC0 art in the bench | The bench never passed `allowImage` and `loadTakedowns` to search_references (the museum hosts were allowed; the check was missing, so it refused all); stricter CC0 matching | 5 CC0 results per run (0 before) |
+| (found in g2g) | An empty fidelity lane is saved on the board; the pool share pushes out art past the art quota | g2g's one shared query is gone in g2h |
+| (found in g2g, g2h) | The mechanic lands on the element the lead's page reason names (`reasonElements`) | g2i: 9 directions moved to the named element; on brief 53.3% to 56.7% |
+
+### What remains (g2i, 13 of 30 off brief, 55% precision)
+
+1. **Cards that serve the page but not the brief's world** (6 of 13): Swiss columns on SaaS pricing, Scandinavian rooms
+   on Dubai listings, tally marks on kids reading, an ice cream truck menu on Ramadan offers, an arcade attract screen
+   on fitness, Ankara 1930s on banking. J4b scores the page job within a domain, so a card that does the page's job
+   well scores 3 even when nothing ties it to the brief's product or market. Next: a brief-level check of the top 8
+   leads (the brief's topic, market and theme words against the card), or J4b per brief kind rather than per domain.
+2. **Region inside the Gulf** (4): Najdi mud architecture on Dubai apartments and on Qatar services, the dallah and
+   Arabic coffee on a global coffee shop brief. Cards carry `region: "gulf"` with no country, and a global brief
+   still draws Gulf cards. Next: a country tag on Gulf cards (J3 top-up) and a small cost for regional cards on a
+   brief with no market.
+3. **The named element is protected** (3): "slide jaw to pick data amount" and "plans as stepped shades" name the
+   plan or its button, which the must keep "one primary action" protects, so they land on a divider or the header.
+   Next: a plan card element (`paywall-plan`, `card`) that is not the primary action.
+4. **Theme parsing is noisy**: kids reading parses a real estate theme ("home"), Qatar services a BNPL theme ("pay").
+   The theme adds 0.4 of its fit. Next: a theme only from a whole domain name or a festival word.
+5. **References**: Ramadan food offers keeps 1 or 2 good of 12 to 14 in every run (the Phase 0 topic is "ramadan
+   offers"; `briefTopic` says "food delivery", but only templates use it) and SaaS pricing 5 to 7 of 16 (the filled
+   template "dark minimal analytics SaaS pricing page website ui" returns analytics dashboards: the topic words pull
+   the dashboard look). Next: the Phase 0 lanes take `briefTopic` too, and for a page whose topic names a product
+   look (analytics, dashboard) the topic goes after the page words or is left out.
+6. **CC0 matching** is word overlap between museum titles and card art words: 5 results a run, few of them on idea
+   ("Prospect of Jerusalem" for Gulf modernism). Next: J9 tags items with card ids or families offline.
+
+### Gate 2 after round 2
+
+- 0 shared queries: **met** (g2h, g2i).
+- 0 coherence failures: **met** (0 of 30 on every run; rated median 3 to 3.5).
+- 80% on brief: **not met** (56.7% at best, from 20%).
