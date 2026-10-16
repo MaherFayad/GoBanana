@@ -235,6 +235,14 @@ directions), and "stage" no longer reads as a step ("dark stage around highlight
    cruise and sportsbook shots). The mechanic component lanes are still the weakest lane.
 3. **Ramadan coverage**: 9 UI results on the board in g2k (12 to 14 before) because the title filter drops more.
 
+4. **The second card** (found by J10): the brief-level fit ranks the lead card only; the second card that adds a
+   texture or motion is still drawn by seeded jitter, so a tiffin carrier reaches a Saudi souq sign and an Ankara 1930s
+   texture reaches Dubai wind towers. J10 marks 9 directions down for it. Next: rank the second card by the same
+   brief fit, and cost a reason that names a Gulf system (Nafath) on a brief with no market.
+
 ### Gate 2 after round 3
 
-See `BASELINE.md`, "Gate 2 round 3", for the verdict and the rater it rests on.
+- 0 shared queries: **met** (g2j, g2k). 0 coherence failures: **met** (0 of 30, rated median 3).
+- 80% on brief: **met on the agent ratings** (83.3% on both runs, the rater of every earlier table), **not met on the
+  J10 judge** (73.3% on both runs, trusted at 76.7% agreement). The agent that rated also wrote the fixes. The
+  owner's spot check of g2j decides which rater the gate follows. Details: `BASELINE.md`, "Gate 2 round 3".

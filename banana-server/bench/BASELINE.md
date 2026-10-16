@@ -312,3 +312,69 @@ Notes:
   What remains: `bench/GATE2-DIAGNOSIS.md`, round 2.
 - Spend: Serper 429 credits (142, 145, 142; budget 450). Claude $7.15: J4b $4.17 (budget $12), J10 $2.98 (resume
   $1.23, round 2 runs $1.75; cap $5).
+
+## Gate 2 round 3 (2026-10-16)
+
+- Branch `next/gate2-r3` (from `next/phase-1`, aa01854). What changed (details in `bench/GATE2-DIAGNOSIS.md`, round 3):
+  brief-level fit (`lib/atlas/brief-fit.ts`), Gulf places, a theme only from a whole name or an occasion, the `plan`
+  mechanic part and must-keep conflicts, J1 and J2 search hints (`lib/atlas/search-hints.ts`), the recipe guard (6
+  judged results, no style words in a fidelity recipe) and the taste lane wording. All deterministic: no new J job.
+- Atlas: local, rebuilt from the committed raw files (`atlas-build/out/server/v1`, 288 shards, manifest
+  `6b856111260d`); the dry bend reproduced all 30 g2i direction ids before any change. Not uploaded.
+- Two runs, same 10 briefs, budget 150 each, product setup (canvas baseline wired). The bend is the same in both (30
+  identical directions); g2k differs only in the occasion search topic ("ramadan food delivery" in place of
+  "ramadan food delivery offers", after g2j left one Ramadan direction with no UI result).
+- Rated by Claude (agent) as in rounds 1 and 2: references rated on the same brief in an earlier run reuse that rating
+  (117 and 126), the rest by eye from contact sheets of the hotlinked results in headless Chrome against
+  `docs/taste-bar.md` (24 and 19). Directions were rated from their specs; a direction reuses an earlier rating only
+  when its id, title, mechanic and why are all the same (1 of 30), since most mechanics moved. The same agent wrote the
+  fixes, so the J10 judge below is the independent check. Not the owner's ratings: spot check.
+
+| Metric | Phase 0 (10-15b) | R2 g2i | R3 g2j | R3 g2k | Target |
+| --- | --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5), agent | 13.3% (4 of 30) | 56.7% (17 of 30) | **83.3% (25 of 30)** | **83.3% (25 of 30)** | 80% or more |
+| Brief relevance (4 or 5), J10 judge | n/a | 80% (24 of 30) | 73.3% (22 of 30) | 73.3% (22 of 30) | 80% or more |
+| Relevance mean (1 to 5), agent | 3.03 | 3.57 | 3.83 | 3.83 | |
+| Spec coherence (failures; rated median) | 0 of 30; median 3 | 0 of 30; median 3.5 | 0 of 30; median 3 | 0 of 30; median 3 | 0 |
+| Query overlap (shared UI queries) | 21 | 0 | **0** | **0** | 0 |
+| Reference precision (good or great, top 8 UI), agent | 69.5% (98 of 141) | 55.0% (82 of 149) | **68.1% (96 of 141)** | 62.8% (91 of 145) | 75% or more |
+| Great share (top 8 UI), agent | 13.5% (19 of 141) | 9.4% (14 of 149) | 11.3% (16 of 141) | 11.7% (17 of 145) | rising |
+| Reference precision; great share, J10 | n/a | 42.3%; 4% | 51.8%; 7.8% | 48.3%; 6.2% | |
+| Directions searched | 18 | 20 | 21 | 21 | |
+| Wow (median) | 3 | 3 | 3 | 3 | 4 |
+| Serper credits (per search) | 144 (8) | 142 (7.1) | 144 (6.9) | 143 (6.8) | |
+
+J10 calibration this time ($1.29, batch `msgbatch_01FkgKyAJ7sqnGKwmMMzq1Ve`): relevance 76.7% agreement with the gold
+(trusted), coherence 96.7%, wow 93.3%, precision 84.3%, great 88.6% (all trusted).
+
+Per brief, agent precision g2j / g2k: banking 75 / 69%, coffee 75 / 75%, Dubai 81 / 81%, eSIM 81 / 81%, fitness 83 /
+70%, flight 50 / 43%, kids 75 / 69%, Qatar 25 / 31%, Ramadan 100% (3 of 3) / 67% (6 of 9), SaaS pricing 63 / 44%.
+No result in either run is a dashboard on SaaS pricing or a prayer app on Ramadan.
+
+Notes:
+
+- **Relevance moved from 56.7% to 83.3% on the agent ratings.** 9 of the 13 g2i directions off brief are fixed: the
+  Gulf region misses (4) leave their boards, the plan ideas build on the plan cards (3), and Swiss, Ankara, ice cream
+  truck, Scandinavian and tally marks give way to cards tied to the brief. 5 are rated 3: Walnut Veneer, Arcade
+  Cabinet, Dotted Leaders, Ruler Ticks and Game Cartridge.
+- **The J10 judge moved the other way, from 80% to 73.3%.** Of the 5 the agent rates 3, it rates Dotted Leaders and Ruler
+  Ticks 3 too, and Walnut, Arcade and Game Cartridge 4. It marks down 9 directions the agent rates 4 (in one run or
+  both), nearly all for the second card or the twist: a receipt texture on the eSIM board, a tiffin carrier
+  (South Asian) on the Saudi souq sign, an Ankara 1930s texture on the Dubai wind towers, the Nafath reason (a Saudi
+  login) on a global banking brief. The brief-level fit scores the lead card; the second card is still drawn by
+  seeded jitter from the candidates, with no brief fit. That is the next fix, and it is free: rank the second card by
+  the same brief fit, and give a reason that names a Gulf system the same cost on a brief with no market.
+- **Precision is back toward Phase 0**: 68.1% in g2j (the recipe guard and the taste wording; the fidelity lane is 76%
+  good, 59% in round 2) and 62.8% in g2k, where SaaS pricing fell to 7 of 16 (its Phase 0 wording now returns SaaS
+  landing pages without a pricing section). Zero shared queries held.
+
+### Gate 2 verdict (plan section 9: 80% on brief, 0 shared queries, 0 coherence failures)
+
+- **On the agent ratings (the rater of every earlier table): met.** 83.3% on brief on both runs, 0 shared queries, 0
+  coherence failures.
+- **On the J10 judge (trusted on relevance, 76.7% agreement): not met.** 73.3% on both runs.
+- So Gate 2 passes only on the agent rater, and that agent also wrote the fixes. The two raters disagree on 9 of 30
+  directions, mostly on the second card. The owner's spot check of g2j decides which rater the gate follows. The
+  second card fix above should move both raters, and costs nothing.
+- Spend: Serper 287 credits (144 and 143; budget 300; the account went from 1,200 to 713 while another agent also
+  used it). Claude $1.29 (J10; cap $3). No J job for the bend.
