@@ -640,9 +640,9 @@ export function zoneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneN
 
 /**
  * UI lanes that place at most TAIL_LANE_QUOTA results while another UI lane has results (mergeLanes
- * `capped`). The bridge lane ("{idea} ui design") kept 0 good results of 18 rated in the Banana Bench
- * runs 2026-10-15b, 10-16g2a and 10-16g2d (GATE2-DIAGNOSIS.md): its words match the idea, not the
- * page. It still fills places no other UI lane can.
+ * `capped`). The bridge lane ("{idea} ui design") kept 0 good results of 25 rated in the Banana Bench
+ * runs 2026-10-15b, 10-16g2a, g2d and g2e (bench/GATE2-DIAGNOSIS.md): its words match the idea, not
+ * the page. It still fills places no other UI lane can.
  */
 export const TAIL_LANES: ReadonlySet<LaneName> = new Set<LaneName>(["bridge"]);
 export const TAIL_LANE_QUOTA = 1;
