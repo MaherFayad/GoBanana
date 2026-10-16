@@ -11,6 +11,7 @@ import { register as arrangeCanvas } from "./arrange_canvas";
 import { register as getCanvas } from "./get_canvas";
 import { register as getSnapshot } from "./get_snapshot";
 import { register as cutParts } from "./cut_parts";
+import { register as attachScreenshot } from "./attach_screenshot";
 import { register as stitchPage } from "./frankenstein_page";
 import { register as remixStitch } from "./remix_frankenstein";
 import { register as updateStitch } from "./update_frankenstein";
@@ -35,6 +36,7 @@ export const tools: RegisterTool[] = [
   getCanvas,
   getSnapshot,
   // Frankenstein it: cut parts out of references and stitch them into new pages.
+  attachScreenshot,
   cutParts,
   stitchPage,
   remixStitch,

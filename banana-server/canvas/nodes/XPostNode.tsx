@@ -39,10 +39,6 @@ export function XPostNode({ id, data, selected, parentId }: NodeProps<XPostFlowN
   useEffect(() => {
     if (embed !== "waiting" || !frame.current) return;
     const el = frame.current;
-    if (typeof IntersectionObserver === "undefined") {
-      setEmbed("loading");
-      return;
-    }
     const io = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) {
         io.disconnect();

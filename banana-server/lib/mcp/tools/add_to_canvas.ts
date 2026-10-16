@@ -54,7 +54,7 @@ const BUILD_GAP = 48;
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
   "Direction results go to that direction's section, art above UI. Per direction: 6 to 8 UI, 2 to 4 art. " +
-  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal. X posts: { type: 'xpost', url } (shown with X's embed).`;
+  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal.`;
 
 const item = z.discriminatedUnion("type", [
   z.object({

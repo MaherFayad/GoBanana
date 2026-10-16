@@ -46,6 +46,7 @@ const EXPECTED = [
   "arrange_canvas",
   "get_canvas",
   "get_snapshot",
+  "attach_screenshot",
   "cut_parts",
   "frankenstein_page",
   "remix_frankenstein",
@@ -63,6 +64,7 @@ type ListedTool = {
   name: string;
   description?: string;
   inputSchema: { type: string; properties?: Record<string, unknown>; required?: string[] };
+  annotations?: Record<string, unknown>;
   _meta?: Record<string, unknown>;
 };
 
@@ -87,6 +89,8 @@ describe("MCP contract", () => {
     expect(byName.cut_parts!.inputSchema.required).toEqual(["canvasId"]);
     expect(Object.keys(byName.cut_parts!.inputSchema.properties ?? {}).sort()).toEqual(["canvasId", "cuts", "look", "save"]);
     expect(byName.frankenstein_page!.inputSchema.required).toEqual(["canvasId"]);
+    expect(byName.attach_screenshot!.inputSchema.required?.sort()).toEqual(["canvasId", "image", "itemId", "sourceUrl"]);
+    expect(byName.attach_screenshot!.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, openWorldHint: false });
     expect(byName.remix_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "count", "stitchId"]);
     expect(byName.update_frankenstein!.inputSchema.required?.sort()).toEqual(["canvasId", "ops", "stitchId"]);
     // Optional: without it, get_canvas lists recent canvases.

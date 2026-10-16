@@ -30,6 +30,8 @@ import {
 } from "./canvas-shared";
 import { cropSchema, idSchema, newPartId, roleSchema, ROLES_TEXT } from "./stitch-shared";
 import { webTitle } from "@/lib/mcp/untrusted";
+import type { StoredNode } from "@/canvas/types";
+import { postCredit, X_SITE } from "@/lib/xpost";
 import { lenient, parseArgs, toolMessage, type RegisterTool } from "./types";
 
 export const TOOL_NAME = "cut_parts";
@@ -95,6 +97,31 @@ type Source = {
   height?: number | null;
 };
 
+/** No screenshot yet on an X post: the agent captures one first (DECISIONS.md 2026-10-16). */
+export const NEEDS_SCREENSHOT =
+  "has no screenshot yet. Capture that one post with your own screenshot or browser tool and pass it to attach_screenshot; if you cannot capture, ask the user for one. Never bulk crawl X.";
+
+/**
+ * What a board item gives to cut from: an image or upload as is; an X post its attached
+ * screenshot (the user's upload), with the post link and the author credit as source. Null for
+ * anything else; "screenshot" for an X post with none yet.
+ */
+export function cutSource(node: StoredNode | undefined): Source | "screenshot" | null {
+  if (!node) return null;
+  if (node.type === "image" || node.type === "upload") return node.data;
+  if (node.type !== "xpost") return null;
+  const d = node.data;
+  if (!d.screenshotUrl) return "screenshot";
+  return {
+    imageUrl: d.screenshotUrl,
+    sourceUrl: d.sourceUrl,
+    sourceSite: X_SITE,
+    title: postCredit(d),
+    width: d.screenshotWidth ?? null,
+    height: d.screenshotHeight ?? null,
+  };
+}
+
 /** The board's platform from its brief, when it names one ("mobile flight checkout" gives mobile). */
 function stitchPlatform(brief: string | null | undefined): StitchPlatform | undefined {
   const p = brief ? detectPlatform(brief) : "any";
@@ -129,11 +156,9 @@ export function createCutPartsTool(deps: CutPartsDeps) {
         const state = parseState(owned.state);
         const { itemId, referenceId } = input.look;
         const node = itemId ? state.nodes.find((n) => n.id === itemId) : undefined;
-        const src: Source | undefined = itemId
-          ? node && (node.type === "image" || node.type === "upload")
-            ? node.data
-            : undefined
-          : (saved.get(referenceId!) ?? state.tray.find((r) => r.id === referenceId));
+        const fromNode = itemId ? cutSource(node) : null;
+        if (fromNode === "screenshot") return toolMessage(`look: X post ${itemId} ${NEEDS_SCREENSHOT} Nothing was cut.`);
+        const src: Source | undefined = itemId ? (fromNode ?? undefined) : (saved.get(referenceId!) ?? state.tray.find((r) => r.id === referenceId));
         if (!src) {
           return toolMessage(
             itemId
@@ -189,11 +214,16 @@ export function createCutPartsTool(deps: CutPartsDeps) {
           let directionId: string | null = null;
           if (c.itemId) {
             const node = nodes.get(c.itemId);
-            if (!node || (node.type !== "image" && node.type !== "upload")) {
+            const from = cutSource(node);
+            if (from === "screenshot") {
+              problems.push(`Cut ${i + 1}: X post ${c.itemId} ${NEEDS_SCREENSHOT}`);
+              return;
+            }
+            if (!node || !from) {
               problems.push(`Cut ${i + 1}: item ${c.itemId} is not an image on this canvas. Call get_canvas to see item ids.`);
               return;
             }
-            src = node.data;
+            src = from;
             directionId = node.parentId ? (sectionDirection.get(node.parentId) ?? null) : null;
           } else if (c.referenceId) {
             src = saved.get(c.referenceId) ?? tray.get(c.referenceId);
