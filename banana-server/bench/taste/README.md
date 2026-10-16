@@ -7,7 +7,7 @@ and the picks.
 ## Genres
 
 Every candidate and pick belongs to one genre, listed once in `genres.mjs`: Mobile UI, Web UI, Web
-showcase, Presentation and Branding. The first 270 candidates and the owner's first 120 picks have no
+showcase, Presentation, Branding and Gulf/Arabic. The first 270 candidates and the owner's first 120 picks have no
 `genre` field: they count as Mobile UI or Web UI by their `platform`. Newer ones carry `genre`.
 Readers filter with `genreOf` from `genres.mjs` (atlas-build `j7-taste.ts --genre <id>`, the J7
 judge prompt).
@@ -18,7 +18,7 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
 
 ## Files
 
-- `candidates.json`: 530 candidates, URLs only (no image bytes).
+- `candidates.json`: 575 candidates, URLs only (no image bytes).
   - 94 "From your boards" (`origin: "owner-board"`): the owner's own pins from the mobile and
     dashboard boards, collected once with the owner's approval. Five exact repeats were left out.
   - 176 "Search finds" (`origin: "search"`): found with Serper image search (`site:` queries on
@@ -71,11 +71,23 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
     with a clip), `creator` and `creatorUrl` (the designer on X), `sourceUrl` (the original X
     post) and `foundOn` (the post on Best Designs on X). Picker only: these are never in search and never sent to a
     model (no j7-taste notes, no judge), even when picked.
+  - 45 Gulf/Arabic (`genre: "gulf-arabic"`, ids `ga001` to `ga045`, added 2026-10-16 for the
+    `gulf-arabic-first` style, docs/styles): Arabic typographic posters and type in use, Gulf
+    identities (museums, festivals, cultural bodies, cafes, banks, Riyadh Season, AlUla, Qatar,
+    UAE), Gulf and Arabic sites and apps, and Gulf craft lenses (Sadu, Najdi, AlUla) in modern work.
+    Found with Serper image search (60 requests counted, the cap) and the site searches of Brand New
+    and Awwwards (og:image of each item page), then judged by eye in contact sheets against
+    docs/taste-bar.md. Clichés (mosque silhouettes, gold crescents, pattern as wallpaper, fake
+    Arabic) were dropped. Each has `score`, `why`, `query` and `styles`.
+  - `styles` (2026-10-16, style round): 1 or 2 style ids from docs/styles, main first. Every
+    candidate a model may see was tagged by eye in contact sheets. Craftwork and Best Designs on X
+    candidates were never looked at: 43 carry `styles` read from their text only (`stylesFrom:
+    "text"`), the rest none. The picker's "By style" filter reads this field.
 - `genres.mjs` (types in `genres.d.mts`): the genres and `genreOf`.
 - `picker.html`: the page you pick in. `build-picker.mjs` rebuilds its data line.
-- `picks.default.json`: 95 default picks: the first 40 (30 board pins chosen to vary page, platform
+- `picks.default.json`: 110 default picks: the first 40 (30 board pins chosen to vary page, platform
   and colour, plus the 10 best search finds), 15 each for Presentation and Branding, 15 web
-  showcase sites and the 10 best Best Designs on X components. Used when `picks.json` does not
+  showcase sites, the 10 best Best Designs on X components and the 15 best Gulf/Arabic candidates. Used when `picks.json` does not
   exist.
 - `picks.json`: your picks.
 
@@ -86,7 +98,7 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
    blank, serve the folder instead: from the repo root run
    `python -m http.server 8123 --directory banana-server/bench/taste` and open
    `http://localhost:8123/picker.html`.
-2. Pick a tab: Mobile UI, Web UI, Web showcase, Presentation or Branding. Each tab shows its own
+2. Pick a tab: Mobile UI, Web UI, Web showcase, Presentation, Branding or Gulf/Arabic. Each tab shows its own
    count ("12 picked, aim for 20 to 40"). Arrow keys move between tabs.
 3. Your saved picks (`picks.json`) start checked; a tab with no saved picks starts with the defaults.
    Click a picture to pick or unpick it. With the keyboard, press Tab to move between pictures and
@@ -97,7 +109,7 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
    Left and Right move between them, Esc closes, videos have controls, and "Open live site" and the
    source page link out. Opening it never changes a pick; the viewer's own Pick button does.
    With reduced motion set on your system nothing plays by itself and videos wait for "Play video".
-6. Narrow the grid with the Group and Page filters, or tick "Picked only" to review the tab.
+6. Narrow the grid with the Group, Page and By style filters, or tick "Picked only" to review the tab.
 7. "Reset this tab to defaults" and "Clear this tab" change only the open tab. "Load my picks.json"
    reopens a file you saved, so you can add to it. Your choices are kept in this browser while you
    work, so you can close the page and come back.
