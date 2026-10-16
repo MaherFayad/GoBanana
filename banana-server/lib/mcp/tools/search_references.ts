@@ -44,6 +44,8 @@ import {
   type ZoneInput,
 } from "@/lib/sources/types";
 import { cleanTaste } from "@/lib/taste";
+import { detectStyles, isStyleId, type StyleId } from "@/lib/styles";
+import { canvasStyleTags, lanesGenre, orderResults, tagResults, withStyleLane, type SearchStyle } from "@/lib/styles/search";
 import {
   MAX_X_POSTS,
   SERPER_MAX_REQUESTS,
@@ -175,6 +177,8 @@ export type SearchReferencesDeps = {
   atlasSource?(): AtlasSource | null;
   /** Atlas learning for recipe draws (W2): nightly weights plus the user's own ratings. Fails open. */
   atlasLearning?(userId: string): Promise<AtlasLearning>;
+  /** Style tags on the user's canvas by item key (tray and placed references; rate_references styles). Fails open. */
+  getStyleTags?(userId: string, canvasId: string): Promise<ReadonlyMap<string, readonly string[]>>;
   /** Image host check for CC0 index results (the image host allowlist). Missing: none are shown. */
   allowImage?(url: string): boolean;
   /** Takedown list for results that skip the search adapter (CC0 index). Missing or failing: none are shown. */
@@ -231,6 +235,12 @@ export type SearchReferencesOutput = {
   droppedShared?: number;
   /** The one extra UI request run because the direction had fewer than MIN_DIRECTION_UI UI results left. */
   extraLane?: { lane: LaneName; query: string };
+  /**
+   * Styles (docs/styles): the styles the brief or taste asks for, the style request this search
+   * sent (its id and words), the direction's own style id, and how many tagged results moved to
+   * the end of the UI results by the diversity rule. Missing when no style is in play.
+   */
+  styles?: { asked: StyleId[]; searched?: SearchStyle; direction?: string; moved?: number };
   /** Style words given in this call, and whether they were saved on the canvas. */
   taste?: string[];
   tasteSaved?: boolean;
@@ -292,7 +302,8 @@ function resultBody(out: SearchReferencesOutput): string {
     lines.push(heading);
     for (const r of refs) {
       const tag = r.lane ? `${r.id}, ${r.lane}` : r.id;
-      lines.push(`${++n}. [${tag}] ${webTitle(r.title)} (${r.sourceSite}, ${zone === "shipped" ? "ui" : zone}): ${r.sourceUrl}`);
+      const style = r.styles?.length ? `, style ${r.styles.join(" + ")}` : "";
+      lines.push(`${++n}. [${tag}] ${webTitle(r.title)} (${r.sourceSite}, ${zone === "shipped" ? "ui" : zone}${style}): ${r.sourceUrl}`);
     }
   };
   list("ui", "UI references:");
@@ -321,6 +332,8 @@ function resultBody(out: SearchReferencesOutput): string {
   if (out.droppedShared) {
     lines.push(`Left out ${out.droppedShared} results that another direction on this canvas already has: each result belongs to one direction.`);
   }
+  const st = styleLine(out);
+  if (st) lines.push(st);
   if (out.extraLane) lines.push(`Searched one more UI request (${out.extraLane.lane} "${out.extraLane.query}") to fill this direction.`);
   if (out.note) lines.push(out.note);
   if (drops) lines.push(drops);
@@ -328,6 +341,19 @@ function resultBody(out: SearchReferencesOutput): string {
   if (out.learned) lines.push("Some lanes used wording that rated better before.");
   lines.push("Rate standouts and misses with rate_references (ids in brackets).", UNTRUSTED_NOTE);
   return lines.join("\n");
+}
+
+/** One line on styles in this search, or "" when none is in play. */
+export function styleLine(out: Pick<SearchReferencesOutput, "styles" | "references">): string {
+  const s = out.styles;
+  if (!s) return "";
+  const parts: string[] = [];
+  if (s.asked.length > 0) parts.push(`The brief or taste asks for ${s.asked[0]}: make at least 60% of each board it or its neighbour.`);
+  if (s.direction) parts.push(`This direction's style is ${s.direction}.`);
+  if (s.searched) parts.push(`Searched its style words "${s.searched.words}".`);
+  if (s.moved) parts.push(`${s.moved} results moved to the end to keep the style mix (at most 3 of one style, 1 vivid gradient).`);
+  if (out.references.some((r) => r.styles?.length)) parts.push("Style tags are a first guess from the words that found them: check each on its thumbnail and pass styles with rate_references.");
+  return parts.length > 0 ? `Style: ${parts.join(" ")}` : "";
 }
 
 /** A short bridge retry for the steering line: the idea's head word, "pattern" and the surface ("rawashin pattern app"). */
@@ -505,6 +531,9 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let atlasIds: AtlasIds | undefined;
       let atlasMechanic: string | undefined;
       let atlasBrief = "";
+      /** Words that may ask for a style (the brief and taste), and the direction's own style id. */
+      let styleTexts: (string | null | undefined)[] = [...(input.query && !input.lane ? [input.query] : []), ...inputTaste];
+      let directionStyle: StyleId | undefined;
       if (!query && input.directionId) {
         const direction = await deps.getDirection(userId, input.directionId, input.canvasId);
         if (!direction) {
@@ -515,6 +544,9 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         // No DEFAULT_TASTE here: without the user's taste the direction's own style words lead.
         const taste = inputTaste.length > 0 ? inputTaste : cleanTaste(direction.taste);
         lanes = directionLanes(direction, taste);
+        styleTexts = [direction.brief, direction.canvasBrief, ...taste];
+        const ownStyle = direction.detail?.styleId;
+        if (isStyleId(ownStyle)) directionStyle = ownStyle;
         atlasIds = direction.detail?.atlas;
         atlasMechanic = direction.detail?.mechanic?.element;
         atlasBrief = [direction.canvasBrief, direction.brief].filter(Boolean).join(" ");
@@ -600,6 +632,18 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           atlasPlan = null;
         }
         if (atlasPlan) lanes = atlasPlan.lanes;
+      }
+      // Styles (docs/styles): an asked style's words lead the taste lane; else the direction's own
+      // style words take its tasteAlt. Lanes that name no style are the same object as before.
+      let asked: StyleId[] = [];
+      let searchStyle: SearchStyle | undefined;
+      if (lanes && !input.lane) {
+        asked = detectStyles(styleTexts, lanesGenre(lanes));
+        const styled = asked.length > 0 ? withStyleLane(lanes, asked[0], "asked") : withStyleLane(lanes, directionStyle, "direction");
+        lanes = styled.lanes;
+        searchStyle = styled.style;
+      } else if (!lanes) {
+        asked = detectStyles(styleTexts);
       }
       /** Source links already on the canvas: CC0 results skip them too. */
       let canvasUrls: readonly string[] = [];
@@ -740,6 +784,19 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           }
         }
       }
+      // Style tags (docs/styles), then the diversity rule's order over the first 8 UI results.
+      let styleTags: ReadonlyMap<string, readonly string[]> = new Map();
+      const styleCanvas = input.canvasId ?? directionCanvasId;
+      if (styleCanvas && deps.getStyleTags) {
+        try {
+          styleTags = await deps.getStyleTags(userId, styleCanvas);
+        } catch {
+          console.error("[search_references] could not read style tags");
+        }
+      }
+      references = tagResults(references, { ...(searchStyle ? { style: searchStyle } : {}), known: styleTags, keyOf: itemKey, ...(lanes ? {} : { named: asked }) });
+      const ordered = orderResults(references, input.count, asked);
+      references = ordered.refs;
       const zones = zoneCounts(references);
       const out: SearchReferencesOutput = {
         query: input.lane ? queryWords(laneUiWords!) : lanes ? lanes.idea : query!,
@@ -757,6 +814,14 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         out.learned = searched.learned ?? false;
       }
       if (input.lane) out.lane = input.lane;
+      if (asked.length > 0 || searchStyle || directionStyle || ordered.moved > 0) {
+        out.styles = {
+          asked,
+          ...(searchStyle ? { searched: searchStyle } : {}),
+          ...(directionStyle ? { direction: directionStyle } : {}),
+          ...(ordered.moved > 0 ? { moved: ordered.moved } : {}),
+        };
+      }
       if (inputTaste.length > 0) {
         out.taste = inputTaste;
         out.tasteSaved = tasteSaved;
@@ -905,6 +970,10 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
     getArmStats: (userId, termKeys) => r().feedback.armStats(userId, termKeys),
     globalLearning: () => globalLearningOn(process.env.GLOBAL_LEARNING),
     creditCap: () => serperCreditCap(),
+    getStyleTags: async (userId, canvasId) => {
+      const canvas = await r().canvases.getOwned(userId, canvasId);
+      return canvas ? canvasStyleTags(parseState(canvas.state), itemKey) : new Map();
+    },
     getCanvasSourceUrls: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];

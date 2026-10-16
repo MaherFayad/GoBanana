@@ -3,6 +3,7 @@
  * Unknown keys are dropped, wrong types are dropped field by field, and anything that is not an
  * object reads as null. Strings are trimmed and capped so a bad caller cannot bloat the row.
  */
+import { isStyleId } from "@/lib/styles/ids";
 import { isPlatform, isTypeVoice, type ArabicPack, type BiText, type DirectionAtlas, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
 
 function isObj(v: unknown): v is Record<string, unknown> {
@@ -180,6 +181,7 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   }
   const arabicPack = parseArabicPack(raw.arabic);
   if (arabicPack) out.arabic = arabicPack;
+  if (isStyleId(raw.styleId)) out.styleId = raw.styleId;
   // Atlas ids (bend engine v2), flat fields of old rows included.
   const atlas = parseDirectionAtlas(raw);
   if (atlas) out.atlas = atlas;

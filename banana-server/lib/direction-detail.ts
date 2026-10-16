@@ -94,6 +94,11 @@ export interface DirectionDetail {
   reconciled?: Reconciled;
   /** VAL-08 Arabic-first pack: sample copy, RTL notes per part and an Arabic type pair. Missing on old rows. */
   arabic?: ArabicPack;
+  /**
+   * The direction's main style id (docs/styles, lib/styles/ids.ts), set by bend_brief. No two
+   * directions of one brief share one. Missing on directions saved before styles.
+   */
+  styleId?: string;
 }
 
 /** One string in both languages: Arabic in white Saudi dialect without tashkeel, and what it says in English. */

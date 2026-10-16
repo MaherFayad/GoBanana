@@ -24,6 +24,7 @@ import { CULTURE_MESSAGE, cultureSchema, type Culture } from "@/lib/culture";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
 import { checkMobbinScreen, MAX_MOBBIN_IMAGE_URL, MAX_MOBBIN_SOURCE_URL, MOBBIN_SITE } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
+import { cleanStyles, MAX_STYLE_TAGS, STYLE_IDS, type StyleId } from "@/lib/styles/ids";
 import { parseState } from "@/canvas/state";
 import type { StoredNode } from "@/canvas/types";
 import { placedWithThumbs } from "@/lib/vision/wrap";
@@ -62,6 +63,7 @@ const item = z.discriminatedUnion("type", [
     referenceId: z.string().min(1).max(100),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     culture: cultureSchema.optional(),
+    styles: z.array(z.enum(STYLE_IDS)).min(1).max(MAX_STYLE_TAGS).optional().describe("Style ids read from the thumbnail, main first (docs/styles)."),
   }),
   z.object({
     type: z.literal("screen"),
@@ -122,7 +124,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "xpost", url, note?, directionId?, zone? } (one X post link), { type: "note", text }, any of reference, screen and note can add culture (tradition, region, community?, tier, meaning, credit, sourceUrl?), { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note?, styles? } (styles: 1 or 2 style ids, main first; note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "xpost", url, note?, directionId?, zone? } (one X post link), { type: "note", text }, any of reference, screen and note can add culture (tradition, region, community?, tier, meaning, credit, sourceUrl?), { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -177,7 +179,7 @@ function referenceNode(ref: {
   title?: string | null;
   width?: number | null;
   height?: number | null;
-}, extra: { note?: string; zone: Zone; culture?: Culture }): NewNode {
+}, extra: { note?: string; zone: Zone; culture?: Culture; styles?: StyleId[] }): NewNode {
   const size = referenceSize(ref.width, ref.height);
   return {
     type: "image",
@@ -193,6 +195,7 @@ function referenceNode(ref: {
       tag: null,
       ...(extra.zone === "art" ? { zone: "art" as const } : {}),
       ...(extra.culture ? { culture: extra.culture } : {}),
+      ...(extra.styles?.length ? { styles: extra.styles } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },
@@ -269,8 +272,10 @@ export function createAddToCanvasTool(deps: AddToCanvasDeps) {
               if (matcher.isReferenceBlocked(ref)) return { skip: `reference ${it.referenceId} was removed after a takedown request.` };
               // Zone: the tray's tag from the search, else the saved row's lane ("art" lane is art direction).
               const zone = fromTray?.zone ?? (row?.lane === "art" ? "art" : "ui");
+              // Style tags: the agent's own, else the tray's from the search or an earlier rating.
+              const styles = cleanStyles(it.styles) ?? fromTray?.styles;
               return {
-                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.culture ? { culture: it.culture } : {}) }),
+                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.culture ? { culture: it.culture } : {}), ...(styles ? { styles } : {}) }),
                 ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
               };
             }
