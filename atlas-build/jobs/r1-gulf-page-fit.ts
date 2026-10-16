@@ -37,6 +37,24 @@ export function newLeads(domainId: string, fit: readonly FitScore[], cards: read
   return cards.filter((c) => ok.has(c.id) && !isRuleCard(c));
 }
 
+/** A domain's page-fit is one server shard (lib/layout.ts), read whole: it stays under this many bytes. */
+export const PAGE_FIT_SHARD_BUDGET = 98 * 1024;
+
+/**
+ * Keeps each domain's page-fit under PAGE_FIT_SHARD_BUDGET: in a domain over it, the score 1 rows of
+ * the new cards go (tourism-culture took 46 new Gulf cards). The bend ranks an unjudged card about as
+ * a page 1, so little changes; scores 0, 2 and 3 all stay.
+ */
+export function fitShardBudget(records: PageFitScore[], fresh: ReadonlySet<string>, log: (line: string) => void, budget = PAGE_FIT_SHARD_BUDGET): PageFitScore[] {
+  const bytes = new Map<string, number>();
+  for (const r of records) bytes.set(r.domainId, (bytes.get(r.domainId) ?? 0) + Buffer.byteLength(JSON.stringify(r)) + 1);
+  const over = new Set([...bytes].filter(([, b]) => b > budget).map(([d]) => d));
+  if (over.size === 0) return records;
+  const out = records.filter((r) => !(over.has(r.domainId) && fresh.has(r.cardId) && r.score === 1));
+  log(`  page-fit over ${budget} bytes in ${[...over].join(", ")}: dropped ${records.length - out.length} score 1 rows of new cards`);
+  return out;
+}
+
 export function pageFitKey(r: PageFitScore): string {
   return `${r.domainId}|${r.pageId}|${r.cardId}`;
 }
@@ -77,7 +95,8 @@ export default defineJob<Input, PageFitScore>({
     const seen = new Set<string>();
     const mine = records.filter((r) => !seen.has(pageFitKey(r)) && seen.add(pageFitKey(r)));
     ctx.log(`  new pairs: ${mine.length}; scored 3: ${mine.filter((r) => r.score === 3).length}`);
-    return mergeByKey(readKindRecords<PageFitScore>("page-fit"), mine, pageFitKey).sort(
+    const merged = mergeByKey(readKindRecords<PageFitScore>("page-fit"), mine, pageFitKey);
+    return fitShardBudget(merged, new Set(mine.map((r) => r.cardId)), ctx.log).sort(
       (a, b) => a.domainId.localeCompare(b.domainId) || a.pageId.localeCompare(b.pageId) || a.cardId.localeCompare(b.cardId),
     );
   },

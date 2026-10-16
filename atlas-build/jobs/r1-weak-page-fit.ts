@@ -25,7 +25,7 @@ Rejudge request: the boards built from earlier scores for this domain were weak,
 - A reason names the exact part of THIS page the card changes, in the page's own words, and what the user does there: "seat map rows as flight strips", "fine list as stamped notices", "ID renewal steps as routing slips", "bag add-on rows as luggage tags". Never only a mood, a color or "hero".
 - Aim at the page's wild spots and supporting parts. The money total, the main pay or submit button, prices on the plan cards and legal or consent text stay plain; a card that only works by restyling them scores 1.
 - 3 only when a product team for this domain would ship it on this page and a user would understand the page faster or trust it more; most cards are 1 or 2.
-- Region: some cards belong to one Gulf place (a name with Najdi, Emirati, Qatari, Omani, ...). Judge the page fit only; the engine matches places to briefs separately.`;
+- Region: some cards belong to one Gulf place (a name with Najdi, Emirati, Qatari, Omani, ...). The engine matches places to briefs separately, and Gulf briefs on these pages need Gulf cards that work. So judge a Gulf or Arabic card by whether its grammar maps to a part of this page (a seal as the request stamp, a parapet rhythm as the service grid, a station line as the checkout steps), exactly as you judge any other card. Heritage used only as a backdrop or hero picture is 1; a real mapping earns 2 or 3.`;
 
 /** Every card that may lead in a weak domain: J4b's J3 top cards plus the new Gulf cards that fit it. */
 export function weakPool(domainId: string, fit: readonly FitScore[], all: readonly IngredientCard[]): IngredientCard[] {
