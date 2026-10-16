@@ -19,6 +19,7 @@ import { cyrb53 } from "../../banana-server/lib/bend/prng.ts";
 import { OPUS, ROOT } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob } from "../lib/job.ts";
+import { j3CardIds } from "../lib/refine.ts";
 import { PROMPT_RULES } from "../lib/prompt.ts";
 import { extractJson } from "../lib/validate.ts";
 import { PageFitScoreSchema, type DomainEntry, type FitScore, type IngredientCard, type PageAnatomy, type PageFitScore } from "../schema.ts";
@@ -81,7 +82,8 @@ function atlas() {
   cache ??= {
     domains: readKindRecords<DomainEntry>("domains").sort((a, b) => a.id.localeCompare(b.id)),
     pages: readKindRecords<PageAnatomy>("anatomy").sort((a, b) => a.id.localeCompare(b.id)),
-    cards: new Map(readKindRecords<IngredientCard>("cards").map((c) => [c.id, c])),
+    // The J3 cards only, so the per domain card numbers never shift once refine jobs add cards and fit.
+    cards: new Map(readKindRecords<IngredientCard>("cards").filter((c) => j3CardIds().has(c.id)).map((c) => [c.id, c])),
     fit: readKindRecords<FitScore>("fit"),
   };
   return cache;
