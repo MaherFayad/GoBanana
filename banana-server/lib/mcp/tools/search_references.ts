@@ -308,7 +308,7 @@ function resultBody(out: SearchReferencesOutput): string {
   }
   if (out.baseline?.reused) {
     lines.push(
-      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped. Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
+      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped, as was every search another direction on this canvas already sent (their results are in the tray already). Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
     );
   }
   // The bridge is the direction's own UI lane: say so when it found nothing, with a retry that works.

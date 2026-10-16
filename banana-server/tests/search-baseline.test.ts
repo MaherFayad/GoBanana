@@ -117,7 +117,7 @@ describe("one baseline lane per canvas", () => {
     const out = res.structuredContent as { baseline: { reused: boolean; referenceIds: string[] } };
     expect(out.baseline.reused).toBe(true);
     const text = res.content.map((c) => c.text).join("\n");
-    expect(text).toContain("The baseline lane (fidelity) already ran for this canvas on 2026-10-15, so it was skipped.");
+    expect(text).toContain("The baseline lane (fidelity) already ran for this canvas on 2026-10-15, so it was skipped, as was every search another direction on this canvas already sent");
     expect(text).toContain(out.baseline.referenceIds[0]);
   });
 

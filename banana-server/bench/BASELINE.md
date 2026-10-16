@@ -178,3 +178,51 @@ $1.68.
   bad calls agreed with mine on all of them.
 - Spend: Serper 2,144 credits (J7 1,712, three runs 432; 356 left on the account); Claude $6.89 ($5.03 J7, $0.18
   taste notes, $1.68 J10).
+
+## Gate 2 fix (2026-10-16)
+
+- Branch `next/gate2-fix` (from `next/phase-1`, 76faa3c). Diagnosis and the fixes: `bench/GATE2-DIAGNOSIS.md`.
+  Atlas: rebuilt from every committed raw file, now with the CC0 index (`atlas-build/out/server/v1`, 228 shards,
+  manifest `ed9f4297b5fe`; 184 shards as in g2a plus 44 CC0 shards, 7,786 items). The Atlas answered 10 of 10 briefs.
+- Three runs, same 10 briefs, budget 150 each:
+  - `g2d`: all fixes, the canvas baseline wired in the bench and no request sent twice on one board (the product).
+  - `g2e`: g2d plus the bridge lane cap (one UI place) and a direction's own taste wording when the brief-level
+    one already ran. The bend is the same as g2d (same 30 directions).
+  - `g2f`: g2e's engine with `--no-baseline` (every direction reruns the brief-level lanes, as g2a did), to
+    compare the engine and recipe fixes with g2a on equal terms.
+- Rated by Claude (agent) as g2a was: contact sheets of the hotlinked results against `docs/taste-bar.md` and the
+  owner's picks; references already rated on the same brief in g2a to g2c (same reference id or image) reuse
+  that rating, 94 new ones were rated by eye (55, 26, 13). Directions were rated once (g2d) and the rating reused
+  for g2e and g2f (identical directions). Not the owner's ratings: spot check.
+
+| Metric | Phase 0 (10-15b) | Atlas g2a | Fix g2d | Fix g2e | Fix g2f (old bench setup) | Target |
+| --- | --- | --- | --- | --- | --- | --- |
+| Atlas answered | n/a | 7 of 10 | 10 of 10 | 10 of 10 | 10 of 10 | |
+| Brief relevance (4 or 5) | 13.3% (4 of 30) | 20% (6 of 30) | 20% (6 of 30) | 20% (6 of 30) | 20% (6 of 30) | 80% or more |
+| Relevance mean (1 to 5); directions rated 1 | 3.03; 0 | 2.43; 5 | 2.73; 0 | 2.73; 0 | 2.73; 0 | |
+| Spec coherence (failures; rated median) | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 |
+| Query overlap (shared UI queries) | 21 | 21 | **0** | **0** | 19 | 0 |
+| Reference precision (good or great, top 8 UI) | 69.5% (98 of 141) | 57.4% (81 of 141) | 56.0% (75 of 134) | 59.5% (78 of 131) | 65.7% (92 of 140) | 75% or more |
+| **Great share (top 8 UI)** | 13.5% (19 of 141) | 12.8% (18 of 141) | 6.7% (9 of 134) | 7.6% (10 of 131) | 13.6% (19 of 140) | rising |
+| Directions searched | 18 | 18 | 20 | 19 | 18 | |
+| Wow (median) | 3 | 3 | 3 | 3 | 3 | 4 |
+| Cost (Serper credits per search) | 8 | 8 | 7.1 | 7.5 | 8 | |
+
+Notes:
+
+- **What moved.** Zero shared queries is met in the product setup (g2d, g2e). On equal bench terms (g2f against
+  g2a) the engine and recipe fixes bring precision back from 57.4% to 65.7% and great share from 12.8% to 13.6%,
+  close to Phase 0. The fidelity lane is 82% good again (54 of 66) now that page-only recipes no longer replace
+  the topic wording.
+- **The trade-off.** With no request sent twice on a board, the second and third directions lose the brief-level
+  lanes (fidelity, mobile taste), which hold most of the good and great results, so per-direction precision and
+  great share fall (g2e 59.5% and 7.6%). Before, a rerun of the same request gave the next direction the next
+  results of that request (the canvas dedupe skipped the ones already placed); now no request is paid for twice,
+  and those deeper results are not fetched. A next step: one deeper brief-level request shared out across the
+  board's directions.
+- **Relevance did not move past 20%.** The right domain removed every direction rated 1 (mean 2.43 to 2.73), but
+  the card draw inside the domain is still generic (GATE2-DIAGNOSIS.md cause 5).
+- **J10 judge: not scored yet.** The batch for g2e and g2f (`msgbatch_016e1k3y2b59B3KdWYxJKhsX`, 156 requests, estimate under $3 at the measured rate of the g2a scoring) was submitted at 17:26 UTC and stayed at 0 of 156 done for two hours. Its id is saved in `atlas-build/state/j10-judge.json` in this worktree: `J10_RUNS=2026-10-16g2e,2026-10-16g2f npx tsx run.ts j10-judge` resumes it at no new cost and writes `ratings-judge.json` for both runs.
+- **Gate 2 verdict: not passed.** 0 shared queries and 0 coherence failures are met; 80% on brief is not (20%).
+- Spend: Serper 423 credits by the account balance (2,500 before, 2,077 after; the bench counted 141, 142 and 144 requests); Claude
+  $0 so far (the J10 batch is billed when it finishes; no other API calls).

@@ -100,9 +100,11 @@ Running them once per canvas leaves the second and third directions with their o
 | g2d | all fixes, canvas baseline wired, no request twice | 56.0% | 6.7% | 0 |
 | g2e | g2d plus the bridge cap and direction taste wording | 59.5% | 7.6% | 0 |
 
-The board as a whole does not lose results (no request runs twice, so every result is still on the board
-once); what moves is which direction a result is credited to. The metric is per direction, so this is a real
-trade-off for the gate, not an error. The bridge lane ("{idea} ui design") kept 0 good results in 25 rated
+Before, a rerun of the same request gave the next direction that request's next results (the canvas dedupe
+skipped the ones already placed), and those were often still on the bar (the second and third welcome-screen
+pins on banking onboarding). With no request paid for twice, those deeper results are not fetched. The metric
+is per direction, so this is a real trade-off for the gate, not an error. A next step that keeps both: one deeper
+brief-level request (page 1 and 2 at once) whose results are shared out across the board's directions. The bridge lane ("{idea} ui design") kept 0 good results in 25 rated
 across 2026-10-15b, g2a, g2d and g2e; it is now capped at one UI place while another UI lane has results
 (`TAIL_LANES`), which raised g2e over g2d.
 
