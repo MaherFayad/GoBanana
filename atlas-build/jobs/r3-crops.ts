@@ -35,7 +35,7 @@ import { loadGoldImages, matchCrops, partList, PLAIN_SYSTEM, readCrops, type Gol
 import { rng, shuffle } from "./r3-judge.ts";
 
 export const WEAK_ROLES = ["toolbar", "content", "status-header", "tabbar"] as const;
-export const CROP_VARIANTS = ["plain", "roles", "roles-px"] as const;
+export const CROP_VARIANTS = ["plain", "roles", "roles-px", "bars"] as const;
 export type CropVariant = (typeof CROP_VARIANTS)[number];
 export const ORDERS = ["grouped", "ordered"] as const;
 export type Order = (typeof ORDERS)[number];
@@ -54,6 +54,9 @@ export const ROLE_RULES = `How to measure:
 - content: one block of text (a heading with its paragraphs, an article body): hug the text lines, from the first line's top to the last line's bottom; leave out the buttons and images around it.
 - Bars (status-header, tabbar, toolbar, nav, filters) are thin: hug their top and bottom edges and add no padding.
 - Every other part hugs its own visible pixels plus about 1% of padding. A cta is the button itself.`;
+
+/** A short alternative (dev round 2): only the bar and text-block rules, no screen-finding steps. */
+export const BAR_RULES = `Thin bars (status-header, tabbar, toolbar, nav, filters) hug their own top and bottom edges with no padding: a status-header is one screen's top bar with its title row, a tabbar one screen's bottom icon bar, a toolbar one row of actions. A content part is one block of text: hug its lines.`;
 
 const PX_ANSWER = `Answer with JSON only: {"parts": [{"role": "<role>", "left": 0, "top": 0, "right": 0, "bottom": 0}, ...]}, edges in whole pixels of the image, one entry for every part asked for, each role as many times as asked. No other text.`;
 
@@ -224,7 +227,7 @@ export default defineJob<Input, R3Crop>({
   async buildPrompt(input, ctx) {
     const { image, variant } = input;
     const blocks: Anthropic.ContentBlockParam[] = [];
-    if (variant !== "plain") blocks.push({ type: "text", text: `Use these rules for this image:\n\n${ROLE_RULES}${variant === "roles-px" ? `\n\n${PX_ANSWER} (This replaces the answer format in the system prompt.)` : ""}` });
+    if (variant !== "plain") blocks.push({ type: "text", text: `Use these rules for this image:\n\n${variant === "bars" ? BAR_RULES : ROLE_RULES}${variant === "roles-px" ? `\n\n${PX_ANSWER} (This replaces the answer format in the system prompt.)` : ""}` });
     blocks.push({ type: "text", text: `Image: ${image.width ?? "?"} x ${image.height ?? "?"} px, a ${image.platform ?? "unknown"} reference${image.page ? ` showing a ${image.page} page` : ""}.` });
     if (ctx.dry) blocks.push(placeholderImage());
     else {
