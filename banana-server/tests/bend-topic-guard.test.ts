@@ -50,7 +50,10 @@ describe("P0-16 topic guard", () => {
       if (ws.length === 1) expect(TOPIC_STOP.has(ws[0]!), `${brief}: ${topic}`).toBe(false);
       for (const w of ws) expect(TOPIC_STOP.has(w), `${brief}: ${topic}`).toBe(false);
       const lanes = laneTexts(brief, "x", [], "bd-1");
-      expect(lanes.topic ?? "", brief).toBe(topic);
+      // A poster brief with no device or web words is a branding brief (lib/sources/genre.ts,
+      // 2026-10-16): its topic is the genre subject, not the UI topic.
+      if (lanes.genre) expect(lanes.topic ?? "", brief).toBe("jazz");
+      else expect(lanes.topic ?? "", brief).toBe(topic);
     }
     expect(briefTopic(APPENDIX_C)).toBe("esim plan");
     expect(briefTopic("flight checkout for a GCC OTA")).toBe("flight checkout");

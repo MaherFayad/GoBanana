@@ -85,6 +85,7 @@ describe("mobile and web search is unchanged by the deck and brand genres", () =
       writeFileSync(FIXTURE, text);
       return;
     }
-    expect(text === readFileSync(FIXTURE, "utf8")).toBe(true);
+    // A Windows checkout may turn the fixture's line ends into CRLF; the bytes compared are LF.
+    expect(text === readFileSync(FIXTURE, "utf8").replace(/\r\n/g, "\n")).toBe(true);
   });
 });
