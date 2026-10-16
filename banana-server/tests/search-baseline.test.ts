@@ -5,12 +5,12 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { emptyState, parseState } from "@/canvas/state";
-import type { CanvasState } from "@/canvas/types";
+import { MAX_BASELINE_SENT, type CanvasState } from "@/canvas/types";
 import { createMemoryRepos } from "@/lib/db/memory";
 import { createSearchReferencesTool, type Direction, type SearchReferencesDeps } from "@/lib/mcp/tools/search_references";
 import { writeSearchTray } from "@/lib/sources/tray";
 import { createMemoryUsageStore } from "@/lib/quota";
-import { BASELINE_TTL_MS, baselineKey, isFreshBaseline, mergeBaseline, withoutBaselineLane } from "@/lib/sources/baseline";
+import { BASELINE_TTL_MS, baselineKey, isFreshBaseline, mergeBaseline, sentKey, withoutBaselineLane, withoutSent, withSent } from "@/lib/sources/baseline";
 import type { PlannedRequest } from "@/lib/sources/plan";
 import type { Reference } from "@/lib/sources/types";
 import type { WebSearchResult } from "@/lib/sources/web-search";
@@ -117,7 +117,7 @@ describe("one baseline lane per canvas", () => {
     const out = res.structuredContent as { baseline: { reused: boolean; referenceIds: string[] } };
     expect(out.baseline.reused).toBe(true);
     const text = res.content.map((c) => c.text).join("\n");
-    expect(text).toContain("The baseline lane (fidelity) already ran for this canvas on 2026-10-15, so it was skipped.");
+    expect(text).toContain("The baseline lane (fidelity) already ran for this canvas on 2026-10-15, so it was skipped, as was every search another direction on this canvas already sent");
     expect(text).toContain(out.baseline.referenceIds[0]);
   });
 
@@ -193,5 +193,63 @@ describe("baseline helpers", () => {
     await repos.canvases.saveState(c.userId, c.id, { ...emptyState(), baseline: b });
     await repos.canvases.saveState(c.userId, c.id, emptyState());
     expect(parseState((await repos.canvases.getOwned(c.userId, c.id))!.state).baseline).toEqual(b);
+  });
+});
+
+describe("no request runs twice on one canvas (Gate 2 fix)", () => {
+  const b = { key: "mobile|esim plan picker app ui", referenceIds: ["ref_1"], at: NOW.toISOString() };
+  it("later direction searches skip every request the canvas already sent, not only the fidelity lane", async () => {
+    const { tool, runPlan, state } = board();
+    await tool({ directionId: "bd-a", canvasId: "c1" }, "u1");
+    await tool({ directionId: "bd-b", canvasId: "c1" }, "u1");
+    await tool({ directionId: "bd-c", canvasId: "c1" }, "u1");
+    const keys = runPlan.mock.calls.map((c) => [...new Set((c[0] as PlannedRequest[]).map(sentKey))]);
+    const seen = new Set<string>();
+    for (const plan of keys) {
+      for (const k of plan) expect(seen.has(k), k).toBe(false);
+      for (const k of plan) seen.add(k);
+    }
+    // The taste lane (brief level for a mobile brief with no user taste) ran on the first search only.
+    const taste = runPlan.mock.calls.map((c) => (c[0] as PlannedRequest[]).filter((r) => r.lane === "taste").length);
+    expect(taste[0]).toBeGreaterThan(0);
+    expect(taste.slice(1).every((n) => n === 0)).toBe(true);
+    expect(state().baseline!.sent!.length).toBeGreaterThan(keys[0]!.length);
+  });
+
+  it("a direction whose brief-level taste request already ran gets its own taste wording instead", async () => {
+    const styled = (bendId: string, idea: string, styleWords: string[]): Direction => ({
+      ...direction(bendId, idea),
+      detail: { platform: "mobile", brief: BRIEF, artQueries: [idea], spec: { styleWords } } as never,
+    });
+    DIRECTIONS["bd-s1"] = styled("bd-s1", "letterpress texture", ["dark mode", "grainy"]);
+    DIRECTIONS["bd-s2"] = styled("bd-s2", "exhibition catalog", ["minimal"]);
+    const { tool, runPlan } = board();
+    await tool({ directionId: "bd-s1", canvasId: "c1" }, "u1");
+    await tool({ directionId: "bd-s2", canvasId: "c1" }, "u1");
+    const taste = runPlan.mock.calls.slice(0, 2).map((c) => (c[0] as PlannedRequest[]).filter((r) => r.lane === "taste").map((r) => r.query.split(" -")[0]));
+    expect(taste[0]![0]).toMatch(/^dark /);
+    expect(taste[1]).toHaveLength(1);
+    expect(taste[1]![0]).toMatch(/^minimal /);
+    expect(taste[1]![0]!.replace(/^minimal /, "")).toBe(taste[0]![0]!.replace(/^dark /, ""));
+  });
+
+  it("sentKey tells pages and sites apart, withoutSent drops only sent requests", () => {
+    const a = { lane: "taste", query: "Dark  eSIM plan ui", site: "pinterest" } as PlannedRequest;
+    expect(sentKey(a)).toBe(sentKey({ ...a, query: "dark esim plan ui" }));
+    expect(sentKey(a)).not.toBe(sentKey({ ...a, page: 2 }));
+    expect(sentKey(a)).not.toBe(sentKey({ ...a, site: "dribbble" }));
+    const b2 = withSent(b, [sentKey(a)]);
+    expect(withoutSent([a, { ...a, site: "dribbble" } as PlannedRequest], b2).map((r) => r.site)).toEqual(["dribbble"]);
+    expect(withoutSent([a], null)).toEqual([a]);
+  });
+
+  it("merges sent keys, keeps the newest MAX_BASELINE_SENT, and parseState keeps them", () => {
+    const merged = mergeBaseline(withSent(b, ["x"]), withSent(b, ["y", "x"]), NOW);
+    expect(merged.sent).toEqual(["x", "y"]);
+    const many = withSent(b, Array.from({ length: MAX_BASELINE_SENT + 5 }, (_, i) => `k${i}`));
+    expect(many.sent).toHaveLength(MAX_BASELINE_SENT);
+    expect(many.sent![0]).toBe("k5");
+    expect(parseState({ nodes: [], baseline: merged }).baseline).toEqual(merged);
+    expect(parseState({ nodes: [], baseline: { ...b, sent: [3, "", "z"] } }).baseline?.sent).toEqual(["z"]);
   });
 });

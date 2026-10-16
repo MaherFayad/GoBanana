@@ -862,6 +862,18 @@ export function laneTexts(
     lanes.taste = bar.text;
     lanes.tasteSite = bar.site;
     if (bar.fallback) lanes.tasteFallback = bar.fallback;
+    // With no user taste the bar wording is the same for every direction of a brief: its variant
+    // with one of the direction's own style words runs when another direction already sent it.
+    if (taste.length === 0) {
+      const own = (opts.styleWords ?? []).map((w) => w.trim()).filter((w) => w && !/^dark( mode)?$/i.test(w));
+      for (let i = 0; i < own.length; i++) {
+        const alt = barTasteQuery(b, pickFrom(own, key, i), platform);
+        if (alt && queryKey(alt.text) !== queryKey(bar.text)) {
+          lanes.tasteAlt = alt.text;
+          break;
+        }
+      }
+    }
   } else {
     const style = pickFrom(styles, key);
     if (style) lanes.taste = tasteQuery(b, style, platform);

@@ -276,11 +276,11 @@ export const MECHANICS: Mechanic[] = LINE_ELEMENTS.flatMap((element) => [
 ]);
 
 export const RECIPES: QueryRecipe[] = [
-  { key: { lane: "baseline", page: "plan-picker", platform: "mobile" }, query: "esim plan picker app ui", source: "dribbble", precision: 0.75, judged: 8, at: "2026-10-20" },
+  { key: { lane: "baseline", page: "plan-picker", platform: "mobile" }, query: "esim plan picker app ui", source: "dribbble", precision: 0.8, judged: 8, at: "2026-10-20" },
   { key: { lane: "concept", cardId: "luggage-tag", element: "header" }, query: "luggage tag esim plan ui", source: "dribbble", precision: 0.62, judged: 8, at: "2026-10-20" },
   { key: { lane: "concept", cardId: "departure-board", element: "header" }, query: "split flap data plan ui", source: "dribbble", precision: 0.5, judged: 8, at: "2026-10-20" },
   { key: { lane: "component", page: "plan-picker", platform: "mobile", element: "divider" }, query: "plan picker section divider app ui", source: "dribbble", precision: 0.62, judged: 8, at: "2026-10-20" },
-  { key: { lane: "component", page: "plan-picker", platform: "mobile", element: "header" }, query: "plan picker header app ui", source: "dribbble", precision: 0.55, judged: 8, at: "2026-10-20" },
+  { key: { lane: "component", page: "plan-picker", platform: "mobile", element: "header" }, query: "esim plan picker header app ui", source: "dribbble", precision: 0.65, judged: 8, at: "2026-10-20" },
   { key: { lane: "component", page: "plan-picker", platform: "mobile", element: "progress" }, query: "data plan usage progress app ui", source: "dribbble", precision: 0.6, judged: 8, at: "2026-10-20" },
   // A recipe without the product or page noun: never used for a UI lane (Phase 0 guarantee).
   { key: { lane: "component", platform: "mobile", element: "header" }, query: "big header app ui", source: "dribbble", precision: 0.9, judged: 8, at: "2026-10-20" },

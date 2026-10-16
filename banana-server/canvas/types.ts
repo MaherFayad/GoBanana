@@ -136,9 +136,13 @@ export const STATE_VERSION = 1;
 
 /**
  * The canvas's baseline search (lib/sources/baseline.ts): the fidelity lane ran once for `key`
- * (platform and page words) at `at` (ISO time) and found `referenceIds`. Set only by the MCP tools.
+ * (platform and page words) at `at` (ISO time) and found `referenceIds`. `sent` lists the search
+ * requests (query and source) any direction search on this canvas already sent for the key, so no
+ * request runs twice on one canvas. Set only by the MCP tools.
  */
-export type CanvasBaseline = { key: string; referenceIds: string[]; at: string };
+export type CanvasBaseline = { key: string; referenceIds: string[]; at: string; sent?: string[] };
+/** Most requests a canvas baseline remembers as sent. */
+export const MAX_BASELINE_SENT = 64;
 
 /** The JSON saved in `canvases.state` (spec section 11: nodes + viewport, plus the tray). */
 export interface CanvasState {

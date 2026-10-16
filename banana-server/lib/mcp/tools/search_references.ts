@@ -25,7 +25,7 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
-import { BASELINE_LANE, baselineKey, isFreshBaseline, withoutBaselineLane, type CanvasBaseline } from "@/lib/sources/baseline";
+import { BASELINE_LANE, baselineKey, isFreshBaseline, sentKey, withoutBaselineLane, withoutSent, withSent, type CanvasBaseline } from "@/lib/sources/baseline";
 import { writeSearchTray } from "@/lib/sources/tray";
 import { ART_SITES, artQuota, artWords, bridgeHead, byZone, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
@@ -308,7 +308,7 @@ function resultBody(out: SearchReferencesOutput): string {
   }
   if (out.baseline?.reused) {
     lines.push(
-      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped. Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
+      `The baseline lane (fidelity) already ran for this canvas on ${out.baseline.at.slice(0, 10)}, so it was skipped, as was every search another direction on this canvas already sent (their results are in the tray already). Its ${out.baseline.referenceIds.length} results are in the tray with no direction; place the good ones once in the "Shipped today" section: ${out.baseline.referenceIds.join(", ")}.`,
     );
   }
   // The bridge is the direction's own UI lane: say so when it found nothing, with a retry that works.
@@ -386,23 +386,24 @@ export const MIN_DIRECTION_UI = 6;
 
 /**
  * The next UI request for a direction after `sent`: the first UI-only plan request not sent yet
- * (never the baseline lane), else page 2 of the first UI request sent. Undefined when there is none.
+ * (never the baseline lane), else page 2 of the first UI request sent. Requests another direction
+ * already sent on the canvas (`canvasSent`, sentKey form) are never chosen. Undefined when there is none.
  */
 export function nextUiRequest(
   lanes: LaneTexts,
   sent: readonly PlannedRequest[],
   sources?: readonly SourceSite[],
+  canvasSent: ReadonlySet<string> = new Set(),
 ): PlannedRequest | undefined {
-  const key = (r: PlannedRequest) => `${r.query}|${r.site}|${r.page ?? 1}`;
-  const done = new Set(sent.map(key));
+  const done = new Set([...sent.map(sentKey), ...canvasSent]);
   const ui = withoutBaselineLane(planRequests(lanes, sources, { zone: "ui" }));
-  const fresh = ui.find((r) => !done.has(key(r)));
+  const fresh = ui.find((r) => !done.has(sentKey(r)));
   if (fresh) return fresh;
-  const first = sent.find((r) => r.lane !== "art" && r.lane !== BASELINE_LANE);
+  const first = sent.find((r) => r.lane !== "art" && r.lane !== BASELINE_LANE && !canvasSent.has(sentKey(r)));
   if (!first) return undefined;
   const page2 = { ...first, page: (first.page ?? 1) + 1 };
   delete page2.fallback;
-  return done.has(key(page2)) ? undefined : page2;
+  return done.has(sentKey(page2)) ? undefined : page2;
 }
 
 /** Results per zone. */
@@ -604,11 +605,11 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let canvasUrls: readonly string[] = [];
       let searched: Searched;
       /** The baseline key of a direction search on a canvas, and the saved baseline when it was reused. */
-      let baseline: { key: string; reused?: CanvasBaseline } | undefined;
+      let baseline: { key: string; reused?: CanvasBaseline; sent?: string[] } | undefined;
       if (lanes) {
         const picked = input.sources ? sources : undefined;
         const termKeys = laneTermKeys(lanes);
-        let plan;
+        let plan: PlannedRequest[];
         let arms: Partial<Record<LaneName, string>> = {};
         let learned = false;
         if (input.lane) {
@@ -633,9 +634,22 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
             console.error("[search_references] could not read the baseline");
           }
           if (isFreshBaseline(saved, key, now)) {
-            plan = withoutBaselineLane(plan);
+            // The baseline lane and every request another direction already sent on this canvas
+            // (their results are on the canvas already): no request runs twice on one board.
+            const before = withoutBaselineLane(plan);
+            plan = withoutSent(before, saved);
+            // A brief-level taste request another direction sent gives way to this direction's own
+            // taste wording (lanes.tasteAlt), in the same place, so the direction keeps a taste lane.
+            const tasteAt = before.findIndex((r) => r.lane === "taste" && !plan.includes(r));
+            if (tasteAt >= 0 && lanes.tasteAlt) {
+              const alt = withoutSent(planRequests({ ...lanes, taste: lanes.tasteAlt }, picked, { zone }).filter((r) => r.lane === "taste"), saved);
+              const at = plan.findIndex((r) => before.indexOf(r) > tasteAt);
+              plan = at < 0 ? [...plan, ...alt] : [...plan.slice(0, at), ...alt, ...plan.slice(at)];
+              plan = plan.slice(0, SERPER_MAX_REQUESTS);
+            }
             baseline = { key, reused: saved };
           } else baseline = { key };
+          baseline.sent = plan.map(sentKey);
         }
         // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
         const excludeCanvas = input.canvasId ?? directionCanvasId;
@@ -650,7 +664,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes, arms, learned, termKeys };
-        const next = input.lane ? undefined : nextUiRequest(lanes, plan, picked);
+        const next = input.lane ? undefined : nextUiRequest(lanes, plan, picked, new Set(baseline?.reused?.sent ?? []));
         if (next) {
           searched.extra = { req: next, run: (more) => deps.adapter.runPlan([next], { ...runOpts, exclude: [...exclude, ...more] }) };
         }
@@ -754,12 +768,16 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (result.xPosts?.length) out.xPosts = result.xPosts;
       // A new baseline: the ids of what the fidelity lane found (saved below with the tray).
       let newBaseline: CanvasBaseline | undefined;
+      /** The baseline saved with the tray: a new one, or the reused one with this search's requests added to `sent`. */
+      let baselineToSave: CanvasBaseline | undefined;
       if (baseline?.reused) {
         out.baseline = { referenceIds: baseline.reused.referenceIds, at: baseline.reused.at, reused: true };
+        baselineToSave = withSent(baseline.reused, [...(baseline.reused.sent ?? []), ...(baseline.sent ?? [])]);
       } else if (baseline) {
         const ids = references.filter((r) => r.lane === BASELINE_LANE).map((r) => r.id);
         if (ids.length > 0) {
-          newBaseline = { key: baseline.key, referenceIds: ids, at: now.toISOString() };
+          newBaseline = withSent({ key: baseline.key, referenceIds: ids, at: now.toISOString() }, baseline.sent ?? []);
+          baselineToSave = newBaseline;
           out.baseline = { referenceIds: ids, at: newBaseline.at, reused: false };
         }
       }
@@ -792,7 +810,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           if (dropped.size > 0) out.droppedShared = (out.droppedShared ?? 0) + dropped.size;
           return list.filter((r) => !dropped.has(r.id));
         };
-        const added = await write(references, newBaseline);
+        const added = await write(references, baselineToSave);
         if (added) {
           out.addedToTray = true;
           out.references = keep(references, added);

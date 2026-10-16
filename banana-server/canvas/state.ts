@@ -18,6 +18,7 @@ import { cleanTaste } from "@/lib/taste";
 import { MAX_POST_TEXT, parsePostUrl, X_SITE } from "@/lib/xpost";
 import {
   type CanvasBaseline,
+  MAX_BASELINE_SENT,
   type CanvasFlowNode,
   type CanvasNodeType,
   type CanvasState,
@@ -325,7 +326,8 @@ function parseBaseline(v: unknown): CanvasBaseline | undefined {
   const at = str(v.at, 40);
   if (!key || !at || !Number.isFinite(Date.parse(at)) || !Array.isArray(v.referenceIds)) return undefined;
   const referenceIds = [...new Set(v.referenceIds.filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80))].slice(0, 24);
-  return { key, referenceIds, at };
+  const sent = Array.isArray(v.sent) ? [...new Set(v.sent.filter((q): q is string => typeof q === "string" && q.length > 0 && q.length <= 300))].slice(0, MAX_BASELINE_SENT) : [];
+  return { key, referenceIds, at, ...(sent.length > 0 ? { sent } : {}) };
 }
 
 /** Drop stitch slots whose part is not in the library. */

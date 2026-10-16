@@ -9,6 +9,7 @@
  *   node scripts/bench-run.mjs --dev-vars path  # read SERPER_API_KEY and DATABASE_URL from another .dev.vars
  *   node scripts/bench-run.mjs --date 2026-10-15 --count 12
  *   node scripts/bench-run.mjs --atlas ../atlas-build/out/server/v1   # the Atlas engine over local shards
+ *   node scripts/bench-run.mjs --no-baseline    # every direction reruns the canvas baseline lane (runs before g2)
  *
  * --atlas <dir> reads a local Atlas in the server layout (atlas-build lib/layout.ts: <dir>/manifest.json
  * and <dir>/<kind>/<shard>.json) through the real loader, bends with the Atlas engine first and the
@@ -86,6 +87,7 @@ const { createMemoryUsageStore } = await import("@/lib/quota");
 const { createWebSearchAdapter } = await import("@/lib/sources/web-search");
 const { compileTakedowns } = await import("@/lib/takedown");
 const { ART_NEG } = await import("@/lib/sources/plan");
+const { mergeBaseline } = await import("@/lib/sources/baseline");
 
 /** The local Atlas (--atlas), or null: an AtlasSource over the files through the real loader. */
 async function localAtlas(dir) {
@@ -155,7 +157,7 @@ const run = {
   budget,
   count,
   credits: 0,
-  engine: { checkCoherence: typeof bendModule.checkCoherence === "function", atlas: atlas ? { dir: atlasDir, hash: atlas.manifest.hash, shards: atlas.manifest.shards.length } : null },
+  engine: { checkCoherence: typeof bendModule.checkCoherence === "function", canvasBaseline: !flag("no-baseline"), atlas: atlas ? { dir: atlasDir, hash: atlas.manifest.hash, shards: atlas.manifest.shards.length } : null },
   briefs: [],
 };
 
@@ -210,6 +212,14 @@ if (atlas) console.log(`Atlas engine answered ${run.briefs.filter((b) => b.engin
 // ---------------------------------------------------------------------------- search (Serper credits)
 
 let skipped = 0;
+/**
+ * The canvas baseline of each brief's board, as the live tool saves it on the canvas (P0-03): the
+ * first direction search runs the baseline (fidelity) lane, later ones on the same board reuse it and
+ * skip every request the board already sent. --no-baseline runs every lane for every direction, as
+ * the runs before 2026-10-16g2 did.
+ */
+const baselines = new Map();
+const wireBaseline = !flag("no-baseline");
 if (dry) {
   console.log("Dry run: search skipped (--dry). The report shows each direction's planned lanes, no results.");
 } else {
@@ -259,7 +269,11 @@ if (dry) {
         getPlan: async () => "pro_monthly",
         getDirection: async () => searchDirection(b, b._bend, bd),
         ...(atlas ? { atlasSource: () => atlas.source() } : {}),
-        addToTray: async () => true,
+        addToTray: async (_user, _canvas, _refs, _dir, opts) => {
+          if (wireBaseline && opts?.baseline) baselines.set(b.id, mergeBaseline(baselines.get(b.id), opts.baseline, new Date(opts.baseline.at)));
+          return true;
+        },
+        ...(wireBaseline ? { getBaseline: async () => baselines.get(b.id) ?? null } : {}),
         getCanvasSourceUrls: async () => [...placed],
         upgradeUrl: () => "https://example.invalid/pricing",
       });
@@ -281,6 +295,7 @@ if (dry) {
         uiQueries: out.queries.filter((q) => !isArtQuery(q, artWords)),
         requests: requests.slice(firstRequest),
         dropped: out.dropped ?? 0,
+        ...(out.baseline ? { baseline: { reused: out.baseline.reused, referenceIds: out.baseline.referenceIds.length } } : {}),
         ...(out.note ? { note: out.note } : {}),
         references: out.references.map((r) => ({
           id: r.id,

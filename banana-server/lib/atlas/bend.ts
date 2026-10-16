@@ -44,6 +44,7 @@ import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/li
 import { WILDNESS } from "@/lib/bend/wildness";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
+import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, UiElement } from "./types";
 
@@ -107,9 +108,18 @@ const GENERATED = 8;
 /** Most candidate cards read per bend (the best fits first). */
 export const MAX_CANDIDATES = 40;
 /** MMR: how much a repeated family or kind costs against relevance. */
-const LAMBDA = 1;
+const LAMBDA = 0.5;
 /** Relevance a Gulf tradition gains on a Gulf brief (Gulf-first, P0-07). */
 const GULF_BONUS = 0.5;
+/** Relevance any other Gulf card (an object, material or era from the Gulf) gains on a Gulf brief. */
+const GULF_CARD_BONUS = 0.3;
+/** Share of the theme domain's fit a card adds (0 to 3 times this). */
+const THEME_SHARE = 0.4;
+/** Fit a card gains per brief word its fit reason names, and the most it gains that way. */
+const REASON_STEP = 0.25;
+const REASON_MAX = 0.5;
+/** A brief word counts for REASON_STEP only when fewer than this share of the domain's fit reasons name it. */
+const RARE_SHARE = 0.15;
 /** A bend needs at least this many lead cards (or `count` when smaller), else lists. */
 const MIN_LEADS = 3;
 /** The fallback subrequest budget the tool gives a bend (lib/atlas/loader.ts COST). */
@@ -159,7 +169,21 @@ const norm = (s: string) => ` ${s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ")
 const words = (s: string) => s.split(/\s+/).filter(Boolean);
 const has = (hay: string, phrase: string) => phrase.trim() !== "" && norm(hay).includes(norm(phrase));
 
-/** The page a brief (or the first page given) names: the longest matching name wins. */
+/** Words too common to tell a page or a domain apart on their own. */
+const STOP = new Set(["a", "an", "and", "app", "apps", "for", "the", "of", "to", "in", "on", "with", "page", "pages", "screen", "screens", "site", "web", "website", "online", "mobile", "digital", "services", "service", "platform", "platforms", "tools", "tool", "my", "your", "our", "its", "this", "that"]);
+
+/** Content words of a phrase, singular ("shops" is "shop"), stop words left out. */
+export function contentWords(text: string): string[] {
+  return words(norm(text).trim())
+    .map((w) => (w.length > 4 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w))
+    .filter((w) => w.length >= 3 && !STOP.has(w));
+}
+
+/**
+ * The page a brief (or the first page given) names: the longest matching name wins. With no name
+ * in the text, the nearest page: the most content words shared with one of its names (two or more,
+ * or one when the name has a single content word), so "bank onboarding flow" still finds a page.
+ */
 export function parsePage(text: string, pages: readonly PageAnatomy[]): PageAnatomy | null {
   let best: { page: PageAnatomy; score: number } | null = null;
   for (const page of pages) {
@@ -170,27 +194,77 @@ export function parsePage(text: string, pages: readonly PageAnatomy[]): PageAnat
     }
     for (const name of page.names.ar) if (name && text.includes(name) && !best) best = { page, score: 1 };
   }
-  return best?.page ?? null;
+  if (best) return best.page;
+  const brief = new Set(contentWords(text));
+  let near: { page: PageAnatomy; score: number } | null = null;
+  for (const page of pages) {
+    for (const name of [...page.names.en, page.id.replace(/-/g, " ")]) {
+      const nameWords = [...new Set(contentWords(name))];
+      const shared = nameWords.filter((w) => brief.has(w)).length;
+      if (shared === 0 || (shared < 2 && nameWords.length > 1)) continue;
+      const score = shared / nameWords.length + shared;
+      if (!near || score > near.score) near = { page, score };
+    }
+  }
+  return near?.page ?? null;
 }
 
-/** The domain a brief names: product nouns count double, then the longest name. */
-export function parseDomain(text: string, domains: readonly DomainEntry[]): { domain: DomainEntry; productNoun: string | null } | null {
-  let best: { domain: DomainEntry; productNoun: string | null; score: number } | null = null;
-  for (const domain of domains) {
+/**
+ * The domain a brief names. A whole domain name counts most (two per word), then a product noun
+ * (one plus its words), then single content words shared with the domain's names (one each, only
+ * words that name three domains or fewer, so "banking" finds the banking domains and "apps" finds
+ * nothing). Product nouns that are page words ("page", "dashboard", "screen", or the head word of
+ * one of the matched page's names) are left out: "coffee shop landing page" is a coffee brief, not a notes app.
+ */
+export function parseDomain(text: string, domains: readonly DomainEntry[], page?: PageAnatomy | null): { domain: DomainEntry; productNoun: string | null } | null {
+  const top = rankDomains(text, domains, page)[0];
+  return top ? { domain: top.domain, productNoun: top.productNoun } : null;
+}
+
+/**
+ * The second domain a brief names by its own words ("Ramadan" in "Ramadan offers page for a food
+ * delivery app" names faith and lifestyle), or null. A product noun alone never makes a theme.
+ */
+export function parseTheme(text: string, domains: readonly DomainEntry[], page?: PageAnatomy | null): DomainEntry | null {
+  const [first, ...rest] = rankDomains(text, domains, page);
+  return first ? (rest.find((r) => r.named)?.domain ?? null) : null;
+}
+
+type RankedDomain = { domain: DomainEntry; productNoun: string | null; score: number; named: boolean };
+
+function rankDomains(text: string, domains: readonly DomainEntry[], page?: PageAnatomy | null): RankedDomain[] {
+  const pageWords = new Set(page ? [...page.names.en, page.id.replace(/-/g, " ")].map((n) => contentWords(n).at(-1) ?? "") : []);
+  const isPageWord = (noun: string) => {
+    const w = contentWords(noun);
+    return w.length === 0 || w.every((x) => pageWords.has(x) || PAGE_NOUNS.has(x));
+  };
+  const nameWords = domains.map((d) => new Set(d.names.en.flatMap(contentWords)));
+  const spread = new Map<string, number>();
+  for (const set of nameWords) for (const w of set) spread.set(w, (spread.get(w) ?? 0) + 1);
+  const brief = new Set(contentWords(text));
+  const out: RankedDomain[] = [];
+  domains.forEach((domain, i) => {
     let score = 0;
+    let named = 0;
     let noun: string | null = null;
     for (const p of domain.productNouns) {
-      if (has(text, p)) {
-        score = Math.max(score, 2 + words(p).length);
+      if (has(text, p) && !isPageWord(p)) {
+        score = Math.max(score, 1 + words(p).length);
         noun ??= p;
       }
     }
-    for (const n of domain.names.en) if (has(text, n)) score = Math.max(score, words(n).length);
-    for (const n of domain.names.ar) if (n && text.includes(n)) score = Math.max(score, 1);
-    if (score > 0 && (!best || score > best.score)) best = { domain, productNoun: noun, score };
-  }
-  return best ? { domain: best.domain, productNoun: best.productNoun } : null;
+    for (const n of domain.names.en) if (has(text, n)) named = Math.max(named, 2 * words(n).length);
+    for (const n of domain.names.ar) if (n && text.includes(n)) named = Math.max(named, 2);
+    named += [...nameWords[i]!].filter((w) => brief.has(w) && (spread.get(w) ?? 0) <= 3).length;
+    score = Math.max(score, named) + (score > 0 && named > 0 ? Math.min(score, named) / 2 : 0);
+    if (score > 0) out.push({ domain, productNoun: noun, score, named: named > 0 });
+  });
+  // Ties keep the Atlas order (sort is stable).
+  return out.sort((a, b) => b.score - a.score);
 }
+
+/** Nouns that name a page or a part of one, never a product. */
+const PAGE_NOUNS = new Set(["page", "screen", "dashboard", "home", "landing", "listing", "profile", "settings", "checkout", "onboarding", "template", "widget", "report", "chart", "form"]);
 
 /** The product noun as the brief writes it ("eSIM", not "esim"). */
 function briefCasing(brief: string, noun: string): string {
@@ -424,20 +498,36 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const [pages, domains] = [await source.pages(), await source.domains()];
   if (!pages || !domains) return null;
   const page = parsePage(pagesIn[0] ?? input.brief, pages) ?? (pagesIn[0] ? parsePage(input.brief, pages) : null);
-  const parsedDomain = parseDomain(input.brief, domains);
+  const parsedDomain = parseDomain(input.brief, domains, page);
   if (!page || !parsedDomain) return null;
   const { domain } = parsedDomain;
   const productNoun = parsedDomain.productNoun ? briefCasing(input.brief, parsedDomain.productNoun) : subject.head;
   const pageLabel = pagesIn[0] ?? page.names.en[0] ?? page.id.replace(/-/g, " ");
 
-  // 2. Candidates by fit.
+  // 2. Candidates by fit. A theme domain the brief also names ("Ramadan" on a food delivery page)
+  // adds a share of its own fit, and lets in its best cards that still fit the main domain at 1.
   const fit = await source.fit(domain.id);
   if (!fit) return null;
+  const theme = parseTheme(input.brief, domains, page);
+  const themeFit = theme ? ((await source.fit(theme.id)) ?? []) : [];
+  const themeOf = new Map<string, number>(themeFit.map((f) => [f.cardId, f.score]));
   const minFit = wildness >= 4 ? 1 : 2;
   const fitOf = new Map<string, FitScore>(fit.map((f) => [f.cardId, f]));
+  // Brief words that tell this domain's cards apart: named by fewer than RARE_SHARE of its fit
+  // reasons ("reading" on a kids reading brief counts, "kids" does not).
+  const reasonWords = new Map<string, Set<string>>(fit.map((f) => [f.cardId, new Set(contentWords(f.reason))]));
+  const briefWords = new Set(
+    contentWords(`${input.brief} ${pageLabel}`).filter((w) => [...reasonWords.values()].filter((r) => r.has(w)).length < RARE_SHARE * Math.max(1, fit.length)),
+  );
+  /** Fit for this brief: the domain fit, plus a share of the theme fit and of rare brief words in the fit reason. */
+  const fitScore = (cardId: string): number => {
+    const f = fitOf.get(cardId);
+    const shared = [...(reasonWords.get(cardId) ?? [])].filter((w) => briefWords.has(w)).length;
+    return (f?.score ?? 0) + THEME_SHARE * (themeOf.get(cardId) ?? 0) + Math.min(REASON_MAX, REASON_STEP * shared);
+  };
   const candidateIds = fit
-    .filter((f) => f.score >= minFit)
-    .sort((a, b) => b.score - a.score || jitter(key, a.cardId) - jitter(key, b.cardId))
+    .filter((f) => f.score >= minFit || (f.score >= 1 && themeOf.get(f.cardId) === 3))
+    .sort((a, b) => fitScore(b.cardId) - fitScore(a.cardId) || jitter(key, a.cardId) - jitter(key, b.cardId))
     .slice(0, MAX_CANDIDATES)
     .map((f) => f.cardId);
   const cardMap = await source.cards(candidateIds);
@@ -446,10 +536,17 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const protect = protectedElements(input.brief, input.mustKeep ?? []);
   const lensTerms = lens ? [lens.id.replace(/-/g, " "), lens.name.en, ...lens.terms] : [];
   const isLensCard = (c: IngredientCard) => c.kind === "tradition" && (c.id.includes(lens?.id ?? "\u0000") || lensTerms.some((t) => has(c.name, t) || has(t, c.name)));
+  // Region rule (P0-07, Gulf-first): on a Gulf or MENA brief a tradition comes from the region,
+  // and an era or tradition from another named region (Beirut 1960s, Ankara 1930s, Cairo posters on
+  // a Gulf brief) waits for wildness 4.
+  const regional = (c: IngredientCard) => Boolean(c.region) && c.region !== "global";
   const regionOk = (c: IngredientCard) => {
-    if (c.kind !== "tradition" || !market) return true;
-    if (market === "gulf" && wildness < WIDER_REGION_FROM_WILDNESS) return c.region === "gulf";
-    return c.region === "gulf" || c.region === "mena";
+    if (!market) return true;
+    const narrow = market === "gulf" && wildness < WIDER_REGION_FROM_WILDNESS;
+    const home = (r: string | undefined) => (narrow ? r === "gulf" : r === "gulf" || r === "mena");
+    if (c.kind === "tradition") return home(c.region);
+    if (c.kind === "era" && narrow && regional(c)) return home(c.region);
+    return true;
   };
   const cards = candidateIds
     .map((id) => cardMap.get(id))
@@ -463,8 +560,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const learning = options.learning ?? null;
   const tie = tieBreaks(cards, (c) => fitOf.get(c.id)?.score ?? 0, key, options.taste);
   const relevance = (c: IngredientCard) => {
-    const base = (fitOf.get(c.id)?.score ?? 0) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
-    const gulf = market === "gulf" && c.kind === "tradition" && c.region === "gulf" ? GULF_BONUS : 0;
+    const base = fitScore(c.id) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
+    const gulf = market === "gulf" && c.region === "gulf" ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
     return (base + gulf) * weight;
   };
@@ -584,8 +681,10 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (drawn.mech) usedMechanics.add(drawn.mech.id);
     whys.add(why);
 
-    const titleBase = clipTitle(`${lead.name} ${subject.head}`);
-    const title = !titles.has(titleBase.toLowerCase()) && words(titleBase).length <= MAX_TITLE_WORDS ? titleBase : clipTitle(lead.name);
+    // A long card name is the title on its own ("Layout Mirrors by Language", not "The Layout Mirrors").
+    const name = lead.name.replace(/^(the|a|an)\s+/i, "");
+    const titleBase = words(name).length >= MAX_TITLE_WORDS ? clipTitle(name) : clipTitle(`${name} ${subject.head}`);
+    const title = !titles.has(titleBase.toLowerCase()) && words(titleBase).length <= MAX_TITLE_WORDS ? titleBase : clipTitle(name);
     titles.add(title.toLowerCase());
     const twist = second && (wildness >= TWIST_FROM_WILDNESS || lens)
       ? words(`with the ${pick.adds} of ${second.name}`).slice(0, MAX_TWIST_WORDS).join(" ")
@@ -664,18 +763,22 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const k = JSON.stringify(normKey(r.key));
     byKey.set(k, [...(byKey.get(k) ?? []), r]);
   }
-  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && words(r.query).length <= 7;
+  // A UI recipe must name the brief's topic, not only the page, and be judged at least as precise as
+  // the Phase 0 lane it replaces (lib/atlas/recipe-fit.ts).
+  const topicOk = recipeHoldsTopic({ productNoun, topic: subject.head, pageId: page.id });
+  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= 7;
+  const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();
   const usedRecipes = new Set<string>();
-  const baseline = bestRecipe(byKey, keysFor(built[0]!).baseline, uiOk, new Set(), learning, key);
+  const baseline = bestRecipe(byKey, keysFor(built[0]!).baseline, laneOk("fidelity"), new Set(), learning, key);
 
   for (const b of built) {
     const keys = keysFor(b);
     const recipeIds: string[] = [];
     const own: string[] = [];
     for (const lane of ["concept", "component"] as const) {
-      const r = bestRecipe(byKey, keys[lane], uiOk, usedRecipes, learning, `${key}|${b.id}`);
+      const r = bestRecipe(byKey, keys[lane], laneOk(lane === "concept" ? "bridge" : "component"), usedRecipes, learning, `${key}|${b.id}`);
       if (!r) continue;
       usedRecipes.add(recipeId(r));
       recipeIds.push(recipeId(r));

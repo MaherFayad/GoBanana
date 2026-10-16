@@ -24,6 +24,7 @@ import { ELEMENT_TO_MECHANIC } from "./bend";
 import { atlasTermKey } from "@/lib/learning/arms";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
+import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CC0Item, QueryRecipe, UiElement } from "./types";
 
@@ -31,8 +32,6 @@ import type { CC0Item, QueryRecipe, UiElement } from "./types";
 export const SEARCH_SHARD_BUDGET = 12;
 /** Most CC0 index items one direction search adds to the art zone. */
 export const MAX_CC0_RESULTS = 2;
-/** Most CC0 region shards one search reads. */
-const MAX_CC0_SHARDS = 2;
 
 export type AtlasIds = NonNullable<DirectionDetail["atlas"]>;
 
@@ -46,8 +45,7 @@ export type AtlasPlan = {
   cc0: Reference[];
 };
 
-const norm = (s: string) => ` ${s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
-const holds = (q: string, nouns: readonly string[]) => nouns.some((n) => n.trim() && norm(q).includes(norm(n)));
+export { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 
 /** Atlas elements that map to a direction's saved mechanic part ("header" is header or hero). */
 export function elementsFor(mechanic: string | undefined): UiElement[] {
@@ -119,9 +117,15 @@ export function searchCc0(items: readonly CC0Item[], artText: readonly string[],
     }));
 }
 
-/** The CC0 region shards a brief reads: its market's region first, then global. */
+/**
+ * The CC0 regions a brief reads, nearest first: a Gulf brief reads the Gulf, then the wider MENA
+ * region (the J9 index tags few items as Gulf), then the untagged items; the source stops after
+ * MAX_CC0_PARTS shards (lib/atlas/source.ts).
+ */
 export function cc0Regions(market: Market | null): string[] {
-  return [...(market ? [market] : []), "global"].slice(0, MAX_CC0_SHARDS);
+  if (market === "gulf") return ["gulf", "mena", "global"];
+  if (market === "mena") return ["mena", "gulf", "global"];
+  return ["global"];
 }
 
 /**
@@ -153,8 +157,10 @@ export async function atlasSearchPlan(
   if (!recipes) return null;
 
   const chosen = new Set(atlas.recipeIds);
-  const nouns = [atlas.productNoun ?? "", base.topic ?? "", page?.replace(/-/g, " ") ?? ""].filter(Boolean);
-  const uiOk = (r: QueryRecipe) => holds(r.query, nouns) && r.query.split(/\s+/).length <= 7;
+  const topicOk = recipeHoldsTopic({ productNoun: atlas.productNoun, topic: base.topic, pageId: page });
+  const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= 7;
+  // A recipe replaces a Phase 0 lane only when it was judged at least as precise as that lane.
+  const beats = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const ofLane = (lane: QueryRecipe["key"]["lane"]) => recipes.filter((r) => r.key.lane === lane);
   const lanes: LaneTexts = { ...base, recipeSites: { ...(base.recipeSites ?? {}) } };
   const provenance: Provenance[] = [];
@@ -166,7 +172,7 @@ export async function atlasSearchPlan(
 
   const learning = opts.learning ?? null;
   const seed = (lane: string) => `${cardId}|${page ?? "-"}|${lane}`;
-  const baseline = best(ofLane("baseline"), chosen, uiOk, learning, seed("baseline"));
+  const baseline = best(ofLane("baseline"), chosen, beats("fidelity"), learning, seed("baseline"));
   if (baseline) {
     lanes.fidelity = baseline.query;
     record("fidelity", baseline, false);
@@ -177,7 +183,7 @@ export async function atlasSearchPlan(
     lanes.bridgeTitleFilter = false;
     record("bridge", concept, true);
   }
-  const component = best(ofLane("component"), chosen, uiOk, learning, seed("component"));
+  const component = best(ofLane("component"), chosen, beats("component"), learning, seed("component"));
   if (component) {
     lanes.component = [component.query, ...(base.component ?? []).filter((q) => q !== component.query)].slice(0, 2);
     record("component", component, true);

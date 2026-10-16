@@ -17,8 +17,8 @@ export interface AtlasSource {
   mechanics(element: UiElement): Promise<Mechanic[] | null>;
   /** Recipes whose key matches one of `keys` exactly. */
   recipes(keys: readonly QueryRecipe["key"][]): Promise<QueryRecipe[] | null>;
-  /** CC0 index items of these regions (shards that do not exist are skipped). */
-  cc0(regions: readonly string[]): Promise<CC0Item[] | null>;
+  /** CC0 index items of these regions, at most `maxShards` shards (a large region is split into parts; missing regions are skipped). */
+  cc0(regions: readonly string[], maxShards?: number): Promise<CC0Item[] | null>;
   /** Slop rules (J8); an empty list when the Atlas has none. */
   slop(): Promise<SlopRule[] | null>;
   /** J13 shader recipes (read whole); an empty list when the Atlas has none. */
@@ -30,6 +30,22 @@ export interface AtlasSource {
    * has no pairs for the voice; null when the shard could not be read (bad hash, budget spent).
    */
   typePairs(voice: string): Promise<TypePair[] | null>;
+}
+
+/** Most CC0 shards one read loads (one region can be several parts). */
+export const MAX_CC0_PARTS = 3;
+
+/**
+ * The CC0 shards of these regions, in region order: the region's own shard ("gulf"), or its parts
+ * when atlas-build split a large region under the shard size limit ("europe_00", "europe_01", ...).
+ */
+export function cc0Shards(names: readonly string[], regions: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const region of regions) {
+    if (names.includes(region)) out.push(region);
+    out.push(...names.filter((n) => n.startsWith(`${region}_`) && /^\d+$/.test(n.slice(region.length + 1))).sort());
+  }
+  return [...new Set(out)];
 }
 
 /** Load each bucket an id list touches, once, and keep the rows `keep` accepts. */
@@ -84,13 +100,15 @@ export function loaderSource(loader: AtlasLoader): AtlasSource {
       if (!loader.names("type-pairs").includes(voice)) return [];
       return loader.shard<TypePair>("type-pairs", voice);
     },
-    async cc0(regions) {
-      const names = new Set(loader.names("cc0"));
+    async cc0(regions, maxShards = MAX_CC0_PARTS) {
+      const names = loader.names("cc0");
       const out: CC0Item[] = [];
-      for (const region of regions) {
-        if (!names.has(region)) continue;
-        const rows = await loader.shard<CC0Item>("cc0", region);
+      let read = 0;
+      for (const shard of cc0Shards(names, regions)) {
+        if (read >= maxShards) break;
+        const rows = await loader.shard<CC0Item>("cc0", shard);
         if (!rows) return null;
+        read++;
         out.push(...rows);
       }
       return out;
