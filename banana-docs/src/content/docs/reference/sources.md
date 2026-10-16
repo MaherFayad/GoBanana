@@ -53,6 +53,20 @@ Picked when the direction's art queries or idea name their tags.
 | `arena` | Are.na | collage, moodboard, experimental, archive |
 | `designspiration` | Designspiration | poster, print, graphic design, illustration |
 
+## Deck and brand briefs
+
+A brief that names no phone, tablet, website or web app, but names a deck or a brand, gets its own lane instead of the UI lanes:
+
+- **Presentation** (`deck` lane): pitch deck, keynote, slide layout, data slide, editorial deck, dark deck, big number slide. Searched on Dribbble, Behance, Pinterest and Pitch's template gallery, dark by default unless your taste or brief names another style.
+- **Branding** (`brand` lane): brand identity, logo system, brand guidelines, visual identity, poster, packaging, typographic. Searched on The Brand Identity, BP&O, Brand New, Fonts In Use and typo/graphic posters first, then Behance, Dribbble and Pinterest.
+
+Results must name the kind of work in their titles (a screen or app result is dropped); gallery items pass as they are. "Pitch deck for a fintech startup" and "packaging for an olive oil brand" use these lanes; "pitch deck builder web app" stays a web app brief.
+
+| Id | Site | Genre | Item pages |
+| --- | --- | --- | --- |
+| `pitch` | Pitch templates | Presentation | `pitch.com/templates/…` |
+| `brandnew` | Brand New (UnderConsideration) | Branding | `underconsideration.com/brandnew/archives/….php` |
+
 ## How a search picks sources
 
 For one direction search the server picks:
@@ -68,6 +82,8 @@ Pass `sources` (1 to 4 ids) to `search_references` only when you want specific s
 Images load in your browser straight from these hosts (also the canvas content security policy). If your network blocks one, its tiles show as link cards.
 
 `i.pinimg.com` · `cdn.dribbble.com` · `mir-s3-cdn-cf.behance.net` · `mir-cdn.behance.net` · `assets.awwwards.com` · `cdn.lapa.ninja` · `r2.siteinspire.com` · `www.cssdesignawards.com` · `cssdesignawards.com` · `cdn.landing.love` · `unsection.b-cdn.net` · `pub-26e6aa63ed7942ecb7e9dbc72f09f164.r2.dev` (Supahero) · `thefwa.com` · `httpster.net` · `sidhvpjhuucqcehkevrl.supabase.co` (Dark Design) · `bentogrids.com` · `cdn.21st.dev` · `images.refero.design` · `cdn.prod.website-files.com` (SaaSFrame) · `assets.nicelydone.club` · `media.screensdesign.com` · `video.gumlet.io` and `framerusercontent.com` (60fps) · `s3-alpha.figma.com` · `s3-figma-hubfile-images-production-cdn-cgi.figma.com` · `original.fontsinuse.com` · `assets.fontsinuse.com` · `images.typographicposters.com` · `assets.typographicposters.com` · `www.swissted.com` · `the-brandidentity.com` · `bpando.org` · `cdn.cosmos.so` · `d2w9rnfcy7mm78.cloudfront.net` and `images.are.na` (Are.na) · `dspncdn.com`
+
+Deck and brand galleries also load from `imgproxy.services.pitch.com` and `pitch-static-assets.imgix.net` (Pitch) and `www.underconsideration.com` (Brand New).
 
 ## Adding a gallery source
 

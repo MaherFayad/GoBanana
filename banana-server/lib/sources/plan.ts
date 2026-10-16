@@ -419,7 +419,10 @@ export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], 
   const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
   const zone: ZoneInput = opts.zone ?? (hasArtLane(lanes) ? "both" : "ui");
   // A genre brief (a deck or a brand) searches its genre lane in place of the UI lanes.
-  const uiLanes = lanes.genre && lanes.genreRequests?.length ? lanes.genreRequests.map((r) => ({ lane: r.lane, query: r.query, site: r.site })) : uiRequests(lanes, head);
+  const uiLanes: PlannedRequest[] =
+    lanes.genre && lanes.genreRequests?.length
+      ? lanes.genreRequests.map((r) => ({ lane: r.lane, query: r.query, site: r.site, ...(r.fallback ? { fallback: r.fallback } : {}) }))
+      : uiRequests(lanes, head);
   const ui = zone === "art" ? [] : onSources(uiLanes, sources);
   const art = zone === "ui" ? [] : artOnSources(artRequests(lanes.art, lanes.artGalleries), sources);
   if (art.length === 0) return ui;
@@ -480,7 +483,12 @@ export const PLAIN_MAX_REQUESTS = 4;
 /** A plain query that keeps fewer than this many results is retried once with its short form. */
 export const PLAIN_MIN_GOOD = 4;
 
-export type PlainRequest = { query: string; site: SourceSite };
+export type PlainRequest = {
+  query: string;
+  site: SourceSite;
+  /** Genre requests only: the wording without the subject, for one retry when results are thin. */
+  fallback?: string;
+};
 
 /** "{text} app ui": a lane-only re-search's words with UI forced in when they name no UI. */
 export function forceUi(text: string): string {
@@ -524,9 +532,10 @@ export function plainGenre(query: string, genre?: Genre): Genre | null {
 
 /** A plain query of a genre: its genre lane's wordings (lib/sources/genre.ts), moved to the picked sources. */
 export function genreQueryPlan(query: string, genre: Genre, sources: readonly SourceSite[] = []): PlainRequest[] {
-  const reqs = genreRequests(cleanQuery(query), genre, { max: PLAIN_MAX_REQUESTS });
+  // One request short of the cap, so a thin answer has room for its fallback (web-search.ts run).
+  const reqs = genreRequests(cleanQuery(query), genre, { max: PLAIN_MAX_REQUESTS - 1 });
   const picked = SOURCE_SITES.filter((s) => sources.includes(s));
-  return onSources(reqs, picked).map((r) => ({ query: r.query, site: r.site })).slice(0, PLAIN_MAX_REQUESTS);
+  return onSources(reqs, picked).map((r) => ({ query: r.query, site: r.site, ...(r.fallback ? { fallback: r.fallback } : {}) })).slice(0, PLAIN_MAX_REQUESTS);
 }
 
 /** A plain query in the art zone: the words as is, on the picked art sites (Pinterest, Behance). */

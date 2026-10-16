@@ -653,6 +653,9 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       const retry = plainRetryQuery(q.query, planned.map((r) => r.query));
       if (retry) await fetchRound([addSlot(retry, planned[0]!.site)]);
     }
+    // A thin genre search: its first wording again without the subject (the measured wording).
+    const genreRetry = genre ? planned.find((r) => r.fallback) : undefined;
+    if (genreRetry?.fallback && references.length < PLAIN_MIN_GOOD && requests < budget) await fetchRound([addSlot(genreRetry.fallback, genreRetry.site)]);
 
     // Page 2 of full answers while results are short, fewest results first, within the budget.
     for (let page = 2; page <= serperPages(q.maxPages) && requests < budget && references.length < count; page++) {

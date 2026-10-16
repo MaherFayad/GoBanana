@@ -48,8 +48,23 @@ describe("a deck or brand brief pulls its genre lane", () => {
     expect(hasUiLanes(lanes)).toBe(true);
     const plan = planRequests(lanes);
     expect(plan.every((r) => r.lane === "deck")).toBe(true);
-    expect(plan[0]).toEqual({ lane: "deck", site: "dribbble", query: `dark saudi fintech pitch deck presentation design ${GENRE_NEG}` });
-    expect(plan[1]).toEqual({ lane: "deck", site: "pitch", query: "saudi fintech pitch deck" });
+    expect(plan[0]).toEqual({
+      lane: "deck",
+      site: "dribbble",
+      query: `dark saudi fintech pitch deck presentation design ${GENRE_NEG}`,
+      fallback: `dark pitch deck presentation design ${GENRE_NEG}`,
+    });
+    // Pitch's templates are generic: kind words only, no subject.
+    expect(plan[1]).toEqual({ lane: "deck", site: "pitch", query: "pitch deck" });
+  });
+
+  it("a subject that makes a core answer thin falls back to the measured wording", () => {
+    const report = genreRequests("annual report for a museum", "presentation");
+    expect(report[0]!.query).toBe(`museum editorial annual report presentation layout ${GENRE_NEG}`);
+    expect(report[0]!.fallback).toBe(`editorial annual report presentation layout ${GENRE_NEG}`);
+    // No subject, no fallback; galleries keep the subject with no fallback.
+    expect(genreRequests("pitch deck", "presentation")[0]!.fallback).toBeUndefined();
+    expect(genreRequests("brand identity for a coffee roaster", "branding")[0]!.fallback).toBeUndefined();
   });
 
   it("the user's taste word replaces the default style", () => {

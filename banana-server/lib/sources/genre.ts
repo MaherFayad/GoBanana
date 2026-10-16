@@ -269,7 +269,17 @@ export function genreKinds(text: string, genre: Genre): Kind[] {
   return named.length > 0 ? named : [p.kinds[p.kinds.length - 1]!];
 }
 
-export type GenreRequest = { lane: GenreLane; query: string; site: SourceSite };
+export type GenreRequest = {
+  lane: GenreLane;
+  query: string;
+  site: SourceSite;
+  /**
+   * The same wording without the subject, retried once when the subject made the answer thin
+   * (live 2026-10-16: "museum editorial annual report presentation layout" on Behance found nothing,
+   * the measured wording without "museum" found 10 projects).
+   */
+  fallback?: string;
+};
 
 const tidy = (s: string) => s.replace(/\s+/g, " ").trim();
 
@@ -284,27 +294,30 @@ export function genreRequests(text: string, genre: Genre, opts: { style?: string
   const s = genreSubject(text);
   const style = (opts.style?.trim() || text.match(STYLE_WORDS)?.[1] || p.defaultStyle || "").toLowerCase();
   const core = (site: SourceSite) => site === "pinterest" || site === "dribbble" || site === "behance";
-  const word = (site: SourceSite, t: string) => {
-    const filled = tidy(t.replace("{style}", style).replace("{s}", s));
+  const word = (site: SourceSite, t: string, subject: string) => {
+    const filled = tidy(t.replace("{style}", style).replace("{s}", subject));
     if (core(site)) return `${filled} ${GENRE_NEG}`;
     // Galleries index names and topics: no style word, and "design" when nothing is left.
-    return tidy(t.replace("{style}", "").replace("{s}", s)) || "design";
+    return tidy(t.replace("{style}", "").replace("{s}", subject)) || "design";
   };
   const kinds = genreKinds(text, genre);
   const ordered: { site: SourceSite; text: string }[] = [];
   kinds.forEach((k) => ordered.push(k.wordings[0]!));
-  // The genre's lead gallery with the subject (Pitch: "pitch deck" for a pitch deck, else "presentation").
-  const galleryText = genre === "branding" ? "{s} identity" : kinds[0]!.keyword === "pitch deck" ? "{s} pitch deck" : "{s} presentation";
+  // The genre's lead gallery: brand galleries with the subject ("coffee roaster identity" found 5
+  // of 7 live); Pitch's templates are generic, so its kind words only ("pitch deck", "presentation":
+  // "fintech pitch deck" found none live).
+  const galleryText = genre === "branding" ? "{s} identity" : kinds[0]!.keyword === "pitch deck" ? "pitch deck" : "presentation";
   for (const g of p.galleries.slice(0, 1)) ordered.push({ site: g, text: galleryText });
   kinds.forEach((k) => ordered.push(...k.wordings.slice(1)));
   const seen = new Set<string>();
   const out: GenreRequest[] = [];
   for (const w of ordered) {
-    const query = word(w.site, w.text);
+    const query = word(w.site, w.text, s);
     const key = `${w.site}|${query}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ lane: p.lane, query, site: w.site });
+    const bare = s && core(w.site) ? word(w.site, w.text, "") : null;
+    out.push({ lane: p.lane, query, site: w.site, ...(bare && bare !== query ? { fallback: bare } : {}) });
     if (out.length >= (opts.max ?? 7)) break;
   }
   return out;
