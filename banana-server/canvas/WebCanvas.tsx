@@ -129,6 +129,7 @@ export function WebCanvas({
           persistence={persistence}
           readOnly={readOnly}
           compact={compact}
+          embedX
           web={{ plan, shareToken, pricingHref, dashboardHref }}
           windowChrome={{ closeHref: dashboardHref }}
         />

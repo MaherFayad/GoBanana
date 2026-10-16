@@ -66,6 +66,7 @@ import { hostMatchesDomain, parseHttpUrl } from "./url";
 import { EMPTY_TAKEDOWNS, type TakedownMatcher } from "../takedown";
 import { creatorKeys, nudgeByCreator } from "../learning/creator";
 import { queryWords } from "../learning/terms";
+import { parsePostUrl } from "../xpost";
 
 export const SERPER_IMAGES_ENDPOINT = "https://google.serper.dev/images";
 
@@ -110,7 +111,31 @@ export type WebSearchResult = SourceSearchResult & {
   requests?: number;
   /** Plain query path: what was searched, in order, each with its site operator. */
   queries?: string[];
+  /**
+   * X post links (x.com/<handle>/status/<id>) Serper returned as result pages, canonical, at most
+   * MAX_X_POSTS. Never references: no image of them is kept or shown; the agent can place one with
+   * add_to_canvas { type: "xpost", url }, where the canvas shows X's own embed. Set when found.
+   */
+  xPosts?: string[];
 };
+
+/** Most X post links one search hands back. */
+export const MAX_X_POSTS = 5;
+
+/**
+ * X post links among Serper results (their `link`), canonical and deduplicated by post id into
+ * `into`, skipping any on the takedown list (the post or its author's profile). Pure.
+ */
+export function collectXPosts(images: unknown, takedowns: TakedownMatcher, into: Map<string, string>): void {
+  if (!Array.isArray(images)) return;
+  for (const raw of images as SerperImage[]) {
+    if (into.size >= MAX_X_POSTS) return;
+    const link = parsePostUrl(raw?.link);
+    if (!link || into.has(link.postId)) continue;
+    if (takedowns.isBlocked(String(raw.link)) || takedowns.isBlocked(link.url) || (link.handle && takedowns.isBlocked(`https://x.com/${link.handle}`))) continue;
+    into.set(link.postId, link.url);
+  }
+}
 
 /** Counts of results dropped for a reason the agent can act on (rephrase the query). */
 export type DropWhy = { lens?: number; offTopic?: number; junk?: number };
@@ -596,6 +621,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     let anyAnswered = false;
     let rateLimited = false;
     let references: Reference[] = [];
+    const xFound = new Map<string, string>();
 
     /** Fetch the next page of each slot, keep what passes every filter, and re-merge. */
     const fetchRound = async (due: Slot[]) => {
@@ -612,6 +638,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         anyAnswered = true;
         slot.full = out.images.length >= SERPER_PAGE_SIZE;
         if (out.images.length === 0) return;
+        collectXPosts(out.images, takedowns, xFound);
         slot.images.push(...out.images);
         const mapped = mapSerperImagesWithStats(slot.images, {
           sources: [slot.site],
@@ -669,6 +696,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
 
     const result: WebSearchResult = { references, ok: true, requests, queries: sent };
+    if (xFound.size > 0) result.xPosts = [...xFound.values()];
     const note = countNote(references.length, count);
     if (note) result.note = note;
     const dropped = slots.reduce((n, s) => n + s.dropped, 0);
@@ -712,7 +740,9 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     // lanes get fresh results instead of the same shots (and a later search never pulls a kept
     // reference into another section).
     const excluded = new Set([...(opts.exclude ?? []).map(itemKey), ...(opts.excludeKeys ?? [])]);
+    const xFound = new Map<string, string>();
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
+      collectXPosts(images, takedowns, xFound);
       const zone = requestZone(req);
       const words = queryWords(query);
       const genre = laneGenre(req.lane);
@@ -848,6 +878,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     if (dropped > 0) result.dropped = dropped;
     const droppedWhy = sumWhy(slots.map((s) => s.why));
     if (droppedWhy) result.droppedWhy = droppedWhy;
+    if (xFound.size > 0) result.xPosts = [...xFound.values()];
     return result;
   }
 

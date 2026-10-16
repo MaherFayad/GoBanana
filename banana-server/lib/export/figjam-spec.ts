@@ -4,6 +4,7 @@
  */
 import type { CanvasItem, Tag } from "../canvas/types";
 import { isReference } from "../canvas/types";
+import { postCredit, X_SITE } from "../xpost";
 import type { KitModel, Reference } from "./model";
 import { findPairing, defaultPairing } from "./model";
 import { scopeSentence } from "./scope";
@@ -66,6 +67,13 @@ function toItem(item: CanvasItem, origin: { x: number; y: number }, m: KitModel,
     return out;
   }
   switch (item.type) {
+    case "xpost": {
+      // A link with the author credit; no picture and no post text (lib/xpost).
+      const ref = refs.get(item.id);
+      const out: FigjamItem = { type: "xpost", ...base, sourceUrl: ref?.url ?? safeUrl(item.sourceUrl), title: ref?.title ?? postCredit(item), sourceSite: X_SITE };
+      if (item.tag) out.tag = item.tag;
+      return out;
+    }
     case "note":
       return { type: "note", ...base, text: plainBlock(item.text, 2000), sourceUrl: m.webUrl };
     case "swatch": {

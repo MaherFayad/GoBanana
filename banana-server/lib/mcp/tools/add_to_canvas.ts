@@ -27,6 +27,7 @@ import { parseHttpUrl } from "@/lib/sources/url";
 import { parseState } from "@/canvas/state";
 import type { StoredNode } from "@/canvas/types";
 import { placedWithThumbs } from "@/lib/vision/wrap";
+import { fetchXPost, MAX_POST_URL, parsePostUrl, postCredit, X_SITE, type FetchPostOutcome } from "@/lib/xpost";
 import { canAddItems } from "@/lib/quota";
 import {
   CANVAS_NOT_FOUND,
@@ -53,7 +54,7 @@ const BUILD_GAP = 48;
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
   "Direction results go to that direction's section, art above UI. Per direction: 6 to 8 UI, 2 to 4 art. " +
-  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal.`;
+  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal. X posts: { type: 'xpost', url } (shown with X's embed).`;
 
 const item = z.discriminatedUnion("type", [
   z.object({
@@ -82,6 +83,14 @@ const item = z.discriminatedUnion("type", [
     title: z.string().trim().min(1).max(200).optional(),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
   }),
+  z.object({
+    type: z.literal("xpost"),
+    url: z.string().trim().min(1).max(MAX_POST_URL),
+    note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+    directionId: z.string().min(1).max(100).optional(),
+    zone: z.enum(["ui", "art"]).optional(),
+    culture: cultureSchema.optional(),
+  }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000), culture: cultureSchema.optional() }),
   z.object({
     type: z.literal("swatch"),
@@ -104,7 +113,8 @@ export const inputSchema = z.object({
     .describe(
       "A screen with the screenId of one already on the board refreshes its image in place (Mobbin image links expire). " +
         "A reference, screen or note can carry culture { tradition, region, community?, tier: 'open' | 'care' | 'sacred', meaning, credit, sourceUrl? }: the board shows a culture chip and the exports carry it. " +
-        "A build { type: 'build', imageUrl, url, stitchId } is an https screenshot link of the user's own build, placed next to its Frankenstein page for side by side review; never image bytes.",
+        "A build { type: 'build', imageUrl, url, stitchId } is an https screenshot link of the user's own build, placed next to its Frankenstein page for side by side review; never image bytes. " +
+        "An xpost { type: 'xpost', url, note?, directionId?, zone? } is one X post link (x.com/<handle>/status/<id>) the user or you found: the canvas shows X's official embed; nothing from X is stored but the link, author and text.",
     ),
   sectionId: z.string().min(1).max(120).optional().describe("Section to place the items in."),
   thumbs: z.boolean().optional().describe("Show a small thumbnail of each placed reference in the result; look at them before you write notes. Default true."),
@@ -112,7 +122,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, any of reference, screen and note can add culture (tradition, region, community?, tier, meaning, credit, sourceUrl?), { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "xpost", url, note?, directionId?, zone? } (one X post link), { type: "note", text }, any of reference, screen and note can add culture (tradition, region, community?, tier, meaning, credit, sourceUrl?), { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -198,7 +208,18 @@ function text(out: AddToCanvasOutput, title: string): string {
   return lines.join("\n");
 }
 
-export function createAddToCanvasTool(deps: CanvasToolDeps) {
+export type AddToCanvasDeps = CanvasToolDeps & {
+  /** X's oEmbed lookup (lib/xpost), injectable so tests never call X. */
+  fetchXPost?: (url: string) => Promise<FetchPostOutcome>;
+};
+
+const X_MISSING: Record<"bad_url" | "not_found" | "unavailable", string> = {
+  bad_url: "that is not a link to one X post (x.com/<handle>/status/<id>).",
+  not_found: "X says that post does not exist, was deleted or is private.",
+  unavailable: "X did not answer for that post. Try again in a minute.",
+};
+
+export function createAddToCanvasTool(deps: AddToCanvasDeps) {
   return async function addToCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
     const parsed = parseArgs(inputSchema, raw, MESSAGES, MESSAGES.items!);
@@ -222,6 +243,15 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
       const directionTitles = new Map(directions.map((d) => [d.bendId ?? d.id, d.title]));
       const loadMatcher = takedownLoader(deps);
       const matcher = await loadMatcher();
+      // X posts: author and text from X's oEmbed (cached by post id), before the canvas is locked.
+      const lookup = deps.fetchXPost ?? ((url: string) => fetchXPost(url));
+      const xposts = new Map<number, FetchPostOutcome>();
+      await Promise.all(
+        input.items.map(async (it, i) => {
+          if (it.type !== "xpost") return;
+          xposts.set(i, parsePostUrl(it.url) ? await lookup(it.url) : { ok: false, reason: "bad_url" });
+        }),
+      );
 
       const placedAt = (deps.now?.() ?? new Date()).toISOString();
       const outcome = await mutateCanvas<{ placed: PlacedOut[]; updated: PlacedOut[]; skipped: { index: number; reason: string }[] }>(repos, userId, input.canvasId, loadMatcher, (state) => {
@@ -229,7 +259,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
           return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
         }
         const tray = new Map(state.tray.map((r) => [r.id, r]));
-        const prepared: Prepared[] = input.items.map((it) => {
+        const prepared: Prepared[] = input.items.map((it, index) => {
           switch (it.type) {
             case "reference": {
               const row = saved.get(it.referenceId);
@@ -281,6 +311,33 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}) });
               if (node.type === "image") Object.assign(node.data, { kind: "build" as const, stitchId: it.stitchId, placedAt });
               return { node, stitchId: it.stitchId };
+            }
+            case "xpost": {
+              const found = xposts.get(index);
+              if (!found?.ok) return { skip: X_MISSING[found?.reason ?? "unavailable"] };
+              const p = found.post;
+              const profile = `https://x.com/${p.authorHandle}`;
+              if (matcher.isBlocked(p.url) || matcher.isBlocked(profile)) return { skip: "that post was removed after a takedown request." };
+              if (state.nodes.some((n) => n.type === "xpost" && n.data.postId === p.postId)) {
+                return { skip: `${postCredit(p)} is already on this canvas.` };
+              }
+              const node: NewNode = {
+                type: "xpost",
+                data: {
+                  sourceUrl: p.url,
+                  sourceSite: X_SITE,
+                  postId: p.postId,
+                  authorName: p.authorName,
+                  authorHandle: p.authorHandle,
+                  text: p.text,
+                  note: it.note ?? null,
+                  tag: null,
+                  ...(it.zone === "art" ? { zone: "art" as const } : {}),
+                  ...(it.culture ? { culture: it.culture } : {}),
+                  placedAt,
+                },
+              };
+              return { node, ...(it.directionId ? { directionId: it.directionId } : {}) };
             }
             case "note":
               return { node: { type: "note", data: { text: it.text, color: "yellow", ...(it.culture ? { culture: it.culture } : {}) } } };

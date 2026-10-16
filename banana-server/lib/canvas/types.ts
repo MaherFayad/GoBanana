@@ -84,6 +84,37 @@ export interface UploadItem extends Omit<ImageItem, "type"> {
   type: "upload";
 }
 
+/**
+ * An X post (lib/xpost): the post link, its id, the author and the text from X's oEmbed, plus our
+ * own note and tag. Never X media. The web canvas shows X's official embed; inline (MCP Apps)
+ * it is a link card. `screenshotUrl` is a screenshot of this one post the user's own Claude
+ * captured and attached (attach_screenshot, stored as the user's upload) for Frankenstein parts.
+ */
+export interface XPostItem extends ItemBase {
+  type: "xpost";
+  /** Canonical post link, `https://x.com/<handle>/status/<id>`. */
+  sourceUrl: string;
+  /** Always "x.com". */
+  sourceSite: string;
+  postId: string;
+  authorName: string;
+  authorHandle: string;
+  /**
+   * Not in snapshots: the post text lives only in the canvas state, for the web card. Snapshots
+   * feed get_canvas, get_snapshot and the exports, so the text never reaches a model through them.
+   */
+  text?: never;
+  note?: string | null;
+  tag?: Tag | null;
+  zone?: Zone;
+  culture?: Culture;
+  /** Same-origin upload path of the attached screenshot (`/api/uploads/<id>`). */
+  screenshotUrl?: string;
+  screenshotWidth?: number;
+  screenshotHeight?: number;
+  placedAt?: string;
+}
+
 export interface NoteItem extends ItemBase {
   type: "note";
   text: string;
@@ -114,7 +145,7 @@ export interface SectionItem extends ItemBase {
   directionId?: string | null;
 }
 
-export type CanvasItem = ImageItem | UploadItem | NoteItem | SwatchItem | TypeSampleItem | SectionItem;
+export type CanvasItem = ImageItem | UploadItem | XPostItem | NoteItem | SwatchItem | TypeSampleItem | SectionItem;
 export type CanvasItemType = CanvasItem["type"];
 export type ReferenceItem = ImageItem | UploadItem;
 

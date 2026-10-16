@@ -125,6 +125,12 @@ export interface CanvasAppProps {
   readOnly?: boolean;
   /** Load Google Fonts CSS for type samples. Turn off where the host CSP blocks it. */
   loadFonts?: boolean;
+  /**
+   * Show X posts with X's official embed (platform.twitter.com/widgets.js, loaded only when a post
+   * is on screen). Web and shared canvas only. Inline (MCP Apps) leaves it off: X posts are link
+   * cards there (DECISIONS.md 2026-10-16, X post embeds).
+   */
+  embedX?: boolean;
   /** Force a color scheme; default follows the system (dark when there is no preference). */
   theme?: "light" | "dark";
   /**
@@ -372,6 +378,7 @@ function CanvasEditor({
   persistence,
   readOnly = false,
   loadFonts = true,
+  embedX = false,
   compact = false,
   onSaved,
   theme,
@@ -688,6 +695,7 @@ function CanvasEditor({
     () => ({
       readOnly,
       loadFonts,
+      embedX,
       sections,
       updateData: (id, patch) =>
         setNodes((nds) =>
@@ -729,7 +737,7 @@ function CanvasEditor({
         if (list && list.items.length > 0) setPreview(list);
       },
     }),
-    [readOnly, loadFonts, sections, remove, resize, menuFor, setMenuFor, duplicateIds, editingId, announce, focusNode, setNodes],
+    [readOnly, loadFonts, embedX, sections, remove, resize, menuFor, setMenuFor, duplicateIds, editingId, announce, focusNode, setNodes],
   );
 
   // ------------------------------------------------------------------ Frankenstein pages (stitches)

@@ -48,6 +48,7 @@ export function SharedCanvas({ appName, title, state, titleEnd, children }: Shar
           initialState={state}
           persistence={persistence}
           readOnly
+          embedX
           windowChrome={{}}
           titleEnd={titleEnd}
         />

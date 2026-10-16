@@ -6,6 +6,7 @@
  */
 import type { CanvasItem, CanvasSnapshot, StitchSnapshot } from "@/lib/canvas/types";
 import { webTitle } from "@/lib/mcp/untrusted";
+import { postCredit } from "@/lib/xpost";
 import { roleName } from "@/lib/stitch/skeleton";
 import type { ThumbTarget } from "./thumbs";
 
@@ -32,6 +33,9 @@ function itemLine(it: CanvasItem): string {
       const kind = it.type === "image" && it.kind === "build" ? "build" : it.zone === "art" ? "art" : "ui";
       return `Item ${it.id} (${kind}) ${pos}: ${webTitle(it.title)} (${it.sourceSite}) ${it.sourceUrl}${it.note ? ` note: ${it.note}` : ""}`;
     }
+    case "xpost":
+      // No picture: an X post is never a model input (lib/xpost). The link and credit only.
+      return `X post ${it.id} ${pos}: ${postCredit(it)} ${it.sourceUrl}${it.note ? ` note: ${it.note}` : ""}`;
     case "note":
       return `Note ${it.id} ${pos}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}`;
     case "swatch":

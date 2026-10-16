@@ -14,6 +14,8 @@ export interface CanvasActions {
   readOnly: boolean;
   /** Load web fonts for type samples (off inline when the host CSP blocks them). */
   loadFonts: boolean;
+  /** Show X posts with X's official embed (web and shared canvas); off inline, where they are link cards. */
+  embedX: boolean;
   sections: readonly SectionChoice[];
   updateData<K extends keyof NodeDataByType>(id: string, patch: Partial<NodeDataByType[K]>): void;
   remove(id: string): void;
@@ -49,6 +51,7 @@ const noop = () => {};
 export const CanvasActionsContext = createContext<CanvasActions>({
   readOnly: true,
   loadFonts: false,
+  embedX: false,
   sections: [],
   updateData: noop,
   remove: noop,

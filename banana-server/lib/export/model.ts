@@ -14,8 +14,10 @@ import type {
   ReferenceItem,
   StitchSnapshot,
   Tag,
+  XPostItem,
 } from "../canvas/types";
 import { isReference } from "../canvas/types";
+import { postCredit, X_SITE } from "../xpost";
 import type { Culture } from "../culture";
 import {
   isPlatform,
@@ -42,6 +44,11 @@ import { contrastRatio, finite, normalizeHex, oneLine, plainBlock, safeUrl, toke
  */
 type DirectionWithDetail = CanvasDirection & { detail?: DirectionDetail | null };
 type WithZone = { zone?: unknown };
+
+/** References and X posts: the items that export with a source link and credit. */
+function isSourced(item: CanvasItem): item is ReferenceItem | XPostItem {
+  return isReference(item) || item.type === "xpost";
+}
 
 // ---------- fonts ----------
 
@@ -140,7 +147,7 @@ export interface ComponentToken {
 export interface Reference {
   n: number;
   id: string;
-  type: "image" | "upload";
+  type: "image" | "upload" | "xpost";
   title: string;
   site: string;
   /** Safe http(s) source URL, or null when the stored value was not a usable link. */
@@ -345,10 +352,31 @@ function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): R
       if (s.directionId) directionOf.set(i.id, s.directionId);
     }
   }
-  const all = readingOrder([...sections.flatMap((s) => s.items), ...unsorted].filter(isReference));
+  const all = readingOrder([...sections.flatMap((s) => s.items), ...unsorted].filter(isSourced));
   const seen = new Set<string>();
   const out: Reference[] = [];
-  for (const item of all as ReferenceItem[]) {
+  for (const item of all as (ReferenceItem | XPostItem)[]) {
+    // An X post exports as its link with the author credit, never a picture or the post text.
+    if (item.type === "xpost") {
+      if (seen.has(item.sourceUrl)) continue;
+      seen.add(item.sourceUrl);
+      out.push({
+        n: out.length + 1,
+        id: item.id,
+        type: "xpost",
+        title: postCredit(item),
+        site: X_SITE,
+        url: safeUrl(item.sourceUrl),
+        rawUrl: oneLine(item.sourceUrl, 500),
+        imageUrl: null,
+        note: plainBlock(item.note, 600),
+        tag: item.tag ?? null,
+        sectionId: sectionOf.get(item.id) ?? null,
+        directionId: directionOf.get(item.id) ?? null,
+        zone: zoneOf(item.zone),
+      });
+      continue;
+    }
     const key = item.sourceUrl?.trim() || item.id;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -667,7 +695,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
     if (item.type === "note") {
       const text = plainBlock((item as NoteItem).text, 1000);
       if (text) notes.push({ text, sectionTitle: sectionTitle.get(item.id) ?? null, referenceN: null });
-    } else if (isReference(item)) {
+    } else if (isSourced(item)) {
       const ref = refByItem.get(item.id);
       if (ref?.note) notes.push({ text: ref.note, sectionTitle: sectionTitle.get(item.id) ?? null, referenceN: ref.n });
     }
@@ -676,7 +704,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
   const directionOfItem = new Map<string, string>();
   for (const s of sections) if (s.directionId) for (const i of s.items) directionOfItem.set(i.id, s.directionId);
   const allCulture: CultureEntry[] = allItems.flatMap((item): CultureEntry[] => {
-    if (item.type !== "note" && !isReference(item)) return [];
+    if (item.type !== "note" && !isSourced(item)) return [];
     const culture = item.culture;
     if (!culture) return [];
     const note = item.type === "note";
@@ -684,7 +712,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
       {
         culture,
         kind: note ? "note" : "reference",
-        label: note ? oneLine(item.text, 80) : oneLine(item.title, 120) || oneLine(item.sourceSite, 60) || "Reference",
+        label: note ? oneLine(item.text, 80) : oneLine(item.type === "xpost" ? postCredit(item) : item.title, 120) || oneLine(item.sourceSite, 60) || "Reference",
         url: note ? null : safeUrl(item.sourceUrl),
         sectionTitle: sectionTitle.get(item.id) ?? null,
         directionId: directionOfItem.get(item.id) ?? null,
@@ -694,7 +722,7 @@ export function buildKitModel(snapshot: CanvasSnapshot, opts: KitOptions = {}): 
 
   const directions: DirectionSummary[] = (snapshot.directions ?? []).map((d) => {
     const section = sections.find((s) => s.directionId === d.id);
-    const referenceCount = section ? section.items.filter(isReference).length : 0;
+    const referenceCount = section ? section.items.filter(isSourced).length : 0;
     const detail = cleanDetail((d as DirectionWithDetail).detail);
     const status: DirectionStatus =
       detail?.verdict === "keep" ? "kept" : detail?.verdict === "drop" ? "dropped" : referenceCount > 0 ? "kept" : "unrated";

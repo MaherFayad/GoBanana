@@ -45,6 +45,7 @@ import {
 } from "@/lib/sources/types";
 import { cleanTaste } from "@/lib/taste";
 import {
+  MAX_X_POSTS,
   SERPER_MAX_REQUESTS,
   capByCreator,
   countNote,
@@ -217,6 +218,11 @@ export type SearchReferencesOutput = {
   /** Of those, the ones dropped as another tradition (lens), as music and merch, or as shop listings (art). */
   droppedWhy?: DropWhy;
   /**
+   * X post links the search provider returned as result pages (never references: no image is
+   * kept). Place one with add_to_canvas { type: "xpost", url }; the canvas shows X's own embed.
+   */
+  xPosts?: string[];
+  /**
    * Direction searches on a canvas: the baseline (fidelity) lane, run once per canvas. `reused`
    * means it was skipped because it already ran; its results are in the tray with no direction.
    */
@@ -252,7 +258,20 @@ export function dropLine(why: DropWhy | undefined): string {
   return `Dropped ${list}. If too few are left, rephrase as subject, medium and composition ("talli braid sleeve trim close-up").`;
 }
 
+/** X post links found, as one line the agent can act on, or "" when none. Links only: no picture, no text. */
+export function xPostLine(xPosts: readonly string[] | undefined): string {
+  if (!xPosts?.length) return "";
+  return `X posts found (links only, no image): ${xPosts.join(" ")}. To use one, add_to_canvas { type: "xpost", url }: the canvas shows X's own embed.`;
+}
+
 function resultText(out: SearchReferencesOutput): string {
+  const text = resultBody(out);
+  const x = xPostLine(out.xPosts);
+  return x ? `${text}
+${x}` : text;
+}
+
+function resultBody(out: SearchReferencesOutput): string {
   const lines: string[] = [];
   const drops = dropLine(out.droppedWhy);
   if (out.references.length === 0) {
@@ -666,6 +685,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         if (dropped > 0) result.dropped = dropped;
         const droppedWhy = sumWhy([ui?.droppedWhy, art?.droppedWhy]);
         if (droppedWhy) result.droppedWhy = droppedWhy;
+        const xPosts = [...new Set([...(ui?.xPosts ?? []), ...(art?.xPosts ?? [])])].slice(0, MAX_X_POSTS);
+        if (xPosts.length > 0) result.xPosts = xPosts;
         const note = ok ? countNote(references.length, input.count) : (ui?.note ?? art?.note);
         if (note) result.note = note;
         searched = { result, queries: result.queries ?? [query!] };
@@ -730,6 +751,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (note) out.note = note;
       if (result.dropped) out.dropped = result.dropped;
       if (result.droppedWhy) out.droppedWhy = result.droppedWhy;
+      if (result.xPosts?.length) out.xPosts = result.xPosts;
       // A new baseline: the ids of what the fidelity lane found (saved below with the tray).
       let newBaseline: CanvasBaseline | undefined;
       if (baseline?.reused) {
