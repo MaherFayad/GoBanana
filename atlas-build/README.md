@@ -145,6 +145,26 @@ on known good and bad samples. Frame strips go to `review/j13-shaders/` and `rev
 The server layout puts them in `shaders/NN` and `motion/NN` (read whole); the loader's
 `ATLAS_KINDS` does not list these kinds yet.
 
+## Refinement round R2 (styles and the stunning layer)
+
+R2 jobs never change another job's output. Each writes its own kind, keyed by record id, and
+`lib/overlays.ts` lays them over the records only when the server layout is written
+(`serverLayout`, so `upload.ts` and `ops.ts layout` both carry them):
+
+- `r2-styles` (Sonnet, batch, text): 0 to 2 of the 19 style ids (docs/styles) per J3 card, J5
+  mechanic, J13 shader and motion recipe, main style first, in `out/v1/style-tags/`. Records go to
+  requests by a hash of their id, so `--from-raw` stays exact when records come and go. Recipes take
+  their card's styles (concept and art lanes), their showcase style, or their query's style words.
+- `r2-taste` (Opus, batch, vision): one verdict per J13 shader and motion recipe from its frame
+  strip, in `out/v1/taste-verdicts/`. "drop" removes the record from the server layout; "rewrite"
+  removes it unless a rewrite with the same id exists.
+- `r2-rewrite-shaders` and `r2-rewrite-motion` (Opus, batch): rewrites of the "rewrite" verdicts,
+  render checked like J13 (one repair each), in `out/v1/shaders-rewrites/` and
+  `out/v1/motion-rewrites/`.
+
+Rebuild: the base jobs (`j3-cards`, `j5-mechanics`, `j5-dedupe`, `j13-shaders`, `j13-motion`,
+`j7-recipes`) with `--from-raw`, then the R2 jobs in that order with `--from-raw`.
+
 ## Tests
 
 ```

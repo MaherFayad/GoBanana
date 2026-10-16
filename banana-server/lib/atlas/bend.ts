@@ -48,6 +48,9 @@ import { extractSubject } from "@/lib/bend/subject";
 import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/lib/bend/types";
 import { WILDNESS } from "@/lib/bend/wildness";
 import { briefTopic as phase0Topic } from "@/lib/bend/queries";
+import { askedStyles, briefStyleGenre } from "@/lib/styles/directions";
+import { neighbourOf, type StyleId } from "@/lib/styles/index";
+import { isStyleId } from "@/lib/styles/ids";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
 import { searchHints } from "./search-hints";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
@@ -60,14 +63,15 @@ import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, 
 export const MAX_SHADERS = 1;
 export const MAX_MOTION = 2;
 
-type Stunning = { id: string; use: readonly UiElement[]; cardIds: readonly string[]; families: readonly string[]; lensIds: readonly string[] };
+type Stunning = { id: string; use: readonly UiElement[]; cardIds: readonly string[]; families: readonly string[]; lensIds: readonly string[]; styles?: readonly string[] };
 
 /**
  * How well a J13 recipe fits a direction: the lens it follows (3), each of the direction's cards it
- * names (2 for the lead, 1 for the second), a shared card family (1) and the element the
- * direction's mechanic lands on (1). Zero means no fit: the recipe is never attached.
+ * names (2 for the lead, 1 for the second), a shared card family (1), the element the
+ * direction's mechanic lands on (1) and a style tag the direction targets (1, R2). Zero means no
+ * fit: the recipe is never attached.
  */
-export function stunningScore(r: Stunning, cards: readonly IngredientCard[], lensId: string | undefined, element: UiElement): number {
+export function stunningScore(r: Stunning, cards: readonly IngredientCard[], lensId: string | undefined, element: UiElement, styles: readonly string[] = []): number {
   let s = 0;
   if (lensId && r.lensIds.includes(lensId)) s += 3;
   cards.forEach((c, i) => {
@@ -75,6 +79,7 @@ export function stunningScore(r: Stunning, cards: readonly IngredientCard[], len
   });
   if (cards.some((c) => r.families.includes(c.family))) s += 1;
   if (s > 0 && r.use.includes(element)) s += 1;
+  if (s > 0 && r.styles?.some((t) => styles.includes(t))) s += 1;
   return s;
 }
 
@@ -91,9 +96,10 @@ export function pickStunning<T extends Stunning & { trigger?: string }>(
   max: number,
   used: Set<string>,
   seed: string,
+  styles: readonly string[] = [],
 ): T[] {
   const scored = list
-    .map((r) => ({ r, s: stunningScore(r, cards, lensId, element) }))
+    .map((r) => ({ r, s: stunningScore(r, cards, lensId, element, styles) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => Number(used.has(a.r.id)) - Number(used.has(b.r.id)) || b.s - a.s || jitter(seed, a.r.id) - jitter(seed, b.r.id) || a.r.id.localeCompare(b.r.id));
   const out: T[] = [];
@@ -108,6 +114,60 @@ export function pickStunning<T extends Stunning & { trigger?: string }>(
   }
   for (const r of out) used.add(r.id);
   return out;
+}
+
+/** Relevance a card gains when its main style is one the brief or taste asks for (R2). */
+export const STYLE_MAIN_BONUS = 0.4;
+/** Relevance a card gains when its second style is asked, or its main style is the asked style's neighbour. */
+export const STYLE_NEAR_BONUS = 0.2;
+/** Mechanic score a mechanic gains when its main style is the direction's target style (one buildability step). */
+export const MECHANIC_STYLE_BONUS = 1;
+
+/** A record's main style tag (R2), or null when it has none. */
+export function mainStyleOf(r: { styles?: readonly string[] }): StyleId | null {
+  const first = r.styles?.[0];
+  return isStyleId(first) ? first : null;
+}
+
+/**
+ * How much a card's style tags fit the styles a brief or taste asks for (R2): the main style asked
+ * gains STYLE_MAIN_BONUS, a second style asked or the lead asked style's neighbour STYLE_NEAR_BONUS.
+ * Zero with nothing asked or no tags.
+ */
+export function styleFit(styles: readonly string[] | undefined, asked: readonly StyleId[]): number {
+  if (!styles || styles.length === 0 || asked.length === 0) return 0;
+  const set = new Set<string>(asked);
+  if (set.has(styles[0]!)) return STYLE_MAIN_BONUS;
+  if (styles.slice(1).some((t) => set.has(t)) || styles[0] === neighbourOf(asked[0]!)) return STYLE_NEAR_BONUS;
+  return 0;
+}
+
+/** Mechanic style score (R2): the target's main style as the mechanic's main style is a full bonus, any other overlap half. */
+export function mechanicStyleScore(styles: readonly string[] | undefined, target: readonly string[]): number {
+  if (!styles || styles.length === 0 || target.length === 0) return 0;
+  if (styles[0] === target[0]) return MECHANIC_STYLE_BONUS;
+  return styles.some((t) => target.includes(t)) ? MECHANIC_STYLE_BONUS / 2 : 0;
+}
+
+/**
+ * Diversity rule 5 for leads (R2, docs/styles/INDEX.md): when no style is asked, the first `count`
+ * leads take different main styles where the pool allows. A lead whose main style is already taken
+ * moves after the others (never dropped); untagged leads keep their place. Stable otherwise.
+ */
+export function spreadByStyle<T extends { styles?: readonly string[] }>(leads: readonly T[], count: number): T[] {
+  const front: T[] = [];
+  const later: T[] = [];
+  const used = new Set<string>();
+  for (const l of leads) {
+    const main = mainStyleOf(l);
+    if (front.length < count && (!main || !used.has(main))) {
+      front.push(l);
+      if (main) used.add(main);
+    } else later.push(l);
+  }
+  // Too few distinct styles: fill the front in the original order.
+  while (front.length < Math.min(count, leads.length)) front.push(later.shift()!);
+  return [...front, ...later];
 }
 
 const ENGINE_VERSION = "atlas-v1";
@@ -639,6 +699,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const market = briefMarket(input.brief);
   const arabic = needsArabic(input.brief);
   const key = JSON.stringify([ENGINE_VERSION, input.brief.trim().toLowerCase().replace(/\s+/g, " "), wildness, input.moves ? [...new Set(input.moves)].sort() : null, input.lens ?? null]);
+  // R2 styles (docs/styles): the styles the brief or taste names. Asked: cards and mechanics tagged
+  // with them lead. None asked: the directions spread over different main styles (rule 5).
+  const asked = askedStyles([input.brief, ...taste], briefStyleGenre(input.brief, platform));
 
   // 1. Brief to page, domain and product noun.
   const [pages, domains] = [await source.pages(), await source.domains()];
@@ -724,7 +787,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const base = briefScore(c) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
     const gulf = market === "gulf" && c.region === "gulf" ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
-    return (base + gulf) * weight;
+    return (base + gulf + styleFit(c.styles, asked)) * weight;
   };
   const mmr = (pool: IngredientCard[], n: number, chosen: IngredientCard[] = []): IngredientCard[] => {
     const left = [...pool];
@@ -753,7 +816,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const free = nonLensAll.filter((c) => !aimsAtProtected(pageFitOf.get(c.id)?.reason ?? "", protect));
   const nonLens = free.length >= Math.max(input.count, MIN_LEADS) ? free : nonLensAll;
   const leadsLens = mmr(lensCards, GENERATED);
-  const leads = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
+  const drawn = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
+  // No style asked and no lens: the first directions take different main styles (R2).
+  const leads = asked.length === 0 && !lens ? spreadByStyle(drawn, input.count) : drawn;
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
 
   // 4. The second card (texture or motion) and the clash check.
@@ -831,6 +896,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (second && !ingredients[KIND_SLOT[second.kind]]) ingredients[KIND_SLOT[second.kind]] = second.name;
     const idea = words(lead.name.toLowerCase()).slice(0, 5).join(" ");
     const elements = ranked(lead);
+    const target: readonly string[] = asked.length > 0 ? asked : (lead.styles ?? []);
     // The page reason (J4b) says what on this page the card serves; the domain reason is the fallback.
     const pageReason = pageFitOf.get(lead.id);
     let why = (pageReason && pageReason.score >= 2 && pageReason.reason) || fitOf.get(lead.id)?.reason || `${lead.idea}`;
@@ -840,7 +906,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
       const el = elements[attempt % elements.length]!;
       const list = (await mechanicsFor(el)) ?? [];
       // Mechanics ratings weight buildability (W2); with none it is the plain buildability order.
-      const mechScore = (m: Mechanic) => m.buildability * idWeight(learning, atlasTermKey("mechanic", m.id));
+      // R2: a mechanic tagged with the direction's target style (the asked styles, else the lead's own) gains a step.
+      const mechScore = (m: Mechanic) => m.buildability * idWeight(learning, atlasTermKey("mechanic", m.id)) + mechanicStyleScore(m.styles, target);
       const mech =
         [...list]
           .filter((m) => !usedMechanics.has(m.id))
@@ -905,6 +972,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
         artQueries: [],
         mechanic: drawn.dm,
         cardIds,
+        ...(lead.styles && lead.styles.length > 0 ? { cardStyles: [...lead.styles] } : {}),
         ...(drawn.mech ? { mechanicId: drawn.mech.id } : {}),
         recipeIds: [],
         story: fixCase(`${sentence(lead.idea)} ${sentence(lead.surprise)}${second ? ` ${second.name} adds its ${pick.adds}.` : ""}`),
@@ -1009,8 +1077,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const usedMotion = new Set<string>();
     for (const b of built) {
       const cardsOf = [b.pick.lead, ...(b.pick.second ? [b.pick.second] : [])];
-      const s = pickStunning(shaders, cardsOf, lens?.id, b.element, MAX_SHADERS, usedShaders, `${key}|shader|${b.id}`).map((r) => r.id);
-      const m = pickStunning(motion, cardsOf, lens?.id, b.element, MAX_MOTION, usedMotion, `${key}|motion|${b.id}`).map((r) => r.id);
+      const target = asked.length > 0 ? asked : (b.pick.lead.styles ?? []);
+      const s = pickStunning(shaders, cardsOf, lens?.id, b.element, MAX_SHADERS, usedShaders, `${key}|shader|${b.id}`, target).map((r) => r.id);
+      const m = pickStunning(motion, cardsOf, lens?.id, b.element, MAX_MOTION, usedMotion, `${key}|motion|${b.id}`, target).map((r) => r.id);
       if (s.length > 0) b.d.shaderIds = s;
       if (m.length > 0) b.d.motionIds = m;
     }

@@ -16,6 +16,7 @@ import { TYPE_VOICES } from "../banana-server/lib/direction-detail.ts";
 import { PART_ROLES } from "../banana-server/lib/stitch/types.ts";
 import { SOURCE_REGISTRY } from "../banana-server/lib/sources/registry.ts";
 import { SHOWCASE_TAGS } from "../banana-server/lib/sources/showcase.ts";
+import { isStyleId, MAX_STYLE_TAGS } from "../banana-server/lib/styles/ids.ts";
 
 // ---------------------------------------------------------------------------------------------
 // Section 6.2 types, verbatim.
@@ -79,6 +80,7 @@ export interface IngredientCard {
   avoid: string[];
   artQueries: string[];
   culturalNotes?: string;                       // required for kind "tradition"
+  styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
 }
 
 export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
@@ -97,6 +99,7 @@ export interface Mechanic {
   rtl: string;                                  // what mirrors in Arabic
   a11y: string;                                 // the WCAG 2.2 risk and the fix
   pages: string[];                              // PageAnatomy ids where it pays off
+  styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
 }
 
 export interface LensPack {
@@ -116,6 +119,7 @@ export interface QueryRecipe {
   precision: number;                            // share of top 8 judged good or great, 0 to 1
   judged: number;                               // results judged
   at: string;                                   // YYYY-MM-DD
+  styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
 }
 
 export interface CC0Item {
@@ -146,6 +150,7 @@ export interface ShaderRecipe {
   families: string[];                           // COMPUTED from cardIds by the script
   lensIds: string[];                            // J6 lenses it follows
   culturalNotes?: string;                       // required with a lens or a tradition card: name the tradition exactly
+  styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
 }
 
 export interface MotionKeyframe { offset?: number; easing?: string; transform?: string; opacity?: number; clipPath?: string; filter?: string }
@@ -168,6 +173,7 @@ export interface MotionRecipe {
   families: string[];                           // COMPUTED from cardIds by the script
   lensIds: string[];
   culturalNotes?: string;
+  styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
 }
 
 // Added for P1-J12 (not in section 6.2): one bilingual type pair judged from a rendered specimen.
@@ -196,6 +202,12 @@ export const SACRED_RULE = "no sacred or Quranic text as decoration";
 
 const id = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "ids are lowercase words joined by hyphens");
 const text = z.string().trim().min(1);
+/** R2 style tags: known style ids (banana-server lib/styles/ids.ts), no repeats, main style first, at most 2. */
+export const styleTags = z
+  .array(z.string().refine((s: string): boolean => isStyleId(s), "styles must be style ids from docs/styles/INDEX.md"))
+  .min(1)
+  .max(MAX_STYLE_TAGS)
+  .refine((a) => new Set(a).size === a.length, "styles must not repeat");
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "colors are #rrggbb hex");
 const words = (max: number) => text.refine((s) => s.split(/\s+/).length <= max, `at most ${max} words`);
 const fraction = z.number().min(0).max(1);
@@ -267,6 +279,7 @@ export const IngredientCardSchema = z
     avoid: z.array(text),
     artQueries: z.array(text).min(1),
     culturalNotes: text.optional(),
+    styles: styleTags.optional(),
   })
   .refine((c) => c.kind !== "tradition" || !!c.culturalNotes, { message: "culturalNotes is required for kind tradition", path: ["culturalNotes"] });
 
@@ -296,6 +309,7 @@ export const MechanicSchema = z.object({
   rtl: text,
   a11y: text,
   pages: z.array(id),
+  styles: styleTags.optional(),
 });
 
 export const LensPackSchema = z.object({
@@ -335,6 +349,7 @@ export const QueryRecipeSchema = z.object({
   precision: fraction,
   judged: z.number().int().min(0),
   at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  styles: styleTags.optional(),
 });
 
 const httpsUrl = z.string().refine((u) => /^https:\/\/[^\s]+$/.test(u), "https URL");
@@ -374,6 +389,7 @@ const ties = {
   families: z.array(text),
   lensIds: z.array(id),
   culturalNotes: text.optional(),
+  styles: styleTags.optional(),
 };
 const uses = z.array(UiElementSchema).min(1);
 

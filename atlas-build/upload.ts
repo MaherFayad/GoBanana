@@ -60,6 +60,7 @@ function main(argv: readonly string[]): number {
   writeServerLayout(serverOut, layout);
   const picked = kinds.length > 0 ? { ...layout, files: new Map([...layout.files].filter(([p]) => kinds.includes(p.split("/")[0]!))) } : layout;
   if (layout.skipped.length > 0) console.log(`Not uploaded (the server does not read them): ${layout.skipped.join(", ")}.`);
+  for (const [kind, c] of Object.entries(layout.overlays)) console.log(`R2 overlays on ${kind}: ${c.tagged} style tagged, ${c.rewritten} rewritten, ${c.dropped} dropped.`);
 
   const serverDir = join(dirname(PATHS.serverManifest), "..", "..");
   const rel = (p: string) => relative(serverDir, p).replace(/\\/g, "/");
