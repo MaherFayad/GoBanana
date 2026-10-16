@@ -21,10 +21,11 @@ description: كل الأدوات الـ 17 التي يعطيها خادم GoBana
 | [`open_canvas`](/docs/ar/reference/tools/open-canvas/) | تعرض لوحة داخل المحادثة، أو تنشئ واحدة وتعرضها | الكل | لا | تنشئ لوحة إذا لم يُمرر `canvasId` |
 | [`get_canvas`](/docs/ar/reference/tools/get-canvas/) | تقرأ لوحة، أو تسرد آخر 10 لوحات لك | الكل | لا | لا |
 | [`get_snapshot`](/docs/ar/reference/tools/get-snapshot/) | تعرض للوكيل قسما أو صفحة فرانكنشتاين كصور مصغرة، جزءا جزءا | الكل | لا | لا |
-| [`add_to_canvas`](/docs/ar/reference/tools/add-to-canvas/) | تضع المراجع وشاشات Mobbin والملاحظات وعينات الألوان والأقسام | الكل (المجانية: 40 عنصرا) | لا | نعم |
+| [`add_to_canvas`](/docs/ar/reference/tools/add-to-canvas/) | تضع المراجع وشاشات Mobbin ومنشورات X والملاحظات وعينات الألوان والأقسام | الكل (المجانية: 40 عنصرا) | لا | نعم |
 | [`arrange_canvas`](/docs/ar/reference/tools/arrange-canvas/) | ترتب اللوحة أو قسما واحدا منها | الكل | لا | نعم |
 | [`delete_canvas`](/docs/ar/reference/tools/delete-canvas/) | تحذف اللوحة نهائيا، مع `confirm: true` | الكل | لا | نعم، حذف نهائي |
 | **Frankenstein it** | | | | |
+| [`attach_screenshot`](/docs/ar/reference/tools/attach-screenshot/) | ترفق لقطة شاشة صوّرها وكيلك لمنشور X واحد، عشان ينقص منها | Pro (التجريبية: الكل) | لا | نعم، تحفظ صورة مرفوعة |
 | [`cut_parts`](/docs/ar/reference/tools/cut-parts/) | تقص أجزاء (مستطيلات قص) إلى مكتبة الأجزاء | الكل | لا | نعم |
 | [`frankenstein_page`](/docs/ar/reference/tools/frankenstein-page/) | تكدس الأجزاء في نسخ صفحات جديدة | الكل | لا | نعم |
 | [`remix_frankenstein`](/docs/ar/reference/tools/remix-frankenstein/) | تصنع نسخا من صفحة مع قفل | الكل | لا | نعم |

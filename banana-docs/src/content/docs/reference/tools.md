@@ -21,10 +21,11 @@ The GoBanana MCP server at `https://gobanana-server.maherfayad55.workers.dev/api
 | [`open_canvas`](/docs/reference/tools/open-canvas/) | Shows a board inline, or creates and shows one | All | No | Creates one without `canvasId` |
 | [`get_canvas`](/docs/reference/tools/get-canvas/) | Reads a board, or lists your 10 most recent | All | No | No |
 | [`get_snapshot`](/docs/reference/tools/get-snapshot/) | Shows the agent a section or a Frankenstein page as thumbnails, part by part | All | No | No |
-| [`add_to_canvas`](/docs/reference/tools/add-to-canvas/) | Places references, Mobbin screens, notes, swatches and sections | All (Free: 40 items) | No | Yes |
+| [`add_to_canvas`](/docs/reference/tools/add-to-canvas/) | Places references, Mobbin screens, X posts, notes, swatches and sections | All (Free: 40 items) | No | Yes |
 | [`arrange_canvas`](/docs/reference/tools/arrange-canvas/) | Lays out a board or one section | All | No | Yes |
 | [`delete_canvas`](/docs/reference/tools/delete-canvas/) | Deletes a board for good, with `confirm: true` | All | No | Yes, destructive |
 | **Frankenstein it** | | | | |
+| [`attach_screenshot`](/docs/reference/tools/attach-screenshot/) | Attaches your agent's screenshot of one X post, so it can be cut | Pro (beta: all) | No | Yes, stores an upload |
 | [`cut_parts`](/docs/reference/tools/cut-parts/) | Cuts parts (crop rectangles) into the parts library | All | No | Yes |
 | [`frankenstein_page`](/docs/reference/tools/frankenstein-page/) | Stacks parts into new page variants | All | No | Yes |
 | [`remix_frankenstein`](/docs/reference/tools/remix-frankenstein/) | Makes variants of a page with a lock | All | No | Yes |

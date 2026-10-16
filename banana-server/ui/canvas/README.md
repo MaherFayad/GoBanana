@@ -29,6 +29,8 @@ same `canvas/CanvasApp` as the web canvas at `/c/:id`, built into one HTML file.
    "Load the latest version" or "Keep my version". Nothing is overwritten silently.
 
 Images load in the browser from their source hosts. The view never fetches image bytes.
+
+X posts (`xpost` items) are link cards here: the author, "Open on X" and the note, never the post text and never X's embed. The CSP declares no X host and no `frameDomains`; X's widget script also cannot draw a post inside the opaque-origin sandbox, and X's developer terms bar showing X content inside a frame (DECISIONS.md 2026-10-16). The web canvas shows X's official embed. Tested in `e2e/canvas-xpost.spec.ts`.
 Source links open through the host (`ui/open-link`).
 
 "Show in chat" (P0-12, `ui/canvas/ShowPage.tsx`, shown when the host advertises

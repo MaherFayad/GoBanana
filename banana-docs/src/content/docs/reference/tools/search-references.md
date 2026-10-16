@@ -52,6 +52,8 @@ A direction search runs several lanes at once, each with its own wording:
 
 Your agent still judges every result and rates the rest with [`rate_references`](/docs/reference/tools/rate-references/).
 
+X post links in the results are never references (no image is kept): the reply lists up to 5 of them as `xPosts`, links only, and the agent can place one with `add_to_canvas` `{ "type": "xpost", "url" }`. See [X posts](/docs/reference/sources/#x-posts).
+
 ## Example call
 
 ```json

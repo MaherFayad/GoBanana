@@ -173,6 +173,7 @@ export default defineConfig({
 								tool('add_to_canvas'),
 								tool('arrange_canvas'),
 								tool('delete_canvas'),
+								tool('attach_screenshot'),
 								tool('cut_parts'),
 								tool('frankenstein_page'),
 								tool('remix_frankenstein'),

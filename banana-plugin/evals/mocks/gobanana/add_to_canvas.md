@@ -16,6 +16,7 @@ Then one line per input item, in order:
 - reference: "<item id>: reference <referenceId> in <section id or "board">, <"Art direction row" if the referenceId starts with "a" or its tray zone is art, else "UI references grid">, note: <the note, or "none">"
 - Any reference, screen or note item with a culture object: add ", culture: <tradition> (<tier>)" at the end of its line. If culture has a tier other than open, care or sacred, or text over its limits, write "Skipped item <n>: culture must be { tradition, region, community?, tier: "open" | "care" | "sacred", meaning, credit, sourceUrl? } in plain text." instead.
 - screen: "<item id>: Mobbin screen <app> <title> in <section id, the section of its directionId, or "board">, UI references grid, source mobbin.com <sourceUrl>, note: <the note, or "none">". If sourceUrl is not an https page on mobbin.com or imageUrl is not https on mobbin.com, write "Skipped item <n>: sourceUrl must be the https link to the screen's page on mobbin.com." instead.
+- xpost: "<item id>: X post <url> in <section id, the section of its directionId, or "board">, shown with X's own embed on the web board, note: <the note, or "none">". If url is not an https link to one post on x.com or twitter.com (<handle>/status/<digits>), write "Skipped item <n>: that is not a link to one X post (x.com/<handle>/status/<id>)." instead.
 - note: "<item id>: note in <section id or "board">: <the first 60 characters of the text>"
 - swatch: "<item id>: swatch <hex> <role>"
 Then end with these lines:

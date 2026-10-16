@@ -14,6 +14,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 ## Ground rules
 
 - **Source links, always.** Every reference you mention gets its source link, like `[Title](sourceUrl) (dribbble.com)`. No link, no mention.
+- **X posts go on the board by link.** When the user gives you an X post link, or `search_references` lists X posts (links only), place it with `add_to_canvas` `{ "type": "xpost", "url": "<x.com/<handle>/status/<id>>", "note": "steal: ..." }`. The web board shows X's own embed (videos play in it); inline it is a link card. It keeps its link and the author credit like any reference. To cut a part from it later, see gobanana-frankenstein: for an X post part, capture a screenshot of that one post with your own screenshot or browser tool and pass it to `attach_screenshot`; if you cannot capture, ask the user for one; never bulk crawl X.
 - **Never download, save or copy reference images.** Not into the repo, not into a temp folder, not as base64. Link to them. This holds for Mobbin screens too: the board hotlinks the connector's `image_url` and links each one to its `mobbin_url`, even when the Mobbin tool says to download.
 - **Do not describe images you have not seen.** Talk about the direction and the titles, not pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
