@@ -11,6 +11,8 @@
  *   it unless a rewrite with the same id exists.
  * - <kind>-rewrites (r2-rewrite-shaders, r2-rewrite-motion, r2-mechanics-fix): whole records that
  *   replace the record with the same id (render checked by the job that wrote them).
+ * - rewrite-verdicts (r2-taste-rewrites): the same judge on the rewrites. A rewrite judged "drop" or
+ *   "rewrite" again is not given a third try: the record is left out.
  * - recipes: styles from their card (concept and art lanes), their web showcase style (website
  *   baseline keys), else the words of their query (deck, brand and the rest), when any.
  */
@@ -26,23 +28,25 @@ export type StyleTag = { id: string; kind: TaggedKind; styles: string[] };
 export type TasteVerdict = { id: string; kind: "shaders" | "motion"; verdict: "keep" | "rewrite" | "drop" };
 
 /** Job kinds that only hold overlays (the server layout skips them). */
-export const OVERLAY_KINDS = ["style-tags", "taste-verdicts", ...TAGGED_KINDS.map((k) => `${k}-rewrites`)];
+export const OVERLAY_KINDS = ["style-tags", "taste-verdicts", "rewrite-verdicts", ...TAGGED_KINDS.map((k) => `${k}-rewrites`)];
 
 export type Overlays = {
   tags: Map<string, Map<string, string[]>>;
   verdicts: Map<string, Map<string, TasteVerdict["verdict"]>>;
+  rewriteVerdicts: Map<string, Map<string, TasteVerdict["verdict"]>>;
   rewrites: Map<string, Map<string, unknown>>;
 };
 
 /** The overlays in a set of job kinds (readJobRecords). Empty maps when none was built. */
 export function overlaysFrom(recordsByJobKind: ReadonlyMap<string, readonly unknown[]>): Overlays {
-  const ov: Overlays = { tags: new Map(), verdicts: new Map(), rewrites: new Map() };
+  const ov: Overlays = { tags: new Map(), verdicts: new Map(), rewriteVerdicts: new Map(), rewrites: new Map() };
   const by = <V>(m: Map<string, Map<string, V>>, kind: string) => {
     if (!m.has(kind)) m.set(kind, new Map());
     return m.get(kind)!;
   };
   for (const t of (recordsByJobKind.get("style-tags") ?? []) as StyleTag[]) by(ov.tags, t.kind).set(t.id, t.styles);
   for (const v of (recordsByJobKind.get("taste-verdicts") ?? []) as TasteVerdict[]) by(ov.verdicts, v.kind).set(v.id, v.verdict);
+  for (const v of (recordsByJobKind.get("rewrite-verdicts") ?? []) as TasteVerdict[]) by(ov.rewriteVerdicts, v.kind).set(v.id, v.verdict);
   for (const kind of TAGGED_KINDS) {
     for (const r of (recordsByJobKind.get(`${kind}-rewrites`) ?? []) as { id: string }[]) by(ov.rewrites, kind).set(r.id, r);
   }
@@ -77,10 +81,15 @@ export function applyOverlays<T>(kind: string, records: readonly T[], ov: Overla
   if (!isTagged(kind)) return { records: [...records], counts };
   const rewrites = ov.rewrites.get(kind) ?? new Map<string, unknown>();
   const verdicts = ov.verdicts.get(kind) ?? new Map<string, string>();
+  const second = ov.rewriteVerdicts.get(kind) ?? new Map<string, string>();
   const tags = ov.tags.get(kind) ?? new Map<string, string[]>();
   const out = (records as readonly Rec[]).flatMap((r): Rec[] => {
     let rec = r;
     const re = rewrites.get(r.id!) as Rec | undefined;
+    if (re && (second.get(r.id!) === "drop" || second.get(r.id!) === "rewrite")) {
+      counts.dropped++;
+      return [];
+    }
     if (re) {
       counts.rewritten++;
       rec = re;

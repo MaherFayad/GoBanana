@@ -27,7 +27,7 @@ import type { MotionRecipe, ShaderRecipe } from "../schema.ts";
 import type { StyleTag } from "../lib/overlays.ts";
 
 type Kind = "shaders" | "motion";
-type Input = { kind: Kind; rec: ShaderRecipe | MotionRecipe; styles: string[] };
+export type Input = { kind: Kind; rec: ShaderRecipe | MotionRecipe; styles: string[] };
 
 const score = z.number().int().min(1).max(5);
 export const TasteVerdictSchema = z.object({
@@ -58,7 +58,7 @@ export function verdictOf(v: { advice: "keep" | "rewrite" | "drop"; score: numbe
 
 const styleBlock = STYLES.map((s) => `- ${s.id}: ${s.definition} Great: ${s.great} Cheap: ${s.cheap}`).join("\n");
 
-const SYSTEM = `You are the taste judge for GoBanana's stunning layer: GLSL shaders and UI motion recipes a developer drops into a shipped product screen (a hero band, a loading or success moment, an empty state, a paywall plan card, a list that arrives). Each one carries the idea of an ingredient card (a material, era, object, tradition, scale or rule) or a cultural lens. You judge one record at a time from its rendered frames and its data, against the owner's taste bar and the style it is tagged with.
+export const SYSTEM = `You are the taste judge for GoBanana's stunning layer: GLSL shaders and UI motion recipes a developer drops into a shipped product screen (a hero band, a loading or success moment, an empty state, a paywall plan card, a list that arrives). Each one carries the idea of an ingredient card (a material, era, object, tradition, scale or rule) or a cultural lens. You judge one record at a time from its rendered frames and its data, against the owner's taste bar and the style it is tagged with.
 
 The owner's taste bar (docs/taste-bar.md, the owner's own Pinterest boards of shipped product UI):
 - Shipped-grade craft, not concept shots or demo-scene art. It must sit behind or beside real UI and make the screen feel made, not busy.
@@ -110,7 +110,7 @@ function ties(rec: ShaderRecipe | MotionRecipe): string {
   return [...cardText, ...lensText].join("\n") || "none";
 }
 
-function describe(input: Input): string {
+export function describe(input: Input): string {
   const r = input.rec;
   const head = `Record id: ${r.id} (${input.kind === "shaders" ? "shader" : "motion recipe"})
 Name: ${r.name}

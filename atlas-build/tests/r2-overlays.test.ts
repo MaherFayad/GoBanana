@@ -35,6 +35,19 @@ describe("R2 overlays", () => {
     expect(counts).toEqual({ tagged: 1, rewritten: 1, dropped: 2 });
   });
 
+  it("a rewrite the second look turns down leaves the record out", () => {
+    const ov = overlaysFrom(
+      kinds({
+        "taste-verdicts": [{ id: "a", kind: "motion", verdict: "rewrite" }, { id: "b", kind: "motion", verdict: "rewrite" }],
+        "motion-rewrites": [{ id: "a", v: 2 }, { id: "b", v: 2 }],
+        "rewrite-verdicts": [{ id: "a", kind: "motion", verdict: "keep" }, { id: "b", kind: "motion", verdict: "rewrite" }],
+      }),
+    );
+    const { records, counts } = applyOverlays("motion", [{ id: "a", v: 1 }, { id: "b", v: 1 }, { id: "c", v: 1 }], ov);
+    expect(records).toEqual([{ id: "a", v: 2 }, { id: "c", v: 1 }]);
+    expect(counts).toEqual({ tagged: 0, rewritten: 1, dropped: 1 });
+  });
+
   it("the server layout carries the overlays and skips the overlay kinds", () => {
     const layout = serverLayout(
       kinds({
