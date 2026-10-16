@@ -23,6 +23,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { JUDGE, ROOT } from "../config.ts";
 import { browser } from "../lib/browser.ts";
 import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
@@ -32,7 +33,7 @@ import { CC0ItemSchema, type CC0Item } from "../schema.ts";
 type Category = "textiles" | "ornament" | "posters" | "prints" | "maps" | "architecture" | "typography";
 const CATEGORIES: Category[] = ["textiles", "ornament", "posters", "prints", "maps", "architecture", "typography"];
 
-type PoolItem = {
+export type PoolItem = {
   id: string;
   museum: "met" | "cleveland";
   category: Category;
@@ -236,13 +237,39 @@ export function orderPool(items: PoolItem[]): PoolItem[] {
   return out;
 }
 
-async function loadPool(ctx: JobContext): Promise<PoolItem[]> {
-  if (existsSync(POOL_FILE)) return (JSON.parse(readFileSync(POOL_FILE, "utf8")) as PoolItem[]).filter((it) => (it.museum as string) !== "aic");
+/**
+ * The judged part of the pool, committed (gzip JSON, metadata and URLs only, never image bytes), so
+ * `--from-raw` rebuilds the index from the saved replies with no network. Sheet N is items
+ * 16N to 16N+15 of the ordered pool. Written after a real harvest by `savePoolSnapshot`.
+ */
+export const POOL_SNAPSHOT = join(ROOT, "data", "j9-pool.json.gz");
+
+/** Writes the first `sheets` sheets of the pool to the committed snapshot. */
+export function savePoolSnapshot(pool: readonly PoolItem[], sheets: number, file = POOL_SNAPSHOT): void {
+  writeFileSync(file, gzipSync(JSON.stringify(pool.slice(0, sheets * PER_SHEET))));
+}
+
+/** The committed snapshot, or null when it is missing. */
+export function readPoolSnapshot(file = POOL_SNAPSHOT): PoolItem[] | null {
+  if (!existsSync(file)) return null;
+  return JSON.parse(gunzipSync(readFileSync(file)).toString("utf8")) as PoolItem[];
+}
+
+/**
+ * The pool: the local harvest cache, else the committed snapshot. Only a real run harvests: with
+ * `--from-raw` a missing pool is an error, never a refetch of the museum APIs.
+ */
+export async function loadPool(ctx: JobContext, files: { cache?: string; snapshot?: string } = {}): Promise<PoolItem[]> {
+  const cache = files.cache ?? POOL_FILE;
+  if (existsSync(cache)) return (JSON.parse(readFileSync(cache, "utf8")) as PoolItem[]).filter((it) => (it.museum as string) !== "aic");
+  const snapshot = readPoolSnapshot(files.snapshot);
+  if (snapshot) return snapshot;
+  if (ctx.run?.fromRaw || ctx.dry) throw new Error(`j9-cc0: no pool in ${cache} or ${files.snapshot ?? POOL_SNAPSHOT}; --from-raw and --dry never refetch the museum APIs`);
   ctx.log("Harvesting the museum APIs (metadata and URLs only) ...");
   const all = [...(await harvestCleveland(ctx.log)), ...(await harvestMet(ctx.log))];
   const pool = orderPool(all);
   mkdirSync(join(ROOT, ".cache"), { recursive: true });
-  writeFileSync(POOL_FILE, JSON.stringify(pool));
+  writeFileSync(cache, JSON.stringify(pool));
   return pool;
 }
 
@@ -340,6 +367,13 @@ export default defineJob<Sheet, CC0Item>({
 
   loadInputs: async (ctx) => {
     const pool = await loadPool(ctx);
+    // A real run keeps the committed snapshot in step with the sheets it judges.
+    const run = ctx.run;
+    if (run && !run.fromRaw && !ctx.dry) {
+      const sheets = Math.ceil(pool.length / PER_SHEET);
+      const judged = Math.min(sheets, run.limit === undefined ? sheets : run.offset + run.limit);
+      if (judged > (readPoolSnapshot()?.length ?? 0) / PER_SHEET) savePoolSnapshot(pool, judged);
+    }
     const counts = new Map<string, number>();
     for (const it of pool) counts.set(`${it.museum} ${it.category}`, (counts.get(`${it.museum} ${it.category}`) ?? 0) + 1);
     ctx.log(`Pool: ${pool.length} public domain or CC0 items. ${[...counts].map(([k, v]) => `${k} ${v}`).join(", ")}`);

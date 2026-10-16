@@ -4,6 +4,7 @@
  *
  *   pages/<nn>, domains/<nn>, lenses/<nn>, slop/<nn>   read whole (split by size, any names)
  *   fit/<domainId>, mechanics/<UiElement>, cc0/<region>, type-pairs/<voice>  one named shard each
+ *                                                    (a cc0 region over the limit: parts <region>_00, _01, ...)
  *   cards/<bucket>, lines/<bucket>, recipes/<bucket>     hash buckets: bucketOf(id, count)
  *
  * This file turns the job output into that layout and the loader's manifest format
@@ -32,7 +33,7 @@ export type ServerManifest = { version: string; hash: string; shards: ServerShar
 
 type Rule =
   | { kind: ServerKind; by: "size" }
-  | { kind: ServerKind; by: "name"; nameOf: (r: never) => string }
+  | { kind: ServerKind; by: "name"; nameOf: (r: never) => string; split?: boolean }
   | { kind: ServerKind; by: "bucket"; idOf: (r: never) => string };
 
 /** Job kind (out/v1/<kind>/) to server kind and placement. */
@@ -47,7 +48,8 @@ export const JOB_KINDS: Readonly<Record<string, Rule>> = {
   "type-pairs": { kind: "type-pairs", by: "name", nameOf: (r: { voice: string }) => r.voice },
   fit: { kind: "fit", by: "name", nameOf: (r: { domainId: string }) => r.domainId },
   mechanics: { kind: "mechanics", by: "name", nameOf: (r: { element: string }) => r.element },
-  cc0: { kind: "cc0", by: "name", nameOf: (r: { region?: string }) => r.region || "global" },
+  // A region over the size limit is split into parts "<region>_00", "<region>_01", ... (cc0Parts).
+  cc0: { kind: "cc0", by: "name", nameOf: (r: { region?: string }) => r.region || "global", split: true },
   cards: { kind: "cards", by: "bucket", idOf: (r: { id: string }) => r.id },
   "card-elements": { kind: "lines", by: "bucket", idOf: (r: { cardId: string }) => r.cardId },
   lines: { kind: "lines", by: "bucket", idOf: (r: { cardId: string }) => r.cardId },
@@ -84,15 +86,20 @@ export function bucketize(records: readonly unknown[], idOf: (r: never) => strin
   throw new Error("could not fit the records in 999 buckets");
 }
 
-function byName(kind: string, records: readonly unknown[], nameOf: (r: never) => string, maxBytes: number): Map<string, unknown[]> {
+function byName(kind: string, records: readonly unknown[], nameOf: (r: never) => string, maxBytes: number, split = false): Map<string, unknown[]> {
   const out = new Map<string, unknown[]>();
   for (const r of records) {
     const name = String((nameOf as (x: unknown) => string)(r));
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(name)) throw new Error(`${kind}: shard name "${name}" must be letters, digits, hyphens or underscores`);
     out.set(name, [...(out.get(name) ?? []), r]);
   }
-  for (const [name, rows] of out) {
+  for (const [name, rows] of [...out]) {
     const b = bytesOf(rows);
+    if (b > maxBytes && split) {
+      out.delete(name);
+      for (const [part, partRows] of bySize(rows, maxBytes)) out.set(`${name}_${part}`, partRows);
+      continue;
+    }
     if (b > maxBytes) throw new Error(`${kind}/${name} is ${b} bytes, over ${maxBytes}: the loader reads it as one shard, so trim it or change the layout`);
   }
   return out;
@@ -126,7 +133,7 @@ export function serverLayout(recordsByJobKind: ReadonlyMap<string, readonly unkn
   for (const [kind, { rule, records }] of [...joined].sort(([a], [b]) => a.localeCompare(b))) {
     if (records.length === 0) continue;
     const plan =
-      rule.by === "size" ? bySize(records, maxBytes) : rule.by === "name" ? byName(kind, records, rule.nameOf, maxBytes) : bucketize(records, rule.idOf, maxBytes);
+      rule.by === "size" ? bySize(records, maxBytes) : rule.by === "name" ? byName(kind, records, rule.nameOf, maxBytes, rule.split) : bucketize(records, rule.idOf, maxBytes);
     for (const [shard, rows] of [...plan].sort(([a], [b]) => a.localeCompare(b))) {
       const text = shardText(rows);
       files.set(`${kind}/${shard}.json`, text);

@@ -6,7 +6,7 @@
  * `references` table (purged after 30 days), so nothing new is stored. Baseline results go to a
  * "Shipped today" section, never into a direction. Pure.
  */
-import type { CanvasBaseline } from "@/canvas/types";
+import { MAX_BASELINE_SENT, type CanvasBaseline } from "@/canvas/types";
 import type { LaneTexts, PlannedRequest } from "./plan";
 import type { LaneName } from "./types";
 
@@ -42,7 +42,29 @@ export function withoutBaselineLane<T extends Pick<PlannedRequest, "lane">>(plan
  * that ran at once both searched the lane), anything else is replaced.
  */
 export function mergeBaseline(existing: CanvasBaseline | null | undefined, next: CanvasBaseline, now: Date): CanvasBaseline {
-  if (!isFreshBaseline(existing, next.key, now)) return { ...next, referenceIds: next.referenceIds.slice(0, MAX_BASELINE_IDS) };
+  if (!isFreshBaseline(existing, next.key, now)) return withSent({ ...next, referenceIds: next.referenceIds.slice(0, MAX_BASELINE_IDS) }, next.sent ?? []);
   const ids = [...new Set([...existing.referenceIds, ...next.referenceIds])].slice(0, MAX_BASELINE_IDS);
-  return { ...existing, referenceIds: ids };
+  return withSent({ ...existing, referenceIds: ids }, [...(existing.sent ?? []), ...(next.sent ?? [])]);
+}
+
+/**
+ * One key per search request: its query, source and page. Requests with the same key on one canvas return
+ * the same results, which are already on the canvas, so a later direction search skips them (Gate 2:
+ * brief-level lanes such as the mobile taste lane and the topic galleries repeated across directions).
+ */
+export function sentKey(r: Pick<PlannedRequest, "query" | "site" | "page">): string {
+  return `${r.site ?? "web"}|${r.page ?? 1}|${r.query.trim().toLowerCase().replace(/\s+/g, " ")}`;
+}
+
+/** The plan without requests this canvas already sent for the baseline key. */
+export function withoutSent<T extends Pick<PlannedRequest, "query" | "site" | "page">>(plan: readonly T[], baseline: CanvasBaseline | null | undefined): T[] {
+  const sent = new Set(baseline?.sent ?? []);
+  return sent.size === 0 ? [...plan] : plan.filter((r) => !sent.has(sentKey(r)));
+}
+
+/** The baseline with `sent` set to these keys (deduped, the newest MAX_BASELINE_SENT kept). */
+export function withSent(baseline: CanvasBaseline, sent: readonly string[]): CanvasBaseline {
+  const keys = [...new Set(sent)].slice(-MAX_BASELINE_SENT);
+  const { sent: _drop, ...rest } = baseline;
+  return keys.length > 0 ? { ...rest, sent: keys } : rest;
 }

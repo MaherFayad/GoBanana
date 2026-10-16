@@ -34,7 +34,7 @@ describe("search plan v2 (P1-I3)", () => {
     expect(plan.lanes.fidelity).toBe(recipe("baseline").query);
     expect(plan.lanes.bridge).toBe(recipe("concept", "luggage-tag").query);
     expect(plan.lanes.bridgeTitleFilter).toBe(false);
-    expect(plan.lanes.component?.[0]).toBe("plan picker header app ui");
+    expect(plan.lanes.component?.[0]).toBe("esim plan picker header app ui");
     // The recipe with no product or page noun never words a UI lane, however precise.
     expect(plan.lanes.component).not.toContain("big header app ui");
     expect(plan.lanes.art?.[0]).toBe(recipe("art", "luggage-tag").query);
@@ -70,7 +70,7 @@ describe("search plan v2 (P1-I3)", () => {
   });
 
   it("searches the CC0 index shards locally, only on allowed image hosts", async () => {
-    expect(cc0Regions("gulf")).toEqual(["gulf", "global"]);
+    expect(cc0Regions("gulf")).toEqual(["gulf", "mena", "global"]);
     expect(cc0Regions(null)).toEqual(["global"]);
     const hit = searchCc0(CC0, ["luggage tag"], () => true);
     expect(hit.map((r) => r.title)).toEqual(["Travel label for a steamship line"]);
