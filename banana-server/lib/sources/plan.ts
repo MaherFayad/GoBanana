@@ -16,6 +16,9 @@
  *                (fidelity) lane in place of the fidelity Pinterest page
  *   component    "{core} {page} {component} {surface} {UI_NEG}"  dribbble.com/shots, up to 2 from the brief and pages
  *   baseline galleries  one head word on Nicelydone, then Refero (web app, baseline lane only)
+ *   showcase     website briefs that name a showcase style (playful, 3D, WebGL, motion, ...):
+ *                showcase galleries search the style's words, not the topic: Awwwards "playful
+ *                illustration", Craftwork "playful" (lib/sources/showcase.ts)
  *
  * The hero lane ("{style} {domain} app single screen") is no longer planned (P0-17); an agent can
  * still re-search the hero lane with its own words.
@@ -88,6 +91,13 @@ export type LaneTexts = {
   baselineGalleries?: SourceSite[];
   /** Art galleries this direction searches (style tag matches only). */
   artGalleries?: SourceSite[];
+  /**
+   * Website briefs that name a showcase style (lib/sources/showcase.ts): the words a phrase
+   * showcase gallery searches in place of the topic ("playful illustration" on Awwwards).
+   */
+  showcase?: string;
+  /** The same for one-word showcase galleries ("playful" on Craftwork), when a named style has one. */
+  showcaseWord?: string;
   /** Platform the UI lanes were worded for (lib/platform.ts). */
   platform?: Platform;
   /**
@@ -147,6 +157,16 @@ export function galleryWords(site: SourceSite, topic: string): string {
   // 94% on page, "analytics dashboard" 56%).
   const words = (entry.oneWord ? headWord(plain) : plain) || "design";
   return entry.suffix ? `${words} ${entry.suffix}` : words;
+}
+
+/**
+ * A showcase gallery's words for these lanes: the showcase phrase or one word when the lanes name a
+ * showcase style and the gallery is a showcase gallery of that kind, else null (topic words).
+ */
+export function showcaseWords(site: SourceSite, lanes: Pick<LaneTexts, "showcase" | "showcaseWord">): string | null {
+  const kind = sourceEntry(site).showcase;
+  if (!kind || !lanes.showcase) return null;
+  return (kind === "phrase" ? lanes.showcase : lanes.showcaseWord) ?? null;
 }
 
 /** Words that are never a gallery's head word: the surface and page shells. */
@@ -288,7 +308,7 @@ function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
   };
   const galleries = lanes.galleries ?? [];
   const addGallery = (site: SourceSite | undefined, lane: LaneName = "gallery") => {
-    if (site) out.push({ lane, query: galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
+    if (site) out.push({ lane, query: showcaseWords(site, lanes) ?? galleryWords(site, lanes.topic ?? lanes.fidelity ?? ""), site, ...(avoid ? { avoidWords: avoid } : {}) });
   };
   const baseGalleries = lanes.baselineGalleries ?? [];
   // Website and web app briefs: a platform gallery replaces the Pinterest fidelity page (Pinterest
