@@ -11,7 +11,7 @@
  * keep images small; an image without a small variant that is over the cap is skipped and named.
  */
 import { fetchThumbIntoMemory, type FetchLike } from "@/lib/palette/fetch";
-import { allowlistFromEnv, isAllowedImageUrl, parseAllowlist, type ImageHostAllowlist } from "@/lib/sources/allowlist";
+import { allowlistFromEnv, isAllowedImageUrl, parseAllowlist, withoutHosts, type ImageHostAllowlist } from "@/lib/sources/allowlist";
 import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
 
@@ -101,10 +101,12 @@ export function pickThumbUrl(t: Pick<ThumbTarget, "imageUrl" | "thumbUrl">, allo
 /**
  * The hosts thumbnails may come from: the image allowlist plus Mobbin's image hosts (the
  * connector's short link and the CDN it redirects to), so agents see the Mobbin screens they
- * placed. Thumbnails only; search and extract_palette keep the plain allowlist.
+ * placed. Thumbnails only; search and extract_palette keep the plain allowlist. Hosts whose images
+ * are never a model input (NO_MODEL_IMAGE_HOSTS: Best Designs on X) are left out, so their
+ * results show on the canvas and in the tray but never reach the agent as pictures.
  */
 export function thumbAllowlist(base: ImageHostAllowlist = allowlistFromEnv()): ImageHostAllowlist {
-  return parseAllowlist([...base.entries, ...MOBBIN_IMAGE_HOSTS]);
+  return withoutHosts(parseAllowlist([...base.entries, ...MOBBIN_IMAGE_HOSTS]));
 }
 
 /** Image type from the first bytes. Only formats agents' clients accept: JPEG, PNG, GIF, WebP. */
