@@ -13,6 +13,8 @@ import {
   createWebSearchAdapter,
   itemKey,
   laneQuotas,
+  TAIL_LANE_QUOTA,
+  zoneQuotas as zoneQuotasForTail,
   mergeLanes,
   parseAllowlist,
   planRequests,
@@ -407,6 +409,23 @@ describe("runPlan with the bridge lane and the UI gate", () => {
     })),
   });
 
+  it("caps the bridge lane at one UI place while another UI lane has a quota (Gate 2 fix)", () => {
+    const q = zoneQuotasForTail(12, ["fidelity", "taste", "bridge", "art"]);
+    expect(q.get("bridge")).toBe(TAIL_LANE_QUOTA);
+    expect((q.get("fidelity") ?? 0) + (q.get("taste") ?? 0) + (q.get("bridge") ?? 0)).toBe(12 - q.get("art")!);
+    // The only UI lane keeps every UI place.
+    expect(zoneQuotasForTail(12, ["bridge", "art"]).get("bridge")).toBe(12 - zoneQuotasForTail(12, ["bridge", "art"]).get("art")!);
+    const ref = (lane: "bridge" | "taste", i: number) => ({ id: `${lane}${i}`, lane, sourceUrl: `https://x.test/${lane}/${i}`, imageUrl: `https://x.test/${lane}/${i}.png` }) as never;
+    const lists = new Map([
+      ["bridge", [0, 1, 2, 3].map((i) => ref("bridge", i))],
+      ["taste", [0].map((i) => ref("taste", i))],
+    ] as const);
+    const quotas = new Map([["bridge", 1], ["taste", 7]] as const);
+    const keyOf = (r: { sourceUrl: string }) => [r.sourceUrl];
+    expect(mergeLanes(lists as never, quotas as never, 8, keyOf as never, { capped: new Set(["bridge"]) }).map((r) => r.id)).toEqual(["bridge0", "taste0"]);
+    expect(mergeLanes(lists as never, quotas as never, 8, keyOf as never).length).toBe(5);
+  });
+
   it("keeps only bridge results whose title names the idea and a UI", async () => {
     const titles = [
       "Vending Machine UI by Ana on Dribbble",
@@ -429,8 +448,10 @@ describe("runPlan with the bridge lane and the UI gate", () => {
     expect(fetchMock).toHaveBeenCalledTimes(6);
     expect(fetchMock.mock.calls.map(([, init]) => bodyOf(init).q)).toContain(`vending machine app ui ${UI_NEG} site:dribbble.com/shots`);
     const bridge = result.references.filter((r) => r.lane === "bridge");
-    // "Smart vending machines kiosk" and "Machines of loving grace" name the idea but no UI.
-    expect(bridge.map((r) => r.title).sort()).toEqual(["Coffee machine order screen", "Snack MACHINE checkout", "Vending Machine UI by Ana on Dribbble"].sort());
+    // "Smart vending machines kiosk" and "Machines of loving grace" name the idea but no UI. With
+    // other UI lanes present the bridge lane places one of the three (TAIL_LANES, Gate 2 fix).
+    expect(bridge).toHaveLength(TAIL_LANE_QUOTA);
+    expect(["Coffee machine order screen", "Snack MACHINE checkout", "Vending Machine UI by Ana on Dribbble"]).toContain(bridge[0]!.title);
     expect(result.report?.find((r) => r.lane === "bridge")).toMatchObject({ good: 3, site: "dribbble" });
     expect(result.dropped).toBeGreaterThanOrEqual(7);
   });

@@ -101,7 +101,9 @@ describe("mobile, tablet and web app briefs are unchanged", () => {
         ["analytics dashboard for a fleet", "webapp"],
       ] as const) {
         const plain = laneTexts(brief, "x", [], key, { platform });
-        const styled = laneTexts(brief, "x", [], key, { platform, styleWords: SHOW });
+        // Style words only add tasteAlt (the direction's own taste wording, used when another
+        // direction already sent the brief-level one); every lane stays the same.
+        const { tasteAlt: _alt, ...styled } = laneTexts(brief, "x", [], key, { platform, styleWords: SHOW });
         expect(styled).toEqual(plain);
         expect(planRequests(styled)).toEqual(planRequests(plain));
       }

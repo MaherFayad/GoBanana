@@ -46,6 +46,7 @@ import {
   plainRetryQuery,
   requestZone,
   titleHasWord,
+  TAIL_LANES,
   zoneQuotas,
   type LaneName,
   type PlannedRequest,
@@ -849,9 +850,11 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     for (const [lane, list] of byLane) lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
     // Art zone about a third (at least 3), UI lanes share the rest; at most 2 per creator or studio;
     // UI references first, then art (the agent places them in their own rows).
+    // The bridge lane (TAIL_LANES) places at most one UI result while another UI lane has a quota.
     const quotas = zoneQuotas(count, [...lists.keys()]);
+    const capped = new Set([...TAIL_LANES].filter((l) => [...quotas.keys()].some((o) => o !== l && o !== "art" && !TAIL_LANES.has(o))));
     const references = byZone(
-      mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], { groupsOf: (r) => creatorKeys(r.title) }),
+      mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], { groupsOf: (r) => creatorKeys(r.title), capped }),
     );
 
     const result: PlanSearchResult = {

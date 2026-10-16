@@ -609,7 +609,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (lanes) {
         const picked = input.sources ? sources : undefined;
         const termKeys = laneTermKeys(lanes);
-        let plan;
+        let plan: PlannedRequest[];
         let arms: Partial<Record<LaneName, string>> = {};
         let learned = false;
         if (input.lane) {
@@ -636,7 +636,17 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           if (isFreshBaseline(saved, key, now)) {
             // The baseline lane and every request another direction already sent on this canvas
             // (their results are on the canvas already): no request runs twice on one board.
-            plan = withoutSent(withoutBaselineLane(plan), saved);
+            const before = withoutBaselineLane(plan);
+            plan = withoutSent(before, saved);
+            // A brief-level taste request another direction sent gives way to this direction's own
+            // taste wording (lanes.tasteAlt), in the same place, so the direction keeps a taste lane.
+            const tasteAt = before.findIndex((r) => r.lane === "taste" && !plan.includes(r));
+            if (tasteAt >= 0 && lanes.tasteAlt) {
+              const alt = withoutSent(planRequests({ ...lanes, taste: lanes.tasteAlt }, picked, { zone }).filter((r) => r.lane === "taste"), saved);
+              const at = plan.findIndex((r) => before.indexOf(r) > tasteAt);
+              plan = at < 0 ? [...plan, ...alt] : [...plan.slice(0, at), ...alt, ...plan.slice(at)];
+              plan = plan.slice(0, SERPER_MAX_REQUESTS);
+            }
             baseline = { key, reused: saved };
           } else baseline = { key };
           baseline.sent = plan.map(sentKey);

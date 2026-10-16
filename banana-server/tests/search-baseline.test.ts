@@ -216,6 +216,23 @@ describe("no request runs twice on one canvas (Gate 2 fix)", () => {
     expect(state().baseline!.sent!.length).toBeGreaterThan(keys[0]!.length);
   });
 
+  it("a direction whose brief-level taste request already ran gets its own taste wording instead", async () => {
+    const styled = (bendId: string, idea: string, styleWords: string[]): Direction => ({
+      ...direction(bendId, idea),
+      detail: { platform: "mobile", brief: BRIEF, artQueries: [idea], spec: { styleWords } } as never,
+    });
+    DIRECTIONS["bd-s1"] = styled("bd-s1", "letterpress texture", ["dark mode", "grainy"]);
+    DIRECTIONS["bd-s2"] = styled("bd-s2", "exhibition catalog", ["minimal"]);
+    const { tool, runPlan } = board();
+    await tool({ directionId: "bd-s1", canvasId: "c1" }, "u1");
+    await tool({ directionId: "bd-s2", canvasId: "c1" }, "u1");
+    const taste = runPlan.mock.calls.slice(0, 2).map((c) => (c[0] as PlannedRequest[]).filter((r) => r.lane === "taste").map((r) => r.query.split(" -")[0]));
+    expect(taste[0]![0]).toMatch(/^dark /);
+    expect(taste[1]).toHaveLength(1);
+    expect(taste[1]![0]).toMatch(/^minimal /);
+    expect(taste[1]![0]!.replace(/^minimal /, "")).toBe(taste[0]![0]!.replace(/^dark /, ""));
+  });
+
   it("sentKey tells pages and sites apart, withoutSent drops only sent requests", () => {
     const a = { lane: "taste", query: "Dark  eSIM plan ui", site: "pinterest" } as PlannedRequest;
     expect(sentKey(a)).toBe(sentKey({ ...a, query: "dark esim plan ui" }));

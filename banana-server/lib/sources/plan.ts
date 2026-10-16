@@ -65,6 +65,12 @@ export type LaneTexts = {
   tasteSite?: SourceSite;
   /** The taste lane's retry when it brings back too little (web app: "dark {page} web app ui"). */
   tasteFallback?: string;
+  /**
+   * The taste bar wording styled by the direction's own style words, for when the brief-level taste
+   * request already ran on the canvas (another direction sent it): the direction still gets a taste
+   * lane, with words no other direction sent. Mobile and web app briefs with no user taste only.
+   */
+  tasteAlt?: string;
   fidelity?: string;
   /**
    * Mobile: the light twin of the taste lane ("paywall subscription ui ios app"), searched on
@@ -624,11 +630,35 @@ export function artQuota(count: number): number {
  */
 export function zoneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneName, number> {
   const ui = lanes.filter((l) => l !== "art");
-  if (!lanes.includes("art")) return laneQuotas(count, lanes);
+  if (!lanes.includes("art")) return capTailLanes(laneQuotas(count, lanes));
   if (ui.length === 0) return new Map([["art", count]]);
   const art = artQuota(count);
-  const quotas = laneQuotas(count - art, ui);
+  const quotas = capTailLanes(laneQuotas(count - art, ui));
   quotas.set("art", art);
+  return quotas;
+}
+
+/**
+ * UI lanes that place at most TAIL_LANE_QUOTA results while another UI lane has results (mergeLanes
+ * `capped`). The bridge lane ("{idea} ui design") kept 0 good results of 18 rated in the Banana Bench
+ * runs 2026-10-15b, 10-16g2a and 10-16g2d (GATE2-DIAGNOSIS.md): its words match the idea, not the
+ * page. It still fills places no other UI lane can.
+ */
+export const TAIL_LANES: ReadonlySet<LaneName> = new Set<LaneName>(["bridge"]);
+export const TAIL_LANE_QUOTA = 1;
+
+/** The quotas with each tail lane capped at TAIL_LANE_QUOTA, its other places shared by the other UI lanes. */
+function capTailLanes(quotas: Map<LaneName, number>): Map<LaneName, number> {
+  const others = [...quotas.keys()].filter((l) => l !== "art" && !TAIL_LANES.has(l));
+  if (others.length === 0) return quotas;
+  let spare = 0;
+  for (const lane of TAIL_LANES) {
+    const q = quotas.get(lane);
+    if (q === undefined || q <= TAIL_LANE_QUOTA) continue;
+    spare += q - TAIL_LANE_QUOTA;
+    quotas.set(lane, TAIL_LANE_QUOTA);
+  }
+  for (let i = 0; spare > 0; i = (i + 1) % others.length, spare--) quotas.set(others[i]!, (quotas.get(others[i]!) ?? 0) + 1);
   return quotas;
 }
 
@@ -640,6 +670,8 @@ export type MergeOptions = {
   groupsOf?: (ref: Reference) => readonly string[];
   /** Cap per group. Default CREATOR_CAP. */
   groupCap?: number;
+  /** Lanes that never pass their quota, even when places are left (TAIL_LANES). */
+  capped?: ReadonlySet<LaneName>;
 };
 
 /**
@@ -690,7 +722,7 @@ export function mergeLanes(
       progress = false;
       for (const lane of lanes) {
         if (out.length >= count) break;
-        if (limit === "lane" && (placed.get(lane) ?? 0) >= (quotas.get(lane) ?? 0)) continue;
+        if ((limit === "lane" || opts.capped?.has(lane)) && (placed.get(lane) ?? 0) >= (quotas.get(lane) ?? 0)) continue;
         const zone = laneZone(lane);
         if (limit === "zone" && (zonePlaced.get(zone) ?? 0) >= (zoneBudget.get(zone) ?? 0)) continue;
         const ref = nextFrom(lane);
