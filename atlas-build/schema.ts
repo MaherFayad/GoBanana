@@ -106,7 +106,7 @@ export interface LensPack {
 }
 
 export interface QueryRecipe {
-  key: { lane: "concept" | "component" | "art" | "baseline"; page?: string; platform?: Platform; element?: UiElement; cardId?: string };
+  key: { lane: "concept" | "component" | "art" | "baseline" | "deck" | "brand"; page?: string; platform?: Platform; element?: UiElement; cardId?: string };
   query: string;
   source: string;                               // a SourceId from lib/sources/registry.ts
   precision: number;                            // share of top 8 judged good or great, 0 to 1
@@ -310,7 +310,8 @@ export const LensPackSchema = z.object({
 
 export const QueryRecipeSchema = z.object({
   key: z.object({
-    lane: z.enum(["concept", "component", "art", "baseline"]),
+    // "deck" and "brand": genre lane recipes (banana-server lib/sources/genre.ts); page = the kind's slug.
+    lane: z.enum(["concept", "component", "art", "baseline", "deck", "brand"]),
     page: id.optional(),
     platform: PlatformSchema.optional(),
     element: UiElementSchema.optional(),
