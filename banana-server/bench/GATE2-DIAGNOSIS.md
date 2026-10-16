@@ -246,3 +246,55 @@ directions), and "stage" no longer reads as a step ("dark stage around highlight
 - 80% on brief: **met on the agent ratings** (83.3% on both runs, the rater of every earlier table), **not met on the
   J10 judge** (73.3% on both runs, trusted at 76.7% agreement). The agent that rated also wrote the fixes. The
   owner's spot check of g2j decides which rater the gate follows. Details: `BASELINE.md`, "Gate 2 round 3".
+
+## Round 3b (2026-10-17, branch `next/second-card`)
+
+This fixes item 4 of "What remains after round 3". The second card, the one that adds a texture, motion or rule,
+was still drawn by seeded jitter, so J10 marked 9 of 30 directions down for a foreign texture on a Gulf lead. Now
+`rankSeconds` (`lib/atlas/bend.ts`) ranks it with the lead's own relevance: J4b page fit, brief-level fit, the domain
+step, Gulf-first, learning weights and the taste tie breaker. Rules:
+
+- Never the lead's family, and never a card that shares a name word with the lead. Rule and layout cards are allowed.
+- Region (`secondRegionOk`): on a Gulf brief only Gulf and global cards, on a MENA brief also MENA cards. A card from
+  another region goes on only when the brief asks for it (it names the card's region or a word of the card's name),
+  or when the card names the brief's occasion. A brief with no market takes any region, since the brief fit already
+  scores it. A lens card added to a non-lens lead keeps the lens rule.
+- Cards an earlier direction took come last, then cards that share a name word with another shown lead ("Sticker
+  Sheet" under Wool Felt while "Stickers" leads the next direction). The jitter and the card id only break ties, so
+  the same brief gives the same pick.
+
+Method: the Atlas was rebuilt locally from the committed raw files (`--from-raw`, 288 shards, manifest
+`dc639915fe6b`). A dry Bench run (`--dry --atlas`, no Serper, no API) before the change reproduced all 30 g2j
+direction ids. In the same dry run after the change, every lead is the same and 17 of the 18 second cards changed.
+The other 4 briefs run at wildness 1 or 2 and carry no second card. Direction ids change where the second card
+changed, because the id holds both card ids.
+
+| Brief | Lead | Old second (round 3) | New second (round 3b) |
+| --- | --- | --- | --- |
+| eSIM plan picker (GCC) | Gas Station Price Sign | texture of Bilingual Baqala Receipt (Gulf) | texture of Eidiya Money Envelope (Gulf) |
+| eSIM plan picker (GCC) | Dial Caliper | motion of Karak Tea Glass (Gulf) | motion of Bilingual Baqala Receipt (Gulf) |
+| eSIM plan picker (GCC) | Paint Swatch Card | rule of Progress Bars | texture of Pill Blister Pack |
+| Coffee shop landing | Walnut Veneer | texture of Spun Sugar | texture of Cottagecore 2020 |
+| Coffee shop landing | Jebena Coffee Pot | motion of Woven Rattan | motion of Woven Rattan (same) |
+| Coffee shop landing | Googie 1958 | texture of Rishtan Ceramics (Central Asia) | texture of Corduroy |
+| Fitness empty state | Badges | rule of Navigation at the Bottom | texture of Foosball Table |
+| Fitness empty state | Arcade Cabinet | motion of Puffer Jacket Nylon | rule of Bars Instead of Numbers |
+| Fitness empty state | Munich 1972 Olympics | texture of Watch Dial | texture of Matte Rubber |
+| Ramadan offers (Saudi) | Qamar al-Din Apricot Sheet | texture of Flat Design 2013 | rule of Everything Ticks Once per Second |
+| Ramadan offers (Saudi) | Hand-Painted Souq Shop Sign | **motion of Tiffin Carrier (South Asia)** | motion of Milk Carton |
+| Ramadan offers (Saudi) | Dotted Leaders | texture of Thermal Receipt | texture of Parchment Baking Paper |
+| Dubai real estate | Ruler Ticks | rule of Every Block a Different Texture | texture of Polished Marble |
+| Dubai real estate | Coral Stone Blocks | motion of Walnut Veneer | motion of Scale Bars |
+| Dubai real estate | Emirati Barjeel Wind Towers | **texture of Ankara Republic 1930s (Turkey)** | texture of Walnut Veneer |
+| Kids reading home | Wool Felt | texture of Sewing Button | texture of Bubbles |
+| Kids reading home | Stickers | rule of A Single Accent Shape Repeats | motion of Egg Carton |
+| Kids reading home | Game Cartridge | texture of Bubbles | texture of Cereal Box |
+
+Flight checkout, banking onboarding, SaaS pricing and Qatar services carry no second card (wildness 1 or 2) and did
+not change.
+
+What to eyeball: both J10 cases are gone, and no second card on a Gulf brief comes from another region. Without
+the name-word rule against the other shown leads, Wool Felt took Sticker Sheet while Stickers led the next
+direction; with it, Wool Felt takes Bubbles. Gulf briefs still draw few Gulf second cards (only the eSIM
+board), because the strongest Gulf cards are already leads among the 8 directions the bend generates. Not measured
+yet: no live run and no J10 pass, since both need Serper or the API.

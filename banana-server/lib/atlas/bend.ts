@@ -10,7 +10,8 @@
  *   3. Pick by diversity (MMR over family and kind), honoring moves, lens and Gulf-first. With a J4b
  *      page fit for the brief's page, a card leads with its page score (leadFit), and rule or
  *      layout cards never lead (isRuleCard; they can be the second card, which adds their rule).
- *   4. Clash check between the lead card and the card that adds texture or motion.
+ *   4. The second card that adds texture or motion, ranked like the lead (rankSeconds: never the
+ *      lead's family, only a region the brief allows), and the clash check.
  *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines), the element the
  *      lead's page reason names first (reasonElements).
  *   6. The spec from the lead card; a second card adds only texture or motion.
@@ -388,6 +389,46 @@ export function similarity(a: { family: string; kind: string; name: string }, b:
   return (a.family === b.family || sameName ? 1 : 0) + (a.kind === b.kind ? 0.4 : 0);
 }
 
+/**
+ * True when a card from a named region can be the second card on a market brief (round 3b). On a
+ * Gulf brief only Gulf and global cards; on a MENA brief Gulf, MENA and global cards. A card from
+ * elsewhere passes only when the brief asks for it: the brief names its region ("south asia") or a
+ * word of its name ("Ankara"), or the card names the brief's occasion (an Egyptian fanous on a
+ * Ramadan brief). A brief with no market takes any region (the brief fit already scores it).
+ * Round 3 drew the second card by jitter: a South Asian tiffin carrier reached a Saudi souq sign,
+ * an Ankara 1930s texture the Dubai wind towers.
+ */
+export function secondRegionOk(card: Pick<IngredientCard, "name" | "region" | "idea" | "surprise" | "culturalNotes">, brief: string, market: "gulf" | "mena" | null): boolean {
+  if (!market || !card.region || card.region === "global" || card.region === "gulf") return true;
+  if (market === "mena" && card.region === "mena") return true;
+  if (has(brief, card.region.replace(/-/g, " "))) return true;
+  const briefWords = new Set(contentWords(brief));
+  if (contentWords(card.name).some((w) => briefWords.has(w))) return true;
+  const occasions = occasionsIn(brief);
+  return occasions.length > 0 && occasionsIn([card.name, card.idea, card.surprise, card.culturalNotes ?? ""].join(" ")).some((o) => occasions.includes(o));
+}
+
+/**
+ * The second card for a lead (round 3b): never the lead's family or a card sharing a name word with
+ * it (`similarity` of 1 or more), only a region the brief allows (`secondRegionOk`), then cards no
+ * earlier direction took first, then cards that share no name word with another lead of the board (`others`:
+ * "Sticker Sheet" under one lead while "Stickers" leads the next), then the best `score` (the lead's own brief, page and region
+ * relevance), the seeded jitter and the id last, so the same brief gives the same pick.
+ */
+export function rankSeconds<T extends Pick<IngredientCard, "id" | "name" | "family" | "kind" | "region" | "idea" | "surprise" | "culturalNotes">>(
+  lead: Pick<IngredientCard, "name" | "family" | "kind">,
+  pool: readonly T[],
+  opts: { brief: string; market: "gulf" | "mena" | null; score: (c: T) => number; used: ReadonlySet<string>; seed: string; others?: ReadonlyArray<Pick<IngredientCard, "name">> },
+): T[] {
+  const otherWords = new Set((opts.others ?? []).flatMap((o) => contentWords(o.name)));
+  const repeats = (c: T) => Number(contentWords(c.name).some((w) => otherWords.has(w)));
+  return pool
+    .filter((c) => similarity(lead, c) < 1 && secondRegionOk(c, opts.brief, opts.market))
+    .map((c) => ({ c, s: opts.score(c) }))
+    .sort((a, b) => Number(opts.used.has(a.c.id)) - Number(opts.used.has(b.c.id)) || repeats(a.c) - repeats(b.c) || b.s - a.s || jitter(opts.seed, a.c.id) - jitter(opts.seed, b.c.id) || a.c.id.localeCompare(b.c.id))
+    .map((x) => x.c);
+}
+
 /** A seeded number in [0, 1) per card, so ties break the same way for the same brief. */
 const jitter = (key: string, id: string) => (cyrb53(`${key}|${id}`) % 1000) / 1000;
 
@@ -425,7 +466,7 @@ export function tieBreaks(cards: readonly IngredientCard[], fitOf: (c: Ingredien
   return out;
 }
 
-interface Pick {
+interface CardPick {
   lead: IngredientCard;
   second: IngredientCard | null;
   /** What the second card adds: its texture, its motion, or (a rule or layout card) its rule. */
@@ -485,7 +526,7 @@ function cardStyleWords(card: IngredientCard, voice: TypeVoice): string[] {
 }
 
 interface SpecInput {
-  pick: Pick;
+  pick: CardPick;
   platform: Platform;
   arabic: boolean;
   element: MechanicElement;
@@ -717,18 +758,17 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
 
   // 4. The second card (texture or motion) and the clash check.
   const usedSecond = new Set<string>();
-  const picks: Pick[] = leads.map((lead, i) => {
+  const picks: CardPick[] = leads.map((lead, i) => {
     const wantsSecond = wildness >= TWIST_FROM_WILDNESS || (lens && !isLensCard(lead));
     if (!wantsSecond) return { lead, second: null, adds: null };
     const adds: "texture" | "motion" = i % 2 === 0 ? "texture" : "motion";
     const pool = (lens && !isLensCard(lead) ? lensCards : cards).filter((c) => c.id !== lead.id && !leads.includes(c) && !clashes(lead, c));
     const pool2 = pool.length > 0 ? pool : (lens && !isLensCard(lead) ? lensCards : []).filter((c) => c.id !== lead.id);
-    const ranked = [...pool2].sort(
-      (a, b) =>
-        Number(usedSecond.has(a.id)) - Number(usedSecond.has(b.id)) ||
-        Number(a.family === lead.family) - Number(b.family === lead.family) ||
-        jitter(`${key}|second|${i}`, a.id) - jitter(`${key}|second|${i}`, b.id),
-    );
+    // Round 3b: ranked by the lead's own relevance (brief fit, page fit, Gulf-first), never the lead's
+    // family, never a region the brief does not allow. A lens card added to a non-lens lead keeps the
+    // lens rule (the lens is the ask), so only the family and the ranking apply to it.
+    const lensSecond = Boolean(lens && !isLensCard(lead));
+    const ranked = rankSeconds(lead, pool2, { brief: input.brief, market: lensSecond ? null : market, score: relevance, used: usedSecond, seed: `${key}|second|${i}`, others: leads.slice(0, input.count).filter((l) => l !== lead) });
     const second = ranked[0] ?? null;
     if (second) usedSecond.add(second.id);
     // A rule or layout card as the second card adds its rule, not its texture or motion.
@@ -775,7 +815,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
       .map((x) => x.el);
   };
 
-  type Built = { pick: Pick; id: string; element: UiElement; mechanic: Mechanic | null; d: Direction };
+  type Built = { pick: CardPick; id: string; element: UiElement; mechanic: Mechanic | null; d: Direction };
   const built: Built[] = [];
   const titles = new Set<string>();
   const whys = new Set<string>();
