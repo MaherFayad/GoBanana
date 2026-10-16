@@ -7,7 +7,7 @@
  *     product when an occasion leads the brief: "Ramadan offers page for a Saudi food delivery app"
  *     searched "ramadan offers app ui" and got prayer apps in every round 2 run (1 or 2 good of 12 to
  *     14). When that topic shares no word with the Atlas topic (the product the brief names, J2), the
- *     product goes in after the occasion: "ramadan food delivery offers".
+ *     product goes in after the occasion, in place of the page word: "ramadan food delivery".
  *   - Title words to drop. (a) A theme domain the brief names through an occasion ("Ramadan" names
  *     faith and lifestyle) pulls its own look: its telling name and product noun words (prayer,
  *     qibla, quran) that the main domain never says. (b) A domain whose product nouns are surfaces
@@ -45,8 +45,9 @@ export function searchHints(o: {
   const p0 = new Set(wordsOf(o.phase0Topic));
   const atlasWords = wordsOf(o.topic);
   if (occasionWords.length > 0 && atlasWords.length > 0 && !atlasWords.some((w) => p0.has(w))) {
-    const rest = wordsOf(o.phase0Topic).filter((w) => !occasionWords.includes(w));
-    out.searchTopic = [...new Set([...occasionWords, ...atlasWords, ...rest])].join(" ");
+    // The page word goes ("offers"): in run g2j the four word topic ("ramadan food delivery offers")
+    // made queries so narrow that one Ramadan direction found no UI results at all.
+    out.searchTopic = [...new Set([...occasionWords, ...atlasWords])].join(" ");
   }
 
   const mainText = [...o.domain.names.en, ...o.domain.productNouns, o.domain.audience, o.domain.regionNotes ?? ""].join(" ");

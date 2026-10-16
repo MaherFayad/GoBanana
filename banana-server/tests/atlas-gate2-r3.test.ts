@@ -254,7 +254,7 @@ describe("Gulf cards in the fixture bend", () => {
 describe("search hints from J1 and J2", () => {
   it("an occasion topic gets the product back, and the theme domain's look words are dropped", () => {
     const h = searchHints({ brief: "Ramadan offers page for a Saudi food delivery app", domain: FOOD, theme: FAITH, page: OFFERS, topic: "food delivery", phase0Topic: "ramadan offers" });
-    expect(h.searchTopic).toBe("ramadan food delivery offers");
+    expect(h.searchTopic).toBe("ramadan food delivery");
     expect(h.avoidWords).toEqual(expect.arrayContaining(["prayer", "qibla", "adhan", "quran"]));
     // Words the main domain says (iftar, suhoor) and the occasion itself are never dropped.
     expect(h.avoidWords).not.toContain("iftar");
