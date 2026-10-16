@@ -18,24 +18,18 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
 
 ## Files
 
-- `candidates.json`: 399 candidates, URLs only (no image bytes).
+- `candidates.json`: 472 candidates, URLs only (no image bytes).
   - 94 "From your boards" (`origin: "owner-board"`): the owner's own pins from the mobile and
     dashboard boards, collected once with the owner's approval. Five exact repeats were left out.
   - 176 "Search finds" (`origin: "search"`): found with Serper image search (`site:` queries on
     pinterest.com/pin, dribbble.com/shots and 60fps.design/shots, using the Round 13 wordings in
     docs/search-quality-experiment.md), then judged by eye against the bar. Each has a `score`
     (1 to 5), a one-line `why` and the `query` that found it. About 60% mobile, 40% web app.
-<<<<<<< HEAD
   - 73 web showcase sites (`genre: "web-showcase"`, ids `w001` to `w073`, added 2026-10-16):
     playful, 3D, WebGL, motion-led and award-level websites from Awwwards (Sites of the Year, 3D,
     WebGL, Experimental, Colorful) and Craftwork's website inspiration, judged by eye in contact
     sheets. Each has `liveUrl` (the site itself), `tags` and `foundOn` (the listing page). The
     showcase item page is `sourceUrl`.
-- `picker.html`: the page you pick in.
-- `picks.default.json`: 40 default picks (30 board pins chosen to vary page, platform and colour,
-  plus the 10 best search finds). Used when `picks.json` does not exist.
-- `picks.json`: your picks, once you save them. Not in the repo until you add it.
-=======
   - 65 Presentation (`genre: "presentation"`, ids `pr001` to `pr065`): 43 from Pitch's template
     gallery (`origin: "showcase"`, og:image of each public page, robots.txt allows) and 22 Serper
     finds on Dribbble, Behance and Pinterest.
@@ -46,11 +40,10 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
     scored 1 to 5 against the Presentation and Branding sections of docs/taste-bar.md.
 - `genres.mjs` (types in `genres.d.mts`): the genres and `genreOf`.
 - `picker.html`: the page you pick in. `build-picker.mjs` rebuilds its data line.
-- `picks.default.json`: 70 default picks: the first 40 (30 board pins chosen to vary page, platform
+- `picks.default.json`: 85 default picks: the first 40 (30 board pins chosen to vary page, platform
   and colour, plus the 10 best search finds) and 15 each for Presentation and Branding. Used when
   `picks.json` does not exist.
 - `picks.json`: your picks.
->>>>>>> next/deck-brand
 
 ## How to pick
 

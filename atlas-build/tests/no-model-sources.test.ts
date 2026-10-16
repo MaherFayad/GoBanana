@@ -7,11 +7,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { modelInputOk } from "../../banana-server/bench/taste/genres.mjs";
 import { exemplarPicks } from "../j7-taste.ts";
 import { buildInputs } from "../jobs/j7-recipes.ts";
 import { scoringInputs, type BenchRun } from "../jobs/j10-judge.ts";
-import { fetchImageBlock, fetchThumbBlock, pickThumbUrl, thumbAllowlist } from "../lib/thumbs.ts";
+import { fetchImageBlock, fetchThumbBlock, modelInputOk, pickThumbUrl, thumbAllowlist } from "../lib/thumbs.ts";
 
 const taste = join(__dirname, "..", "..", "banana-server", "bench", "taste");
 const picks = JSON.parse(readFileSync(join(taste, "picks.default.json"), "utf8")).picks as { id: string; genre?: string; platform?: string; group?: string; imageUrl: string; sourceUrl: string }[];
@@ -43,9 +42,12 @@ describe("j7-taste exemplars", () => {
     for (const genre of [undefined, "mobile-ui", "web-ui", "web-showcase"]) {
       expect(exemplarPicks(picks, genre).some((p) => !modelInputOk(p))).toBe(false);
     }
-    // Even an owner's own pick of a link-out only candidate stays out.
-    expect(exemplarPicks([{ id: "bx003", genre: "web-ui", group: "Best Designs on X" }, { id: "w054", genre: "web-showcase", sourceUrl: "https://craftwork.design/curated/website/x" }], "web-ui")).toEqual([]);
-    expect(exemplarPicks([{ id: "bx003", genre: "web-showcase" }, { id: "w054", genre: "web-showcase", sourceUrl: "https://craftwork.design/curated/website/x" }], "web-showcase")).toEqual([]);
+    // Even an owner's own pick of a link-out only candidate stays out, by its X post or its CDN image.
+    const post = { id: "bx900", genre: "web-ui", sourceUrl: "https://x.com/someone/status/1", imageUrl: "https://cdn.dribbble.com/userupload/1.png" };
+    const image = { id: "bx901", genre: "web-ui", sourceUrl: "https://dribbble.com/shots/1-a", imageUrl: BDOX_IMAGE };
+    const site = { id: "bx902", genre: "web-ui", sourceUrl: "https://bestdesignsonx.com/someone/status/1", imageUrl: "https://cdn.dribbble.com/userupload/2.png" };
+    expect(exemplarPicks([post, image, site], "web-ui")).toEqual([]);
+    for (const c of bx) expect(modelInputOk(c)).toBe(false);
   });
 });
 

@@ -25,8 +25,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { JUDGE, PATHS, ROOT } from "../config.ts";
 import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
-import { fetchThumbBlock } from "../lib/thumbs.ts";
-import { modelInputOk } from "../../banana-server/bench/taste/genres.mjs";
+import { fetchThumbBlock, modelInputOk } from "../lib/thumbs.ts";
 import { extractJson } from "../lib/validate.ts";
 
 export const BENCH = join(ROOT, "..", "banana-server", "bench");
@@ -142,7 +141,7 @@ export function scoringInputs(run: BenchRun): Input[] {
   for (const brief of run.briefs) {
     for (const direction of brief.directions) {
       out.push({ kind: "direction", mode: "score", run: run.run, brief, direction });
-      // Link-out only sources (Best Designs on X, Craftwork) are never shown to the judge: not scored.
+      // Link-out only sources (Best Designs on X, Craftwork: registry noModelInputHosts) are never shown to the judge, so not scored.
       const ui = (direction.search?.references ?? []).filter((r) => r.zone === "ui" && modelInputOk(r)).slice(0, TOP_UI);
       if (ui.length > 0) out.push({ kind: "references", mode: "score", run: run.run, brief, direction, refs: ui });
     }

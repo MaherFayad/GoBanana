@@ -30,33 +30,3 @@ export function genreOf(item) {
 export function picksOfGenre(picks, genre) {
   return genre ? picks.filter((p) => genreOf(p) === genre) : [...picks];
 }
-
-/**
- * Sources whose pictures are never a model input (owner rules, banana-server/DECISIONS.md): Best
- * Designs on X (X posts by third-party designers, no AI license; candidates in group "Best Designs
- * on X", ids bx) and Craftwork (its license bars testing AI models on its previews). Their
- * candidates show in the picker and can be picked, but no judge, notes run or exemplar prompt
- * (atlas-build j7-taste.ts, J7, J10) ever sends them to a model.
- */
-export const NO_MODEL_SITES = ["x.com", "bestdesignsonx.com", "craftwork.design"];
-export const NO_MODEL_HOSTS = ["cdn.bestdesignsonx.com", "craftwork-products.b-cdn.net", "marketstorage.b-cdn.net", "curated-images.b-cdn.net"];
-
-const hostOf = (url) => {
-  try {
-    return new URL(String(url)).hostname.toLowerCase().replace(/^www\./, "");
-  } catch {
-    return "";
-  }
-};
-const onSite = (host, sites) => sites.some((s) => host === s || host.endsWith(`.${s}`));
-
-/** True when a candidate, pick or reference may be shown to a model (false for the sources above). */
-export function modelInputOk(item) {
-  if (!item) return false;
-  if (item.group === "Best Designs on X") return false;
-  if (typeof item.id === "string" && /^bx\d+$/.test(item.id)) return false;
-  for (const u of [item.sourceUrl, item.foundOn]) if (u && onSite(hostOf(u), NO_MODEL_SITES)) return false;
-  for (const u of [item.imageUrl, item.thumbUrl]) if (u && NO_MODEL_HOSTS.includes(hostOf(u))) return false;
-  return true;
-}
-

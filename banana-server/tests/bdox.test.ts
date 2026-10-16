@@ -10,7 +10,7 @@ import { BDOX_IMAGE_HOSTS, DEFAULT_IMAGE_HOSTS, NO_MODEL_IMAGE_HOSTS, isAllowedI
 import { BDOX_PARTS, MAX_BDOX_RESULTS, bdoxParts, bdoxReference, mergeBdox, searchBdox } from "@/lib/sources/bdox";
 import index from "@/lib/sources/bdox-index.json";
 import { laneTexts } from "@/lib/bend/queries";
-import { SOURCE_REGISTRY } from "@/lib/sources/registry";
+import { SOURCE_REGISTRY, noModelInputHosts } from "@/lib/sources/registry";
 import type { Reference } from "@/lib/sources/types";
 import { referenceId, type WebSearchResult } from "@/lib/sources/web-search";
 import { EMPTY_TAKEDOWNS, compileTakedowns } from "@/lib/takedown";
@@ -41,7 +41,12 @@ describe("the curated index", () => {
   });
 
   it("is not a Serper source: no registry entry, so no site: request and no J7 wording can name it", () => {
-    expect(SOURCE_REGISTRY.some((s) => s.domain.includes("bestdesignsonx") || s.domain === "x.com")).toBe(false);
+    const domains: string[] = SOURCE_REGISTRY.map((s) => s.domain);
+    expect(domains.some((d) => d.includes("bestdesignsonx") || d === "x.com")).toBe(false);
+  });
+
+  it("is on the no-model list every Atlas judging job reads", () => {
+    for (const h of ["cdn.bestdesignsonx.com", "bestdesignsonx.com", "x.com"]) expect(noModelInputHosts()).toContain(h);
   });
 });
 
