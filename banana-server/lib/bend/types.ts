@@ -218,5 +218,12 @@ export interface BendResult {
   /** What bend_brief read from `brand` (VAL-07): the primary, the logo rules and the stretch. */
   brand?: BrandRead;
   /** Set when the Atlas engine made the directions (BEND_ENGINE=atlas); absent for the word lists. */
-  atlas?: { pageId: string; domainId: string; productNoun: string };
+  atlas?: {
+    pageId: string;
+    domainId: string;
+    productNoun: string;
+    /** Gate 2 round 3 search hints (lib/atlas/search-hints.ts): the topic the UI lanes say, and title words they drop. */
+    searchTopic?: string;
+    avoidWords?: string[];
+  };
 }

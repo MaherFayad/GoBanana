@@ -150,6 +150,10 @@ export interface DirectionAtlas {
   pageId?: string;
   domainId?: string;
   productNoun?: string;
+  /** Gate 2 round 3 (lib/atlas/search-hints.ts): the topic the UI lanes say in place of the brief's own subject. */
+  searchTopic?: string;
+  /** Gate 2 round 3: result title words the UI lanes drop (a theme domain's look, a surface noun). */
+  avoidWords?: string[];
 }
 
 /** One contrast pair as reconcile_direction saves it. ship: passes 4.5:1 (text) or 3:1 (UI parts only). */

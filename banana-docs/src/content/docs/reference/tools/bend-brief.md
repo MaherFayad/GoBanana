@@ -30,7 +30,7 @@ Bending is deterministic: the same brief, wildness, platform, pages, moves and l
 
 Per direction: `id`, `title` (the idea in at most 4 words, never the brief), `twist` (always from wildness 3), `move`, `searchQuery`, `platform`, `pages`, `mechanic`, `artQueries` (1 to 3 image queries for the art zone, phrased as subject, medium and composition), `prompt` and `spec`.
 
-`mechanic` is `{ element, how }`: the working part of the page the wild idea becomes, one of `progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state` (a braid as the progress bar, tabs as sections, a woven band as the section divider). It never lands on a protected total or main button. Build the direction around it, and search for UI that has that element.
+`mechanic` is `{ element, how }`: the working part of the page the wild idea becomes, one of `progress`, `total`, `cta`, `divider`, `section-nav`, `header`, `empty-state` or `plan` (the plan cards on a plan picker or pricing page; a braid as the progress bar, tabs as sections, a woven band as the section divider). It never lands on a protected total or main button. Build the direction around it, and search for UI that has that element.
 
 `spec` fields:
 

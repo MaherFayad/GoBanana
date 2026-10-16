@@ -24,7 +24,8 @@ import { ELEMENT_TO_MECHANIC } from "./bend";
 import { atlasTermKey } from "@/lib/learning/arms";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { applySearchHints } from "./search-hints";
+import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CC0Item, QueryRecipe, UiElement } from "./types";
 
@@ -148,13 +149,15 @@ export function cc0Regions(market: Market | null): string[] {
  * Phase 0 lanes run unchanged). `base` is the direction's Phase 0 lanes (directionLanes).
  */
 export async function atlasSearchPlan(
-  base: LaneTexts,
+  phase0: LaneTexts,
   atlas: AtlasIds,
   source: AtlasSource,
   opts: { mechanic?: string; market: Market | null; allowImage: (url: string) => boolean; withArt: boolean; learning?: AtlasLearning | null },
 ): Promise<AtlasPlan | null> {
   const cardId = atlas.cardIds[0];
   if (!cardId) return null;
+  // Round 3 search hints (lib/atlas/search-hints.ts): the topic the bend found and the title words to drop.
+  const base = applySearchHints(phase0, { ...(atlas.searchTopic ? { searchTopic: atlas.searchTopic } : {}), ...(atlas.avoidWords?.length ? { avoidWords: atlas.avoidWords } : {}) });
   const page = atlas.pageId;
   const platform = base.platform && base.platform !== "any" ? base.platform : undefined;
   const elements = elementsFor(opts.mechanic);
@@ -177,7 +180,7 @@ export async function atlasSearchPlan(
   const topicOk = recipeHoldsTopic({ productNoun: atlas.productNoun, topic: base.topic, pageId: page });
   const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= MAX_RECIPE_WORDS;
   // A recipe replaces a Phase 0 lane only when it was judged at least as precise as that lane.
-  const beats = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
+  const beats = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && beatsPhase0(r, lane);
   const ofLane = (lane: QueryRecipe["key"]["lane"]) => recipes.filter((r) => r.key.lane === lane);
   const lanes: LaneTexts = { ...base, recipeSites: { ...(base.recipeSites ?? {}) } };
   const provenance: Provenance[] = [];

@@ -3,7 +3,7 @@
     {
       "name": "bend_brief",
       "title": "Bend a brief",
-      "description": "Turn a brief into unexpected directions for one page or two, each with a short title (at most 4 words, naming the idea), a mechanic (the working UI part the idea becomes: progress, total, cta, divider, section-nav, header or empty-state), a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off. A Gulf or Arabic brief with no lens gets lens suggestions.",
+      "description": "Turn a brief into unexpected directions for one page or two, each with a short title (at most 4 words, naming the idea), a mechanic (the working UI part the idea becomes: progress, total, cta, divider, section-nav, header, empty-state or plan), a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off. A Gulf or Arabic brief with no lens gets lens suggestions.",
       "inputSchema": {
         "type": "object",
         "required": [

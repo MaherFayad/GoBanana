@@ -206,8 +206,10 @@ export function briefFit(card: IngredientCard, reasons: readonly string[], world
     if (own.length > 0 && world.places.length > 0) {
       const countries = new Set(world.places.map((p) => p.country));
       if (!own.some((p) => countries.has(p.country))) return { drop: true, delta: 0, why: ["a card from another Gulf country"] };
+      // Same country, another region (a Najdi card on a Jeddah brief); a card from the whole country is fine.
       const areas = world.places.filter((p) => p.area);
-      if (areas.length > 0 && !own.some((p) => areas.some((a) => a.country === p.country && a.area === p.area))) {
+      const sameCountry = own.filter((p) => areas.some((a) => a.country === p.country));
+      if (sameCountry.length > 0 && sameCountry.every((p) => p.area && !areas.some((a) => a.area === p.area))) {
         delta -= PLACE_DROP;
         why.push("another region of the same country");
       }

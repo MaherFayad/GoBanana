@@ -110,12 +110,16 @@ describe("brief lanes", () => {
     expect(tasteQuery("banking app onboarding", "dark mode")).toBe("dark mode banking onboarding ui design");
     expect(tasteQuery("saudi fintech app", "glassmorphism")).toBe("glassmorphism saudi fintech card ui design");
     expect(tasteQuery("luxury hotel website", "editorial")).toBe("editorial luxury hotel hero section ui design");
-    expect(tasteQuery("pricing page for a saas tool", "swiss style")).toBe("swiss style saas pricing page ui design");
+    // Gate 2 round 3: the domain stays whole before the style shrinks ("swiss" still names the style).
+    expect(tasteQuery("pricing page for a saas tool", "swiss style")).toBe("swiss saas tool pricing page ui design");
+    // A style never dangles: "big" goes before "typography" when the product domain must stay whole.
+    expect(tasteQuery("pricing page for a B2B analytics SaaS", "big typography")).toBe("typography analytics saas pricing page ui design");
+    expect(tasteQuery("coffee shop landing page", "dark mode")).toBe("dark coffee shop landing page ui design");
     expect(tasteQuery("logistics dashboard", "dark with one accent")).toBe("dark accent logistics dashboard ui design");
     expect(tasteQuery("poster for a jazz festival", "grainy")).toBe("grainy jazz festival poster ui design");
-    // Too long: the domain drops to its core noun, then style words go; "ui design" stays.
+    // Too long: style words go from the end first (round 3), so the domain keeps its words; "ui design" stays.
     expect(tasteQuery("Dashboard for a fleet management company", "very soft studio 3d light")).toBe(
-      "soft studio 3d fleet dashboard ui design",
+      "soft studio fleet management dashboard ui design",
     );
   });
 

@@ -141,6 +141,8 @@ export function directionDetail(
             ...(d.shaderIds?.length ? { shaderIds: d.shaderIds } : {}),
             ...(d.motionIds?.length ? { motionIds: d.motionIds } : {}),
             ...(atlas ? { pageId: atlas.pageId, domainId: atlas.domainId, productNoun: atlas.productNoun } : {}),
+            ...(atlas?.searchTopic ? { searchTopic: atlas.searchTopic } : {}),
+            ...(atlas?.avoidWords?.length ? { avoidWords: atlas.avoidWords } : {}),
           },
         }
       : {}),

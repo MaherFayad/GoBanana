@@ -111,7 +111,7 @@ describe("no default taste for direction searches", () => {
   it("uses the user's taste, else the direction's style words, else no taste lane", () => {
     const WEB = "Personal finance website for a savings bank";
     expect(laneTexts(WEB, "x", ["monochrome"], "k").taste).toBe("monochrome personal finance hero section ui design");
-    expect(laneTexts(WEB, "x", [], "k", { styleWords: ["swiss style"] }).taste).toBe("swiss style finance hero section ui design");
+    expect(laneTexts(WEB, "x", [], "k", { styleWords: ["swiss style"] }).taste).toBe("swiss personal finance hero section ui design");
     const none = laneTexts(WEB, "x", [], "k");
     expect(none.taste).toBeUndefined();
     expect(JSON.stringify(none)).not.toMatch(new RegExp(DEFAULT_TASTE.join("|")));

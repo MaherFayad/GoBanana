@@ -96,10 +96,12 @@ function atlasFields(v: Record<string, unknown>): DirectionAtlas | undefined {
   if (shaderIds?.length) out.shaderIds = shaderIds;
   const motionIds = strs(v.motionIds, 2, 80);
   if (motionIds?.length) out.motionIds = motionIds;
-  for (const k of ["pageId", "domainId", "productNoun"] as const) {
+  for (const k of ["pageId", "domainId", "productNoun", "searchTopic"] as const) {
     const s = str(v[k], 80);
     if (s) out[k] = s;
   }
+  const avoidWords = strs(v.avoidWords, 8, 40);
+  if (avoidWords?.length) out.avoidWords = avoidWords;
   return out;
 }
 

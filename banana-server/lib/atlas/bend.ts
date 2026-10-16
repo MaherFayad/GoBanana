@@ -46,10 +46,12 @@ import { fixCase, PART, UI_WORDS, VERIFIED_STYLE_WORDS } from "@/lib/bend/spec";
 import { extractSubject } from "@/lib/bend/subject";
 import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/lib/bend/types";
 import { WILDNESS } from "@/lib/bend/wildness";
+import { briefTopic as phase0Topic } from "@/lib/bend/queries";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
+import { searchHints } from "./search-hints";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, type PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, PageFitScore, QueryRecipe, ShaderRecipe, UiElement } from "./types";
 
@@ -380,7 +382,7 @@ export function clashes(a: IngredientCard, b: IngredientCard): boolean {
  * family (round 3: "Manila File Folder" and "Folder Tabs", "Stickers" and "Sticker Sheet" led two
  * directions of one board with the same idea).
  */
-export function similarity(a: Pick<IngredientCard, "family" | "kind" | "name">, b: Pick<IngredientCard, "family" | "kind" | "name">): number {
+export function similarity(a: { family: string; kind: string; name: string }, b: { family: string; kind: string; name: string }): number {
   const nameA = new Set(contentWords(a.name));
   const sameName = contentWords(b.name).some((w) => nameA.has(w));
   return (a.family === b.family || sameName ? 1 : 0) + (a.kind === b.kind ? 0.4 : 0);
@@ -701,12 +703,6 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     }
     return out;
   };
-  if (process.env.BEND_DEBUG && input.brief.includes(process.env.BEND_DEBUG)) {
-    for (const c of candidateIds.map((id) => cardMap.get(id)).filter((c): c is IngredientCard => Boolean(c))) {
-      const v = briefFit(c, [fitOf.get(c.id)?.reason ?? "", pageFitOf.get(c.id)?.reason ?? ""].filter(Boolean), world, {});
-      console.log(`DBG ${c.id} kind=${c.kind} reg=${c.region} fit=${fitScore(c.id).toFixed(2)} brief=${cards.includes(c) ? briefScore(c).toFixed(2) : "OUT"} rel=${cards.includes(c) ? relevance(c).toFixed(2) : "-"} ${v.drop ? "DROP" : v.delta} ${v.why.join("; ")} | ${pageFitOf.get(c.id)?.reason ?? ""}`);
-    }
-  }
   const lensCards = lens ? cards.filter(isLensCard) : [];
   if (lens && lensCards.length === 0) return null;
   // Rule and layout cards never lead (Gate 2 round 2); they stay in the pool for the second card.
@@ -913,7 +909,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // the Phase 0 lane it replaces (lib/atlas/recipe-fit.ts).
   const topicOk = recipeHoldsTopic({ productNoun, topic: subject.head, pageId: page.id });
   const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= MAX_RECIPE_WORDS;
-  const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
+  const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && beatsPhase0(r, lane);
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();
   const usedRecipes = new Set<string>();
@@ -991,6 +987,6 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     pages: pagesIn,
     wildSpots: pagesIn.length > 0 ? [] : wildSpotsFor(platform),
     directions: built.map((b) => b.d).slice(0, input.count),
-    atlas: { pageId: page.id, domainId: domain.id, productNoun },
+    atlas: { pageId: page.id, domainId: domain.id, productNoun, ...searchHints({ brief: input.brief, domain, theme, page, topic: productNoun, phase0Topic: phase0Topic(input.brief, platform) }) },
   }, input.brand);
 }

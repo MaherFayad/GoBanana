@@ -94,7 +94,7 @@ describe("page fit (J4b) picks the lead card", () => {
   it("reasonElements: the UI elements a page reason names", () => {
     expect(reasonElements("Each finished step lands as stamp").slice(0, 2)).toEqual(["progress", "stepper"]);
     expect(reasonElements("Ramadan offer banner glows apricot")).toEqual(["header", "hero"]);
-    expect(reasonElements("Oversized price leads each plan")).toEqual(["paywall-plan", "price-breakdown", "cta"]);
+    expect(reasonElements("Oversized price leads each plan")).toEqual(["paywall-plan", "price-breakdown", "total", "cta"]);
     expect(reasonElements("Empty sash invites first patch")).toEqual(["empty-state"]);
     expect(reasonElements("Wood board suits coffee")).toEqual([]);
   });

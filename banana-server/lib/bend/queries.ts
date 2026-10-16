@@ -516,13 +516,23 @@ export function briefTopic(brief: string, platform?: Platform): string {
  */
 function tasteUiQuery(p: BriefParts, style: string, domain: readonly string[], tail = "ui design", app = false): string {
   const dom = [...domain];
-  let s = words(styleWords(style));
+  const full = words(styleWords(style));
+  let s = [...full];
   const build = () => words(`${s.join(" ")} ${dom.join(" ")} ${app ? "app " : ""}${p.component} ${tail}`);
   const fits = () => new Set(build()).size <= MAX_FOCUSED_QUERY_WORDS;
+  // Gate 2 round 3: the domain stays whole before the style shrinks to a dangling word. Cutting the
+  // domain first sent "dark mode shop landing page ui design" for a coffee shop (0 of 9 good), and
+  // cutting the style word by word sent "big analytics saas pricing page ui design" (1 of 8).
+  while (!fits() && s.length > 1 && !DANGLING_STYLE.has(s[s.length - 2]!)) s = s.slice(0, -1);
+  if (!fits()) s = [...full];
   if (!fits() && dom.length > 1) dom.splice(0, dom.length, ...words(coreNoun(dom, p.product)!));
-  while (!fits() && s.length > 1) s = s.slice(0, -1);
+  // Still long: drop a dangling word before the word it qualifies ("typography", not "big").
+  while (!fits() && s.length > 1) s = DANGLING_STYLE.has(s[s.length - 2]!) ? [...s.slice(0, -2), s[s.length - 1]!] : s.slice(0, -1);
   return capWords(build().join(" "));
 }
+
+/** Style words that mean nothing alone ("big" of "big typography"). */
+const DANGLING_STYLE = new Set(["big", "bold", "small", "high", "low", "soft", "hard"]);
 
 /**
  * Taste lane: "{style} {domain} {component} ui design" ("big typography flight checkout ui design");
