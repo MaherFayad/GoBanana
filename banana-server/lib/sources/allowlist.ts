@@ -10,6 +10,12 @@ export const THUMBNAIL_HOSTS: readonly string[] = [
 ];
 
 /**
+ * Museum open access image hosts for the CC0 art index (P1-J9), approved by the owner on 2026-10-16.
+ * Items are public domain or CC0 by the museum API's own flag (CC0Item.rights).
+ */
+export const MUSEUM_IMAGE_HOSTS: readonly string[] = ["images.metmuseum.org", "openaccess-cdn.clevelandart.org"];
+
+/**
  * Image hosts the canvas may load from (spec sections 9 and 15): the Google thumbnail hosts plus
  * every source's image hosts from the source registry (lib/sources/registry.ts), each measured on
  * live Serper results. Exact hosts only. Shared CDNs in the list, flagged in the registry:
@@ -25,7 +31,7 @@ export const THUMBNAIL_HOSTS: readonly string[] = [
  *   A leading dot (`.example.com`) means the same thing.
  * Matching is exact host or listed suffix, never a loose substring.
  */
-export const DEFAULT_IMAGE_HOSTS: readonly string[] = [...THUMBNAIL_HOSTS, ...registryImageHosts()];
+export const DEFAULT_IMAGE_HOSTS: readonly string[] = [...THUMBNAIL_HOSTS, ...registryImageHosts(), ...MUSEUM_IMAGE_HOSTS];
 
 export type ImageHostAllowlist = {
   /** Exact hosts. */
