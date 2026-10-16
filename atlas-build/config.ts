@@ -52,15 +52,20 @@ export const BUDGETS: Record<string, number> = {
   j11: 3,
   j12: 3,
   j13: 45,
+  /** Owner 2026-10-17: refinement rounds with the rest of the D7 budget (cards and Gulf, styles and shaders, judge and fit). */
+  r1: 38,
+  r2: 27,
+  r3: 23,
 };
 /** Section 6.4 block caps: the guard also refuses when a block's total would pass its cap. */
 export const BLOCKS: Array<{ name: string; jobs: string[]; cap: number }> = [
   { name: "Atlas v1 and search fix", jobs: ["j1", "j2", "j3", "j4", "j4b", "j5", "j6", "j7"], cap: 79 },
   { name: "Measure", jobs: ["j8", "j9", "j10", "j11", "j12"], cap: 54 },
   { name: "Stunning layer", jobs: ["j13"], cap: 45 },
+  { name: "Refine", jobs: ["r1", "r2", "r3"], cap: 93 },
 ];
 /** Hard ceiling on all Claude spend in atlas-build (D7: about $180, keep about $20 for reruns). */
-export const TOTAL_CAP = 200;
+export const TOTAL_CAP = 180;
 
 /** The budget key for a job id: "j3-cards" uses "j3". */
 export function budgetKey(jobId: string): string {
