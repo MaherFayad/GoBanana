@@ -25,7 +25,7 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
-import { BASELINE_LANE, baselineKey, isFreshBaseline, sentKey, withoutBaselineLane, withoutSent, withSent, type CanvasBaseline } from "@/lib/sources/baseline";
+import { BASELINE_LANE, baselineKey, deepenBaseline, isFreshBaseline, POOL_LANES, poolOf, sentKey, takeFromPool, withoutBaselineLane, withoutSent, withPoolShare, withSent, type CanvasBaseline } from "@/lib/sources/baseline";
 import { writeSearchTray } from "@/lib/sources/tray";
 import { ART_SITES, artQuota, artWords, bridgeHead, byZone, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
@@ -606,6 +606,10 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let searched: Searched;
       /** The baseline key of a direction search on a canvas, and the saved baseline when it was reused. */
       let baseline: { key: string; reused?: CanvasBaseline; sent?: string[] } | undefined;
+      /** The first direction search on a board: its brief-level leftovers become the board's pool. */
+      let poolLanes: readonly LaneName[] | undefined;
+      /** A later direction search: its share of the board's pool. */
+      let pooled: Reference[] = [];
       if (lanes) {
         const picked = input.sources ? sources : undefined;
         const termKeys = laneTermKeys(lanes);
@@ -648,20 +652,29 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
               plan = plan.slice(0, SERPER_MAX_REQUESTS);
             }
             baseline = { key, reused: saved };
-          } else baseline = { key };
+          } else {
+            baseline = { key };
+            // One deep shared request per board: the fidelity lane goes one page deeper, and what the
+            // brief-level lanes find but this direction does not place is pooled for the later ones.
+            if (directionKey) {
+              plan = deepenBaseline(plan, SERPER_MAX_REQUESTS);
+              poolLanes = POOL_LANES;
+            }
+          }
           baseline.sent = plan.map(sentKey);
         }
         // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
         const excludeCanvas = input.canvasId ?? directionCanvasId;
         const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
         canvasUrls = exclude;
+        if (baseline?.reused && directionKey) pooled = takeFromPool(baseline.reused.pool, exclude, learning.blocked);
         const runOpts = {
           count: input.count,
           userId,
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
         };
-        const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude });
+        const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude, ...(poolLanes ? { poolLanes } : {}) });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes, arms, learned, termKeys };
         const next = input.lane ? undefined : nextUiRequest(lanes, plan, picked, new Set(baseline?.reused?.sent ?? []));
@@ -716,7 +729,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       // Every result carries its zone ("art" for the art lane, "ui" otherwise).
       const withZone = (list: readonly Reference[]) =>
         list.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
-      let references = withZone(result.references);
+      let references = withPoolShare(withZone(result.references), pooled, input.count);
       if (atlasPlan) {
         // Provenance on every result (saved on the reference row): the recipe and the card.
         const plan = atlasPlan;
@@ -775,8 +788,9 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         baselineToSave = withSent(baseline.reused, [...(baseline.reused.sent ?? []), ...(baseline.sent ?? [])]);
       } else if (baseline) {
         const ids = references.filter((r) => r.lane === BASELINE_LANE).map((r) => r.id);
-        if (ids.length > 0) {
-          newBaseline = withSent({ key: baseline.key, referenceIds: ids, at: now.toISOString() }, baseline.sent ?? []);
+        const pool = poolOf((result as { leftover?: Reference[] }).leftover);
+        if (ids.length > 0 || pool.length > 0) {
+          newBaseline = withSent({ key: baseline.key, referenceIds: ids, at: now.toISOString(), ...(pool.length > 0 ? { pool } : {}) }, baseline.sent ?? []);
           baselineToSave = newBaseline;
           out.baseline = { referenceIds: ids, at: newBaseline.at, reused: false };
         }

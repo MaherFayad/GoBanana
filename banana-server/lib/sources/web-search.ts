@@ -174,6 +174,11 @@ export type RunPlanOptions = {
   excludeKeys?: readonly string[];
   /** Normalized creators the user rated great (lib/learning/creator.ts): nudged up within each lane. */
   preferCreators?: readonly string[];
+  /**
+   * Lanes whose results the merge did not place are returned as `leftover` (in lane rank order),
+   * for the canvas pool the board's later directions share (lib/sources/baseline.ts, Gate 2 round 2).
+   */
+  poolLanes?: readonly LaneName[];
 };
 
 /** What one planned request brought back. */
@@ -191,7 +196,11 @@ export type PlanRequestReport = {
   page2?: true;
 };
 
-export type PlanSearchResult = WebSearchResult & { report?: PlanRequestReport[] };
+export type PlanSearchResult = WebSearchResult & {
+  report?: PlanRequestReport[];
+  /** Results of `poolLanes` the merge did not place, best first, none that repeat a placed one. */
+  leftover?: Reference[];
+};
 
 export const NOTES = {
   notConfigured: "Image search is not set up yet, so no references were found.",
@@ -511,6 +520,22 @@ export function interleaveReferences(lists: readonly (readonly Reference[])[], c
  * The studio cap (owner, 2026-10-12): at most `cap` results per creator or studio named in the
  * titles (lib/learning/creator.ts creatorKeys), keeping the order. Untitled or unnamed: no cap.
  */
+/**
+ * Results of these lanes not placed, interleaved lane by lane in rank order, with nothing that
+ * repeats a placed result (same item page or image) or another leftover.
+ */
+export function leftoverOf(lists: ReadonlyMap<LaneName, readonly Reference[]>, lanes: readonly LaneName[], placed: readonly Reference[]): Reference[] {
+  const seen = new Set(placed.flatMap((r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)]));
+  const out: Reference[] = [];
+  for (const r of interleaveReferences(lanes.map((l) => lists.get(l) ?? []), SERPER_PAGE_SIZE * 8)) {
+    const keys = [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)];
+    if (keys.some((k) => seen.has(k))) continue;
+    for (const k of keys) seen.add(k);
+    out.push(r);
+  }
+  return out;
+}
+
 export function capByCreator<T extends Pick<Reference, "title">>(refs: readonly T[], cap = CREATOR_CAP): T[] {
   const seen = new Map<string, number>();
   return refs.filter((r) => {
@@ -861,6 +886,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       references,
       ok: true,
       requests,
+      ...(opts.poolLanes?.length ? { leftover: leftoverOf(lists, opts.poolLanes, references) } : {}),
       report: slots.map((s) => ({
         lane: s.req.lane,
         site: s.req.site,

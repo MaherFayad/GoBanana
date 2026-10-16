@@ -19,6 +19,8 @@ import { MAX_POST_TEXT, parsePostUrl, X_SITE } from "@/lib/xpost";
 import {
   type CanvasBaseline,
   MAX_BASELINE_SENT,
+  MAX_BASELINE_POOL,
+  type PooledReference,
   type CanvasFlowNode,
   type CanvasNodeType,
   type CanvasState,
@@ -327,7 +329,31 @@ function parseBaseline(v: unknown): CanvasBaseline | undefined {
   if (!key || !at || !Number.isFinite(Date.parse(at)) || !Array.isArray(v.referenceIds)) return undefined;
   const referenceIds = [...new Set(v.referenceIds.filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80))].slice(0, 24);
   const sent = Array.isArray(v.sent) ? [...new Set(v.sent.filter((q): q is string => typeof q === "string" && q.length > 0 && q.length <= 300))].slice(0, MAX_BASELINE_SENT) : [];
-  return { key, referenceIds, at, ...(sent.length > 0 ? { sent } : {}) };
+  const pool = Array.isArray(v.pool) ? v.pool.map(parsePooled).filter((r): r is PooledReference => r !== undefined).slice(0, MAX_BASELINE_POOL) : [];
+  return { key, referenceIds, at, ...(sent.length > 0 ? { sent } : {}), ...(pool.length > 0 ? { pool } : {}) };
+}
+
+const httpsUrl = (v: unknown): string | undefined => {
+  const s = str(v, 2000);
+  return s && /^https:\/\/[^\s]+$/.test(s) ? s : undefined;
+};
+
+/** One pooled baseline result, or undefined when malformed (https links only). */
+function parsePooled(v: unknown): PooledReference | undefined {
+  if (!isObject(v)) return undefined;
+  const id = str(v.id, 80);
+  const thumbUrl = httpsUrl(v.thumbUrl);
+  const imageUrl = httpsUrl(v.imageUrl);
+  const sourceUrl = httpsUrl(v.sourceUrl);
+  const sourceSite = str(v.sourceSite, 120);
+  if (!id || !thumbUrl || !imageUrl || !sourceUrl || !sourceSite) return undefined;
+  const title = str(v.title, 300);
+  const query = str(v.query, 300);
+  const dim = (n: unknown) => (typeof n === "number" && Number.isFinite(n) && n > 0 && n < 100_000 ? Math.round(n) : undefined);
+  const width = dim(v.width);
+  const height = dim(v.height);
+  const lane = v.lane === "fidelity" || v.lane === "taste" ? v.lane : undefined;
+  return { id, thumbUrl, imageUrl, sourceUrl, sourceSite, ...(title ? { title } : {}), ...(width ? { width } : {}), ...(height ? { height } : {}), ...(lane ? { lane } : {}), ...(query ? { query } : {}) };
 }
 
 /** Drop stitch slots whose part is not in the library. */

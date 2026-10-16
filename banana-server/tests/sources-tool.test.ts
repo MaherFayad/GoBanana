@@ -139,7 +139,10 @@ describe("search_references tool", () => {
     // Both zones: UI and art alternate at the top, then the rest of UI, cut to 7 (one spare request).
     // Mobile leads with the taste bar lane (P0-17), then the bridge (the direction's own idea as UI),
     // so the cut keeps both.
-    expect(plan.map((r) => r.lane)).toEqual(["taste", "art", "bridge", "art", "fidelity", "component", "locale"]);
+    // The first direction search on a board also asks the fidelity lane's page 2 (one deep shared
+    // request per board, Gate 2 round 2): it takes the spare request.
+    expect(plan.map((r) => r.lane)).toEqual(["taste", "art", "bridge", "art", "fidelity", "fidelity", "component", "locale"]);
+    expect((plan as { page?: number }[]).map((r) => r.page ?? 1)).toEqual([1, 1, 1, 1, 1, 2, 1, 1]);
     // No taste given: the mobile taste bar lane says "dark" on Pinterest (never the owner's default taste list).
     expect(plan[0]).toMatchObject({ site: "pinterest", query: "dark flight checkout ui ios app -template -kit -free -wireframe" });
     // The raw idea only goes to the art lane (Pinterest pins, Behance galleries); in UI it is only
@@ -175,7 +178,9 @@ describe("search_references tool", () => {
     expect(out.queries[0]).toBe("dark flight checkout ui ios app -template -kit -free -wireframe site:pinterest.com/pin");
     expect(out.queries[2]).toBe("crushed velvet ui design -template -kit -free -wireframe site:dribbble.com/shots");
     expect(out.queries[4]).toBe("flight checkout app ui -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[6]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    // queries[5] is the fidelity lane's page 2 (the same words).
+    expect(out.queries[5]).toBe(out.queries[4]);
+    expect(out.queries[7]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain("UI references:");
     expect(text(res)).not.toContain("inspiration");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(2);
