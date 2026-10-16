@@ -24,7 +24,7 @@ import { ELEMENT_TO_MECHANIC } from "./bend";
 import { atlasTermKey } from "@/lib/learning/arms";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CC0Item, QueryRecipe, UiElement } from "./types";
 
@@ -153,12 +153,14 @@ export async function atlasSearchPlan(
   }
   keys.push({ lane: "concept", cardId }, { lane: "art", cardId });
   const unique = [...new Map(keys.map(keyFields).map((k) => [JSON.stringify(k), k])).values()];
-  const recipes = await source.recipes(unique);
-  if (!recipes) return null;
+  const read = await source.recipes(unique);
+  if (!read) return null;
+  // The same topic the bend filled the templates with, so the recipe ids it chose match.
+  const recipes = fillRecipes(read, atlas.productNoun ?? base.topic);
 
   const chosen = new Set(atlas.recipeIds);
   const topicOk = recipeHoldsTopic({ productNoun: atlas.productNoun, topic: base.topic, pageId: page });
-  const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= 7;
+  const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= MAX_RECIPE_WORDS;
   // A recipe replaces a Phase 0 lane only when it was judged at least as precise as that lane.
   const beats = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const ofLane = (lane: QueryRecipe["key"]["lane"]) => recipes.filter((r) => r.key.lane === lane);

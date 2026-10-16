@@ -3,7 +3,7 @@
  * (lib/shards.ts). The server's loader (banana-server/lib/atlas/loader.ts) reads another layout:
  *
  *   pages/<nn>, domains/<nn>, lenses/<nn>, slop/<nn>   read whole (split by size, any names)
- *   fit/<domainId>, mechanics/<UiElement>, cc0/<region>, type-pairs/<voice>  one named shard each
+ *   fit/<domainId>, page-fit/<domainId>, mechanics/<UiElement>, cc0/<region>, type-pairs/<voice>  one named shard each
  *                                                    (a cc0 region over the limit: parts <region>_00, _01, ...)
  *   cards/<bucket>, lines/<bucket>, recipes/<bucket>     hash buckets: bucketOf(id, count)
  *
@@ -26,7 +26,7 @@ import { readManifest, sha256, shardText } from "./shards.ts";
  * J13 stunning layer ("shaders", "motion": read whole, split by size), which the loader's
  * ATLAS_KINDS does not list yet.
  */
-export type ServerKind = "pages" | "domains" | "fit" | "cards" | "lines" | "mechanics" | "lenses" | "recipes" | "cc0" | "slop" | "shaders" | "motion" | "type-pairs";
+export type ServerKind = "pages" | "domains" | "fit" | "page-fit" | "cards" | "lines" | "mechanics" | "lenses" | "recipes" | "cc0" | "slop" | "shaders" | "motion" | "type-pairs";
 
 export type ServerShard = { kind: ServerKind; shard: string; sha256: string; bytes: number };
 export type ServerManifest = { version: string; hash: string; shards: ServerShard[] };
@@ -47,6 +47,7 @@ export const JOB_KINDS: Readonly<Record<string, Rule>> = {
   motion: { kind: "motion", by: "size" },
   "type-pairs": { kind: "type-pairs", by: "name", nameOf: (r: { voice: string }) => r.voice },
   fit: { kind: "fit", by: "name", nameOf: (r: { domainId: string }) => r.domainId },
+  "page-fit": { kind: "page-fit", by: "name", nameOf: (r: { domainId: string }) => r.domainId },
   mechanics: { kind: "mechanics", by: "name", nameOf: (r: { element: string }) => r.element },
   // A region over the size limit is split into parts "<region>_00", "<region>_01", ... (cc0Parts).
   cc0: { kind: "cc0", by: "name", nameOf: (r: { region?: string }) => r.region || "global", split: true },

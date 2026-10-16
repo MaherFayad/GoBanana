@@ -30,6 +30,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type Anthropic from "@anthropic-ai/sdk";
 import { recipeId, recipeKeyString } from "../../banana-server/lib/atlas/loader.ts";
+import { topicTemplate } from "../../banana-server/lib/atlas/recipe-fit.ts";
 import { GENRES, GENRE_LANE, GENRE_NEG, GENRE_PROFILES, type Genre } from "../../banana-server/lib/sources/genre.ts";
 import { isItemPage } from "../../banana-server/lib/sources/item-page.ts";
 import { SOURCE_REGISTRY } from "../../banana-server/lib/sources/registry.ts";
@@ -313,6 +314,19 @@ export function searchQueryFor(input: Pick<Input, "key" | "wording">): string {
   return [query, neg, entry ? `site:${entry.scope}` : ""].filter(Boolean).join(" ");
 }
 
+/**
+ * Gate 2 round 2: a kept page recipe becomes a template with a topic slot ("{topic} pricing page
+ * website ui"), which the server fills with the brief's product noun (lib/atlas/recipe-fit.ts). Art
+ * and genre recipes, and recipes with no page, are unchanged. The precision stays the page wording's.
+ */
+export function withTopicSlot(recipe: QueryRecipe, pages: ReadonlyMap<string, PageLike>): QueryRecipe {
+  const lane = recipe.key.lane;
+  if (lane === "art" || isGenreLane(lane) || !recipe.key.page) return recipe;
+  const page = pages.get(recipe.key.page);
+  const { p0, p1 } = page ? pagePhrases(page) : { p0: recipe.key.page.replace(/-/g, " "), p1: recipe.key.page.replace(/-/g, " ") };
+  return { ...recipe, query: topicTemplate(recipe.query, [p1, p0]) };
+}
+
 export type Ranked = { recipe: QueryRecipe; great: number };
 
 /**
@@ -516,7 +530,10 @@ export default defineJob<Input, QueryRecipe>({
     mkdirSync(PATHS.review, { recursive: true });
     writeFileSync(join(PATHS.review, "j7-recipes-dropped.json"), JSON.stringify({ weak: weak.sort(), unjudged: unjudged.sort() }, null, 2) + "\n");
     if (weak.length > 0) ctx.log(`  owner: reword or drop these (full list in review/j7-recipes-dropped.json): ${weak.slice(0, 15).join(", ")}${weak.length > 15 ? " ..." : ""}`);
-    return recipes;
+    const byId = new Map(loadPages().pages.map((p) => [p.id, p]));
+    const out = recipes.map((r) => withTopicSlot(r, byId));
+    ctx.log(`Topic slot: ${out.filter((r, i) => r.query !== recipes[i]!.query).length} page recipes are templates ("{topic} ...").`);
+    return out;
   },
   shardOf: () => "all",
   renderReview: (r) =>

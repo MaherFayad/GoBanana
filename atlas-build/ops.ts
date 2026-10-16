@@ -26,6 +26,8 @@ export function recordKey(kind: AtlasKind, r: Record<string, unknown>): string {
   switch (kind) {
     case "fit":
       return `${r.cardId}|${r.domainId}`;
+    case "page-fit":
+      return `${r.cardId}|${r.domainId}|${r.pageId}`;
     case "card-elements":
       return `${r.cardId}|${r.element}`;
     case "recipes":

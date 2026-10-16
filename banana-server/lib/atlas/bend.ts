@@ -44,9 +44,9 @@ import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/li
 import { WILDNESS } from "@/lib/bend/wildness";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
-import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, UiElement } from "./types";
+import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, PageFitScore, QueryRecipe, ShaderRecipe, UiElement } from "./types";
 
 /** Most shader and motion recipes one direction carries (VAL-14). Ids only. */
 export const MAX_SHADERS = 1;
@@ -272,6 +272,32 @@ function briefCasing(brief: string, noun: string): string {
   return at >= 0 ? brief.slice(at, at + noun.length) : noun;
 }
 
+/** Element card families that are a layout or UI part, not an idea (Progress Bars, toggles). */
+const LAYOUT_FAMILIES = new Set(["controls and UI bits"]);
+
+/**
+ * A rule or layout card ("Everything in a Bento Grid", "Numbers in Tabular Figures", Progress Bars):
+ * a constraint, or an element card that is itself a UI part. It never leads a direction, it can only
+ * be the second card (Gate 2 round 2: rules as leads read as a rule with no idea).
+ */
+export function isRuleCard(c: { kind: IngredientCard["kind"]; family: string }): boolean {
+  return c.kind === "constraint" || (c.kind === "element" && LAYOUT_FAMILIES.has(c.family));
+}
+
+/** How much less a card counts when the domain's page fit (J4b) did not judge it on this page. */
+export const PAGE_UNJUDGED_DROP = 1;
+
+/**
+ * The fit a card leads this page with: its J4b page score when the page was judged for the domain,
+ * else its domain fit less PAGE_UNJUDGED_DROP (a card outside the domain's judged top cards ranks with
+ * a page 2, under the cards judged 3 for the page). `page` undefined: no page fit for this page, the
+ * domain fit as before.
+ */
+export function leadFit(domainFit: number, page: number | null | undefined): number {
+  if (page === undefined) return domainFit;
+  return page === null ? Math.max(0, domainFit - PAGE_UNJUDGED_DROP) : page;
+}
+
 /** True when the card's avoid list names the other card (its name or family). */
 export function clashes(a: IngredientCard, b: IngredientCard): boolean {
   const hit = (x: IngredientCard, y: IngredientCard) => x.avoid.some((av) => has(av, y.name) || has(av, y.family));
@@ -323,8 +349,8 @@ export function tieBreaks(cards: readonly IngredientCard[], fitOf: (c: Ingredien
 interface Pick {
   lead: IngredientCard;
   second: IngredientCard | null;
-  /** What the second card adds. */
-  adds: "texture" | "motion" | null;
+  /** What the second card adds: its texture, its motion, or (a rule or layout card) its rule. */
+  adds: "texture" | "motion" | "rule" | null;
 }
 
 /** The Atlas elements a direction's mechanic may land on, wild spots first. */
@@ -412,7 +438,7 @@ export function cardSpec(input: SpecInput): VisualSpec {
     ),
     typeVoice: voice,
     color: sentence(`Palette from ${lead.name}: ${colors.join(", ")}${pairs.length ? `; ship pairs ${pairs.join(", ")}` : ""}; text at 4.5 to 1 or more`),
-    layout: sentence(`${lead.name} carries the ${part}, the ${input.pageLabel} keeps its usual order around it${grid}`),
+    layout: sentence(`${lead.name} carries the ${part}, the ${input.pageLabel} keeps its usual order around it${grid}${adds === "rule" && second ? `; one rule from ${second.name}: ${second.idea.replace(/[.\s]+$/, "")}` : ""}`),
     imagery: sentence(lead.imagery),
     motion: sentence(`${motionCard.motion.verb} in ${motionCard.motion.ms}ms${motionCard !== lead ? ` (from ${motionCard.name})` : ""}; with reduced motion on, ${motionCard.motion.reduced}`),
     texture: sentence(`${textureCard.texture}${textureCard !== lead ? ` (from ${textureCard.name})` : ""}; text sits on solid panels, never on the texture`),
@@ -513,17 +539,19 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const themeOf = new Map<string, number>(themeFit.map((f) => [f.cardId, f.score]));
   const minFit = wildness >= 4 ? 1 : 2;
   const fitOf = new Map<string, FitScore>(fit.map((f) => [f.cardId, f]));
+  // J4b page fit (Gate 2 round 2): how well a card can lead this page of this domain. A failed read
+  // or no rows for the page leaves the domain fit in charge (the bend before J4b).
+  const pageFitOf = new Map<string, PageFitScore>(((await source.pageFit(domain.id)) ?? []).filter((r) => r.pageId === page.id).map((r) => [r.cardId, r]));
   // Brief words that tell this domain's cards apart: named by fewer than RARE_SHARE of its fit
   // reasons ("reading" on a kids reading brief counts, "kids" does not).
-  const reasonWords = new Map<string, Set<string>>(fit.map((f) => [f.cardId, new Set(contentWords(f.reason))]));
+  const reasonWords = new Map<string, Set<string>>(fit.map((f) => [f.cardId, new Set(contentWords(`${f.reason} ${pageFitOf.get(f.cardId)?.reason ?? ""}`))]));
   const briefWords = new Set(
     contentWords(`${input.brief} ${pageLabel}`).filter((w) => [...reasonWords.values()].filter((r) => r.has(w)).length < RARE_SHARE * Math.max(1, fit.length)),
   );
   /** Fit for this brief: the domain fit, plus a share of the theme fit and of rare brief words in the fit reason. */
   const fitScore = (cardId: string): number => {
-    const f = fitOf.get(cardId);
     const shared = [...(reasonWords.get(cardId) ?? [])].filter((w) => briefWords.has(w)).length;
-    return (f?.score ?? 0) + THEME_SHARE * (themeOf.get(cardId) ?? 0) + Math.min(REASON_MAX, REASON_STEP * shared);
+    return leadFit(fitOf.get(cardId)?.score ?? 0, pageFitOf.size > 0 ? (pageFitOf.get(cardId)?.score ?? null) : undefined) + THEME_SHARE * (themeOf.get(cardId) ?? 0) + Math.min(REASON_MAX, REASON_STEP * shared);
   };
   const candidateIds = fit
     .filter((f) => f.score >= minFit || (f.score >= 1 && themeOf.get(f.cardId) === 3))
@@ -585,7 +613,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   };
   const lensCards = lens ? cards.filter(isLensCard) : [];
   if (lens && lensCards.length === 0) return null;
-  const nonLens = cards.filter((c) => !lensCards.includes(c));
+  // Rule and layout cards never lead (Gate 2 round 2); they stay in the pool for the second card.
+  const nonLens = cards.filter((c) => !lensCards.includes(c) && !isRuleCard(c));
   const leadsLens = mmr(lensCards, GENERATED);
   const leads = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
@@ -595,7 +624,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const picks: Pick[] = leads.map((lead, i) => {
     const wantsSecond = wildness >= TWIST_FROM_WILDNESS || (lens && !isLensCard(lead));
     if (!wantsSecond) return { lead, second: null, adds: null };
-    const adds: Pick["adds"] = i % 2 === 0 ? "texture" : "motion";
+    const adds: "texture" | "motion" = i % 2 === 0 ? "texture" : "motion";
     const pool = (lens && !isLensCard(lead) ? lensCards : cards).filter((c) => c.id !== lead.id && !leads.includes(c) && !clashes(lead, c));
     const pool2 = pool.length > 0 ? pool : (lens && !isLensCard(lead) ? lensCards : []).filter((c) => c.id !== lead.id);
     const ranked = [...pool2].sort(
@@ -606,7 +635,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     );
     const second = ranked[0] ?? null;
     if (second) usedSecond.add(second.id);
-    return { lead, second, adds: second ? (lens && !isLensCard(lead) ? "texture" : adds) : null };
+    // A rule or layout card as the second card adds its rule, not its texture or motion.
+    return { lead, second, adds: second ? (isRuleCard(second) ? "rule" : lens && !isLensCard(lead) ? "texture" : adds) : null };
   });
 
   // 5. Mechanics: the page's wild spot elements, by the lead card's lines, spread over the bend.
@@ -652,7 +682,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (second && !ingredients[KIND_SLOT[second.kind]]) ingredients[KIND_SLOT[second.kind]] = second.name;
     const idea = words(lead.name.toLowerCase()).slice(0, 5).join(" ");
     const elements = ranked(lead);
-    let why = fitOf.get(lead.id)?.reason ?? `${lead.idea}`;
+    // The page reason (J4b) says what on this page the card serves; the domain reason is the fallback.
+    const pageReason = pageFitOf.get(lead.id);
+    let why = (pageReason && pageReason.score >= 2 && pageReason.reason) || fitOf.get(lead.id)?.reason || `${lead.idea}`;
     if (whys.has(why)) why = `${lead.name}: ${why}`;
 
     const draw = async (attempt: number) => {
@@ -757,7 +789,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const allKeys = built.flatMap((b) => Object.values(keysFor(b)).flat()).map(normKey);
   const uniqueKeys = [...new Map(allKeys.map((k) => [JSON.stringify(k), k])).values()];
   // Missing recipes are not an error: the Phase 0 lanes (P0-17 taste lanes included) take over.
-  const recipes = (await source.recipes(uniqueKeys)) ?? [];
+  // J7 page recipes are templates: the slot takes the brief's product noun (lib/atlas/recipe-fit.ts).
+  const recipes = fillRecipes((await source.recipes(uniqueKeys)) ?? [], productNoun);
   const byKey = new Map<string, QueryRecipe[]>();
   for (const r of recipes) {
     const k = JSON.stringify(normKey(r.key));
@@ -766,7 +799,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // A UI recipe must name the brief's topic, not only the page, and be judged at least as precise as
   // the Phase 0 lane it replaces (lib/atlas/recipe-fit.ts).
   const topicOk = recipeHoldsTopic({ productNoun, topic: subject.head, pageId: page.id });
-  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= 7;
+  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= MAX_RECIPE_WORDS;
   const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();
