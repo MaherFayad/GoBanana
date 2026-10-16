@@ -39,6 +39,8 @@ import {
   artQueryPlan,
   bridgeHead,
   byZone,
+  genreQueryPlan,
+  plainGenre,
   mergeLanes,
   plainQueryPlan,
   plainRetryQuery,
@@ -49,6 +51,8 @@ import {
   type PlannedRequest,
 } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
+import { isGenreTitle, laneGenre, type Genre } from "./genre";
+import { sourceEntry } from "./registry";
 import {
   SOURCE_DOMAINS,
   isGallery,
@@ -274,8 +278,14 @@ export type MapOptions = {
   allowlist: ImageHostAllowlist;
   takedowns: TakedownMatcher;
   count: number;
-  /** "ui" (default): the UI title gate. "art": the art junk gate instead (art zone). */
-  gate?: "ui" | "art";
+  /**
+   * "ui" (default): the UI title gate. "art": the art junk gate instead (art zone). "genre": a
+   * deck or brand search (lib/sources/genre.ts): core site titles must name the genre, gallery
+   * items pass, and a templatesOk gallery (Pitch) skips the kit filter.
+   */
+  gate?: "ui" | "art" | "genre";
+  /** With gate "genre": which genre's title words. */
+  genre?: Genre;
   /** Art gate: the art query, so a product word it names is not junk ("persian rug"). */
   artQuery?: string;
   /** Art zone ranking: titles that name the idea's head word score up. */
@@ -319,6 +329,8 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     }
 
     const image = parseHttpUrl(raw.imageUrl);
+    // A site that still links some images over http (Brand New) is asked for them over https.
+    if (image && image.protocol === "http:" && sourceEntry(site).httpsImages) image.protocol = "https:";
     const thumb = parseHttpUrl(raw.thumbnailUrl);
     const imageOk = image !== null && isAllowedImageUrl(image.toString(), opts.allowlist);
     const thumbOk = thumb !== null && isAllowedImageUrl(thumb.toString(), opts.allowlist);
@@ -354,14 +366,27 @@ export function mapSerperImagesWithStats(images: unknown, opts: MapOptions): Map
     }
 
     const title = cleanTitle(raw.title);
-    // Kits and templates are sales sheets, never one designed screen (both zones).
-    if (isKitTitle(title)) {
+    // Kits and templates are sales sheets, never one designed screen (both zones). A genre gallery
+    // whose items are all templates by design (Pitch) is the exception.
+    const genreGate = opts.gate === "genre" && opts.genre ? opts.genre : null;
+    if (isKitTitle(title) && !(genreGate && sourceEntry(site).templatesOk)) {
       dropped++;
       continue;
     }
     // UI zone: the title names a UI (untitled ones go too). Art zone: the junk gate instead.
     // Art zone: lens exclusions, shop junk, music and merch titles. UI zone: the gate, then lens exclusions.
-    const reason = opts.gate === "art" ? artDropReason(title, opts.artQuery) : !isUiResult(title, sourceUrl) ? "junk" : titleHasAny(title, lensWords) ? "lens" : null;
+    // Genre: gallery items pass, core site titles must name the genre.
+    const reason = genreGate
+      ? isGallery(site) || isGenreTitle(title, genreGate)
+        ? null
+        : "junk"
+      : opts.gate === "art"
+        ? artDropReason(title, opts.artQuery)
+        : !isUiResult(title, sourceUrl)
+          ? "junk"
+          : titleHasAny(title, lensWords)
+            ? "lens"
+            : null;
     if (reason) {
       dropped++;
       if (reason === "lens") why.lens++;
@@ -556,7 +581,11 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const prefer = q.preferCreators ?? [];
     const budget = Math.min(requestBudget(q.maxRequests), PLAIN_MAX_REQUESTS);
     const art = q.zone === "art";
-    const planned = (art ? artQueryPlan(q.query, q.sources ?? []) : plainQueryPlan(q.query, selected)).slice(0, budget);
+    // A deck or brand query (lib/sources/genre.ts) gets its genre's wordings and title gate.
+    const genre = art ? null : plainGenre(q.query, q.genre);
+    const planned = (
+      art ? artQueryPlan(q.query, q.sources ?? []) : genre ? genreQueryPlan(q.query, genre, q.sources ?? []) : plainQueryPlan(q.query, selected)
+    ).slice(0, budget);
     const artIdea = art ? bridgeHead(q.query) ?? undefined : undefined;
     if (planned.length === 0) return failure(NOTES.noResults);
 
@@ -589,7 +618,11 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
           allowlist,
           takedowns,
           count: excludedKeys.size > 0 ? 50 : count,
-          ...(art ? { gate: "art" as const, artQuery: q.query, ...(artIdea ? { ideaWord: artIdea } : {}) } : { lensQuery: q.query }),
+          ...(art
+            ? { gate: "art" as const, artQuery: q.query, ...(artIdea ? { ideaWord: artIdea } : {}) }
+            : genre
+              ? { gate: "genre" as const, genre }
+              : { lensQuery: q.query }),
         });
         const kept = excludedKeys.size > 0 ? mapped.references.filter((r) => !excludedKeys.has(itemKey(r.sourceUrl))) : mapped.references;
         slot.refs = nudgeByCreator(kept.slice(0, count), prefer).map((r) => ({ ...r, zone: art ? ("art" as const) : ("ui" as const) }));
@@ -616,10 +649,13 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
 
     // Too few UI results: retry once with the short form on the first planned site.
-    if (!art && references.length < PLAIN_MIN_GOOD && requests < budget) {
+    if (!art && !genre && references.length < PLAIN_MIN_GOOD && requests < budget) {
       const retry = plainRetryQuery(q.query, planned.map((r) => r.query));
       if (retry) await fetchRound([addSlot(retry, planned[0]!.site)]);
     }
+    // A thin genre search: its first wording again without the subject (the measured wording).
+    const genreRetry = genre ? planned.find((r) => r.fallback) : undefined;
+    if (genreRetry?.fallback && references.length < PLAIN_MIN_GOOD && requests < budget) await fetchRound([addSlot(genreRetry.fallback, genreRetry.site)]);
 
     // Page 2 of full answers while results are short, fewest results first, within the budget.
     for (let page = 2; page <= serperPages(q.maxPages) && requests < budget && references.length < count; page++) {
@@ -679,12 +715,17 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
       const zone = requestZone(req);
       const words = queryWords(query);
+      const genre = laneGenre(req.lane);
       const mapped = mapSerperImagesWithStats(images, {
         sources: [req.site],
         allowlist,
         takedowns,
         count: SERPER_PAGE_SIZE,
-        ...(zone === "art" ? { gate: "art" as const, artQuery: words, ...(req.ideaWord ? { ideaWord: req.ideaWord } : {}) } : { lensQuery: words }),
+        ...(zone === "art"
+          ? { gate: "art" as const, artQuery: words, ...(req.ideaWord ? { ideaWord: req.ideaWord } : {}) }
+          : genre
+            ? { gate: "genre" as const, genre }
+            : { lensQuery: words }),
       });
       // Precision filter for the bridge lane (titles name the idea; round 10: 11 of 39 did) and the
       // locale lane (titles name the subject, so Quran and calligraphy apps drop out of "arabic flight app ui").

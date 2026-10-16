@@ -23,13 +23,16 @@
  *   the result title names the idea (round 10: 11 of 39 good results did; lib/sources/plan.ts).
  * - locale: "arabic {core} {surface}" when the brief is Arabic or right to left and names a subject.
  *
- * A brief that names no UI ("a poster for a jazz festival") still gets UI forms: fidelity
- * "{subject} app ui", taste "{style} {subject} ui design".
+ * A brief that names no UI and no genre ("a meditation timer") still gets UI forms: fidelity
+ * "{subject} app ui", taste "{style} {subject} ui design". A brief that names no device or web
+ * surface but names a deck or a brand ("a poster for a jazz festival", "pitch deck for a fintech
+ * startup") gets its genre lane instead (lib/sources/genre.ts, 2026-10-16).
  *
  * Site operators and negatives are added by lib/sources/plan.ts; these are the plain words.
  */
 import type { Platform } from "@/lib/direction-detail";
 import { detectPlatform } from "@/lib/platform";
+import { detectGenre, genreRequests, genreSubject, type Genre } from "@/lib/sources/genre";
 import { bridgeHead, MAX_COMPONENT_LANES, type LaneTexts } from "@/lib/sources/plan";
 import { pickGalleries } from "@/lib/sources/registry";
 import { showcaseLane } from "@/lib/sources/showcase";
@@ -800,6 +803,8 @@ export type LaneOptions = {
    * leads the component lanes, so directions of one brief search different parts (P0-05).
    */
   mechanic?: string;
+  /** A non-UI genre (lib/sources/genre.ts); else detected from the brief when its platform is "any". */
+  genre?: Genre;
 };
 
 /** Taste lane variants for a direction (same style pick as laneTexts; no taste lane, none). */
@@ -836,6 +841,19 @@ export function laneTexts(
   const b = brief?.trim();
   if (!b) return lanes;
   const platform = opts.platform ?? detectPlatform(b);
+  // A deck or brand brief (lib/sources/genre.ts): only when the caller says so, or the brief names
+  // no device and no web surface (platform "any") and names the genre. Its genre lane replaces the
+  // UI lanes; every other brief continues below exactly as before.
+  const genre = opts.genre ?? (platform === "any" ? detectGenre(b) : null);
+  if (genre) {
+    const style = pickFrom(taste.map((w) => w.trim()).filter(Boolean), key);
+    lanes.genre = genre;
+    lanes.genreRequests = genreRequests(b, genre, style ? { style } : {});
+    lanes.platform = platform;
+    const subject = genreSubject(b);
+    if (subject) lanes.topic = subject;
+    return lanes;
+  }
   const styles = directionStyles(taste, opts.styleWords);
   // Mobile and web app: the taste bar wording (P0-17), styled by the user's own taste words only;
   // without them, "dark" (mobile) or "dark mode minimal" (web app).

@@ -587,9 +587,9 @@ describe("run with a blocklist", () => {
   it("drops blocked items from a plain query search", async () => {
     const fetchMock = vi.fn<FetchLike>(async (_url, init) => jsonResponse(pageFor(bodyOf(init).q)));
     const adapter = createWebSearchAdapter({ apiKey: "k", fetch: fetchMock, allowlist });
-    const first = await adapter.run({ query: "poster", count: 8, userId: "u" });
+    const first = await adapter.run({ query: "arcade", count: 8, userId: "u" });
     const blocked = [itemKey(first.references[0]!.sourceUrl)];
-    const again = await adapter.run({ query: "poster", count: 8, userId: "u", excludeKeys: blocked });
+    const again = await adapter.run({ query: "arcade", count: 8, userId: "u", excludeKeys: blocked });
     expect(again.references).toHaveLength(8);
     expect(again.references.some((r) => itemKey(r.sourceUrl) === blocked[0])).toBe(false);
   });

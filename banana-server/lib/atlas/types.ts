@@ -85,7 +85,7 @@ export interface LensPack {
 }
 
 export interface QueryRecipe {
-  key: { lane: "concept" | "component" | "art" | "baseline"; page?: string; platform?: Platform; element?: UiElement; cardId?: string; style?: string }; // style: a web showcase style id (lib/sources/showcase.ts), website baseline keys only
+  key: { lane: "concept" | "component" | "art" | "baseline" | "deck" | "brand"; page?: string; platform?: Platform; element?: UiElement; cardId?: string; style?: string }; // style: a web showcase style id (lib/sources/showcase.ts), website baseline keys only
   query: string;
   source: string;                               // a SourceId from lib/sources/registry.ts
   precision: number;                            // share of top 8 judged good or great, 0 to 1

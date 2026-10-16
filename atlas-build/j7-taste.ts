@@ -9,6 +9,7 @@
  * costs.csv under job "j7-taste" (the j7 budget). Run it again when the owner saves picks.json.
  */
 import Anthropic from "@anthropic-ai/sdk";
+import { genreOf } from "../banana-server/bench/taste/genres.mjs";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { JUDGE, PATHS, ROOT, loadEnv } from "./config.ts";
@@ -23,7 +24,7 @@ export function picksFile(dir = join(ROOT, "..", "banana-server", "bench", "tast
   return existsSync(own) ? own : join(dir, "picks.default.json");
 }
 
-const SYSTEM = `You write short notes for an image judge. The owner picked exemplar pictures that show their taste bar for UI references (phone screens and web app screens, mostly dark, shipped-grade). Describe what the exemplars share so a judge can tell "great" (could sit on the owner's boards) from "good" (on the right page but generic) and "bad" (wrong page, kit, concept comp, stock art).
+const UI_SYSTEM = `You write short notes for an image judge. The owner picked exemplar pictures that show their taste bar for UI references (phone screens and web app screens, mostly dark, shipped-grade). Describe what the exemplars share so a judge can tell "great" (could sit on the owner's boards) from "good" (on the right page but generic) and "bad" (wrong page, kit, concept comp, stock art).
 
 Write plain English, no em dashes, at most 380 words, as short bullet lists under these headings:
 - What the exemplars share (layout, color, type, depth, data, texture)
@@ -33,10 +34,37 @@ Write plain English, no em dashes, at most 380 words, as short bullet lists unde
 
 Name only what you can see in the images. Do not name real people.`;
 
+/**
+ * Taste genres (banana-server/bench/taste/genres.mjs). Without `--genre` the notes cover the UI
+ * genres (Mobile UI and Web UI) as before and go to data/j7-taste-notes.md; `--genre presentation`
+ * or `--genre branding` uses only that genre's picks and writes data/j7-taste-notes-<genre>.md.
+ */
+export const UI_GENRES = ["mobile-ui", "web-ui"];
+export function genreArg(argv: readonly string[] = process.argv): string | undefined {
+  const i = argv.indexOf("--genre");
+  return i >= 0 ? argv[i + 1] : undefined;
+}
+/** The picks a notes run reads: one genre's, else the UI genres'. Picks without `genre` count by platform. */
+export function exemplarPicks<T extends { genre?: unknown; platform?: unknown }>(picks: readonly T[], genre?: string): T[] {
+  return picks.filter((p) => (genre ? genreOf(p) === genre : UI_GENRES.includes(genreOf(p))));
+}
+export const notesName = (genre?: string) => (genre ? `j7-taste-notes-${genre}.md` : "j7-taste-notes.md");
+const GENRE_SYSTEM = (genre: string) =>
+  `You write short notes for an image judge. The owner picked exemplar pictures that show their taste bar for ${genre === "presentation" ? "presentation design (pitch decks, keynote slides, data slides, editorial report layouts)" : "graphic and branding design (identities, logo systems, brand guidelines, posters, packaging, type-led work)"}. Describe what the exemplars share so a judge can tell "great" (could sit on the owner's boards) from "good" (the right kind of work but generic) and "bad" (wrong kind of work, a template sales sheet, a mockup pack, stock art).
+
+Write plain English, no em dashes, at most 380 words, as short bullet lists under these headings:
+- What the exemplars share (layout, color, type, image, restraint)
+- By kind of work: what the best look like
+- What to mark bad even when it matches the words
+
+Name only what you can see in the images. Do not name real people.`;
+
 async function main() {
   loadEnv();
   const file = picksFile();
-  const picks = (JSON.parse(readFileSync(file, "utf8")) as { picks: Pick[] }).picks;
+  // One genre's picks (`--genre`), else the UI genres'; its own prompt and notes file.
+  const genre = genreArg();
+  const picks = exemplarPicks((JSON.parse(readFileSync(file, "utf8")) as { picks: Pick[] }).picks, genre); const SYSTEM = genre ? GENRE_SYSTEM(genre) : UI_SYSTEM; const notes = notesName(genre);
   console.log(`${picks.length} exemplars from ${file}`);
   const blocks: Anthropic.ContentBlockParam[] = [];
   let n = 0;
@@ -72,8 +100,8 @@ async function main() {
     usd,
   });
   if (/—/.test(text)) throw new Error("the notes have an em dash: run again");
-  writeFileSync(join(ROOT, "data", "j7-taste-notes.md"), text + "\n");
-  console.log(`wrote data/j7-taste-notes.md (${text.split(/\s+/).length} words), $${usd.toFixed(4)}, ${res.usage.input_tokens} input tokens for ${n} images`);
+  writeFileSync(join(ROOT, "data", notes), text + "\n");
+  console.log(`wrote data/${notes} (${text.split(/\s+/).length} words), $${usd.toFixed(4)}, ${res.usage.input_tokens} input tokens for ${n} images`);
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop()!)) {

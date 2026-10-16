@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "default",
-  "count": 55,
+  "count": 85,
   "picks": [
     {
       "id": "b004",
@@ -322,6 +322,276 @@
       "sourceUrl": "https://www.pinterest.com/pin/424393964909111615",
       "platform": "mobile",
       "page": "booking"
+    },
+    {
+      "id": "pr044",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://cdn.dribbble.com/userupload/13909589/file/original-facc885601576fd20651e1405069373b.png?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/18834873-Sber-Presentation-design",
+      "platform": "presentation",
+      "page": "pitch-deck"
+    },
+    {
+      "id": "pr045",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://cdn.dribbble.com/userupload/18118073/file/original-dde2172c0e1527da1780d02a37871ece.png?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/24985301-Pitch-Deck-Infinity-Production-House",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr057",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://i.pinimg.com/736x/e9/6c/55/e96c551b6c2d76361b77a46388f7093e.jpg",
+      "sourceUrl": "https://in.pinterest.com/pin/slabpixel-designer--1688918606086559/",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr060",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://i.pinimg.com/736x/5a/db/51/5adb51f7d26de23b195f03adce70defd.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/296252481762874268/",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr021",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/5b3ad175-bf4e-42e4-ac7f-a948eaae0dad.jpg",
+      "sourceUrl": "https://pitch.com/templates/Press-Kit-4vxq8V04agMk5g3CGP4A2A7b",
+      "platform": "presentation",
+      "page": "editorial-deck"
+    },
+    {
+      "id": "pr058",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://i.pinimg.com/736x/4b/1e/6c/4b1e6cd38a3eb36544daae355fd82926.jpg",
+      "sourceUrl": "https://ru.pinterest.com/pin/343118065385305977/",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr061",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://i.pinimg.com/736x/59/b6/c3/59b6c3dc4e2ce3afb1e2027a340afab9.jpg",
+      "sourceUrl": "https://es.pinterest.com/pin/338895940728962913/",
+      "platform": "presentation",
+      "page": "data-slide"
+    },
+    {
+      "id": "pr051",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://cdn.dribbble.com/userupload/37074574/file/still-7184d5467c1d5493af80ee22672d2055.png?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/25780086-SYNTH-AI-Driven-NFT-Minting-Pitchdeck",
+      "platform": "presentation",
+      "page": "data-slide"
+    },
+    {
+      "id": "pr056",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://i.pinimg.com/originals/70/b0/74/70b074c90acb8fdfa3d4c13c3d11e5d8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/239676011413553068/",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr063",
+      "origin": "search",
+      "genre": "presentation",
+      "imageUrl": "https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/24e75081414283.5cff1dfdb2987.jpg",
+      "sourceUrl": "https://www.behance.net/gallery/81414283/TIFF-Annual-Report-2018",
+      "platform": "presentation",
+      "page": "editorial-deck"
+    },
+    {
+      "id": "pr007",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/71471533-3593-4f9d-8c6c-6fc4d9dfd26e.jpg",
+      "sourceUrl": "https://pitch.com/templates/KPI-Report--3LKxxd0RkgM24jP28h4ZCCBm",
+      "platform": "presentation",
+      "page": "big-number"
+    },
+    {
+      "id": "pr027",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/26535c2e-68df-44c0-9a62-1daa99a91048.jpg",
+      "sourceUrl": "https://pitch.com/templates/Wake-Up-World-0kMdGY04HYk34U8c7S5VDEq6",
+      "platform": "presentation",
+      "page": "pitch-deck"
+    },
+    {
+      "id": "pr016",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/a70a0cf4-4709-469f-be33-ffe2d814bcf4.jpg",
+      "sourceUrl": "https://pitch.com/templates/Board-Deck-5WNEjL4zD9815VDStw4Vt6SS",
+      "platform": "presentation",
+      "page": "cover"
+    },
+    {
+      "id": "pr036",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/tone-of-voice-guidelines.jpg",
+      "sourceUrl": "https://pitch.com/templates/Tone-of-Voice-Guidelines-5Un4Q33qSKnK4oG6pX0KwzY4",
+      "platform": "presentation",
+      "page": "slide-layout"
+    },
+    {
+      "id": "pr005",
+      "origin": "showcase",
+      "genre": "presentation",
+      "imageUrl": "https://imgproxy.services.pitch.com/_/plain/pitch-publish-user-assets/templates/posters/4ae7e8f5-af23-410e-a520-1800a5ccd95d.jpg",
+      "sourceUrl": "https://pitch.com/templates/Film-Pitch-Deck--5g4Prz4BuNLH4hy2vL57P5ti",
+      "platform": "presentation",
+      "page": "pitch-deck"
+    },
+    {
+      "id": "br006",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://the-brandidentity.com/uploads/videos/13885755.jpg",
+      "sourceUrl": "https://the-brandidentity.com/project/frequency-leads-lotipa-and-imaginaryfriends-identity-for-a-djs-matcha",
+      "platform": "branding",
+      "page": "typographic"
+    },
+    {
+      "id": "br014",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://bpando.org/wp-content/uploads/mira0-scaled-1.png",
+      "sourceUrl": "https://bpando.org/2026/10/14/kneading-east-and-west/",
+      "platform": "branding",
+      "page": "identity"
+    },
+    {
+      "id": "br016",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://bpando.org/wp-content/uploads/two-tribes-all-purpose-brand-identity-design-logo-packaging-bpo-review-wordmark.jpeg",
+      "sourceUrl": "https://bpando.org/2026/10/08/two-tribes-brewing-all-purpose-brand-identity-design-logo-packaging/",
+      "platform": "branding",
+      "page": "logo"
+    },
+    {
+      "id": "br028",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://bpando.org/wp-content/uploads/phion-orchestra-thonik-branding-identity-design-logo-bpo-review-brochures.jpeg",
+      "sourceUrl": "https://bpando.org/2026/09/01/orkest-phion-orchestra-thonik-branding-identity-design/",
+      "platform": "branding",
+      "page": "poster"
+    },
+    {
+      "id": "br038",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://mindsparklemag.com/storage/media/28786/652009c5fdd81b215bb362f4_Studio-Kiln-Channel-4-RTS-Cambridge-2023-Too-Much-To-Watch-Brand-Identity-Guide-Book-Cover-Grid.jpg",
+      "sourceUrl": "https://mindsparklemag.com/designs/how-studio-kiln-created-an-award-winning-playful-identity-for-rts-cambridge-convention",
+      "platform": "branding",
+      "page": "typographic"
+    },
+    {
+      "id": "br063",
+      "origin": "search",
+      "genre": "branding",
+      "imageUrl": "https://www.underconsideration.com/brandnew/archives/sonos_logo.jpg",
+      "sourceUrl": "https://www.underconsideration.com/brandnew/archives/new_identity_for_sonos_by_bruce_mau_design.php",
+      "platform": "branding",
+      "page": "logo"
+    },
+    {
+      "id": "br008",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://the-brandidentity.com/uploads/videos/13675770.jpg",
+      "sourceUrl": "https://the-brandidentity.com/project/holographik-designs-the-identity-for-bottones-furniture-show-in-zagreb",
+      "platform": "branding",
+      "page": "poster"
+    },
+    {
+      "id": "br012",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://the-brandidentity.com/uploads/articles/2020/12/studio-ghazaal-vojdanis-identity-bsa-celebrates-societys-variety-tactility-materiality/TBSASGV_5.jpg",
+      "sourceUrl": "https://the-brandidentity.com/project/studio-ghazaal-vojdanis-identity-bsa-celebrates-societys-variety-tactility-materiality",
+      "platform": "branding",
+      "page": "poster"
+    },
+    {
+      "id": "br022",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://bpando.org/wp-content/uploads/bouf_case-study_06.jpg.webp",
+      "sourceUrl": "https://bpando.org/2026/09/23/some-names-just-sound-thick/",
+      "platform": "branding",
+      "page": "packaging"
+    },
+    {
+      "id": "br044",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://www.underconsideration.com/brandnew/wp/wp-content/uploads/2026/07/coca_cola_2026_new.jpg",
+      "sourceUrl": "https://www.underconsideration.com/brandnew/archives/new_identity_and_packaging_for_coca_cola.php",
+      "platform": "branding",
+      "page": "brand-guidelines"
+    },
+    {
+      "id": "br046",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://original.fontsinuse.com/fontsinuse.com/use-images/N304/304330/304330.jpeg",
+      "sourceUrl": "https://fontsinuse.com/uses/80227/fusion-festivalguide",
+      "platform": "branding",
+      "page": "poster"
+    },
+    {
+      "id": "br049",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://original.fontsinuse.com/fontsinuse.com/use-images/N304/304403/304403.jpeg",
+      "sourceUrl": "https://fontsinuse.com/uses/80249/en-cours-exhibition-poster-and-booklet",
+      "platform": "branding",
+      "page": "poster"
+    },
+    {
+      "id": "br031",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://mindsparklemag.com/storage/media/32105/Group-427320831.jpg",
+      "sourceUrl": "https://mindsparklemag.com/designs/taking-a-record-label-for-a-spin-milkshakes-car-culture-identity",
+      "platform": "branding",
+      "page": "identity"
+    },
+    {
+      "id": "br007",
+      "origin": "showcase",
+      "genre": "branding",
+      "imageUrl": "https://the-brandidentity.com/uploads/videos/13888240.jpg",
+      "sourceUrl": "https://the-brandidentity.com/project/why-carolanebel-studio-turned-a-fleur-de-lys-into-a-bird-for-club-pays",
+      "platform": "branding",
+      "page": "logo"
+    },
+    {
+      "id": "br060",
+      "origin": "search",
+      "genre": "branding",
+      "imageUrl": "https://www.underconsideration.com/brandnew/wp/wp-content/uploads/2024/11/new_museum_2024_new_02.jpg",
+      "sourceUrl": "https://www.underconsideration.com/brandnew/archives/new_identity_for_new_museum_by_athletics.php",
+      "platform": "branding",
+      "page": "identity"
     },
     {
       "id": "w001",

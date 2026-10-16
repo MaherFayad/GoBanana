@@ -43,3 +43,42 @@ Read from the first screen of both boards on 2026-10-15.
 - **Agent rating (skills):** the same rule for `rate_references`.
 - **Query recipes (P1-J7):** the judging prompt gets this file plus 20 to 40 exemplar pins the owner
   picks, and precision counts only results that pass the bar.
+
+## Presentation (decks and slides)
+
+Added 2026-10-16 for the `deck` lane (banana-server/lib/sources/genre.ts) and the picker's
+Presentation tab. The same bar, read for slides. Measured on 65 candidates from Pitch's template
+gallery and Serper finds on Dribbble, Behance and Pinterest, looked at in contact sheets.
+
+- **A shipped deck, not a template sheet.** Real slides from a real pitch or report, shown one or
+  two at a time. Not a 30-slide grid of a "PowerPoint template", not infographic packs, not
+  mockup bundles with pastel 3D people.
+- **One idea per slide.** One headline, one figure or one image. A cover that is a single word set
+  huge ("KPI REPORT", "Moodboard") beats a busy agenda.
+- **Big numbers carry the slide.** "$100b", "11,170", "50 / 24 / 26" in large display type, small
+  grey labels, a thin line or bar chart at most. No rainbow pies, no icon rows.
+- **Dark first, one accent.** Near-black or deep green and navy grounds with one orange, lime or red
+  accent; a single photo or glow as the focal point.
+- **Editorial type.** Condensed or serif display moments, a calm grid, generous margins; annual
+  report spreads with pull quotes count when the type leads.
+- **Fails the bar:** template sales sheets ("60+ slides, editable"), infographic kits, isometric
+  stock illustration, every slide a different layout, decks that are app screenshots on gradients.
+
+## Branding (identities, posters, packaging)
+
+Added 2026-10-16 for the `brand` lane and the picker's Branding tab. Measured on 64 candidates from
+The Brand Identity, BP&O, Mindsparkle, Brand New, Fonts In Use and Serper finds.
+
+- **Shipped identity in use.** The mark on a real thing: a billboard, a bag, a bottle, a hoarding,
+  a museum banner. Case study images from studios, not a logo floating on a mockup.
+- **One strong idea.** One mark, one move ("a coin over the type", "type that bounces"), carried
+  through. A lime roundel on black beats a page of twelve logo options.
+- **Restraint in colour.** One ground and one accent (lime on black, cream on oxblood, red on red);
+  dark grounds are welcome, not required.
+- **Type leads.** Big, confident type: condensed, blackletter, bubble or a well cut serif. Posters
+  where the words are the image.
+- **Packaging as a family.** A small set in one palette, lit like a product shot, not a shelf of
+  generic bottles.
+- **Fails the bar:** logo service promos ("Custom Logo Design | 100+"), brand guideline templates,
+  mockup packs, before and after sheets with nothing applied (Brand New's lead images are often
+  these: fine as a source, rarely an exemplar), listicles ("Top 10 playful branding").

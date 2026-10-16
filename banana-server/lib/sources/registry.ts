@@ -27,9 +27,14 @@
  *   style (lib/sources/showcase.ts: playful, 3D, WebGL, motion, ...), it is searched with that
  *   style's words, its "phrase" or its one "word", instead of the topic.
  * - styleOnly: picked only when a style word names one of its tags, never by platform alone.
+ * - genres: the non-UI genres (lib/sources/genre.ts) whose lane may search this gallery. A genre
+ *   gallery has no platforms and no tags of its own, so pickGalleries never picks it for a UI brief.
+ * - templatesOk: every item is a template by design (Pitch's gallery): the kit filter is skipped.
+ * - httpsImages: the site still links some images over http; they are asked for over https.
  */
 import type { Platform, Zone } from "../direction-detail";
 import { SHOWCASE_TAGS, SHOWCASE_WORD_TAGS } from "./showcase";
+import type { Genre } from "./genre";
 
 export type SourceMeasure = {
   /** Day of the live measurement (YYYY-MM-DD). */
@@ -75,6 +80,9 @@ export type SourceEntry = {
   showcase?: "phrase" | "word";
   /** Picked by a style tag only, never as one of the platform's default galleries. */
   styleOnly?: boolean;
+  genres?: readonly Genre[];
+  templatesOk?: boolean;
+  httpsImages?: boolean;
   measured: SourceMeasure;
 };
 
@@ -448,6 +456,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["typography", "big typography", "editorial", "type", "lettering", "poster", "serif", "retro"],
+    genres: ["branding"],
     measured: gallery(5, 50, 50, 42),
   },
   {
@@ -461,6 +470,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["poster", "typography", "big typography", "swiss style", "experimental"],
+    genres: ["branding"],
     measured: gallery(5, 50, 46, 26),
   },
   {
@@ -488,6 +498,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["branding", "identity", "brand", "luxury"],
+    genres: ["branding"],
     measured: gallery(5, 50, 50, 35),
   },
   {
@@ -501,6 +512,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["packaging", "branding", "label"],
+    genres: ["branding"],
     measured: gallery(5, 50, 45, 31, "older posts (2013 to 2016) show up"),
   },
   {
@@ -541,6 +553,52 @@ export const SOURCE_REGISTRY = [
     platforms: [],
     tags: ["poster", "print", "graphic design", "illustration"],
     measured: gallery(5, 50, 50, 50, "user saves; 68% big enough, the size rule drops the rest"),
+  },
+  // Genre galleries (2026-10-16): searched only by a genre lane (lib/sources/genre.ts) or when a
+  // call names them in `sources`. No platforms and no tags, so UI briefs never pick them.
+  {
+    id: "pitch",
+    name: "Pitch templates",
+    domain: "pitch.com",
+    scope: "pitch.com/templates",
+    item: /^\/templates\/(?!collections\/)[A-Za-z0-9-]+-[A-Za-z0-9]{20,}\/?$/,
+    imageHosts: ["imgproxy.services.pitch.com", "pitch-static-assets.imgix.net"],
+    role: "gallery",
+    zone: "ui",
+    platforms: [],
+    tags: [],
+    genres: ["presentation"],
+    templatesOk: true,
+    measured: {
+      date: "2026-10-16",
+      queries: 1,
+      results: 10,
+      items: 6,
+      unique: 6,
+      note: "Pitch's own template gallery (robots allow all); 4 of 10 were the collection page; images 7 imgproxy, 2 imgix, 1 on a shared S3 bucket host (left out: thumbnail fallback)",
+    },
+  },
+  {
+    id: "brandnew",
+    name: "Brand New",
+    domain: "underconsideration.com",
+    scope: "underconsideration.com/brandnew/archives",
+    item: /^\/brandnew\/archives\/(?!tag\/)[a-z0-9_]+\.php$/i,
+    imageHosts: ["www.underconsideration.com"],
+    role: "gallery",
+    zone: "art",
+    platforms: [],
+    tags: [],
+    genres: ["branding"],
+    httpsImages: true,
+    measured: {
+      date: "2026-10-16",
+      queries: 1,
+      results: 10,
+      items: 9,
+      unique: 9,
+      note: "UnderConsideration's identity reviews; 1 of 10 a tag page; 3 of 10 image URLs were http (asked for over https, which the host serves); lead images are often before and after logo pairs",
+    },
   },
 ] as const satisfies readonly SourceEntry[];
 

@@ -30,6 +30,7 @@
  * it already names a UI, else as "{q} app ui" and "{q} ui design", at most 4 requests.
  */
 import type { Platform } from "../direction-detail";
+import { detectGenre, genreRequests, type Genre, type GenreRequest } from "./genre";
 import { hasUiWord, lensNegatives } from "./quality";
 import { cleanQuery } from "./query";
 import { sourceEntry } from "./registry";
@@ -120,12 +121,18 @@ export type LaneTexts = {
    * not filtered by the idea's head word.
    */
   bridgeTitleFilter?: boolean;
+  /**
+   * A non-UI genre (lib/sources/genre.ts): the brief is a deck or a brand, not a screen. Its
+   * `genreRequests` (the `deck` or `brand` lane) replace every UI lane; the art lane is unchanged.
+   */
+  genre?: Genre;
+  genreRequests?: GenreRequest[];
 };
 
 /** True when the lanes have anything to search (a brief gave them UI lanes). */
 export function hasUiLanes(lanes: LaneTexts): boolean {
   return Boolean(
-    lanes.fidelity || lanes.taste || lanes.component?.length || lanes.bridge || lanes.hero || lanes.locale || lanes.galleries?.length,
+    lanes.fidelity || lanes.taste || lanes.component?.length || lanes.bridge || lanes.hero || lanes.locale || lanes.galleries?.length || lanes.genreRequests?.length,
   );
 }
 
@@ -431,7 +438,12 @@ export function artBareNoun(query: string): string | null {
 export function planRequests(lanes: LaneTexts, sources?: readonly SourceSite[], opts: PlanOptions = {}): PlannedRequest[] {
   const head = opts.bridgeWord === undefined ? bridgeHead(lanes.idea) : opts.bridgeWord;
   const zone: ZoneInput = opts.zone ?? (hasArtLane(lanes) ? "both" : "ui");
-  const ui = zone === "art" ? [] : onSources(uiRequests(lanes, head), sources);
+  // A genre brief (a deck or a brand) searches its genre lane in place of the UI lanes.
+  const uiLanes: PlannedRequest[] =
+    lanes.genre && lanes.genreRequests?.length
+      ? lanes.genreRequests.map((r) => ({ lane: r.lane, query: r.query, site: r.site, ...(r.fallback ? { fallback: r.fallback } : {}) }))
+      : uiRequests(lanes, head);
+  const ui = zone === "art" ? [] : onSources(uiLanes, sources);
   const art = zone === "ui" ? [] : artOnSources(artRequests(lanes.art, lanes.artGalleries), sources);
   if (art.length === 0) return ui;
   if (ui.length === 0) return art.slice(0, BASE_MAX_REQUESTS);
@@ -491,7 +503,12 @@ export const PLAIN_MAX_REQUESTS = 4;
 /** A plain query that keeps fewer than this many results is retried once with its short form. */
 export const PLAIN_MIN_GOOD = 4;
 
-export type PlainRequest = { query: string; site: SourceSite };
+export type PlainRequest = {
+  query: string;
+  site: SourceSite;
+  /** Genre requests only: the wording without the subject, for one retry when results are thin. */
+  fallback?: string;
+};
 
 /** "{text} app ui": a lane-only re-search's words with UI forced in when they name no UI. */
 export function forceUi(text: string): string {
@@ -520,6 +537,25 @@ export function plainQueryPlan(query: string, sources: readonly SourceSite[]): P
   // Picked galleries get their own topic-word request first (they never match "app ui" forms).
   forced.unshift(...sites.filter(isGallery).map((site) => ({ query: galleryWords(site, q), site })));
   return onSources(forced, sites).slice(0, PLAIN_MAX_REQUESTS);
+}
+
+/**
+ * The genre of a plain query: the caller's, else the one its words name when they name no UI
+ * ("pitch deck for a fintech startup" is a deck; "pitch deck app ui" stays a UI query). Null keeps
+ * the plain UI path unchanged.
+ */
+export function plainGenre(query: string, genre?: Genre): Genre | null {
+  if (genre) return genre;
+  const q = cleanQuery(query);
+  return hasUiWord(q) ? null : detectGenre(q);
+}
+
+/** A plain query of a genre: its genre lane's wordings (lib/sources/genre.ts), moved to the picked sources. */
+export function genreQueryPlan(query: string, genre: Genre, sources: readonly SourceSite[] = []): PlainRequest[] {
+  // One request short of the cap, so a thin answer has room for its fallback (web-search.ts run).
+  const reqs = genreRequests(cleanQuery(query), genre, { max: PLAIN_MAX_REQUESTS - 1 });
+  const picked = SOURCE_SITES.filter((s) => sources.includes(s));
+  return onSources(reqs, picked).map((r) => ({ query: r.query, site: r.site, ...(r.fallback ? { fallback: r.fallback } : {}) })).slice(0, PLAIN_MAX_REQUESTS);
 }
 
 /** A plain query in the art zone: the words as is, on the picked art sites (Pinterest, Behance). */
@@ -690,6 +726,10 @@ export function laneValue(lanes: LaneTexts, lane: LaneName): string | string[] |
       return lanes.art?.length ? lanes.art : undefined;
     case "component":
       return lanes.component?.length ? lanes.component : undefined;
+    case "deck":
+    case "brand":
+      // Genre lanes have no learned arms yet: no term key, no lane re-search.
+      return undefined;
     default:
       return lanes[lane];
   }
