@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { emptyState, parseState } from "@/canvas/state";
 import { MAX_BASELINE_POOL, type CanvasState } from "@/canvas/types";
-import { bendBriefAtlas, briefTopic, cardSpec, isRuleCard, leadFit, PAGE_UNJUDGED_DROP } from "@/lib/atlas/bend";
+import { bendBriefAtlas, briefTopic, cardSpec, isRuleCard, leadFit, PAGE_UNJUDGED_DROP, REASON_ELEMENT_BONUS, reasonElements } from "@/lib/atlas/bend";
 import { bucketOf, createAtlasLoader, recipeId, recipeKeyString, sha256Hex, shardPath, type AtlasKind, type AtlasManifest, type ManifestShard } from "@/lib/atlas/loader";
 import { fillRecipes, fillTopic, recipeHoldsTopic, TOPIC_SLOT, topicTemplate } from "@/lib/atlas/recipe-fit";
 import { atlasSearchPlan, searchCc0 } from "@/lib/atlas/search";
@@ -89,6 +89,26 @@ describe("page fit (J4b) picks the lead card", () => {
     expect(r.directions[0]!.spec.whyItFits).toBe("Boarding pass rows list each plan.");
     // A card judged 1 on the page does not lead the first direction any more.
     expect(r.directions[0]!.cardIds![0]).not.toBe("luggage-tag");
+  });
+
+  it("reasonElements: the UI elements a page reason names", () => {
+    expect(reasonElements("Each finished step lands as stamp").slice(0, 2)).toEqual(["progress", "stepper"]);
+    expect(reasonElements("Ramadan offer banner glows apricot")).toEqual(["header", "hero"]);
+    expect(reasonElements("Oversized price leads each plan")).toEqual(["paywall-plan", "price-breakdown", "cta"]);
+    expect(reasonElements("Empty sash invites first patch")).toEqual(["empty-state"]);
+    expect(reasonElements("Wood board suits coffee")).toEqual([]);
+  });
+
+  it("the mechanic lands on the element the lead's page reason names", async () => {
+    const steps = await atlasWith({ "page-fit": new Map([["telecom-travel", [pf("boarding-pass", 3, "boarding pass steps show each plan stage")]]]) });
+    const plain = await atlasWith({ "page-fit": new Map([["telecom-travel", [pf("boarding-pass", 3, "boarding pass rows list each plan")]]]) });
+    const input = { brief: "eSIM plan picker", wildness: 2 as const, count: 3, mustKeep: ["one primary action"] };
+    const a = (await bendBriefAtlas(input, steps))!.directions[0]!;
+    expect(a.cardIds![0]).toBe("boarding-pass");
+    expect(a.mechanic.element).toBe("progress");
+    expect(REASON_ELEMENT_BONUS).toBeGreaterThan(3);
+    const b = (await bendBriefAtlas(input, plain))!.directions[0]!;
+    expect(b.mechanic.element).not.toBe("progress");
   });
 
   it("rows for another page change nothing, and no page fit shard keeps the bend as it was", async () => {

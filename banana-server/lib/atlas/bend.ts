@@ -7,11 +7,15 @@
  *   1. Parse the brief into a domain (J2), a page (J1) and a product noun.
  *   2. Candidate cards with a fit of 2 or more for the domain; fit 1 at wildness 4 and 5; the
  *      domain's clash families only at 5.
- *   3. Pick by diversity (MMR over family and kind), honoring moves, lens and Gulf-first.
+ *   3. Pick by diversity (MMR over family and kind), honoring moves, lens and Gulf-first. With a J4b
+ *      page fit for the brief's page, a card leads with its page score (leadFit), and rule or
+ *      layout cards never lead (isRuleCard; they can be the second card, which adds their rule).
  *   4. Clash check between the lead card and the card that adds texture or motion.
- *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines).
+ *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines), the element the
+ *      lead's page reason names first (reasonElements).
  *   6. The spec from the lead card; a second card adds only texture or motion.
- *   7. Queries from recipes (J7), the Phase 0 lanes after them.
+ *   7. Queries from recipes (J7, page recipes with their topic slot filled by briefTopic), the
+ *      Phase 0 lanes after them.
  *
  * Learning (W2): card and mechanic weights from `atlasWeights` and recipe draws from `pickRecipe`
  * (lib/atlas/learning.ts, the nightly `atlas_weights` table plus the user's own ratings), and the
@@ -291,6 +295,29 @@ export function isRuleCard(c: { kind: IngredientCard["kind"]; family: string }):
  * with unjudged carvings, "suits property").
  */
 export const PAGE_UNJUDGED_DROP = 2;
+
+/** Words of a page fit reason and the UI elements they name, in the order they are tried. */
+const REASON_ELEMENTS: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = [
+  [/\b(step|steps|stage|stages|progress|streak|journey|stops?|legs?)\b/, ["progress", "stepper"]],
+  [/\b(done|finished|success|stamp|stamps|stamped|confirmed|completed?)\b/, ["success", "progress"]],
+  [/\b(total|totals|fare|fares|bill|sum)\b/, ["total", "price-breakdown"]],
+  // An offer or a deal is announced (a banner); a price or a plan is picked (the plan, its button).
+  [/\b(offer|offers|deal|deals|discount|discounts|sale)\b/, ["header", "hero"]],
+  [/\b(price|prices|plan|plans|tier|tiers)\b/, ["paywall-plan", "price-breakdown", "cta"]],
+  [/\b(header|hero|banner|headline|title|masthead|cover|welcome)\b/, ["header", "hero"]],
+  [/\b(empty|zero|invites?|first)\b/, ["empty-state"]],
+  [/\b(tabs?|sections?|anchors?|nav)\b/, ["section-nav", "nav-tabs", "bottom-nav"]],
+  [/\b(button|press|tap)\b/, ["cta"]],
+  [/\b(divider|dividers|band|bands)\b/, ["divider"]],
+];
+/** Score an element gains when the lead card's page reason names it (over the wild spot order). */
+export const REASON_ELEMENT_BONUS = 4;
+
+/** The UI elements a page fit reason names, in REASON_ELEMENTS order, without repeats. */
+export function reasonElements(reason: string): UiElement[] {
+  const text = reason.toLowerCase();
+  return [...new Set(REASON_ELEMENTS.filter(([re]) => re.test(text)).flatMap(([, els]) => els))];
+}
 
 /**
  * The fit a card leads this page with: its J4b page score when the page was judged for the domain,
@@ -675,15 +702,23 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   };
   const elementUse = new Map<MechanicElement, number>();
   const usedMechanics = new Set<string>();
-  const ranked = (lead: IngredientCard) =>
-    order
+  const ranked = (lead: IngredientCard) => {
+    // The element the lead's page reason names comes first (Gate 2 round 2 run g2g: "each finished
+    // step lands as stamp" was built as a divider, "punched holes show step progress" as a header).
+    const named = reasonElements(pageFitOf.get(lead.id)?.reason ?? "");
+    return order
       .map((el, idx) => ({
         el,
-        score: (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) + Math.max(0, 3 - idx) - 2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0),
+        score:
+          (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) +
+          Math.max(0, 3 - idx) -
+          2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0) +
+          (named.includes(el) ? REASON_ELEMENT_BONUS : 0),
         idx,
       }))
       .sort((a, b) => b.score - a.score || a.idx - b.idx)
       .map((x) => x.el);
+  };
 
   type Built = { pick: Pick; id: string; element: UiElement; mechanic: Mechanic | null; d: Direction };
   const built: Built[] = [];
