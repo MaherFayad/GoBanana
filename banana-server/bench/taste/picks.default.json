@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "default",
-  "count": 85,
+  "count": 95,
   "picks": [
     {
       "id": "b004",
@@ -727,6 +727,106 @@
       "platform": "website",
       "page": "3d",
       "genre": "web-showcase"
+    },
+    {
+      "id": "bx001",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJveTbQa8AYgVYK.jpg",
+      "sourceUrl": "https://x.com/_heyrico/status/2061485682330366272",
+      "platform": "web",
+      "page": "chart",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx003",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HIsb1UZakAAKDEr.jpg",
+      "sourceUrl": "https://x.com/Swaraj524/status/2056768267302412650",
+      "platform": "web",
+      "page": "widget",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx015",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2082813761254010884/img/CkEoOqNIEZU0eYOR-thumbnail.avif",
+      "sourceUrl": "https://x.com/raul_dronca/status/2082813894322446337",
+      "platform": "mobile",
+      "page": "card",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx019",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJbwXu5XAAIFtIc.jpg",
+      "sourceUrl": "https://x.com/mikun_ux/status/2060262366592311560",
+      "platform": "web",
+      "page": "dashboard",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx024",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HOOVTo1WQAASI8a.jpg",
+      "sourceUrl": "https://x.com/mamkindesigner/status/2081671780373000375",
+      "platform": "mobile",
+      "page": "screen",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx027",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056106663875354624/img/GnsEVyxTE0Fg7pMd-thumbnail.avif",
+      "sourceUrl": "https://x.com/Oriku175/status/2056366697800777796",
+      "platform": "website",
+      "page": "hero",
+      "genre": "web-showcase",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx028",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2023098322018619392/img/_vYOOi5y5DCXFzgx-thumbnail.avif",
+      "sourceUrl": "https://x.com/shedsgns/status/2023261057268236600",
+      "platform": "mobile",
+      "page": "card",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx033",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HIVb-2HaUAAhVkM.jpg",
+      "sourceUrl": "https://x.com/Swaraj524/status/2055149957074886934",
+      "platform": "web",
+      "page": "widget",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx035",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2030288506375884801/img/fgDe3ydvZrgnWCLV-thumbnail.avif",
+      "sourceUrl": "https://x.com/LexnLin/status/2030289612678025406",
+      "platform": "web",
+      "page": "navigation",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
+    },
+    {
+      "id": "bx055",
+      "origin": "showcase",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2069821700775034880/img/H5ZvJImziodbLI9g-thumbnail.avif",
+      "sourceUrl": "https://x.com/diip3sh/status/2069821861836558612",
+      "platform": "web",
+      "page": "widget",
+      "genre": "web-ui",
+      "group": "Best Designs on X"
     }
   ]
 }

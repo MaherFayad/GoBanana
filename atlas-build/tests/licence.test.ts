@@ -60,7 +60,8 @@ describe("Craftwork never reaches a model input", () => {
       const got = exemplarPicks([...picks, relabelled], genre);
       expect(got.some((p) => /craftwork|b-cdn\.net/.test(`${p.sourceUrl} ${p.imageUrl}`))).toBe(false);
     }
-    expect(exemplarPicks(picks, "web-showcase").length).toBe(candidates.filter((c) => c.genre === "web-showcase" && c.sourceSite !== "craftwork.design").length);
+    // Best Designs on X candidates (sourceSite x.com) are link-out only too (tests/no-model-sources.test.ts).
+    expect(exemplarPicks(picks, "web-showcase").length).toBe(candidates.filter((c) => c.genre === "web-showcase" && c.sourceSite !== "craftwork.design" && c.sourceSite !== "x.com").length);
   });
 
   it("drops an item when only one of its media is Craftwork's", () => {

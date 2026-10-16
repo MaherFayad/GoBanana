@@ -1,9 +1,9 @@
 {
   "generated": "2026-10-16",
   "bar": "docs/taste-bar.md",
-  "note": "URLs only, no image bytes. Search candidates came from Serper image search (site: queries on pinterest.com/pin, dribbble.com/shots, 60fps.design/shots). Board pins are the owner's own, collected once with the owner's approval as relayed by the coordinator. Presentation and Branding candidates (2026-10-16, genre field set): showcase pages fetched politely (robots.txt respected, og:image only: Pitch templates, The Brand Identity, BP&O, Mindsparkle, Brand New, Fonts In Use at its 10 second crawl delay) plus Serper image search on Dribbble, Behance and Pinterest; every one looked at in contact sheets and judged against docs/taste-bar.md. Web showcase candidates (genre \"web-showcase\", 2026-10-16) came from a polite scan of listing pages on awwwards.com (Sites of the Year, 3D, WebGL, Experimental, Colorful) and craftwork.design (Inspiration, Websites, pages 1 and 2), judged by eye in contact sheets; URLs only. MotionSites was left out (its terms forbid republishing its content). Media (2026-10-16, owner feedback: hero only, no motion, covers only): each Web showcase, Presentation and Branding candidate's own showcase page was fetched once more, one at a time (robots.txt and crawl delays respected), and `media` lists up to 8 hotlinked frames and videos from that item only, the main picture first; every URL was loaded in Chrome and every list checked by eye in contact sheets. Dribbble answered with a bot challenge, Behance's robots.txt disallows Claude agents, Pinterest is never scraped and Brand New's post bodies are for subscribers, so those keep one frame.",
+  "note": "URLs only, no image bytes. Search candidates came from Serper image search (site: queries on pinterest.com/pin, dribbble.com/shots, 60fps.design/shots). Board pins are the owner's own, collected once with the owner's approval as relayed by the coordinator. Presentation and Branding candidates (2026-10-16, genre field set): showcase pages fetched politely (robots.txt respected, og:image only: Pitch templates, The Brand Identity, BP&O, Mindsparkle, Brand New, Fonts In Use at its 10 second crawl delay) plus Serper image search on Dribbble, Behance and Pinterest; every one looked at in contact sheets and judged against docs/taste-bar.md. Web showcase candidates (genre \"web-showcase\", 2026-10-16) came from a polite scan of listing pages on awwwards.com (Sites of the Year, 3D, WebGL, Experimental, Colorful) and craftwork.design (Inspiration, Websites, pages 1 and 2), judged by eye in contact sheets; URLs only. MotionSites was left out (its terms forbid republishing its content). Media (2026-10-16, owner feedback: hero only, no motion, covers only): each Web showcase, Presentation and Branding candidate's own showcase page was fetched once more, one at a time (robots.txt and crawl delays respected), and `media` lists up to 8 hotlinked frames and videos from that item only, the main picture first; every URL was loaded in Chrome and every list checked by eye in contact sheets. Dribbble answered with a bot challenge, Behance's robots.txt disallows Claude agents, Pinterest is never scraped and Brand New's post bodies are for subscribers, so those keep one frame. Best Designs on X candidates (ids bx001 on, group \"Best Designs on X\", 2026-10-16): design posts curated from X by bestdesignsonx.com, read once from its own public component tag feeds (24 tags, 12 posts each, 2 s apart; no robots.txt or terms on the site), judged by eye in contact sheets. sourceUrl is the original X post, creatorUrl the designer; media are hotlinked from cdn.bestdesignsonx.com. Link out only: never an exemplar for a model (X content, no AI license).",
   "counts": {
-    "total": 472,
+    "total": 530,
     "ownerBoard": 94,
     "search": 176,
     "searchByPlatform": {
@@ -192,6 +192,39 @@
         "mediaItems": 45,
         "average": 1.7
       }
+    },
+    "bestDesignsOnX": {
+      "total": 58,
+      "motion": 33,
+      "byComponent": {
+        "chart": 4,
+        "widget": 6,
+        "empty state": 3,
+        "screen": 4,
+        "button": 4,
+        "input": 2,
+        "modal": 2,
+        "card": 6,
+        "pricing": 3,
+        "sidebar": 3,
+        "dashboard": 2,
+        "dropdown": 1,
+        "form": 2,
+        "table": 1,
+        "hero": 3,
+        "notification": 2,
+        "navigation": 2,
+        "onboarding": 2,
+        "slider": 2,
+        "toggle": 3,
+        "tabs": 1
+      },
+      "byGenre": {
+        "web-ui": 38,
+        "mobile-ui": 16,
+        "web-showcase": 4
+      },
+      "defaults": 10
     }
   },
   "candidates": [
@@ -11021,6 +11054,1733 @@
           "label": "Preview"
         }
       ]
+    },
+    {
+      "id": "bx001",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "chart",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJveTbQa8AYgVYK.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HJveTbQa8AYgVYK.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJveTbQa8AYgVYK.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/_heyrico/status/2061485682330366272",
+      "sourceSite": "x.com",
+      "creator": "@_heyrico",
+      "creatorName": "rico",
+      "creatorUrl": "https://x.com/_heyrico",
+      "title": "still one of the best crypto designs we have had so far",
+      "platform": "web",
+      "page": "chart",
+      "motion": false,
+      "score": 5,
+      "why": "Dark crypto portfolio with a live line chart on a sky photo, big total value",
+      "foundOn": "https://bestdesignsonx.com/_heyrico/status/2061485682330366272"
+    },
+    {
+      "id": "bx002",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "chart",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HIxwaPRXYAIiMNn.png",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HIxwaPRXYAIiMNn.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIxwaPRXYAIiMNn.png"
+        }
+      ],
+      "sourceUrl": "https://x.com/seltugba_/status/2057142754610659604",
+      "sourceSite": "x.com",
+      "creator": "@seltugba_",
+      "creatorName": "Tuğba Sel",
+      "creatorUrl": "https://x.com/seltugba_",
+      "title": "Getting closer to the dashboard",
+      "platform": "web",
+      "page": "chart",
+      "motion": false,
+      "score": 4,
+      "why": "Quiet dark financial overview: stat row, one thin line chart, dense table",
+      "foundOn": "https://bestdesignsonx.com/seltugba_/status/2057142754610659604"
+    },
+    {
+      "id": "bx003",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HIsb1UZakAAKDEr.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HIsb1UZakAAKDEr.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIsb1UZakAAKDEr.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIsb1UlbAAA2nck.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/Swaraj524/status/2056768267302412650",
+      "sourceSite": "x.com",
+      "creator": "@Swaraj524",
+      "creatorName": "Swaraj",
+      "creatorUrl": "https://x.com/Swaraj524",
+      "title": "Another day, another widget",
+      "platform": "web",
+      "page": "widget",
+      "motion": false,
+      "score": 5,
+      "why": "Sleep tracking widget on a painted landscape, big figures, one violet bar strip",
+      "foundOn": "https://bestdesignsonx.com/Swaraj524/status/2056768267302412650"
+    },
+    {
+      "id": "bx004",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "chart",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HH4Dx6UX0AMyoi7.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HH4Dx6UX0AMyoi7.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HH4Dx6UX0AMyoi7.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/halil_works/status/2053083038716731509",
+      "sourceSite": "x.com",
+      "creator": "@halil_works",
+      "creatorName": "Halil",
+      "creatorUrl": "https://x.com/halil_works",
+      "title": "Wallet Settings",
+      "platform": "mobile",
+      "page": "chart",
+      "motion": false,
+      "score": 3,
+      "why": "Wallet settings: ring stats over a mint bar chart, small grey labels",
+      "foundOn": "https://bestdesignsonx.com/halil_works/status/2053083038716731509"
+    },
+    {
+      "id": "bx005",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "chart",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HGrky7WXcAAanP4.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HGrky7WXcAAanP4.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HGrky7WXcAAanP4.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/Ayoubka_/status/2047700552499310703",
+      "sourceSite": "x.com",
+      "creator": "@Ayoubka_",
+      "creatorName": "Ayoub kada",
+      "creatorUrl": "https://x.com/Ayoubka_",
+      "title": "Friday dashboard",
+      "platform": "web",
+      "page": "chart",
+      "motion": false,
+      "score": 3,
+      "why": "Warm financial analytics board with frosted bars and a donut, light theme",
+      "foundOn": "https://bestdesignsonx.com/Ayoubka_/status/2047700552499310703"
+    },
+    {
+      "id": "bx006",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "empty state",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HOVHNxzacAEoy4d.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HOVHNxzacAEoy4d.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOVHNxzacAEoy4d.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOVHPYOaAAAx7O-.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/uxmiles/status/2082148955711017387",
+      "sourceSite": "x.com",
+      "creator": "@uxmiles",
+      "creatorName": "Miles",
+      "creatorUrl": "https://x.com/uxmiles",
+      "title": "Predict with your friends on @pulsepredicts",
+      "platform": "mobile",
+      "page": "empty state",
+      "motion": false,
+      "score": 4,
+      "why": "Dark empty state with a lime accent: no activity, follow suggestions",
+      "foundOn": "https://bestdesignsonx.com/uxmiles/status/2082148955711017387"
+    },
+    {
+      "id": "bx007",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "screen",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1956013366910038020/img/lzeX1xb4Gb8_A7dH-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1956013366910038020/img/lzeX1xb4Gb8_A7dH-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/1956013366910038020/vid/avc1/1080x1080/WegO4MpyCxkKXVOU.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1956013366910038020/img/lzeX1xb4Gb8_A7dH-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/Aurelien_Gz/status/2042680151083712913",
+      "sourceSite": "x.com",
+      "creator": "@Aurelien_Gz",
+      "creatorName": "Aurelien",
+      "creatorUrl": "https://x.com/Aurelien_Gz",
+      "title": "the digital world needs more soul.. wizard » @samdape",
+      "platform": "mobile",
+      "page": "screen",
+      "motion": true,
+      "score": 4,
+      "why": "One phone, a blue glow as the only focal point, wizard flow",
+      "foundOn": "https://bestdesignsonx.com/Aurelien_Gz/status/2042680151083712913"
+    },
+    {
+      "id": "bx008",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "button",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2079440689201319936/img/zVFqyQ0EKj073-8G-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2079440689201319936/img/zVFqyQ0EKj073-8G-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2079440689201319936/vid/avc1/2504x2160/nZn_oBwX3lSNC4Lx.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2079440689201319936/img/zVFqyQ0EKj073-8G-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/arknow91/status/2079440762438095132",
+      "sourceSite": "x.com",
+      "creator": "@arknow91",
+      "creatorName": "Arek",
+      "creatorUrl": "https://x.com/arknow91",
+      "title": "AI chat bar - buttons morphing into dropdown lists built with Claude",
+      "platform": "web",
+      "page": "button",
+      "motion": true,
+      "score": 4,
+      "why": "AI chat bar on charcoal where buttons morph into dropdown lists",
+      "foundOn": "https://bestdesignsonx.com/arknow91/status/2079440762438095132"
+    },
+    {
+      "id": "bx009",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "input",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067533968216317953/img/YFHlgwtRu13vqVJm-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067533968216317953/img/YFHlgwtRu13vqVJm-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2067533968216317953/vid/avc1/1690x1280/dTGCmYKvWYw21_zI.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067533968216317953/img/YFHlgwtRu13vqVJm-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/Jakubantalik/status/2067633938038698097",
+      "sourceSite": "x.com",
+      "creator": "@Jakubantalik",
+      "creatorName": "Jakub Antalik",
+      "creatorUrl": "https://x.com/Jakubantalik",
+      "title": "Border beam for light mode: Animated border beam component for React, 5 different...",
+      "platform": "web",
+      "page": "input",
+      "motion": true,
+      "score": 3,
+      "why": "Search input with an animated border beam, iridescent light mode",
+      "foundOn": "https://bestdesignsonx.com/Jakubantalik/status/2067633938038698097"
+    },
+    {
+      "id": "bx010",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "empty state",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HKcTws5akAELch5.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HKcTws5akAELch5.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKcTws5akAELch5.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/zedsxyz/status/2064640699396702396",
+      "sourceSite": "x.com",
+      "creator": "@zedsxyz",
+      "creatorName": "Zedsy",
+      "creatorUrl": "https://x.com/zedsxyz",
+      "title": "Empty states don't have to be boring.",
+      "platform": "web",
+      "page": "empty state",
+      "motion": false,
+      "score": 3,
+      "why": "Line art filing cabinet empty state with one dark action button",
+      "foundOn": "https://bestdesignsonx.com/zedsxyz/status/2064640699396702396"
+    },
+    {
+      "id": "bx011",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "modal",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJqSOnCX0AEVUXy.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HJqSOnCX0AEVUXy.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJqSOnCX0AEVUXy.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/hey_giift/status/2061120579457921088",
+      "sourceSite": "x.com",
+      "creator": "@hey_giift",
+      "creatorName": "gift",
+      "creatorUrl": "https://x.com/hey_giift",
+      "title": "Recent work",
+      "platform": "web",
+      "page": "modal",
+      "motion": false,
+      "score": 4,
+      "why": "Dark modal over a dim app: session is live, link field and one white button",
+      "foundOn": "https://bestdesignsonx.com/hey_giift/status/2061120579457921088"
+    },
+    {
+      "id": "bx012",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "button",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2036518726502326274/img/5uOAiL4gUtdppiUF-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2036518726502326274/img/5uOAiL4gUtdppiUF-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2036518726502326274/vid/avc1/3644x2160/4_3lpZk6yQHF-rUs.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2036518726502326274/img/5uOAiL4gUtdppiUF-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/AdityaSur11/status/2059899977204486387",
+      "sourceSite": "x.com",
+      "creator": "@AdityaSur11",
+      "creatorName": "Adi",
+      "creatorUrl": "https://x.com/AdityaSur11",
+      "title": "Liquid gold or Liquid Metal?",
+      "platform": "web",
+      "page": "button",
+      "motion": true,
+      "score": 4,
+      "why": "Liquid gold and metal pill buttons, the material is the whole idea",
+      "foundOn": "https://bestdesignsonx.com/AdityaSur11/status/2059899977204486387"
+    },
+    {
+      "id": "bx013",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083577939375828992/img/YpIL37EUv4v1AyrB-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083577939375828992/img/YpIL37EUv4v1AyrB-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2083577939375828992/vid/avc1/1336x1238/6B0gCEpIuyps9_9W.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083577939375828992/img/YpIL37EUv4v1AyrB-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/sucodeee/status/2083577970539589703",
+      "sourceSite": "x.com",
+      "creator": "@sucodeee",
+      "creatorName": "sucodee",
+      "creatorUrl": "https://x.com/sucodeee",
+      "title": "For SwiftUI & React Card Gradient with",
+      "platform": "mobile",
+      "page": "card",
+      "motion": true,
+      "score": 4,
+      "why": "Metal gradient card on a dark phone with a colour parameter panel",
+      "foundOn": "https://bestdesignsonx.com/sucodeee/status/2083577970539589703"
+    },
+    {
+      "id": "bx014",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083483622036713472/img/E-ODlnu_nBOvUOjW-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083483622036713472/img/E-ODlnu_nBOvUOjW-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2083483622036713472/vid/avc1/3360x2160/Uk1OjAIh2eJ3db0H.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083483622036713472/img/E-ODlnu_nBOvUOjW-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/uAghazadae/status/2083483667003756915",
+      "sourceSite": "x.com",
+      "creator": "@uAghazadae",
+      "creatorName": "uaghazade",
+      "creatorUrl": "https://x.com/uAghazadae",
+      "title": "new stat mini card component for @getopenso built with transitions skill by @Jakubantalik",
+      "platform": "web",
+      "page": "card",
+      "motion": true,
+      "score": 3,
+      "why": "Stat mini card that unfolds into a referrers list, calm motion",
+      "foundOn": "https://bestdesignsonx.com/uAghazadae/status/2083483667003756915"
+    },
+    {
+      "id": "bx015",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2082813761254010884/img/CkEoOqNIEZU0eYOR-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2082813761254010884/img/CkEoOqNIEZU0eYOR-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2082813761254010884/vid/avc1/2888x2160/_E7Eo56wc9wH3NHQ.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2082813761254010884/img/CkEoOqNIEZU0eYOR-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/raul_dronca/status/2082813894322446337",
+      "sourceSite": "x.com",
+      "creator": "@raul_dronca",
+      "creatorName": "Raul",
+      "creatorUrl": "https://x.com/raul_dronca",
+      "title": "Flight Card",
+      "platform": "mobile",
+      "page": "card",
+      "motion": true,
+      "score": 5,
+      "why": "Flight card with a Golden Gate photo, CDG to SFO, glassy toggle",
+      "foundOn": "https://bestdesignsonx.com/raul_dronca/status/2082813894322446337"
+    },
+    {
+      "id": "bx016",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "pricing",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083503875743477760/img/ldfQVXzmdwoH7v2o-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083503875743477760/img/ldfQVXzmdwoH7v2o-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2083503875743477760/vid/avc1/2358x1202/5bx-UsN3v-A24Yyw.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083503875743477760/img/ldfQVXzmdwoH7v2o-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/ahmetloca/status/2083503980647207422",
+      "sourceSite": "x.com",
+      "creator": "@ahmetloca",
+      "creatorName": "Ahmet Loca",
+      "creatorUrl": "https://x.com/ahmetloca",
+      "title": "new @framer component: Pricing CTA Section",
+      "platform": "web",
+      "page": "pricing",
+      "motion": true,
+      "score": 4,
+      "why": "Pricing CTA: one dark offer card framed by black and white sport photos",
+      "foundOn": "https://bestdesignsonx.com/ahmetloca/status/2083503980647207422"
+    },
+    {
+      "id": "bx017",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "sidebar",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HKcjH3iWUAAvHgu.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HKcjH3iWUAAvHgu.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKcjH3iWUAAvHgu.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKcjHz_WoAAS-H2.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/akwaabaaa/status/2064657574847259024",
+      "sourceSite": "x.com",
+      "creator": "@akwaabaaa",
+      "creatorName": "Ayo",
+      "creatorUrl": "https://x.com/akwaabaaa",
+      "title": "Building this slowly...",
+      "platform": "web",
+      "page": "sidebar",
+      "motion": false,
+      "score": 4,
+      "why": "Dark learning dashboard with sidebar, KPI row and file cards",
+      "foundOn": "https://bestdesignsonx.com/akwaabaaa/status/2064657574847259024"
+    },
+    {
+      "id": "bx018",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "dashboard",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HKH-vB1XYAAFd2G.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HKH-vB1XYAAFd2G.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKH-vB1XYAAFd2G.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/studiobakers/status/2063210245267030117",
+      "sourceSite": "x.com",
+      "creator": "@studiobakers",
+      "creatorName": "Bakers Studio",
+      "creatorUrl": "https://x.com/studiobakers",
+      "title": "All your team under one repo...",
+      "platform": "web",
+      "page": "dashboard",
+      "motion": false,
+      "score": 4,
+      "why": "Overview dashboard in a dark window on a desktop wallpaper, Branch",
+      "foundOn": "https://bestdesignsonx.com/studiobakers/status/2063210245267030117"
+    },
+    {
+      "id": "bx019",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "dashboard",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJbwXu5XAAIFtIc.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HJbwXu5XAAIFtIc.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJbwXu5XAAIFtIc.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/mikun_ux/status/2060262366592311560",
+      "sourceSite": "x.com",
+      "creator": "@mikun_ux",
+      "creatorName": "mikun",
+      "creatorUrl": "https://x.com/mikun_ux",
+      "title": "worked on something pretty cool.",
+      "platform": "web",
+      "page": "dashboard",
+      "motion": false,
+      "score": 5,
+      "why": "Dark medical imaging dashboard: MRI body scan beside dense readouts",
+      "foundOn": "https://bestdesignsonx.com/mikun_ux/status/2060262366592311560"
+    },
+    {
+      "id": "bx020",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "dropdown",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HKdTHKubEAAr7df.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HKdTHKubEAAr7df.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKdTHKubEAAr7df.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HKdTIIZaQAEJMOl.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/piyushsphere/status/2064710369831260595",
+      "sourceSite": "x.com",
+      "creator": "@piyushsphere",
+      "creatorName": "Piyush",
+      "creatorUrl": "https://x.com/piyushsphere",
+      "title": "Dropdwon designs",
+      "platform": "web",
+      "page": "dropdown",
+      "motion": false,
+      "score": 4,
+      "why": "Filters dropdown on dark glass over a moody landscape",
+      "foundOn": "https://bestdesignsonx.com/piyushsphere/status/2064710369831260595"
+    },
+    {
+      "id": "bx021",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "form",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HOd0NvzW0AEVFRj.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HOd0NvzW0AEVFRj.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOd0NvzW0AEVFRj.jpg",
+          "label": "1 of 3"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOd0NvxWAAAVUqo.jpg",
+          "label": "2 of 3"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOd0NvvWgAAQUDX.jpg",
+          "label": "3 of 3"
+        }
+      ],
+      "sourceUrl": "https://x.com/ludvigrask_/status/2082836110204629449",
+      "sourceSite": "x.com",
+      "creator": "@ludvigrask_",
+      "creatorName": "Ludvig Rask",
+      "creatorUrl": "https://x.com/ludvigrask_",
+      "title": "A set of dark mode authentication screens for OpenCode Console covering login,...",
+      "platform": "web",
+      "page": "form",
+      "motion": false,
+      "score": 4,
+      "why": "Dark auth screens for a console: login, code entry, one white button",
+      "foundOn": "https://bestdesignsonx.com/ludvigrask_/status/2082836110204629449"
+    },
+    {
+      "id": "bx022",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "table",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1913311142513958912/img/lHkc8d6mOs7PTSN1-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1913311142513958912/img/lHkc8d6mOs7PTSN1-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/1913311142513958912/vid/avc1/720x720/QVg0rAjdJHlGbu3z.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/1913311142513958912/img/lHkc8d6mOs7PTSN1-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/AliGrids/status/2063456832119590996",
+      "sourceSite": "x.com",
+      "creator": "@AliGrids",
+      "creatorName": "Ali Grids",
+      "creatorUrl": "https://x.com/AliGrids",
+      "title": "this inline table editing interaction is buttery smooth @nitishkmrk",
+      "platform": "web",
+      "page": "table",
+      "motion": true,
+      "score": 3,
+      "why": "Inline table editing, quiet expense rows with smooth edit motion",
+      "foundOn": "https://bestdesignsonx.com/AliGrids/status/2063456832119590996"
+    },
+    {
+      "id": "bx023",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "form",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2062300771442450432/img/jgGy5j7g7QVHJlm5-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2062300771442450432/img/jgGy5j7g7QVHJlm5-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2062300771442450432/vid/avc1/2124x1530/uI6RW2fKVypG0aYb.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2062300771442450432/img/jgGy5j7g7QVHJlm5-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/aaronmahlke/status/2062300871317217499",
+      "sourceSite": "x.com",
+      "creator": "@aaronmahlke",
+      "creatorName": "Aaron",
+      "creatorUrl": "https://x.com/aaronmahlke",
+      "title": "login details",
+      "platform": "web",
+      "page": "form",
+      "motion": true,
+      "score": 4,
+      "why": "Split dark login: gradient panel, email form, white continue button",
+      "foundOn": "https://bestdesignsonx.com/aaronmahlke/status/2062300871317217499"
+    },
+    {
+      "id": "bx024",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "screen",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HOOVTo1WQAASI8a.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HOOVTo1WQAASI8a.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOOVTo1WQAASI8a.jpg",
+          "label": "1 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOOVUj3WkAA2lWB.jpg",
+          "label": "2 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOOVVYAWAAAtZoe.jpg",
+          "label": "3 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HOOVWUjWEAAIF3h.jpg",
+          "label": "4 of 4"
+        }
+      ],
+      "sourceUrl": "https://x.com/mamkindesigner/status/2081671780373000375",
+      "sourceSite": "x.com",
+      "creator": "@mamkindesigner",
+      "creatorName": "Val Pievniou",
+      "creatorUrl": "https://x.com/mamkindesigner",
+      "title": "A collection of four expressive mobile app store screenshots showcasing bold...",
+      "platform": "mobile",
+      "page": "screen",
+      "motion": false,
+      "score": 5,
+      "why": "App store screenshot set: red poster type, Apple Music tie in",
+      "foundOn": "https://bestdesignsonx.com/mamkindesigner/status/2081671780373000375"
+    },
+    {
+      "id": "bx025",
+      "origin": "showcase",
+      "genre": "web-showcase",
+      "group": "Best Designs on X",
+      "component": "hero",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2063464935842258944/img/CdQNvPNxnx0F_Wg6-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2063464935842258944/img/CdQNvPNxnx0F_Wg6-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2063464935842258944/vid/avc1/2880x1800/4SyfAx-VPM8zg26K.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2063464935842258944/img/CdQNvPNxnx0F_Wg6-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/adamhmwn/status/2063465163236462732",
+      "sourceSite": "x.com",
+      "creator": "@adamhmwn",
+      "creatorName": "Himawan",
+      "creatorUrl": "https://x.com/adamhmwn",
+      "title": "hero section animation for latest project, build in claude code.",
+      "platform": "website",
+      "page": "hero",
+      "motion": true,
+      "score": 4,
+      "why": "Black hero with a halftone sphere and split headline, agency site",
+      "foundOn": "https://bestdesignsonx.com/adamhmwn/status/2063465163236462732"
+    },
+    {
+      "id": "bx026",
+      "origin": "showcase",
+      "genre": "web-showcase",
+      "group": "Best Designs on X",
+      "component": "hero",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2057871816614346752/img/4W5ey24e46pEuz9U-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2057871816614346752/img/4W5ey24e46pEuz9U-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2057871816614346752/vid/avc1/1568x1080/eudvPpWtOWAxAY_u.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2057871816614346752/img/4W5ey24e46pEuz9U-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/sitenley/status/2057872389036273697",
+      "sourceSite": "x.com",
+      "creator": "@sitenley",
+      "creatorName": "Mertcan",
+      "creatorUrl": "https://x.com/sitenley",
+      "title": "andCompute hero section. designed in figma & coded with claude.",
+      "platform": "website",
+      "page": "hero",
+      "motion": true,
+      "score": 4,
+      "why": "Hero with a 3D chip among poppies under a pixel grid",
+      "foundOn": "https://bestdesignsonx.com/sitenley/status/2057872389036273697"
+    },
+    {
+      "id": "bx027",
+      "origin": "showcase",
+      "genre": "web-showcase",
+      "group": "Best Designs on X",
+      "component": "hero",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056106663875354624/img/GnsEVyxTE0Fg7pMd-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056106663875354624/img/GnsEVyxTE0Fg7pMd-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2056106663875354624/vid/avc1/3530x2160/Tskv3JA5wt0AUdgh.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056106663875354624/img/GnsEVyxTE0Fg7pMd-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/Oriku175/status/2056366697800777796",
+      "sourceSite": "x.com",
+      "creator": "@Oriku175",
+      "creatorName": "Oriku",
+      "creatorUrl": "https://x.com/Oriku175",
+      "title": "Built this in @hiunicornstudio light through a prism = complexity → clarity",
+      "platform": "website",
+      "page": "hero",
+      "motion": true,
+      "score": 5,
+      "why": "Prism hero: a beam through glass on black, serif headline",
+      "foundOn": "https://bestdesignsonx.com/Oriku175/status/2056366697800777796"
+    },
+    {
+      "id": "bx028",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2023098322018619392/img/_vYOOi5y5DCXFzgx-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2023098322018619392/img/_vYOOi5y5DCXFzgx-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2023098322018619392/vid/avc1/2880x2160/UkhEdolLPluFetJX.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2023098322018619392/img/_vYOOi5y5DCXFzgx-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/shedsgns/status/2023261057268236600",
+      "sourceSite": "x.com",
+      "creator": "@shedsgns",
+      "creatorName": "Juliette",
+      "creatorUrl": "https://x.com/shedsgns",
+      "title": "expanded wallet interaction",
+      "platform": "mobile",
+      "page": "card",
+      "motion": true,
+      "score": 5,
+      "why": "Dark wallet list expanding into accounts, crisp numbers",
+      "foundOn": "https://bestdesignsonx.com/shedsgns/status/2023261057268236600"
+    },
+    {
+      "id": "bx029",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "empty state",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2072727830908272640/img/Ymhp9qq9W2IFXg-H-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2072727830908272640/img/Ymhp9qq9W2IFXg-H-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2072727830908272640/vid/avc1/1150x886/9QiU_dVu6ws3B8Jm.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2072727830908272640/img/Ymhp9qq9W2IFXg-H-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/gow88_/status/2072727919517168031",
+      "sourceSite": "x.com",
+      "creator": "@gow88_",
+      "creatorName": "OG",
+      "creatorUrl": "https://x.com/gow88_",
+      "title": "When a folder is empty :p @TryBrinkApp",
+      "platform": "mobile",
+      "page": "empty state",
+      "motion": true,
+      "score": 3,
+      "why": "Empty folder state where cards fly in, soft 3D on white",
+      "foundOn": "https://bestdesignsonx.com/gow88_/status/2072727919517168031"
+    },
+    {
+      "id": "bx030",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "screen",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061983053753487360/img/ZTWCEX8nK_AIav_B-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061983053753487360/img/ZTWCEX8nK_AIav_B-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2061983053753487360/vid/avc1/2880x2160/JcoMHURpFr937w0r.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061983053753487360/img/ZTWCEX8nK_AIav_B-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/_joshrg/status/2062207934742852091",
+      "sourceSite": "x.com",
+      "creator": "@_joshrg",
+      "creatorName": "Josh Grazier",
+      "creatorUrl": "https://x.com/_joshrg",
+      "title": "Entering Dawn animation Real app footage, built in React Native with Claude Code",
+      "platform": "mobile",
+      "page": "screen",
+      "motion": true,
+      "score": 4,
+      "why": "Orange gradient launch screen for Dawn, real app footage",
+      "foundOn": "https://bestdesignsonx.com/_joshrg/status/2062207934742852091"
+    },
+    {
+      "id": "bx031",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061443244450287616/img/yV5euy9Irw3Rz5WD-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061443244450287616/img/yV5euy9Irw3Rz5WD-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2061443244450287616/vid/avc1/2736x1260/vNitGrKs2vmDie7g.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2061443244450287616/img/yV5euy9Irw3Rz5WD-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/daniel__designs/status/2061443368446509184",
+      "sourceSite": "x.com",
+      "creator": "@daniel__designs",
+      "creatorName": "Daniel Destefanis",
+      "creatorUrl": "https://x.com/daniel__designs",
+      "title": "A free glass update is coming soon to Clocks for iOS. More backgrounds, more clocks,...",
+      "platform": "mobile",
+      "page": "widget",
+      "motion": true,
+      "score": 4,
+      "why": "Lock screen clock in liquid glass over a hot gradient",
+      "foundOn": "https://bestdesignsonx.com/daniel__designs/status/2061443368446509184"
+    },
+    {
+      "id": "bx032",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "notification",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056633715611045888/img/KkrFn_Wr-GaUc48f-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056633715611045888/img/KkrFn_Wr-GaUc48f-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2056633715611045888/vid/avc1/1080x1080/C7Tkov2e_FQEACKX.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2056633715611045888/img/KkrFn_Wr-GaUc48f-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/proskuaaa/status/2056633773668601868",
+      "sourceSite": "x.com",
+      "creator": "@proskuaaa",
+      "creatorName": "prosku.a",
+      "creatorUrl": "https://x.com/proskuaaa",
+      "title": "invite to your file team / island",
+      "platform": "mobile",
+      "page": "notification",
+      "motion": true,
+      "score": 4,
+      "why": "Dynamic island style invite card in electric blue",
+      "foundOn": "https://bestdesignsonx.com/proskuaaa/status/2056633773668601868"
+    },
+    {
+      "id": "bx033",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HIVb-2HaUAAhVkM.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HIVb-2HaUAAhVkM.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIVb-2HaUAAhVkM.jpg",
+          "label": "1 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIVb-13bcAA6LOe.jpg",
+          "label": "2 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIVb-1_bIAAufSD.jpg",
+          "label": "3 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HIVb-2NaUAA5nPa.jpg",
+          "label": "4 of 4"
+        }
+      ],
+      "sourceUrl": "https://x.com/Swaraj524/status/2055149957074886934",
+      "sourceSite": "x.com",
+      "creator": "@Swaraj524",
+      "creatorName": "Swaraj",
+      "creatorUrl": "https://x.com/Swaraj524",
+      "title": "Recent widgets I designed",
+      "platform": "web",
+      "page": "widget",
+      "motion": false,
+      "score": 5,
+      "why": "Signal strength widget, 56.2% in big type over motion blurred grass",
+      "foundOn": "https://bestdesignsonx.com/Swaraj524/status/2055149957074886934"
+    },
+    {
+      "id": "bx034",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "modal",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2053600404907143169/img/Ma590d-wJh3DwtiB-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2053600404907143169/img/Ma590d-wJh3DwtiB-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2053600404907143169/vid/avc1/1080x1080/5L4HtLsGNdKvYgvM.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2053600404907143169/img/Ma590d-wJh3DwtiB-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/timothymaarv/status/2053600498607882703",
+      "sourceSite": "x.com",
+      "creator": "@timothymaarv",
+      "creatorName": "Timothy M.",
+      "creatorUrl": "https://x.com/timothymaarv",
+      "title": "‘Connect wallet’ interaction",
+      "platform": "web",
+      "page": "modal",
+      "motion": true,
+      "score": 4,
+      "why": "Connect wallet modal on dark grey, one violet button",
+      "foundOn": "https://bestdesignsonx.com/timothymaarv/status/2053600498607882703"
+    },
+    {
+      "id": "bx035",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "navigation",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2030288506375884801/img/fgDe3ydvZrgnWCLV-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2030288506375884801/img/fgDe3ydvZrgnWCLV-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2030288506375884801/vid/avc1/1474x798/OOe8qqafaJcyo0Wr.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2030288506375884801/img/fgDe3ydvZrgnWCLV-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/LexnLin/status/2030289612678025406",
+      "sourceSite": "x.com",
+      "creator": "@LexnLin",
+      "creatorName": "Leon Lin",
+      "creatorUrl": "https://x.com/LexnLin",
+      "title": "Here is the prompt to create a liquid gold nav bar :) Have fun experimenting! Create a...",
+      "platform": "web",
+      "page": "navigation",
+      "motion": true,
+      "score": 5,
+      "why": "Liquid gold nav bar on black, four icons, glow ring on home",
+      "foundOn": "https://bestdesignsonx.com/LexnLin/status/2030289612678025406"
+    },
+    {
+      "id": "bx036",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "navigation",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/G_SdJ1vXMAASl2V.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/G_SdJ1vXMAASl2V.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/G_SdJ1vXMAASl2V.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/linear/status/2014407936563372150",
+      "sourceSite": "x.com",
+      "creator": "@linear",
+      "creatorName": "Linear",
+      "creatorUrl": "https://x.com/linear",
+      "title": "New for Linear Mobile: Customizable navbar Rearrange and pin tabs, or add specific...",
+      "platform": "mobile",
+      "page": "navigation",
+      "motion": false,
+      "score": 4,
+      "why": "Linear mobile customizable navbar on a dark phone, shipped product",
+      "foundOn": "https://bestdesignsonx.com/linear/status/2014407936563372150"
+    },
+    {
+      "id": "bx037",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "notification",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HF80JXwWcAAUb2e.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HF80JXwWcAAUb2e.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HF80JXwWcAAUb2e.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HF80J88WoAEQW4T.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/studiobakers/status/2044410268285915347",
+      "sourceSite": "x.com",
+      "creator": "@studiobakers",
+      "creatorName": "Bakers Studio",
+      "creatorUrl": "https://x.com/studiobakers",
+      "title": "When the interface and the design elements click.",
+      "platform": "web",
+      "page": "notification",
+      "motion": false,
+      "score": 4,
+      "why": "Glass notification card over black rocks, editorial serif behind",
+      "foundOn": "https://bestdesignsonx.com/studiobakers/status/2044410268285915347"
+    },
+    {
+      "id": "bx038",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "onboarding",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HGf4ZihWwAE5Sdm.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HGf4ZihWwAE5Sdm.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HGf4ZihWwAE5Sdm.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/studiobakers/status/2046878139582664793",
+      "sourceSite": "x.com",
+      "creator": "@studiobakers",
+      "creatorName": "Bakers Studio",
+      "creatorUrl": "https://x.com/studiobakers",
+      "title": "Bakers is cooking again. Oven's at the right temp. Patience. @branchcomputer",
+      "platform": "web",
+      "page": "onboarding",
+      "motion": false,
+      "score": 4,
+      "why": "Welcome window for Branch on a desktop with a blue flower photo",
+      "foundOn": "https://bestdesignsonx.com/studiobakers/status/2046878139582664793"
+    },
+    {
+      "id": "bx039",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "onboarding",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2018725062115770370/img/l3lwQqGM8Xoxh65i-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2018725062115770370/img/l3lwQqGM8Xoxh65i-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2018725062115770370/vid/avc1/3232x2160/CnqdGs-MonlWrrZS.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2018725062115770370/img/l3lwQqGM8Xoxh65i-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/viktorhofte/status/2018725322712027255",
+      "sourceSite": "x.com",
+      "creator": "@viktorhofte",
+      "creatorName": "Viktor Hofte",
+      "creatorUrl": "https://x.com/viktorhofte",
+      "title": "Midday onboarding",
+      "platform": "web",
+      "page": "onboarding",
+      "motion": true,
+      "score": 4,
+      "why": "Midday onboarding: black split screen with a grain sphere",
+      "foundOn": "https://bestdesignsonx.com/viktorhofte/status/2018725322712027255"
+    },
+    {
+      "id": "bx040",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "pricing",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2060761504958513152/img/nOT8-zrTLzysL1ld-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2060761504958513152/img/nOT8-zrTLzysL1ld-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2060761504958513152/vid/avc1/1902x2304/jHedbDnhgbts35ZU.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2060761504958513152/img/nOT8-zrTLzysL1ld-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/basit_designs/status/2060761601893118387",
+      "sourceSite": "x.com",
+      "creator": "@basit_designs",
+      "creatorName": "Basit A. Khan",
+      "creatorUrl": "https://x.com/basit_designs",
+      "title": "Some clean visual exploration with UI",
+      "platform": "web",
+      "page": "pricing",
+      "motion": true,
+      "score": 3,
+      "why": "Pick your plan with iridescent blobs, serif title, light card",
+      "foundOn": "https://bestdesignsonx.com/basit_designs/status/2060761601893118387"
+    },
+    {
+      "id": "bx041",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "pricing",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HAuSAcCbUAADsJB.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HAuSAcCbUAADsJB.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HAuSAcCbUAADsJB.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/hey_yogini/status/2020869817067266129",
+      "sourceSite": "x.com",
+      "creator": "@hey_yogini",
+      "creatorName": "Yogini Bende",
+      "creatorUrl": "https://x.com/hey_yogini",
+      "title": "A user cancelled their subscription last week. Turned out we have a gap in our...",
+      "platform": "web",
+      "page": "pricing",
+      "motion": false,
+      "score": 4,
+      "why": "Dark two plan pricing with a volume slider and violet CTA",
+      "foundOn": "https://bestdesignsonx.com/hey_yogini/status/2020869817067266129"
+    },
+    {
+      "id": "bx042",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "slider",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2059842844588998656/img/QmsGOZkD5fx1qBUy-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2059842844588998656/img/QmsGOZkD5fx1qBUy-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2059842844588998656/vid/avc1/1046x670/sxTLcLpK7Jrjovr6.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2059842844588998656/img/QmsGOZkD5fx1qBUy-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/ConwayAnderson/status/2059843019168489937",
+      "sourceSite": "x.com",
+      "creator": "@ConwayAnderson",
+      "creatorName": "conway",
+      "creatorUrl": "https://x.com/ConwayAnderson",
+      "title": "We're in a golden age of generating fun little widgets to tweak UIs directly in the...",
+      "platform": "web",
+      "page": "slider",
+      "motion": true,
+      "score": 4,
+      "why": "Scroll fade control panel with sliders, dark glass over a page",
+      "foundOn": "https://bestdesignsonx.com/ConwayAnderson/status/2059843019168489937"
+    },
+    {
+      "id": "bx043",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "input",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2054553128348086272/img/jpfpWUOa-PrsvB6U-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2054553128348086272/img/jpfpWUOa-PrsvB6U-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2054553128348086272/vid/avc1/1870x1538/EkPDS0qT5YfVp2BG.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2054553128348086272/img/jpfpWUOa-PrsvB6U-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/jeetnirnejak/status/2054553218714378622",
+      "sourceSite": "x.com",
+      "creator": "@jeetnirnejak",
+      "creatorName": "Jeet",
+      "creatorUrl": "https://x.com/jeetnirnejak",
+      "title": "Tipping calculator component, tap on a percent or turn the dial designed in @paper,...",
+      "platform": "mobile",
+      "page": "input",
+      "motion": true,
+      "score": 3,
+      "why": "Tipping dial: turn to set the percent, black knob, white card",
+      "foundOn": "https://bestdesignsonx.com/jeetnirnejak/status/2054553218714378622"
+    },
+    {
+      "id": "bx044",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "slider",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2046225081647689729/img/b5e6faB5rFUUDmur-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2046225081647689729/img/b5e6faB5rFUUDmur-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2046225081647689729/vid/avc1/1600x1200/cYnSnXDVzgO2Vo6j.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2046225081647689729/img/b5e6faB5rFUUDmur-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/moguzbulbul/status/2046225143492472860",
+      "sourceSite": "x.com",
+      "creator": "@moguzbulbul",
+      "creatorName": "Oğuz B",
+      "creatorUrl": "https://x.com/moguzbulbul",
+      "title": "Frequency tuner @intrfacer",
+      "platform": "mobile",
+      "page": "slider",
+      "motion": true,
+      "score": 4,
+      "why": "Frequency tuner on a black phone, one triangle, big 500",
+      "foundOn": "https://bestdesignsonx.com/moguzbulbul/status/2046225143492472860"
+    },
+    {
+      "id": "bx045",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "sidebar",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJZpFksagAAUebq.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HJZpFksagAAUebq.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJZpFksagAAUebq.jpg",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJZpFkubMAAlnSH.jpg",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/piyushsphere/status/2059949436114206925",
+      "sourceSite": "x.com",
+      "creator": "@piyushsphere",
+      "creatorName": "Piyush",
+      "creatorUrl": "https://x.com/piyushsphere",
+      "title": "Code editor UI",
+      "platform": "web",
+      "page": "sidebar",
+      "motion": false,
+      "score": 4,
+      "why": "Code editor with file sidebar on a blurred landscape, dark",
+      "foundOn": "https://bestdesignsonx.com/piyushsphere/status/2059949436114206925"
+    },
+    {
+      "id": "bx046",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "sidebar",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HICbWyTaQAAamF9.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HICbWyTaQAAamF9.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HICbWyTaQAAamF9.jpg",
+          "label": "1 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HICbWyMbAAA-Nwn.jpg",
+          "label": "2 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HICbWyEaAAAThb6.jpg",
+          "label": "3 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HICbWyJbIAIrp2G.jpg",
+          "label": "4 of 4"
+        }
+      ],
+      "sourceUrl": "https://x.com/piyushsphere/status/2053812590653133241",
+      "sourceSite": "x.com",
+      "creator": "@piyushsphere",
+      "creatorName": "Piyush",
+      "creatorUrl": "https://x.com/piyushsphere",
+      "title": "Product design mondays",
+      "platform": "web",
+      "page": "sidebar",
+      "motion": false,
+      "score": 4,
+      "why": "AI product doc with sidebar on dark glass over a wheat field",
+      "foundOn": "https://bestdesignsonx.com/piyushsphere/status/2053812590653133241"
+    },
+    {
+      "id": "bx047",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "toggle",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2078551746817720320/img/3tF8boqUZDUvy4m6-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2078551746817720320/img/3tF8boqUZDUvy4m6-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2078551746817720320/vid/avc1/1444x1070/430rm8moRAWhO7Sf.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2078551746817720320/img/3tF8boqUZDUvy4m6-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/helvetiica/status/2078552366798803391",
+      "sourceSite": "x.com",
+      "creator": "@helvetiica",
+      "creatorName": "˗ˏˋ Vinoth Ragunathan ˊˎ˗",
+      "creatorUrl": "https://x.com/helvetiica",
+      "title": "Figma → SwiftUI I know most users wouldn’t care, but I wanted to add this tiny detail...",
+      "platform": "mobile",
+      "page": "toggle",
+      "motion": true,
+      "score": 4,
+      "why": "Settings toggles on a dark phone with gradient, natural scrolling",
+      "foundOn": "https://bestdesignsonx.com/helvetiica/status/2078552366798803391"
+    },
+    {
+      "id": "bx048",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "toggle",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2020074168205922304/img/r_YBmPjAjheReWz8-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2020074168205922304/img/r_YBmPjAjheReWz8-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2020074168205922304/vid/avc1/2064x1080/GIrDwSyefotP8-P0.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2020074168205922304/img/r_YBmPjAjheReWz8-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/aidenybai/status/2020194850012852612",
+      "sourceSite": "x.com",
+      "creator": "@aidenybai",
+      "creatorName": "Aiden Bai",
+      "creatorUrl": "https://x.com/aidenybai",
+      "title": "improved toolbar open/close animation do you notice the difference?",
+      "platform": "web",
+      "page": "toggle",
+      "motion": true,
+      "score": 4,
+      "why": "Toolbar with a toggle that opens a comment bar, tight motion",
+      "foundOn": "https://bestdesignsonx.com/aidenybai/status/2020194850012852612"
+    },
+    {
+      "id": "bx049",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "toggle",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/a54285c9.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/a54285c9.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/e0a3bc0d-orig.avif",
+          "label": "1 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/5639145a-orig.avif",
+          "label": "2 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/2abeb40b-orig.avif",
+          "label": "3 of 4"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/1231654587364519936/status/2004547492676038776/1555fcff-orig.avif",
+          "label": "4 of 4"
+        }
+      ],
+      "sourceUrl": "https://x.com/LynelSkroll/status/2004547492676038776",
+      "sourceSite": "x.com",
+      "creator": "@LynelSkroll",
+      "creatorName": "Lynel",
+      "creatorUrl": "https://x.com/LynelSkroll",
+      "title": "If modern UI existed when screens were Black and White",
+      "platform": "web",
+      "page": "toggle",
+      "motion": false,
+      "score": 4,
+      "why": "Black and white toggle with a sun icon, chrome gradient",
+      "foundOn": "https://bestdesignsonx.com/lynelskroll/status/2004547492676038776"
+    },
+    {
+      "id": "bx050",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "tabs",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2075619049006886912/img/UJGRp3dL5rkr6_4Y-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2075619049006886912/img/UJGRp3dL5rkr6_4Y-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2075619049006886912/vid/avc1/3022x1896/ONjk-8RDhMRLBtur.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2075619049006886912/img/UJGRp3dL5rkr6_4Y-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/disarto_max/status/2075626855386787882",
+      "sourceSite": "x.com",
+      "creator": "@disarto_max",
+      "creatorName": "Maxim Kuznetsov",
+      "creatorUrl": "https://x.com/disarto_max",
+      "title": "Monitor overview (dark mode)",
+      "platform": "web",
+      "page": "tabs",
+      "motion": true,
+      "score": 4,
+      "why": "Dark monitor overview with tabs and green uptime bars",
+      "foundOn": "https://bestdesignsonx.com/disarto_max/status/2075626855386787882"
+    },
+    {
+      "id": "bx051",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083617023683100672/img/sLUpgJYrnG6Lj65u-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083617023683100672/img/sLUpgJYrnG6Lj65u-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2083617023683100672/vid/avc1/3426x1794/ee3wAYM3WRCmlx_J.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2083617023683100672/img/sLUpgJYrnG6Lj65u-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/iliazolotukhin/status/2083617149340319964",
+      "sourceSite": "x.com",
+      "creator": "@iliazolotukhin",
+      "creatorName": "Ilia",
+      "creatorUrl": "https://x.com/iliazolotukhin",
+      "title": "A set of dark-themed tech UI cards featuring vibrant aurora gradient backgrounds in...",
+      "platform": "web",
+      "page": "card",
+      "motion": true,
+      "score": 4,
+      "why": "Aurora gradient cards on black, magenta glow, carousel",
+      "foundOn": "https://bestdesignsonx.com/iliazolotukhin/status/2083617149340319964"
+    },
+    {
+      "id": "bx052",
+      "origin": "showcase",
+      "genre": "mobile-ui",
+      "group": "Best Designs on X",
+      "component": "card",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067766705795870720/img/an2ASDjixXmUk94k-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067766705795870720/img/an2ASDjixXmUk94k-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2067766705795870720/vid/avc1/2560x1440/ur96sS94qF7wP7xs.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2067766705795870720/img/an2ASDjixXmUk94k-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/bptrz/status/2067766763983384600",
+      "sourceSite": "x.com",
+      "creator": "@bptrz",
+      "creatorName": "Borys",
+      "creatorUrl": "https://x.com/bptrz",
+      "title": "A dark mobile banking card interface shows lock controls and a card details reveal in...",
+      "platform": "mobile",
+      "page": "card",
+      "motion": true,
+      "score": 4,
+      "why": "Dark banking card that reveals details and lock controls",
+      "foundOn": "https://bestdesignsonx.com/bptrz/status/2067766763983384600"
+    },
+    {
+      "id": "bx053",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "button",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HLGpa5-WMAA7rpl.png",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HLGpa5-WMAA7rpl.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HLGpa5-WMAA7rpl.png",
+          "label": "1 of 2"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HLGpcZVWYAADy6C.png",
+          "label": "2 of 2"
+        }
+      ],
+      "sourceUrl": "https://x.com/benjaminnathan/status/2067625599686832225",
+      "sourceSite": "x.com",
+      "creator": "@benjaminnathan",
+      "creatorName": "benjamin",
+      "creatorUrl": "https://x.com/benjaminnathan",
+      "title": "A dark minimalist interface mockup with floating controls and a compact changes panel.",
+      "platform": "web",
+      "page": "button",
+      "motion": false,
+      "score": 4,
+      "why": "Three floating icon buttons on black, compact and quiet",
+      "foundOn": "https://bestdesignsonx.com/benjaminnathan/status/2067625599686832225"
+    },
+    {
+      "id": "bx054",
+      "origin": "showcase",
+      "genre": "web-showcase",
+      "group": "Best Designs on X",
+      "component": "screen",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2068459516480385024/img/Sag-rz0XCQy4C7Af-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2068459516480385024/img/Sag-rz0XCQy4C7Af-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2068459516480385024/vid/avc1/1920x1080/TkvplJoVe2AIAMcW.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2068459516480385024/img/Sag-rz0XCQy4C7Af-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/vamsibatchuk/status/2068459690913058959",
+      "sourceSite": "x.com",
+      "creator": "@vamsibatchuk",
+      "creatorName": "Vamsi Batchu",
+      "creatorUrl": "https://x.com/vamsibatchuk",
+      "title": "A dark movie discovery interface pairs a minimalist search panel with a rotating...",
+      "platform": "website",
+      "page": "screen",
+      "motion": true,
+      "score": 4,
+      "why": "Dark movie discovery: serif search panel beside a poster wall",
+      "foundOn": "https://bestdesignsonx.com/vamsibatchuk/status/2068459690913058959"
+    },
+    {
+      "id": "bx055",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2069821700775034880/img/H5ZvJImziodbLI9g-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2069821700775034880/img/H5ZvJImziodbLI9g-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2069821700775034880/vid/avc1/1668x1620/QZQwMC08NTEwRp86.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2069821700775034880/img/H5ZvJImziodbLI9g-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/diip3sh/status/2069821861836558612",
+      "sourceSite": "x.com",
+      "creator": "@diip3sh",
+      "creatorName": "diip3sh",
+      "creatorUrl": "https://x.com/diip3sh",
+      "title": "timezone clock component, build with @paper and @motiondotdev",
+      "platform": "web",
+      "page": "widget",
+      "motion": true,
+      "score": 5,
+      "why": "Timezone clock component: dial strip, two cities, dark card",
+      "foundOn": "https://bestdesignsonx.com/diip3sh/status/2069821861836558612"
+    },
+    {
+      "id": "bx056",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "button",
+      "imageUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2064722124502392832/img/GRKa3l9D_TPxBw0c-thumbnail.avif",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2064722124502392832/img/GRKa3l9D_TPxBw0c-thumbnail.avif",
+      "media": [
+        {
+          "type": "video",
+          "url": "https://cdn.bestdesignsonx.com/amplify_video/2064722124502392832/vid/avc1/1416x932/Cl4fYY9PIBrtiZKR.mp4",
+          "poster": "https://cdn.bestdesignsonx.com/amplify_video_thumb/2064722124502392832/img/GRKa3l9D_TPxBw0c-thumbnail.avif"
+        }
+      ],
+      "sourceUrl": "https://x.com/diip3sh/status/2064743441393942966",
+      "sourceSite": "x.com",
+      "creator": "@diip3sh",
+      "creatorName": "diip3sh",
+      "creatorUrl": "https://x.com/diip3sh",
+      "title": "Set timer interaction with @motiondotdev",
+      "platform": "web",
+      "page": "button",
+      "motion": true,
+      "score": 3,
+      "why": "Set timer pill that morphs on press, black on light grey",
+      "foundOn": "https://bestdesignsonx.com/diip3sh/status/2064743441393942966"
+    },
+    {
+      "id": "bx057",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HGDSEzibUAAhbVZ.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HGDSEzibUAAhbVZ.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HGDSEzibUAAhbVZ.jpg"
+        }
+      ],
+      "sourceUrl": "https://x.com/AdityaSur11/status/2060745548408434837",
+      "sourceSite": "x.com",
+      "creator": "@AdityaSur11",
+      "creatorName": "Adi",
+      "creatorUrl": "https://x.com/AdityaSur11",
+      "title": "Made this dot matrix style recorder in figma Thoughts?",
+      "platform": "web",
+      "page": "widget",
+      "motion": false,
+      "score": 4,
+      "why": "Dot matrix voice recorder device with a waveform, hardware feel",
+      "foundOn": "https://bestdesignsonx.com/AdityaSur11/status/2060745548408434837"
+    },
+    {
+      "id": "bx058",
+      "origin": "showcase",
+      "genre": "web-ui",
+      "group": "Best Designs on X",
+      "component": "widget",
+      "imageUrl": "https://cdn.bestdesignsonx.com/media/HJVSEQ5XMAEcZbI.jpg",
+      "thumbUrl": "https://cdn.bestdesignsonx.com/media/HJVSEQ5XMAEcZbI.avif",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJVSEQ5XMAEcZbI.jpg",
+          "label": "1 of 3"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJVSrOrWoAApiZk.jpg",
+          "label": "2 of 3"
+        },
+        {
+          "type": "image",
+          "url": "https://cdn.bestdesignsonx.com/media/HJVSsBbWAAcexVH.jpg",
+          "label": "3 of 3"
+        }
+      ],
+      "sourceUrl": "https://x.com/tutundzhian/status/2059643643925819708",
+      "sourceSite": "x.com",
+      "creator": "@tutundzhian",
+      "creatorName": "Levon Tutundzhian",
+      "creatorUrl": "https://x.com/tutundzhian",
+      "title": "more visuals for you!",
+      "platform": "web",
+      "page": "widget",
+      "motion": false,
+      "score": 4,
+      "why": "Dark mini music player capsule with a cover thumbnail",
+      "foundOn": "https://bestdesignsonx.com/tutundzhian/status/2059643643925819708"
     }
   ]
 }

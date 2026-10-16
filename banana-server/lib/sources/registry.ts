@@ -627,14 +627,23 @@ export function registryImageHosts(): string[] {
 }
 
 /**
+ * Link-out only sources outside the registry (searched from a curated local index, not Serper):
+ * Best Designs on X (lib/sources/bdox.ts, 2026-10-16), whose items are X posts by third-party
+ * designers with no license for AI use. Its site, its media CDN and X itself (every item's source
+ * link is the X post) never reach a model input.
+ */
+export const NO_MODEL_INDEX_HOSTS: readonly string[] = ["bestdesignsonx.com", "www.bestdesignsonx.com", "cdn.bestdesignsonx.com", "x.com", "www.x.com"];
+
+/**
  * Hosts whose images and pages must never reach a model input (sources with noModelInput: its
- * domain, www. form, image hosts and other hosts). atlas-build/lib/thumbs.ts and j7-taste.ts read it.
+ * domain, www. form, image hosts and other hosts; plus NO_MODEL_INDEX_HOSTS).
+ * atlas-build/lib/thumbs.ts and j7-taste.ts read it.
  */
 export function noModelInputHosts(): string[] {
   const out = (SOURCE_REGISTRY as readonly SourceEntry[])
     .filter((s) => s.noModelInput)
     .flatMap((s) => [s.domain, `www.${s.domain}`, ...s.imageHosts, ...(s.otherHosts ?? [])]);
-  return [...new Set(out.map((h) => h.toLowerCase()))];
+  return [...new Set([...out, ...NO_MODEL_INDEX_HOSTS].map((h) => h.toLowerCase()))];
 }
 
 /** True when the path is one piece of work on this site (Awwwards list paths excluded). */

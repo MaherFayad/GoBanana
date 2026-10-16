@@ -18,7 +18,7 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
 
 ## Files
 
-- `candidates.json`: 472 candidates, URLs only (no image bytes).
+- `candidates.json`: 530 candidates, URLs only (no image bytes).
   - 94 "From your boards" (`origin: "owner-board"`): the owner's own pins from the mobile and
     dashboard boards, collected once with the owner's approval. Five exact repeats were left out.
   - 176 "Search finds" (`origin: "search"`): found with Serper image search (`site:` queries on
@@ -59,11 +59,21 @@ no other genre uses), then run `node bench/taste/build-picker.mjs`, which embeds
     atlas-build's thumbnail fetch leaves out every Craftwork host (`noModelInputHosts` in
     lib/sources/registry.ts) and `j7-taste.ts` drops Craftwork picks (atlas-build
     tests/licence.test.ts). Craftwork's video host is picker-only, not on the image allowlist.
+  - 58 from Best Designs on X (ids `bx001` to `bx058`, `group: "Best Designs on X"`, added
+    2026-10-16): design posts from X that bestdesignsonx.com curates, read once from its own
+    component tag feeds and judged by eye in contact sheets. Mostly components (cards, widgets,
+    buttons, charts, toggles, sliders, inputs, empty states, navigation, notifications), some full
+    screens and heroes, filed under Mobile UI, Web UI or Web showcase. Each has `component` (the
+    part), `media` (up to 8 `{ type: "video" | "image", url, poster?, label? }` items, 33 of 58
+    with a clip), `creator` and `creatorUrl` (the designer on X), `sourceUrl` (the original X
+    post) and `foundOn` (the post on Best Designs on X). Link out only: these are never sent to a
+    model (no j7-taste notes, no judge), even when picked.
 - `genres.mjs` (types in `genres.d.mts`): the genres and `genreOf`.
 - `picker.html`: the page you pick in. `build-picker.mjs` rebuilds its data line.
-- `picks.default.json`: 85 default picks: the first 40 (30 board pins chosen to vary page, platform
-  and colour, plus the 10 best search finds) and 15 each for Web showcase, Presentation and Branding. Used when
-  `picks.json` does not exist.
+- `picks.default.json`: 95 default picks: the first 40 (30 board pins chosen to vary page, platform
+  and colour, plus the 10 best search finds), 15 each for Presentation and Branding, 15 web
+  showcase sites and the 10 best Best Designs on X components. Used when `picks.json` does not
+  exist.
 - `picks.json`: your picks.
 
 ## How to pick
