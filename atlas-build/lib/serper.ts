@@ -13,7 +13,16 @@ import { dirname, join, resolve } from "node:path";
 import { MAIN_ATLAS, PATHS, ROOT } from "../config.ts";
 
 /** Credits the product needs at runtime (D2 cap). A build job never spends the account under this. */
-export const SERPER_FLOOR = 2_500;
+export const DEFAULT_SERPER_FLOOR = 2_500;
+
+/** The floor from a SERPER_FLOOR env value (a non-negative whole number), else the default. Pure. */
+export function floorFrom(value: string | undefined): number {
+  const n = value === undefined || value.trim() === "" ? NaN : Number(value);
+  return Number.isInteger(n) && n >= 0 ? n : DEFAULT_SERPER_FLOOR;
+}
+
+/** Overridable with the SERPER_FLOOR env var (the owner lowers it for a funded run). */
+export const SERPER_FLOOR = floorFrom(process.env.SERPER_FLOOR);
 
 export type SerperImage = { imageUrl?: string; thumbnailUrl?: string; link?: string; title?: string };
 

@@ -21,7 +21,7 @@
  *
  * Inputs are ordered by value, so a chunked run spends credits where they matter first: bench pages
  * (pages.json "from: bench"), then the other pages, then the art wordings. A real run refuses to
- * start when its slice would take the Serper account under SERPER_FLOOR (2,500, the product's own
+ * start when its slice would take the Serper account under SERPER_FLOOR (2,500 by default, SERPER_FLOOR overrides; the product's own
  * runtime credits), and logs every search to serper.csv next to costs.csv. Build the final output
  * with --from-raw after the last chunk (a chunk's own output only covers that chunk).
  */

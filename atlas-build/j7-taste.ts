@@ -16,6 +16,7 @@ import { buildParams } from "./lib/batch.ts";
 import { checkBudget, estimateCost, logUsage, readLedger, usageCost } from "./lib/guard.ts";
 import { fetchThumbBlock } from "./lib/thumbs.ts";
 
+const CHUNK = 60;
 type Pick = { id: string; imageUrl: string; platform?: string; page?: string; origin?: string };
 
 export function picksFile(dir = join(ROOT, "..", "banana-server", "bench", "taste")): string {
@@ -38,42 +39,57 @@ async function main() {
   const file = picksFile();
   const picks = (JSON.parse(readFileSync(file, "utf8")) as { picks: Pick[] }).picks;
   console.log(`${picks.length} exemplars from ${file}`);
-  const blocks: Anthropic.ContentBlockParam[] = [];
-  let n = 0;
-  for (const p of picks) {
-    const t = await fetchThumbBlock({ imageUrl: p.imageUrl });
-    if (!t.ok) {
-      console.log(`  skipped ${p.id}: ${t.reason}`);
-      continue;
-    }
-    n++;
-    blocks.push({ type: "text", text: `Exemplar ${n} (${p.platform ?? "?"}, ${p.page ?? "?"}):` }, t.block);
-  }
-  blocks.push({ type: "text", text: "Write the notes now." });
-
-  const est = estimateCost(JUDGE, [{ systemChars: SYSTEM.length, userChars: 4000, images: n, outputTokens: 900, imageTokens: 400 }], false);
-  const guard = checkBudget("j7-taste", est.usd, readLedger(PATHS.costs));
-  console.log(`estimate $${est.usd.toFixed(4)}; ${guard.lines.join("; ")}`);
-  if (!guard.ok) throw new Error(`REFUSED: ${guard.reason}`);
-
   const client = new Anthropic();
-  const res = await client.messages.create(buildParams({ model: JUDGE, system: SYSTEM, content: blocks, maxTokens: 2500, effort: "low" }));
-  const text = res.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("").trim();
-  const usd = usageCost(JUDGE, res.usage, false);
-  logUsage(PATHS.costs, {
-    job: "j7-taste",
-    request: "notes",
-    model: res.model,
-    mode: "direct",
-    input_tokens: res.usage.input_tokens,
-    cache_write_tokens: res.usage.cache_creation_input_tokens ?? 0,
-    cache_read_tokens: res.usage.cache_read_input_tokens ?? 0,
-    output_tokens: res.usage.output_tokens,
-    usd,
-  });
+  let usd = 0;
+  let inTok = 0;
+  const call = async (request: string, content: Anthropic.ContentBlockParam[], system: string, images: number) => {
+    const est = estimateCost(JUDGE, [{ systemChars: system.length, userChars: 4000, images, outputTokens: 900, imageTokens: 400 }], false);
+    const guard = checkBudget("j7-taste", est.usd, readLedger(PATHS.costs));
+    console.log(`${request}: estimate $${est.usd.toFixed(4)}; ${guard.lines.join("; ")}`);
+    if (!guard.ok) throw new Error(`REFUSED: ${guard.reason}`);
+    const res = await client.messages.create(buildParams({ model: JUDGE, system, content, maxTokens: 2500, effort: "low" }));
+    const u = usageCost(JUDGE, res.usage, false);
+    usd += u;
+    inTok += res.usage.input_tokens;
+    logUsage(PATHS.costs, {
+      job: "j7-taste",
+      request,
+      model: res.model,
+      mode: "direct",
+      input_tokens: res.usage.input_tokens,
+      cache_write_tokens: res.usage.cache_creation_input_tokens ?? 0,
+      cache_read_tokens: res.usage.cache_read_input_tokens ?? 0,
+      output_tokens: res.usage.output_tokens,
+      usd: u,
+    });
+    return res.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("").trim();
+  };
+
+  // Up to CHUNK images per request (the API caps images per call); several chunks are merged by a text-only call.
+  const parts: string[] = [];
+  let n = 0;
+  for (let i = 0; i < picks.length; i += CHUNK) {
+    const blocks: Anthropic.ContentBlockParam[] = [];
+    let k = 0;
+    for (const p of picks.slice(i, i + CHUNK)) {
+      const t = await fetchThumbBlock({ imageUrl: p.imageUrl });
+      if (!t.ok) {
+        console.log(`  skipped ${p.id}: ${t.reason}`);
+        continue;
+      }
+      k++;
+      blocks.push({ type: "text", text: `Exemplar ${n + k} (${p.platform ?? "?"}, ${p.page ?? "?"}):` }, t.block);
+    }
+    n += k;
+    blocks.push({ type: "text", text: "Write the notes now." });
+    parts.push(await call(`notes-${parts.length + 1}`, blocks, SYSTEM, k));
+  }
+  const MERGE_NOTE = "You are given several note sets written from different halves of the same exemplar set. Merge them into one set under the same headings and the same word limit. Keep what repeats across sets first.";
+  const joined = parts.map((x, i) => "Notes " + (i + 1) + ":\n" + x).join("\n\n") + "\n\nMerge these into one set of notes now.";
+  const text = parts.length === 1 ? parts[0]! : await call("notes-merge", [{ type: "text", text: joined }], SYSTEM + "\n\n" + MERGE_NOTE, 0);
   if (/—/.test(text)) throw new Error("the notes have an em dash: run again");
   writeFileSync(join(ROOT, "data", "j7-taste-notes.md"), text + "\n");
-  console.log(`wrote data/j7-taste-notes.md (${text.split(/\s+/).length} words), $${usd.toFixed(4)}, ${res.usage.input_tokens} input tokens for ${n} images`);
+  console.log(`wrote data/j7-taste-notes.md (${text.split(/\s+/).length} words), $${usd.toFixed(4)}, ${inTok} input tokens for ${n} images`);
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop()!)) {

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { recipeKeyString } from "../../banana-server/lib/atlas/loader.ts";
 import { CUSTOM_ID } from "../lib/job.ts";
 import { estimateCost, TOKENS_PER_IMAGE } from "../lib/guard.ts";
-import { SERPER_FLOOR, creditRoom, envValue } from "../lib/serper.ts";
+import { DEFAULT_SERPER_FLOOR, SERPER_FLOOR, creditRoom, envValue, floorFrom } from "../lib/serper.ts";
 import { QueryRecipeSchema, type QueryRecipe } from "../schema.ts";
 import { ART_NEG, MAX_WORDS, UI_NEG, artWordings, buildInputs, pagePhrases, pageWordings, requestIdOf, searchQueryFor, selectBest, type Input } from "../jobs/j7-recipes.ts";
 
@@ -128,6 +128,17 @@ describe("selectBest", () => {
     expect(recipes.filter((r) => r.key.page === "edge-page").map((r) => r.query)).toEqual(["f"]);
     expect(recipes.some((r) => r.key.page === "weak-page")).toBe(false);
     expect(weak).toEqual(["baseline|weak-page|mobile|-|-"]);
+  });
+});
+
+describe("serper floor override", () => {
+  it("reads SERPER_FLOOR, else 2,500", () => {
+    expect(floorFrom(undefined)).toBe(DEFAULT_SERPER_FLOOR);
+    expect(floorFrom("300")).toBe(300);
+    expect(floorFrom("0")).toBe(0);
+    expect(floorFrom("abc")).toBe(2500);
+    expect(floorFrom("-5")).toBe(2500);
+    expect(creditRoom(2500, floorFrom("300"))).toBe(2200);
   });
 });
 
