@@ -14,6 +14,26 @@ const content = (s: string) => norm(s).trim().split(/\s+/).filter((w) => w.lengt
  */
 export const PHASE0_PRECISION = { fidelity: 0.76, component: 0.59, bridge: 0 } as const;
 
+/** Fewest judged results a recipe needs to replace a Phase 0 lane (Gate 2 round 3). */
+export const MIN_JUDGED = 6;
+
+/** Style words: they belong to the taste lane, never to the fidelity lane's wording. */
+const STYLE_IN_QUERY = /\b(dark|light|minimal|minimalist|clean|modern|bold|editorial|grainy|playful|monochrome|colorful|colourful|retro|brutalist|glassmorphism|neumorphism|gradient|elegant|luxury|premium)\b/i;
+
+/**
+ * True when a recipe may take a Phase 0 lane over (Gate 2 round 3, fix 5): judged at least as precise
+ * as that lane on at least MIN_JUDGED results, and, for the fidelity lane, worded without style words.
+ * The page recipes with style words were judged on the page alone and fell apart with a topic in
+ * round 2 ("dark minimal coffee shop landing page website ui" 4 of 12 good, "dark minimal analytics
+ * saas pricing page website ui" 2 of 12, where the Phase 0 wording kept 5 of 6 and 6 of 6); the plain
+ * filled template "{topic} property listing website ui" kept 20 of 20.
+ */
+export function beatsPhase0(r: { query: string; precision: number; judged: number }, lane: keyof typeof PHASE0_PRECISION): boolean {
+  if (r.precision < PHASE0_PRECISION[lane] || r.judged < MIN_JUDGED) return false;
+  return lane !== "fidelity" || !STYLE_IN_QUERY.test(r.query.replace(TOPIC_SLOT_RE, " "));
+}
+const TOPIC_SLOT_RE = /\{topic\}/g;
+
 /** Words of a page name or id that say which page it is, never what product it is for. */
 const PAGE_WORDS = new Set(["page", "screen", "app", "website", "web", "dashboard", "home", "landing", "listing", "flow", "state", "view"]);
 

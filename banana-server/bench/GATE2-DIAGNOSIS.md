@@ -204,3 +204,45 @@ and method: `BASELINE.md`, "Gate 2 round 2".
 - 80% on brief: **not met on the agent ratings** (56.7% at best, from 20%). The J10 judge, trusted on relevance for
   the first time (80% agreement with the gold), scores g2i at 80% (24 of 30); the owner's spot check decides which
   rater the gate follows.
+
+## Round 3 (2026-10-16, branch `next/gate2-r3`)
+
+What was done for the 13 directions g2i left off brief and for the weak reference searches, and what two new runs
+(`g2j`, `g2k`, product setup, same 10 briefs, budget 150 each) measured. Atlas: rebuilt locally from the committed raw
+files (288 shards, manifest `6b856111260d`); the dry bend reproduced all 30 g2i direction ids before any change. No new
+J job: every fix is deterministic and reads text the Atlas already has. Table: `BASELINE.md`, "Gate 2 round 3".
+
+| g2i cause (directions) | Fix | Measured on g2j and g2k (same 30 directions in both) |
+| --- | --- | --- |
+| Cards that fit the page, not the brief (6: Swiss columns on SaaS pricing, ice cream truck on Ramadan, Ankara 1930s on banking, Scandinavian rooms on Dubai, tally marks on kids reading, arcade on fitness) | Brief-level fit, `lib/atlas/brief-fit.ts`: the card's own text, region and J4 and J4b reasons against the brief's market, Gulf places, occasion, audience and telling product words. A card from another named region costs a step on a market brief; a regional era whose J4 reason names only a style ("visible grid suits dashboards", "civic modernism suits banks") costs 1.5 steps on a brief with no market; the brief's occasion gains; drink and pork cards never go on a Gulf or kids brief (the craft beer can was a Ramadan candidate). A theme domain now comes only from a whole domain name or an occasion word ("food" had made restaurants the Ramadan theme; now it is faith and lifestyle) | Swiss, Ankara, ice cream truck, Scandinavian and tally marks are gone. Their places went to Pocket Calculator and Dark Mode SaaS (pricing), Wax Seals (banking), Dotted Leaders (Ramadan), Emirati Barjeel (Dubai), Stickers and Game Cartridge (kids): 4 of 6 rated on brief. The arcade stays (fitness has only 4 judged candidates) |
+| Wrong Gulf region (4: Najdi mud on Dubai and on Qatar, Arabic coffee and the dallah on a global coffee brief) | Gulf places: cities and countries map to a country, and Saudi cities to Najd, the Hejaz, Asir, the Eastern Province or the north. A card named for one country (Najdi, Emirati, Omani) or whose text names one without the Gulf as a whole goes only on that country's briefs; Gulf cards go only on Gulf briefs; a lens overrides | 0 of 30 directions have a Gulf card off its country or market. Replacements: Jebena (Ethiopian coffee origin) and Googie (the 1950s coffee shop look) on coffee, Barjeel wind towers on Dubai, Manila folders on Qatar. All 4 rated on brief |
+| Idea aimed at a protected element (3: dial caliper and paint swatch on a divider and a header, punch card on a header) | New mechanic part `plan` (the plan cards). `paywall-plan` maps to it instead of the main button, so "one primary action" no longer pushes plan ideas elsewhere. A mechanic never lands on a protected total, main button or plan cards; a card whose page reason names only protected parts gives way to the next card; a named element always comes before an unnamed one (the spread over the bend had moved the punch card to the header) | Dial caliper, paint swatch, gas station (eSIM) and numerals, calculator, dark SaaS (pricing) build on the plan cards; punch card builds on the progress bar. All rated on brief |
+| Ramadan references returned prayer apps (1 or 2 good of 12 to 14) | J1 and J2 search hints on `detail.atlas`: when the Phase 0 topic ("ramadan offers") shares no word with the product the brief names (J2), the topic becomes occasion plus product ("ramadan food delivery"); results whose titles name the occasion domain's own look words (prayer, adhan, qibla, hijri, quran, from faith and lifestyle's J2 nouns, minus words the food domain says, like iftar) are dropped | g2j with "ramadan food delivery offers": 3 of 3 good but one direction found no UI at all. g2k with the shorter topic: 6 of 9 good, no prayer app |
+| SaaS pricing returned dashboards (5 to 7 good of 16) | The domain's surface nouns (dashboard, chart, report, widget: J2 product nouns that are pages of their own) are dropped from titles on another page; the fidelity recipe "dark minimal {topic} pricing page website ui" no longer replaces the Phase 0 wording (fix 5) | No dashboard in the top 8. 10 of 16 good in g2j, 7 of 16 in g2k: the "analytics saas pricing page" wording now pulls SaaS landing pages with no pricing section |
+| Precision 55% | Fix 5: a recipe needs 6 judged results to replace a Phase 0 lane, and a fidelity recipe may not hold style words (the style-word templates kept 6 of 24 in round 2, the plain property listing template 20 of 20). The taste lane keeps the domain whole before it cuts style words and never leaves a lone "big" ("dark mode shop landing page" kept 0 of 9, "big analytics saas pricing page" 1 of 8) | 68.1% (g2j) and 62.8% (g2k); great share 11.3% and 11.7%. Fidelity lane 76% good in g2j (was 59% in round 2). Shared queries stay at 0 |
+
+Also: a shared name word counts as a shared family in MMR ("Manila File Folder" and "Folder Tabs" had led two Qatar
+directions), and "stage" no longer reads as a step ("dark stage around highlighted plan" was built as a progress bar).
+
+### What remains after round 3
+
+1. **Five directions rated 3** in both runs: Walnut Veneer (coffee, generic wood), Arcade Cabinet (fitness, thin),
+   Dotted Leaders (Ramadan, an offers idea with nothing of Ramadan), Ruler Ticks (Dubai, nothing of luxury or Dubai),
+   Game Cartridge (kids, not reading). All five lead with a J4b page score and no tie to the brief's world; the next
+   step is a tie the page fit can see (J4b per brief kind, or a brief-level top-up judge for fit-3 cards).
+2. **References on two boards**: Qatar services (25% and 31%: the pooled brief-level results and "government
+   services dashboard ui" return generic dashboards) and flight checkout (43 to 50%: the fidelity lane drifts to
+   cruise and sportsbook shots). The mechanic component lanes are still the weakest lane.
+3. **Ramadan coverage**: 9 UI results on the board in g2k (12 to 14 before) because the title filter drops more.
+
+4. **The second card** (found by J10): the brief-level fit ranks the lead card only; the second card that adds a
+   texture or motion is still drawn by seeded jitter, so a tiffin carrier reaches a Saudi souq sign and an Ankara 1930s
+   texture reaches Dubai wind towers. J10 marks 9 directions down for it. Next: rank the second card by the same
+   brief fit, and cost a reason that names a Gulf system (Nafath) on a brief with no market.
+
+### Gate 2 after round 3
+
+- 0 shared queries: **met** (g2j, g2k). 0 coherence failures: **met** (0 of 30, rated median 3).
+- 80% on brief: **met on the agent ratings** (83.3% on both runs, the rater of every earlier table), **not met on the
+  J10 judge** (73.3% on both runs, trusted at 76.7% agreement). The agent that rated also wrote the fixes. The
+  owner's spot check of g2j decides which rater the gate follows. Details: `BASELINE.md`, "Gate 2 round 3".

@@ -40,15 +40,18 @@ import { applyBrand } from "@/lib/bend/brand";
 import { lensCulture } from "@/lib/culture/lens";
 import { getLens } from "@/lib/bend/lists";
 import { briefMarket, needsArabic, WIDER_REGION_FROM_WILDNESS } from "@/lib/bend/market";
-import { brokenMustKeep, protectedElements, type Mechanic as DirectionMechanic, type MechanicElement } from "@/lib/bend/mechanic";
+import { brokenMustKeep, forbiddenElement, protectedElements, type Mechanic as DirectionMechanic, type MechanicElement } from "@/lib/bend/mechanic";
 import { cyrb53, stableId } from "@/lib/bend/prng";
 import { fixCase, PART, UI_WORDS, VERIFIED_STYLE_WORDS } from "@/lib/bend/spec";
 import { extractSubject } from "@/lib/bend/subject";
 import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/lib/bend/types";
 import { WILDNESS } from "@/lib/bend/wildness";
+import { briefTopic as phase0Topic } from "@/lib/bend/queries";
+import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
+import { searchHints } from "./search-hints";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, type PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, PageFitScore, QueryRecipe, ShaderRecipe, UiElement } from "./types";
 
@@ -124,6 +127,8 @@ const REASON_STEP = 0.25;
 const REASON_MAX = 0.5;
 /** A brief word counts for REASON_STEP only when fewer than this share of the domain's fit reasons name it. */
 const RARE_SHARE = 0.15;
+/** Fit a card gains per domain fit step over 2 when the page fit leads (Gate 2 round 3: the brief's product world counts too). */
+export const DOMAIN_STEP = 0.25;
 /** A bend needs at least this many lead cards (or `count` when smaller), else lists. */
 const MIN_LEADS = 3;
 /** The fallback subrequest budget the tool gives a bend (lib/atlas/loader.ts COST). */
@@ -136,7 +141,8 @@ export const ELEMENT_TO_MECHANIC: Readonly<Partial<Record<UiElement, MechanicEle
   total: "total",
   "price-breakdown": "total",
   cta: "cta",
-  "paywall-plan": "cta",
+  // Plan cards are picked, not pressed: not the main button "one primary action" protects (Gate 2 round 3).
+  "paywall-plan": "plan",
   divider: "divider",
   "nav-tabs": "section-nav",
   "section-nav": "section-nav",
@@ -231,7 +237,15 @@ export function parseDomain(text: string, domains: readonly DomainEntry[], page?
  */
 export function parseTheme(text: string, domains: readonly DomainEntry[], page?: PageAnatomy | null): DomainEntry | null {
   const [first, ...rest] = rankDomains(text, domains, page);
-  return first ? (rest.find((r) => r.named)?.domain ?? null) : null;
+  if (!first) return null;
+  // Gate 2 round 3: a theme only from a whole domain name or an occasion word its names hold. A
+  // shared single word made noise ("home" gave kids reading a real estate theme, "pay" gave Qatar
+  // services a BNPL theme, "food" gave Ramadan offers restaurants instead of faith and lifestyle).
+  const occasions = occasionsIn(text);
+  const strong = (d: DomainEntry) =>
+    d.names.en.some((n) => has(text, n)) || d.names.ar.some((n) => n && text.includes(n)) || (occasions.length > 0 && occasionsIn(d.names.en.join(" ")).some((o) => occasions.includes(o)));
+  const byOccasion = occasions.length > 0 ? domains.find((d) => d !== first.domain && occasionsIn(d.names.en.join(" ")).some((o) => occasions.includes(o))) : undefined;
+  return rest.find((r) => r.named && strong(r.domain))?.domain ?? byOccasion ?? null;
 }
 
 type RankedDomain = { domain: DomainEntry; productNoun: string | null; score: number; named: boolean };
@@ -298,12 +312,15 @@ export const PAGE_UNJUDGED_DROP = 2;
 
 /** Words of a page fit reason and the UI elements they name, in the order they are tried. */
 const REASON_ELEMENTS: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = [
-  [/\b(step|steps|stage|stages|progress|streak|journey|stops?|legs?)\b/, ["progress", "stepper"]],
+  // Not "stage": "dark stage around highlighted plan" is a theatre stage, not a step (round 3).
+  [/\b(step|steps|progress|streak|journey|stops?|legs?)\b/, ["progress", "stepper"]],
   [/\b(done|finished|success|stamp|stamps|stamped|confirmed|completed?)\b/, ["success", "progress"]],
   [/\b(total|totals|fare|fares|bill|sum)\b/, ["total", "price-breakdown"]],
   // An offer or a deal is announced (a banner); a price or a plan is picked (the plan, its button).
   [/\b(offer|offers|deal|deals|discount|discounts|sale)\b/, ["header", "hero"]],
-  [/\b(price|prices|plan|plans|tier|tiers)\b/, ["paywall-plan", "price-breakdown", "cta"]],
+  [/\b(price|prices|plan|plans|tier|tiers|package|packages|bundle|bundles)\b/, ["paywall-plan", "price-breakdown", "total", "cta"]],
+  // Picking an amount ("slide jaw to pick data amount") is the plan choice, then the total.
+  [/\b(amount|amounts|pick|picks|choose|select|compare)\b/, ["paywall-plan", "total"]],
   [/\b(header|hero|banner|headline|title|masthead|cover|welcome)\b/, ["header", "hero"]],
   [/\b(empty|zero|invites?|first)\b/, ["empty-state"]],
   [/\b(tabs?|sections?|anchors?|nav)\b/, ["section-nav", "nav-tabs", "bottom-nav"]],
@@ -317,6 +334,16 @@ export const REASON_ELEMENT_BONUS = 4;
 export function reasonElements(reason: string): UiElement[] {
   const text = reason.toLowerCase();
   return [...new Set(REASON_ELEMENTS.filter(([re]) => re.test(text)).flatMap(([, els]) => els))];
+}
+
+/**
+ * True when a page fit reason names elements and every one is a part a must-keep protects (a total,
+ * the main button or the plan cards): the idea would land somewhere it does not belong (Gate 2
+ * round 3: "plans as stepped shades" built as a header strip).
+ */
+export function aimsAtProtected(reason: string, protect: ReadonlySet<MechanicElement>): boolean {
+  const named = reasonElements(reason).map((el) => ELEMENT_TO_MECHANIC[el]).filter((m): m is MechanicElement => m !== undefined);
+  return named.length > 0 && named.every((m) => forbiddenElement(m, protect));
 }
 
 /**
@@ -350,9 +377,15 @@ export function clashes(a: IngredientCard, b: IngredientCard): boolean {
   return hit(a, b) || hit(b, a);
 }
 
-/** Family and kind overlap between two cards, for MMR. */
-function similarity(a: IngredientCard, b: IngredientCard): number {
-  return (a.family === b.family ? 1 : 0) + (a.kind === b.kind ? 0.4 : 0);
+/**
+ * Family, kind and name overlap between two cards, for MMR. A shared name word counts as a shared
+ * family (round 3: "Manila File Folder" and "Folder Tabs", "Stickers" and "Sticker Sheet" led two
+ * directions of one board with the same idea).
+ */
+export function similarity(a: { family: string; kind: string; name: string }, b: { family: string; kind: string; name: string }): number {
+  const nameA = new Set(contentWords(a.name));
+  const sameName = contentWords(b.name).some((w) => nameA.has(w));
+  return (a.family === b.family || sameName ? 1 : 0) + (a.kind === b.kind ? 0.4 : 0);
 }
 
 /** A seeded number in [0, 1) per card, so ties break the same way for the same brief. */
@@ -403,7 +436,7 @@ interface Pick {
 function elementOrder(page: PageAnatomy, protect: ReadonlySet<MechanicElement>): UiElement[] {
   const risky = (el: UiElement) => {
     const m = ELEMENT_TO_MECHANIC[el];
-    return m !== undefined && (m === "total" || m === "cta") && protect.has(m);
+    return m !== undefined && forbiddenElement(m, protect);
   };
   const out: UiElement[] = [];
   for (const el of [...page.wildSpots.map((w) => w.element), ...FALLBACK_ELEMENTS]) {
@@ -622,19 +655,32 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (c.kind === "era" && narrow && regional(c)) return home(c.region);
     return true;
   };
+  // Brief-level fit (Gate 2 round 3, lib/atlas/brief-fit.ts): the card against the brief's world
+  // (product, audience, region, occasion), not only the page. Drops Gulf cards on other briefs and
+  // cards from another Gulf country; moves the rest by fit steps.
+  const world = briefWorld(input.brief, market, domain, domains, page);
+  const briefDelta = new Map<string, number>();
+  const briefOk = (c: IngredientCard) => {
+    const v = briefFit(c, [fitOf.get(c.id)?.reason ?? "", pageFitOf.get(c.id)?.reason ?? ""].filter(Boolean), world, { lensAsked: Boolean(lens && isLensCard(c)) });
+    if (!v.drop) briefDelta.set(c.id, v.delta);
+    return !v.drop;
+  };
   const cards = candidateIds
     .map((id) => cardMap.get(id))
     .filter((c): c is IngredientCard => Boolean(c))
     .filter((c) => (lens && isLensCard(c)) || (allowedMoves.has(KIND_MOVE[c.kind]) && regionOk(c)))
     .filter((c) => wildness >= 5 || !domain.clashFamilies.includes(c.family))
-    .filter((c) => !brokenMustKeep({ mood: "", [KIND_SLOT[c.kind]]: c.name }, protect));
+    .filter((c) => !brokenMustKeep({ mood: "", [KIND_SLOT[c.kind]]: c.name }, protect))
+    .filter(briefOk);
+  /** Fit for this brief and page: the page fit, the brief fit, and a step for a domain fit of 3 over 2. */
+  const briefScore = (c: IngredientCard) => fitScore(c.id) + (briefDelta.get(c.id) ?? 0) + (pageFitOf.size > 0 ? DOMAIN_STEP * ((fitOf.get(c.id)?.score ?? 2) - 2) : 0);
 
   // 3. MMR by family and kind; learning weights and Gulf-first scale relevance. The taste
   // profile only reorders cards of equal fit (the tie breaker stays under one fit step).
   const learning = options.learning ?? null;
   const tie = tieBreaks(cards, (c) => fitOf.get(c.id)?.score ?? 0, key, options.taste);
   const relevance = (c: IngredientCard) => {
-    const base = fitScore(c.id) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
+    const base = briefScore(c) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
     const gulf = market === "gulf" && c.region === "gulf" ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
     return (base + gulf) * weight;
@@ -660,7 +706,11 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const lensCards = lens ? cards.filter(isLensCard) : [];
   if (lens && lensCards.length === 0) return null;
   // Rule and layout cards never lead (Gate 2 round 2); they stay in the pool for the second card.
-  const nonLens = cards.filter((c) => !lensCards.includes(c) && !isRuleCard(c));
+  // A card whose page reason aims only at elements a must-keep protects ("plans as stepped shades"
+  // with the plan cards protected) gives way to the next card (Gate 2 round 3), unless too few are left.
+  const nonLensAll = cards.filter((c) => !lensCards.includes(c) && !isRuleCard(c));
+  const free = nonLensAll.filter((c) => !aimsAtProtected(pageFitOf.get(c.id)?.reason ?? "", protect));
+  const nonLens = free.length >= Math.max(input.count, MIN_LEADS) ? free : nonLensAll;
   const leadsLens = mmr(lensCards, GENERATED);
   const leads = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
@@ -705,10 +755,15 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const ranked = (lead: IngredientCard) => {
     // The element the lead's page reason names comes first (Gate 2 round 2 run g2g: "each finished
     // step lands as stamp" was built as a divider, "punched holes show step progress" as a header).
+    // Round 3: a named element always comes before an unnamed one (the spread over the bend no longer
+    // moves "punched holes show step progress" to the header); a protected one is not in `order`, so
+    // the next element the reason names takes its place.
     const named = reasonElements(pageFitOf.get(lead.id)?.reason ?? "");
     return order
       .map((el, idx) => ({
         el,
+        // Among named elements, the reason's own order first ("prices per plan": the plan cards).
+        named: named.includes(el) ? named.length - named.indexOf(el) : 0,
         score:
           (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) +
           Math.max(0, 3 - idx) -
@@ -716,7 +771,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
           (named.includes(el) ? REASON_ELEMENT_BONUS : 0),
         idx,
       }))
-      .sort((a, b) => b.score - a.score || a.idx - b.idx)
+      .sort((a, b) => Number(b.named) - Number(a.named) || b.score - a.score || a.idx - b.idx)
       .map((x) => x.el);
   };
 
@@ -854,7 +909,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // the Phase 0 lane it replaces (lib/atlas/recipe-fit.ts).
   const topicOk = recipeHoldsTopic({ productNoun, topic: subject.head, pageId: page.id });
   const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= MAX_RECIPE_WORDS;
-  const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
+  const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && beatsPhase0(r, lane);
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();
   const usedRecipes = new Set<string>();
@@ -932,6 +987,6 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     pages: pagesIn,
     wildSpots: pagesIn.length > 0 ? [] : wildSpotsFor(platform),
     directions: built.map((b) => b.d).slice(0, input.count),
-    atlas: { pageId: page.id, domainId: domain.id, productNoun },
+    atlas: { pageId: page.id, domainId: domain.id, productNoun, ...searchHints({ brief: input.brief, domain, theme, page, topic: productNoun, phase0Topic: phase0Topic(input.brief, platform) }) },
   }, input.brand);
 }

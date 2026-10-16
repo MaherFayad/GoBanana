@@ -130,7 +130,7 @@ Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` and 
 
 **Every direction has a style.** The result's "Styles" line gives each direction a `styleId`, never shared within the brief (an asked style goes to the first direction, its neighbour to the second). Load the gobanana-taste skill and its `styles/<id>.md` for each kept direction, show the style id on the direction card, and keep each board's style mix (at most 3 references of one style, at least 3 styles, at most 1 vivid gradient unless asked).
 
-**Build every direction around its mechanic.** `mechanic` is `{ element, how }`: the working part of the page the wild idea becomes (`progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state`; for example a braid as the progress bar, tabs as sections, a woven band as the section divider). It never breaks a must keep: the server drops a direction whose ingredients would. Use it in the pattern you describe, in the card, and in searches: look for UI that has that element ("flight checkout progress bar app ui").
+**Build every direction around its mechanic.** `mechanic` is `{ element, how }`: the working part of the page the wild idea becomes (`progress`, `total`, `cta`, `divider`, `section-nav`, `header`, `empty-state` or `plan`, the plan cards on a plan picker or pricing page; for example a braid as the progress bar, tabs as sections, a woven band as the section divider). It never breaks a must keep: the server drops a direction whose ingredients would. Use it in the pattern you describe, in the card, and in searches: look for UI that has that element ("flight checkout progress bar app ui").
 
 ### 8. Triage the ideas (before you show any)
 

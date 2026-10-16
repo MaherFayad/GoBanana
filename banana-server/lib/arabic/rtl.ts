@@ -40,6 +40,8 @@ export const RTL_BY_ELEMENT: Readonly<Record<string, Row>> = {
   avatar: row("Avatar", "Name and meta sit to the left of the avatar, and stacked avatars overlap toward the left.", "Photos do not mirror."),
   "onboarding-slide": row("Onboarding slide", "Slides advance right to left (swipe left for next), dots run right to left, and the next arrow points left.", "Illustrations do not mirror unless they show a direction."),
   "paywall-plan": row("Plan cards", "Plan cards order right to left with the default plan at the right, and check marks lead on the right.", "Prices, currency and discount percent stay left to right runs."),
+  // The mechanic part name for plan cards (lib/bend/mechanic.ts "plan").
+  plan: row("Plan cards", "Plan cards order right to left with the default plan at the right, and check marks lead on the right.", "Prices, currency and discount percent stay left to right runs."),
 };
 
 /** Rules that hold for every part. */
@@ -60,8 +62,8 @@ export function rtlNotes(parts: readonly string[], max = 6): RtlNote[] {
   const out: RtlNote[] = [];
   for (const p of parts) {
     const r = RTL_BY_ELEMENT[p];
-    if (!r || seen.has(p)) continue;
-    seen.add(p);
+    if (!r || seen.has(r.part)) continue;
+    seen.add(r.part);
     out.push({ part: r.part, flips: r.flips, keeps: r.keeps });
     if (out.length >= max) break;
   }

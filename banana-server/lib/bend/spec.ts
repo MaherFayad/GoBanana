@@ -184,6 +184,7 @@ export const PART: Readonly<Record<MechanicElement, string>> = {
   "section-nav": "section tabs",
   header: "header strip",
   "empty-state": "empty state",
+  plan: "plan cards",
 };
 
 // ---------------------------------------------------------------------------
@@ -303,6 +304,7 @@ const PART_LAYOUT: Record<MechanicElement, string> = {
   "section-nav": "{idea} tabs switch the sections at the top",
   header: "{idea} header strip over a single column",
   "empty-state": "{idea} art centered in the empty state, one action below",
+  plan: "{idea} plan cards side by side, the selected plan marked",
 };
 
 function layout(input: SpecInput): string {
