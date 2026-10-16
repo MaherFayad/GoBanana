@@ -6,7 +6,7 @@ import type { Ingredients, ListEntry, MoveId } from "./types";
  * bar"). Agents in the field built from these mappings (braid = progress bar, tabs = sections,
  * woven band = section divider; field report, 2026-10-12). Rule-based, no AI, no random draws.
  */
-export const MECHANIC_ELEMENTS = ["progress", "total", "cta", "divider", "section-nav", "header", "empty-state"] as const;
+export const MECHANIC_ELEMENTS = ["progress", "total", "cta", "divider", "section-nav", "header", "empty-state", "plan"] as const;
 export type MechanicElement = (typeof MECHANIC_ELEMENTS)[number];
 
 export interface Mechanic {
@@ -48,6 +48,7 @@ const HOW: Record<MechanicElement, string> = {
   "section-nav": "{Idea} as the tabs that switch between sections",
   header: "{Idea} carries the header strip and the page title",
   "empty-state": "{Idea} fills the empty state art, with one clear next step",
+  plan: "{Idea} shapes the plan cards; each plan keeps its name, price and a plain selected state",
 };
 
 /** The rule version, for a direction led by a constraint. */
@@ -59,6 +60,7 @@ const RULE_HOW: Record<MechanicElement, string> = {
   "section-nav": "The section tabs follow one rule: {rule}",
   header: "The header follows one rule: {rule}",
   "empty-state": "The empty state follows one rule: {rule}",
+  plan: "The plan cards follow one rule: {rule}, every price stays readable",
 };
 
 // ---------------------------------------------------------------------------
@@ -73,13 +75,23 @@ const MUST_KEEP_WORDS: readonly [RegExp, MechanicElement][] = [
   [/\b(header|title|logo|brand)\b/i, "header"],
   [/\b(divider|dividers|separator|separators)\b/i, "divider"],
   [/\b(empty state|empty)\b/i, "empty-state"],
+  [/\b(plan cards?|plan list|selected plan|plan comparison|plan choice)\b/i, "plan"],
 ];
 
 /** Briefs that pay or book keep a clear total and one primary action by default. */
 const TRANSACTION_BRIEF = /\b(checkout|payment|payments|pay|cart|booking|purchase|order|orders|basket|billing)\b/i;
 
 /** Parts a mechanic must not reskin when protected: users read the amount and press the button. */
-const RISKY: ReadonlySet<MechanicElement> = new Set(["total", "cta"]);
+const RISKY: ReadonlySet<MechanicElement> = new Set(["total", "cta", "plan"]);
+
+/**
+ * True when a mechanic must not land on this element: a total, main button or plan cards that a
+ * must-keep protects (Gate 2 round 3: an idea aimed at one goes to the next element its reason
+ * names, or the next card).
+ */
+export function forbiddenElement(element: MechanicElement, protect: ReadonlySet<MechanicElement>): boolean {
+  return RISKY.has(element) && protect.has(element);
+}
 
 /**
  * Ingredients that break a protected part whatever the mechanic does ("no buttons, only tappable

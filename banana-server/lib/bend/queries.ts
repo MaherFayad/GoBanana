@@ -718,6 +718,7 @@ export const ELEMENT_NOUN: Readonly<Record<string, string>> = {
   "section-nav": "tabs",
   header: "header",
   "empty-state": "empty state",
+  plan: "plan cards",
 };
 
 /**
