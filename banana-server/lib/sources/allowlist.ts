@@ -20,6 +20,8 @@ export const MUSEUM_IMAGE_HOSTS: readonly string[] = ["images.metmuseum.org", "o
  * every source's image hosts from the source registry (lib/sources/registry.ts), each measured on
  * live Serper results. Exact hosts only. Shared CDNs in the list, flagged in the registry:
  * framerusercontent.com and video.gumlet.io (60fps), cdn.prod.website-files.com (SaaSFrame).
+ * Bunny CDN hosts (*.b-cdn.net) are listed one exact pull zone at a time, each the source's own
+ * (Unsection; Craftwork's craftwork-products, marketstorage and curated-images), never the zone.
  *
  * The same list feeds `_meta.ui.csp.resourceDomains` for the inline canvas, so any
  * search result whose image would load from another host is changed or dropped

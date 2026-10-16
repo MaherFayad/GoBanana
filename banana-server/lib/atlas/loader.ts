@@ -87,7 +87,8 @@ export function bucketOf(id: string, count: number): string {
 
 /** The stable key string of a recipe's key, the id recipes are bucketed and looked up by. */
 export function recipeKeyString(key: QueryRecipe["key"]): string {
-  return [key.lane, key.page ?? "-", key.platform ?? "-", key.element ?? "-", key.cardId ?? "-"].join("|");
+  // A web showcase style (2026-10-16) is appended only when set, so every older key, id and bucket stays the same.
+  return [key.lane, key.page ?? "-", key.platform ?? "-", key.element ?? "-", key.cardId ?? "-", ...(key.style ? [key.style] : [])].join("|");
 }
 
 /** A short stable id for one recipe (its key and wording), as stored on references ("rc-..."). */

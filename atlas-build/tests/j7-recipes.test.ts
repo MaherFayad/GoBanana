@@ -5,7 +5,7 @@ import { CUSTOM_ID } from "../lib/job.ts";
 import { estimateCost, TOKENS_PER_IMAGE } from "../lib/guard.ts";
 import { SERPER_FLOOR, creditRoom, envValue } from "../lib/serper.ts";
 import { QueryRecipeSchema, type QueryRecipe } from "../schema.ts";
-import { ART_NEG, MAX_WORDS, UI_NEG, artWordings, buildInputs, pagePhrases, pageWordings, requestIdOf, searchQueryFor, selectBest, type Input } from "../jobs/j7-recipes.ts";
+import { ART_NEG, MAX_WORDS, SHOWCASE_RECIPE_STYLES, UI_NEG, artWordings, buildInputs, pagePhrases, pageWordings, requestIdOf, searchQueryFor, selectBest, showcaseWordings, type Input } from "../jobs/j7-recipes.ts";
 
 const page = (id: string, platforms: Array<"mobile" | "tablet" | "website" | "webapp">, en: string[] = [id.replace(/-/g, " ")], nouns: string[] = []) => ({
   id,
@@ -152,5 +152,50 @@ describe("estimate with measured image tokens", () => {
     const measured = estimateCost("claude-opus-5-5", [{ ...base, imageTokens: 200 }], true);
     expect(worst.inputTokens).toBe(8 * TOKENS_PER_IMAGE);
     expect(measured.inputTokens).toBe(8 * 200);
+  });
+});
+
+describe("web showcase wordings (2026-10-16)", () => {
+  const pages = [page("pricing", ["website", "webapp"]), page("paywall", ["mobile"]), page("hero", ["website"])];
+  const meta = [{ id: "paywall", from: "bench" }];
+  const cards = [card("k1", ["x one", "x two", "x three"])];
+  const inputs = buildInputs(pages, meta, cards);
+  const plain = inputs.filter((i) => !i.key.style);
+
+  it("adds 3 wordings per showcase style for website pages only, after every older input", () => {
+    const show = inputs.filter((i) => i.key.style);
+    expect(show).toHaveLength(2 * SHOWCASE_RECIPE_STYLES.length * 3);
+    expect(show.every((i) => i.key.platform === "website" && i.key.lane === "baseline" && i.priority === 4)).toBe(true);
+    expect(show.some((i) => i.key.page === "paywall")).toBe(false);
+    // Older inputs keep their positions (chunked runs resume by offset).
+    expect(inputs.slice(0, plain.length)).toEqual(plain);
+    expect(inputs.slice(plain.length).every((i) => i.key.style)).toBe(true);
+  });
+
+  it("words them for Awwwards and Dribbble, never Craftwork, within the word cap", () => {
+    expect(showcaseWordings("pricing page", "playful")).toEqual([
+      { source: "awwwards", query: "playful pricing page" },
+      { source: "awwwards", query: "playful pricing page website" },
+      { source: "dribbble", query: "playful pricing page website ui" },
+    ]);
+    expect(showcaseWordings("x", "nope")).toEqual([]);
+    for (const i of inputs.filter((i) => i.key.style)) {
+      expect(i.wording.source).not.toBe("craftwork");
+      expect(i.wording.query.split(/\s+/).length).toBeLessThanOrEqual(MAX_WORDS);
+    }
+    expect(searchQueryFor({ key: { lane: "baseline", page: "pricing", platform: "website", style: "3d" }, wording: { source: "awwwards", query: "3d pricing" } })).toBe("3d pricing site:awwwards.com/sites");
+  });
+
+  it("keys a style apart from the page's plain baseline key, and older keys do not change", () => {
+    expect(recipeKeyString({ lane: "baseline", page: "pricing", platform: "website" })).toBe("baseline|pricing|website|-|-");
+    expect(recipeKeyString({ lane: "baseline", page: "pricing", platform: "website", style: "3d" })).toBe("baseline|pricing|website|-|-|3d");
+    const ids = inputs.map(requestIdOf);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("passes the schema with a style, and refuses an unknown style", () => {
+    const r = { key: { lane: "baseline", page: "pricing", platform: "website", style: "playful" }, query: "playful pricing", source: "awwwards", precision: 0.5, judged: 8, at: "2026-10-16" };
+    expect(QueryRecipeSchema.safeParse(r).success).toBe(true);
+    expect(QueryRecipeSchema.safeParse({ ...r, key: { ...r.key, style: "spooky" } }).success).toBe(false);
   });
 });

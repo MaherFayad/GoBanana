@@ -12,6 +12,11 @@ pictures that show the bar in docs/taste-bar.md. This folder holds the candidate
     pinterest.com/pin, dribbble.com/shots and 60fps.design/shots, using the Round 13 wordings in
     docs/search-quality-experiment.md), then judged by eye against the bar. Each has a `score`
     (1 to 5), a one-line `why` and the `query` that found it. About 60% mobile, 40% web app.
+  - 73 web showcase sites (`genre: "web-showcase"`, ids `w001` to `w073`, added 2026-10-16):
+    playful, 3D, WebGL, motion-led and award-level websites from Awwwards (Sites of the Year, 3D,
+    WebGL, Experimental, Colorful) and Craftwork's website inspiration, judged by eye in contact
+    sheets. Each has `liveUrl` (the site itself), `tags` and `foundOn` (the listing page). The
+    showcase item page is `sourceUrl`.
 - `picker.html`: the page you pick in.
 - `picks.default.json`: 40 default picks (30 board pins chosen to vary page, platform and colour,
   plus the 10 best search finds). Used when `picks.json` does not exist.
