@@ -31,6 +31,10 @@
  *   gallery has no platforms and no tags of its own, so pickGalleries never picks it for a UI brief.
  * - templatesOk: every item is a template by design (Pitch's gallery): the kit filter is skipped.
  * - httpsImages: the site still links some images over http; they are asked for over https.
+ * - noModelInput: its license bars testing or training AI models on its previews (Craftwork), so
+ *   none of its images or picks may reach a model input: atlas-build's thumbnail fetch leaves its
+ *   hosts out and j7-taste drops its picks (noModelInputHosts). otherHosts lists the source's own
+ *   hosts that are not image allowlist hosts (the taste picker's video previews, icons).
  */
 import type { Platform, Zone } from "../direction-detail";
 import { SHOWCASE_TAGS, SHOWCASE_WORD_TAGS } from "./showcase";
@@ -83,6 +87,8 @@ export type SourceEntry = {
   genres?: readonly Genre[];
   templatesOk?: boolean;
   httpsImages?: boolean;
+  noModelInput?: boolean;
+  otherHosts?: readonly string[];
   measured: SourceMeasure;
 };
 
@@ -193,6 +199,10 @@ export const SOURCE_REGISTRY = [
     tags: SHOWCASE_WORD_TAGS,
     showcase: "word",
     styleOnly: true,
+    // License: "not to test or train AI models on previews" (2026-10-16). curated-video.b-cdn.net
+    // serves its video previews (bench/taste picker only, not an image allowlist host).
+    noModelInput: true,
+    otherHosts: ["curated-video.b-cdn.net", "cfw6.b-cdn.net"],
     measured: {
       date: "2026-10-16",
       queries: 12,
@@ -614,6 +624,17 @@ export function sourceEntry(site: RegistrySite): SourceEntry {
 /** Every image host the registry needs, in registry order, no repeats. */
 export function registryImageHosts(): string[] {
   return [...new Set(SOURCE_REGISTRY.flatMap((s) => s.imageHosts))];
+}
+
+/**
+ * Hosts whose images and pages must never reach a model input (sources with noModelInput: its
+ * domain, www. form, image hosts and other hosts). atlas-build/lib/thumbs.ts and j7-taste.ts read it.
+ */
+export function noModelInputHosts(): string[] {
+  const out = (SOURCE_REGISTRY as readonly SourceEntry[])
+    .filter((s) => s.noModelInput)
+    .flatMap((s) => [s.domain, `www.${s.domain}`, ...s.imageHosts, ...(s.otherHosts ?? [])]);
+  return [...new Set(out.map((h) => h.toLowerCase()))];
 }
 
 /** True when the path is one piece of work on this site (Awwwards list paths excluded). */

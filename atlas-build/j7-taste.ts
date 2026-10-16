@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { JUDGE, PATHS, ROOT, loadEnv } from "./config.ts";
 import { buildParams } from "./lib/batch.ts";
 import { checkBudget, estimateCost, logUsage, readLedger, usageCost } from "./lib/guard.ts";
-import { fetchThumbBlock } from "./lib/thumbs.ts";
+import { fetchThumbBlock, modelInputOk } from "./lib/thumbs.ts";
 
 type Pick = { id: string; imageUrl: string; platform?: string; page?: string; origin?: string };
 
@@ -44,9 +44,12 @@ export function genreArg(argv: readonly string[] = process.argv): string | undef
   const i = argv.indexOf("--genre");
   return i >= 0 ? argv[i + 1] : undefined;
 }
-/** The picks a notes run reads: one genre's, else the UI genres'. Picks without `genre` count by platform. */
-export function exemplarPicks<T extends { genre?: unknown; platform?: unknown }>(picks: readonly T[], genre?: string): T[] {
-  return picks.filter((p) => (genre ? genreOf(p) === genre : UI_GENRES.includes(genreOf(p))));
+/**
+ * The picks a notes run reads: one genre's, else the UI genres'. Picks without `genre` count by
+ * platform. Picks from a source whose license bars AI model input (Craftwork) are always left out.
+ */
+export function exemplarPicks<T extends { genre?: unknown; platform?: unknown; sourceUrl?: unknown; imageUrl?: unknown }>(picks: readonly T[], genre?: string): T[] {
+  return picks.filter((p) => (genre ? genreOf(p) === genre : UI_GENRES.includes(genreOf(p))) && modelInputOk(p));
 }
 export const notesName = (genre?: string) => (genre ? `j7-taste-notes-${genre}.md` : "j7-taste-notes.md");
 const GENRE_SYSTEM = (genre: string) =>

@@ -11,15 +11,39 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { fetchThumbIntoMemory, type FetchLike } from "../../banana-server/lib/palette/fetch.ts";
 import { DEFAULT_IMAGE_HOSTS, isAllowedImageUrl, parseAllowlist, type ImageHostAllowlist } from "../../banana-server/lib/sources/allowlist.ts";
 import { MOBBIN_IMAGE_HOSTS } from "../../banana-server/lib/sources/mobbin.ts";
+import { noModelInputHosts } from "../../banana-server/lib/sources/registry.ts";
 import { parseHttpUrl } from "../../banana-server/lib/sources/url.ts";
 
 /** Same caps as banana-server/lib/vision/thumbs.ts. */
 export const MAX_THUMB_BYTES = 300 * 1024;
 export const THUMB_TIMEOUT_MS = 3_000;
 
-/** The thumbnail allowlist: the image allowlist plus Mobbin's image hosts (as the server does). */
+/**
+ * The thumbnail allowlist: the image allowlist plus Mobbin's image hosts (as the server does),
+ * minus the hosts of sources whose license bars AI model input (Craftwork: "not to test or train
+ * AI models on previews"). Every model image input in atlas-build is fetched through this list.
+ */
 export function thumbAllowlist(): ImageHostAllowlist {
-  return parseAllowlist([...DEFAULT_IMAGE_HOSTS, ...MOBBIN_IMAGE_HOSTS]);
+  const blocked = new Set(noModelInputHosts());
+  return parseAllowlist([...DEFAULT_IMAGE_HOSTS, ...MOBBIN_IMAGE_HOSTS].filter((h) => !blocked.has(h.toLowerCase())));
+}
+
+type UrlBearing = { sourceUrl?: unknown; imageUrl?: unknown; thumbUrl?: unknown; media?: unknown };
+
+/**
+ * False when any URL of an item (a taste pick or candidate: its page, image, thumbnail or media)
+ * is on a source whose license bars AI model input (registry noModelInput, Craftwork), so the
+ * item must never reach a model. A candidate's liveUrl is the showcased site itself, not checked.
+ */
+export function modelInputOk(item: UrlBearing): boolean {
+  const blocked = new Set(noModelInputHosts());
+  const urls: unknown[] = [item.sourceUrl, item.imageUrl, item.thumbUrl];
+  if (Array.isArray(item.media)) for (const m of item.media as { url?: unknown; poster?: unknown }[]) urls.push(m?.url, m?.poster);
+  return urls.every((u) => {
+    if (typeof u !== "string" || !u) return true;
+    const p = parseHttpUrl(u);
+    return !p || !blocked.has(p.hostname.toLowerCase());
+  });
 }
 
 /** Copied from banana-server/lib/vision/thumbs.ts: the source CDN's own small variant. */
