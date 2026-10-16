@@ -1,0 +1,968 @@
+{
+  "version": 1,
+  "source": "owner",
+  "pickedAt": "2026-10-16T11:18:24.961Z",
+  "count": 120,
+  "picks": [
+    {
+      "id": "b002",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/67/26/61/67266165809cef03eae1e03f158a9dc1.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/972847957090352570/",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "b003",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/8a/2e/a2/8a2ea24d1af3bb3702167cac3e4c442c.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/873839133932552203/",
+      "platform": "mobile",
+      "page": "widgets"
+    },
+    {
+      "id": "b004",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/03/76/cc/0376ccff01d5dc10623ad8224dd5bc80.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1132866481280819679/",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "b005",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/05/91/4f/05914fd348f780a953427297d94452f7.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/467037423875498253/",
+      "platform": "mobile",
+      "page": "widgets"
+    },
+    {
+      "id": "b007",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/e5/f4/a2/e5f4a2b5d6e9bf4647a2b3f7bdda4d42.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1083326885400148486/",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "b008",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/60/22/9f/60229fbc19491dbe158ca27bb5fc8e0b.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/387661480446653199/",
+      "platform": "mobile",
+      "page": "booking"
+    },
+    {
+      "id": "b010",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/03/d1/83/03d183ee9060ba21681dc80dd68ebde8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/474989091969419834/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "b012",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/b5/e8/3b/b5e83b6a6f15bf6c8ef431a902e0992f.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/137570963614172411/",
+      "platform": "mobile",
+      "page": "widgets"
+    },
+    {
+      "id": "b013",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/32/e0/85/32e085901d68e03673149ba50c637c26.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/708754060127279736/",
+      "platform": "mobile",
+      "page": "analytics"
+    },
+    {
+      "id": "b014",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/05/4f/2f/054f2fdbef448aecf39a3c9b4b16f2a2.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1139973724435217690/",
+      "platform": "mobile",
+      "page": "empty-state"
+    },
+    {
+      "id": "b015",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/04/06/b1/0406b12cd04b7fef9133ddacb31dc85d.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/832954893623780849/",
+      "platform": "mobile",
+      "page": "home"
+    },
+    {
+      "id": "b016",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/06/4c/6e/064c6ed427dc40467edd47e25d2a8ff7.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/997477017477596049/",
+      "platform": "mobile",
+      "page": "analytics"
+    },
+    {
+      "id": "b018",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/d1/2e/7e/d12e7ed39261dd247a6ca68b6be47e4a.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/189995678025717177/",
+      "platform": "mobile",
+      "page": "widgets"
+    },
+    {
+      "id": "b021",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/05/d2/96/05d29665c08c860b71fe04cb6df4b163.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1095359940633675797/",
+      "platform": "mobile",
+      "page": "home"
+    },
+    {
+      "id": "b025",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/a4/d5/48/a4d5488fc4afb65f23289217c987ed16.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwy6Lf7CZj1GLzhh9mO6G-BEE_3pb9rSJEyhAL98IMFXtct/",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "b026",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/14/8e/48/148e480c706e82cfa578b96819db6574.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxxbMEPPwHZKV4uWXA5Uf-ok3KZf4MAPGGrW_v5T5yAvUzb/",
+      "platform": "mobile",
+      "page": "brand"
+    },
+    {
+      "id": "b027",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/fa/c6/f0/fac6f07da14434165acb900fe2a4f291.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyFI5vG-qJ0-M1Vh67Z7CDfradkTsh9Sc6nb5fD-EAvxtY_/",
+      "platform": "mobile",
+      "page": "home"
+    },
+    {
+      "id": "b028",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/fd/0c/97/fd0c97d777ce80664875afeea972bab8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwT9W6g1mN4x06GKKAJD2TfJq2_NG19m6I7YhhAdJim0fBC/",
+      "platform": "mobile",
+      "page": "analytics"
+    },
+    {
+      "id": "b029",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/d8/fb/df/d8fbdf13ad9f6e0f62662ce2d2fab6d4.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzhbkBv6X2-sOhVc1A4vSEslJ75kWrUO48knYW7ZBtq3LQH/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "b030",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/6e/c6/e0/6ec6e0847fbc378bd80684cead5a544e.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxTIe3fBImEdoHqSOCQhAikmKavTO8i-8Q_Z5CcoQbDjdYC/",
+      "platform": "mobile",
+      "page": "brand"
+    },
+    {
+      "id": "b031",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/10/78/05/10780561bb1a264c96eae2f187dea1d4.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxpimljRiY5op61eoqtHifXg3TvzMb8kyvbnEwbKDmdL420/",
+      "platform": "mobile",
+      "page": "maps"
+    },
+    {
+      "id": "b032",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/a0/82/5c/a0825c2f5f50339f4ce22f8f49f6423f.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyqQ58zovC84QcdmhtFK_8t_q49tX22pJANttFqGgnvt4Yn/",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "b034",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/36/a8/f8/36a8f84d912c048db456df03221fa114.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwKi_S_C_rUdd4nKaNSLLC1rzSvGD2w0a78sGcutIUrRs1X/",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "b035",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/ac/34/53/ac34535fb07263d8e48b38e857af576b.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShw_bqXSXuVKNdhphoJQnodbLU2ofMQgsX3YSYrDeVY9gJbf/",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "b036",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/b0/7a/c7/b07ac7231f97ea8e3e7b33f2fb1d4704.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyTVb-hrmIpPFr_-jNIhlJ2C12XK8kRGUGJvdHRtlnb7Ljl/",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "b038",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/62/e5/31/62e531b8300f08560d5fcf550b765fee.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyOp8-HEHjrsx-84Xjh2TyRy_Budvv8da-VBB0FC9DQZk4d/",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "b039",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/fd/86/1a/fd861abd11a0c8b3d39c6352471bc695.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShydfpnC1HIbuDYlXclwrcesapHkzG_oYLA2rBiBoDoz8Cmp/",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "b040",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/d9/8a/e0/d98ae0d2207f211773e6e69e3e852d02.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyAfisMqsj9k5mtNztAPx2ycWZEUCF9dzUAXX2sNr90_bXE/",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "b041",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/f6/5a/37/f65a37ef7156a638c78506093cd99d7b.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzV_M-y8w6sUAJHktvXPmSXR1hE_MM1OERG156YZ614VHfW/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "b042",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/01/91/77/019177925ab66dca551f174f187eaad7.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwlHGnbqqCs4XHPYaT6TLFo7TWDwAPQAFaK1fk2FItINxr6/",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "b044",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/00/6d/c3/006dc3739453a8693100b4c4805c64cb.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzAgr2KRrqXNnG2LrXIFliJxnn8JVZq4LTJFg7IBHNsQhLO/",
+      "platform": "mobile",
+      "page": "widgets"
+    },
+    {
+      "id": "b045",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/66/bf/81/66bf812d3a6d078269b76d77c88165bd.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwQQ0aItTm_iVzh3DqYqUXiTC0JM3eXE_kybx_9O02P-zRF/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "b046",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/22/d5/38/22d5385e4a8f68413a67712c0cda5836.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShx4nqqFRnUErkryhegK5SZhHCxZtky7UVijBP_UpcwNQy6r/",
+      "platform": "mobile",
+      "page": "analytics"
+    },
+    {
+      "id": "b047",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/79/c7/fa/79c7fa7e397e20d2eae9bf1fc2db8ac7.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShyHyiIr_1fw5Kg5dfnghCAAwVd-PA-rhpVHfmeJU7Z0TT6p/",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "b048",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/2a/4c/44/2a4c44978e26f8ef7b56a4d24cd70578.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwXBp2R1wzd37myD5XGfaBPXR6YwM89y2iap7OhS4MLiHmK/",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "b049",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/07/3c/ba/073cbaa24f2c4a1e284c17c83a7de001.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShw5F082bHMqaq2EGSU0S1X4ohzUUIynw8GtZFOp2VEQQOpL/",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "b050",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/00/43/91/0043916f56514ccc264ea1597c9bed89.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/858006166550755140/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b051",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/01/85/4b/01854b4f4ac615210fcd68189d900c2d.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/604045368818569690/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b052",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/8d/60/20/8d602072d93e9632bfaa21d76b411031.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/803470389751604406/",
+      "platform": "mobile",
+      "page": "analytics"
+    },
+    {
+      "id": "b053",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/e1/e2/08/e1e2083c2587caca2fdd7dd794ff2014.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1043005594967557293/",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "b054",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/a5/d9/59/a5d9591982b0084228dc790070dfe6e8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/416583034304688575/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b055",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/30/a2/12/30a21286ae3c6ebcf17f2de62c23be55.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/639159372130235477/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b057",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/0f/ae/bc/0faebc620c895ad5895b57b0cfa3f616.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/476889048064267332/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "b058",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/52/50/53/525053079736b99f72198f40d06f1c07.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/355714070587012026/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b060",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/c4/68/77/c4687726fff84952adfb5dec1c3eac36.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/376895062560447264/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b063",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/1d/fb/2d/1dfb2d31c2173ce5abd3be9b355d96c9.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/803681496049928917/",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "b064",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/45/14/97/451497a6dd36cfd1209ad58b1f50d7f6.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/704954147948670896/",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "b065",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/03/e3/0a/03e30a1f17ce0f1f5de68d8aadad0470.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/702209766943219789/",
+      "platform": "web",
+      "page": "paywall"
+    },
+    {
+      "id": "b066",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/3c/be/5f/3cbe5f80e90861ce4a63b3e7df6b2df1.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/326511041747747747/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b068",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/b4/69/94/b469940ced0122bfa10c74f4b4346e20.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/314829830217308290/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b069",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/83/44/91/834491a23999ec3bd28785be88669969.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1027242996266265849/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b070",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/09/06/26/0906262cb34f0cf36d086ae9977f00f7.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/861102391283621083/",
+      "platform": "web",
+      "page": "widgets"
+    },
+    {
+      "id": "b071",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/04/18/75/0418757bf146e8875f01654b20ef44a9.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/387661480448222761/",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "b072",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/35/fe/5b/35fe5bfa361859e71da3e7ad751bbe69.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/92605336077721637/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b073",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/05/bb/ec/05bbecad49d030e9e7c038e8f348d919.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/538391330474498260/",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "b075",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/66/73/d3/6673d32be502f8449832257c9f34a973.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShz6R_4YjuBODJBamKK0CSUR0r05crsGSDdO6wP0jgXVcFAf/",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "b076",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/50/96/aa/5096aa122234e066a3bb07685232f4be.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxHby9qW0yU-6sQ61f7xUxmFxht1J_nvi-vQ2lBuak8wphL/",
+      "platform": "web",
+      "page": "files"
+    },
+    {
+      "id": "b077",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/ed/4e/59/ed4e594fea3b4c0c83a8d78f705c0e95.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShysqsK3u_8333h1XYHJvl8qXlND7fCajDO60dYIzVrt9eDm/",
+      "platform": "web",
+      "page": "home"
+    },
+    {
+      "id": "b078",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/fb/f4/45/fbf4459aa28b59cfaf21b0c1089fe0ba.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShx_Ma-1cCpCfYXjy88ukGHr6ye_OXM03XPTc6tnBqxmebmD/",
+      "platform": "web",
+      "page": "crm"
+    },
+    {
+      "id": "b079",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/c2/ba/e5/c2bae5fc52ba48e2079acabbedd8de32.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzxuD40IZrPUaviyikWVX9c_gLYkPhsJNg_3RLB6VIYUzQN/",
+      "platform": "web",
+      "page": "dev-tool"
+    },
+    {
+      "id": "b081",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/12/07/c0/1207c0d14f7c09e6feb69294c9584ee8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwJPJ2sxNU_maBhGJ_lDxRF_HxelqJK-ua4E7qd_2HOHnoI/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b082",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/f3/45/41/f34541f2f1bed0bfb263d91e479217aa.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShynBv8JVhdtDOiLU_Pk_F2h3gkHiGgOqz_nSnvgDoctc5RQ/",
+      "platform": "web",
+      "page": "widgets"
+    },
+    {
+      "id": "b084",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/c6/75/46/c675466666dcfe38b7d2433b02ed2a32.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxULziPp6SW-lIhNGuTdUFZPpUhVlaUMBVZKvHmC1DMaxA9/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b086",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/24/cb/f7/24cbf7b07263364fbf395e3d1adf3eea.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzgZTlkQ6CkZIpRoqDvyrf0cs_yX_WtUN4BwCKtlVPPYmyx/",
+      "platform": "web",
+      "page": "brand"
+    },
+    {
+      "id": "b087",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/da/31/55/da315556f4c2b9facf91becbe42a3011.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShwCbNM-UJPvcj_psD8gha1uZciQB4_vSkNNXSjipqR96EvQ/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b089",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/bf/16/e5/bf16e598dfa2dd2bd06b1140902b0f18.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzhhufkRSEVyj7xwgJCiSwUvPuPXRHmmBN6pYcP41GoMj-J/",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "b091",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/b5/0c/03/b50c0370aa513c150b376bbec270fef9.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShzas-49pD1unRkkmkJjHVXN7jJZe-6YPvMN3VJyXPWBXpNd/",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "b092",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/8e/3e/12/8e3e1262bc045b94a29ef9e22115e1b8.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShx2mgYToXw_LrLz2jfx-2ZsdIW_nqtBPiN6j1SPNSX6cffm/",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "b093",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/a8/d4/63/a8d463dc3283be8c7983cd548dde8aca.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxCHg-O4-8jq9X-TMbVK3t_3d_6k4Vmg6a-cdbC_Afq1rmM/",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "b097",
+      "origin": "owner-board",
+      "imageUrl": "https://i.pinimg.com/736x/9c/38/bb/9c38bbc9039ed166b2740ba419e0830a.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/e1_AfqPShxhuTcsH1DAOzNxSuVS-jmUUM7T8wUQm1MLb0MNMCd1dyrH/",
+      "platform": "mobile",
+      "page": "calendar"
+    },
+    {
+      "id": "c002",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/20/34/ca/2034caf6d6d80739384f009d49698d34.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/paywall-subscription-ui-from-flighty-ios-app--351912466160104",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "c005",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/8f/ee/76/8fee767c365c367501149bf6fb326c8f.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/582301426869631058",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "c010",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/a9/c4/b8/a9c4b82e1b9ec7e7bafe7d2ba8f9e7e5.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/paywall-subscription-ui-from-apple-tv-ios-app-in-2025--292241463337866240",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "c021",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/d1/e4/8f/d1e48fb1cee82bde6b7aecaa2aeff971.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/461407924341088418",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "d055",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/b3/63/ba/b363baa1560244f5ccf3fad6c66bb071.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/paywall-subscription-ui-from-flighty-ios-app--351912466160103",
+      "platform": "mobile",
+      "page": "paywall"
+    },
+    {
+      "id": "c052",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/81/8c/ed/818ced3c96aa08f7a22fc6f030790093.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/welcome-screen-ui-from-claude-ios-app--200550989653530740",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "c053",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/52/6a/9b/526a9bd1cff797a007b496b1de3d4346.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/962151907926407002",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "c082",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/04/b1/a5/04b1a571923b167d84db26c243ff2e96.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/welcome-screen-ui-from-gentler-streak-ios-app--307933693292872665",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "c080",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/ec/d2/71/ecd27125c33f55f8db55551e83a5cc50.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/251779435394604885",
+      "platform": "mobile",
+      "page": "onboarding"
+    },
+    {
+      "id": "c103",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/ce/7d/25/ce7d250a2c788e0b7a9a3cb8835fd387.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/439171401181911356",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "c105",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/f5/5d/04/f55d0458d80c42eaa9f3048f7be6b0d6.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/432204895510597346",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "c096",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/8d/1a/d7/8d1ad7d9af56de51643034f515f55d78.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/wallet-balance-ui-from-revolut-ios-app--13862711349013822",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "c124",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/48851995/file/273322fdbfbbfe6331376fceb4b488a6.png",
+      "sourceUrl": "https://dribbble.com/shots/27685110-BankLink-Banking-App-Home-Screen",
+      "platform": "mobile",
+      "page": "wallet"
+    },
+    {
+      "id": "c137",
+      "origin": "search",
+      "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/69ee166280df8787f2df3fd9/thumbnail-1-0.png?width=800",
+      "sourceUrl": "https://60fps.design/shots/cred-pay-with-face-id-animation",
+      "platform": "mobile",
+      "page": "checkout"
+    },
+    {
+      "id": "d069",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/c6/d1/db/c6d1dbb4e5a61aee7d86275a6e38720a.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/day-007-credit-card-checkout--1096626577988933414",
+      "platform": "mobile",
+      "page": "checkout"
+    },
+    {
+      "id": "c225",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/6c/6d/7e/6c6d7e3740afc93cbdf4bc4aa0608419.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/profile-account-ui-from-telegram-ios-app--962151907907386881",
+      "platform": "mobile",
+      "page": "profile"
+    },
+    {
+      "id": "d047",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/91/f1/fe/91f1fec64dcd4773cc95eafbd912695f.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/profile-account-ui-from-location-by-amo-ios-app--962151907903286511",
+      "platform": "mobile",
+      "page": "maps"
+    },
+    {
+      "id": "c246",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/c5/28/aa/c528aaf11a9abbc9ff4758cdb06016b6.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/selector-ui-design--310255861852065304",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "c252",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/2e/d6/29/2ed629e46abb810de739e93c666053f6.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/195836283798213836",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "c248",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/70/c9/0d/70c90d9107190a985062559b2bd5a120.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/889812838900389477",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "d143",
+      "origin": "search",
+      "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/6a7961b2df934d8370b2cb7d/thumbnail-1-0.png",
+      "sourceUrl": "https://60fps.design/shots/claude-voice-selection-border-pulse-interaction",
+      "platform": "mobile",
+      "page": "settings"
+    },
+    {
+      "id": "d045",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/93/f6/25/93f625609fdb5582b49df71c3c2797ff.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/982769949957691726",
+      "platform": "mobile",
+      "page": "ai-chat"
+    },
+    {
+      "id": "c301",
+      "origin": "search",
+      "imageUrl": "https://video.gumlet.io/66b49d08225b7b88f78b7b44/66be46cb131e88d4acae1d8d/thumbnail-1-0.png",
+      "sourceUrl": "https://60fps.design/shots/bump-scratch-map-intro",
+      "platform": "mobile",
+      "page": "maps"
+    },
+    {
+      "id": "c287",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/564x/e0/b1/16/e0b116d6aecf53fd2fd4e5c12eb66904.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/758223287301154475",
+      "platform": "mobile",
+      "page": "maps"
+    },
+    {
+      "id": "c292",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/videos/thumbnails/originals/f3/9a/36/f39a36a27662c94c90511191ce54b85f.0000000.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/146296687898382617",
+      "platform": "mobile",
+      "page": "maps"
+    },
+    {
+      "id": "c311",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/60/8b/13/608b136d5fcc592376197d23b50d0e2d.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/424393964909111615",
+      "platform": "mobile",
+      "page": "booking"
+    },
+    {
+      "id": "c312",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/34/c5/1e/34c51e748ea2cd8b61321afe2a8413b2.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/travel-widgets-for-ios-home-screen--4011087175776557",
+      "platform": "mobile",
+      "page": "booking"
+    },
+    {
+      "id": "c374",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/88/a5/f3/88a5f33ab4a04b7e27b38bba0fdc59be.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/926263848623362693",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "d009",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/32/ab/5d/32ab5d50e6630ca1906c040cb200466d.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/dashboard-ui-from-gentler-streak-ios-app--23081016835308419",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "d014",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/49/74/89/49748972f962175f18aa56231e3316d0.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/dashboard-ui-from-opal-ios-app-in-2024--962151907906303901",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "c360",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/f6/40/cf/f640cf6e64ec5d6ffd8851ca079f9f49.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/sleep-mobile-ios-app--23432860616747364",
+      "platform": "mobile",
+      "page": "health"
+    },
+    {
+      "id": "c380",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/44966584/file/a733bfbcf37aba2cefaeb4ad82550e64.png?resize=752x&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/26543225--Modern-Dark-Dashboard-UI-Analytics-Sales-Overview",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "c413",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/03/e7/45/03e745d7e8accfc7b3dc440c08c80ebb.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/1149543873662142682",
+      "platform": "web",
+      "page": "analytics"
+    },
+    {
+      "id": "d168",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/44809766/file/2e352a4db747bbbb9d229797270548ed.png?format=webp&resize=400x300&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/6164324-Dashboard-UI-Design",
+      "platform": "web",
+      "page": "dev-tool"
+    },
+    {
+      "id": "c425",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/47409974/file/261b7716ee1e090fb32a50a61ffe357e.png?crop=0x0-4800x3600&format=webp&resize=400x300&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/26520958-Bank-Finance-Dashboard-Transactions-Page-Dark-Mode",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "c432",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/43711397/file/original-b75f15639c113da9bc76161a322fabdd.png?resize=752x&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/26151673-Financial-bank-components-UI-cards",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "c423",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/30405465/file/original-4e3fd6dc74ecbc2331173ae81fb46c6f.png?resize=752x&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/15002572-Financial-Dashboard-Dark-Mode",
+      "platform": "web",
+      "page": "finance"
+    },
+    {
+      "id": "c452",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/45412636/file/e683a9dffbf90a5eab2eeb74f95bcde8.png?format=webp&resize=400x300&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/27104423-CRM-Dashboard-UI",
+      "platform": "web",
+      "page": "crm"
+    },
+    {
+      "id": "c457",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/48040270/file/1d040d8fa12fcdebb83883188aee59e6.png?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/15557688-Glassmorphism-Dashboard-Dark-mode-UI",
+      "platform": "web",
+      "page": "crm"
+    },
+    {
+      "id": "d193",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/18814736/file/original-94ae4da088bebeae33c6de26bda687d7.png?resize=752x&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/25513707-Relatia-CRM-Real-Estate-Contacts-Dashboard",
+      "platform": "web",
+      "page": "crm"
+    },
+    {
+      "id": "d222",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/e8/30/91/e83091e7362b7338c4b1f54f77274fee.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/182747697375929933",
+      "platform": "web",
+      "page": "admin-table"
+    },
+    {
+      "id": "c538",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/a6/73/46/a673469e0027ee76595d29c53af94a45.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/60517188736674745",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "c534",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/45074842/file/2d5bf4d27e532e0d2b4a3eb90ff6ca83.png?resize=752x&vertical=center",
+      "sourceUrl": "https://dribbble.com/shots/26578109-Zyricon-AI-Chatbot-Web-App",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "c537",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/bc/6e/19/bc6e19484b0dfb6e6c621f30d58f4828.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/dashboard-design-dark-theme--39547302972703442",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "c542",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/b5/38/fa/b538fa66af3cd0880c2a1f6977b4cc6a.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/851813717073692849",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "d203",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/42659018/file/original-9be1d3cd3a42ccc68ec0c00c465513c9.png?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/26004004-Ai-Agent-Creation-Dark-Mode",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "d206",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/48684871/file/440720cc62ee7e54dac3ee546b89aa5b.png",
+      "sourceUrl": "https://dribbble.com/shots/27639946-AI-Agent-Workspace-Product-UI-UX-Design",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "c540",
+      "origin": "search",
+      "imageUrl": "https://i.pinimg.com/736x/69/88/7d/69887d0aac1c54be2a1c582f25c75a03.jpg",
+      "sourceUrl": "https://www.pinterest.com/pin/644718502951967191",
+      "platform": "web",
+      "page": "ai-tool"
+    },
+    {
+      "id": "c550",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/47841041/file/64a4022b1ff3c50538f249820b969f64.png",
+      "sourceUrl": "https://dribbble.com/shots/27407795-Nexus-dashboard-concept",
+      "platform": "web",
+      "page": "dev-tool"
+    },
+    {
+      "id": "d210",
+      "origin": "search",
+      "imageUrl": "https://cdn.dribbble.com/userupload/4604786/file/original-10f516b19df46bb110980e54bcaa9c30.jpg?resize=400x0",
+      "sourceUrl": "https://dribbble.com/shots/19211886-Ceditor-Code-Editor-App",
+      "platform": "web",
+      "page": "dev-tool"
+    }
+  ]
+}
