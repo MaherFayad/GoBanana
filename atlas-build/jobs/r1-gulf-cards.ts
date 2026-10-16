@@ -52,14 +52,14 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
   {
-    key: "kuwait", area: "Kuwait (Kuwaiti)", extra: 3,
+    key: "kuwait", area: "Kuwait (Kuwaiti)", extra: 4,
     words: [
       { word: "Kuwait Towers 1979", kind: "era", note: "the three towers with spheres clad in coloured steel discs, opened in 1979" },
       { word: "mandoos chest", kind: "object", note: "the wooden chest studded with brass, a bridal chest across the Gulf, strongly tied to Kuwait and the UAE; say Gulf" },
     ],
   },
   {
-    key: "bahrain", area: "Bahrain (Bahraini)", extra: 2,
+    key: "bahrain", area: "Bahrain (Bahraini)", extra: 3,
     words: [
       { word: "Bahraini Bani Jamra weaving", kind: "tradition", note: "the cloth weaving of the village of Bani Jamra" },
       { word: "Bahraini A'ali pottery", kind: "tradition", note: "the pottery kilns of the village of A'ali" },
@@ -67,7 +67,7 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
   {
-    key: "oman", area: "Oman (Omani)", extra: 2,
+    key: "oman", area: "Oman (Omani)", extra: 3,
     words: [
       { word: "Omani aflaj water channels", kind: "tradition", note: "the falaj irrigation channels; the Aflaj Irrigation Systems of Oman are a UNESCO site" },
       { word: "Omani Bahla pottery", kind: "tradition", note: "the pottery of the town of Bahla" },
@@ -75,7 +75,7 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
   {
-    key: "najd", area: "Najd in central Saudi Arabia (Najdi, Riyadh, Diriyah, Qassim)", extra: 2,
+    key: "najd", area: "Najd in central Saudi Arabia (Najdi, Riyadh, Diriyah, Qassim)", extra: 3,
     words: [
       { word: "Najdi shurfat parapets", kind: "element", note: "the stepped and triangular crenellations on Najdi mud buildings, as at At-Turaif in Diriyah" },
       { word: "Najdi athl wood beams", kind: "material", note: "tamarisk (athl) beams with palm ribs above in Najdi roofs" },
@@ -83,21 +83,21 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
   {
-    key: "hejaz", area: "the Hejaz in western Saudi Arabia (Hejazi, Jeddah, Taif, Yanbu)", extra: 3,
+    key: "hejaz", area: "the Hejaz in western Saudi Arabia (Hejazi, Jeddah, Taif, Yanbu)", extra: 4,
     words: [
       { word: "Hejaz Railway 1908", kind: "era", note: "the railway from Damascus to Medina, its stone stations and timetable print; Ottoman era" },
       { word: "Jeddah Corniche sculptures 1980s", kind: "era", note: "the open-air sculptures along the Jeddah Corniche; name artists only when sure" },
     ],
   },
   {
-    key: "asir", area: "Asir in south-western Saudi Arabia (Asiri, Abha, Rijal Almaa)", extra: 3,
+    key: "asir", area: "Asir in south-western Saudi Arabia (Asiri, Abha, Rijal Almaa)", extra: 4,
     words: [
       { word: "Asiri slate-banded mud towers", kind: "tradition", note: "mud tower houses with rows of projecting slate bands that shed rain" },
       { word: "Asiri juniper wood", kind: "material", note: "the juniper (arar) of the Asir highlands" },
     ],
   },
   {
-    key: "eastern", area: "the Eastern Province of Saudi Arabia (Al Ahsa, Hofuf, Qatif, Dammam, Dhahran)", extra: 2,
+    key: "eastern", area: "the Eastern Province of Saudi Arabia (Al Ahsa, Hofuf, Qatif, Dammam, Dhahran)", extra: 3,
     words: [
       { word: "Dhahran Air Terminal 1961", kind: "era", note: "the arched modernist airport terminal completed in 1961" },
       { word: "Al Ahsa Oasis from above", kind: "scale", note: "the palm oasis seen from the air, a UNESCO site since 2018" },
@@ -105,7 +105,7 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
   {
-    key: "arabic", area: "the whole Gulf and Arabic script", extra: 0,
+    key: "arabic", area: "the whole Gulf and Arabic script", extra: 2,
     words: [
       { word: "Gulf date syrup dibs", kind: "material", note: "date syrup, dark and glossy" },
       { word: "Gulf qurm mangroves", kind: "material", note: "the grey mangrove (qurm) of the Gulf coast" },
@@ -116,6 +116,17 @@ export const GULF_GROUPS: Input[] = [
     ],
   },
 ];
+
+/**
+ * Cards read and left out after the full run (2026-10-17): near duplicates across requests. The
+ * Qatar trial wrote a Doha falcon hood before the prompt listed other requests' words (the UAE request
+ * has the hood); Kuwait and the pan-Gulf request both wrote the mirwas drum (the Kuwaiti one stays);
+ * Bahrain and the Eastern Province both wrote the hadra fish weir (Qatif stays, Bahrain has four
+ * more); Bahrain and Oman both wrote halwa (Omani stays); the Al Ain falaj repeats the Omani aflaj.
+ */
+const SKIP_IDS = new Set(["doha-falcon-souq-hood", "gulf-mirwas-drum", "bahraini-hadra-fish-weir", "bahraini-halwa", "al-ain-falaj"]);
+/** Region corrections after reading: Arabic punctuation belongs to the whole Arab world, not the Gulf. */
+const REGION_FIX: Record<string, string> = { "arabic-turned-punctuation": "mena" };
 
 let catalogCache: IngredientCard[] | null = null;
 /** The J3 cards (the catalog new words must not repeat). */
@@ -144,7 +155,11 @@ ${catalogCards()
 function buildPrompt(input: Input): string {
   const named = input.words.map((w) => `- "${w.word}" (kind ${w.kind}${w.region ? `, region "${w.region}"` : ""})${w.note ? `: ${w.note}` : ""}`).join("\n");
   const extra = input.extra > 0 ? `\n\nThen propose ${input.extra} more words from ${input.area} and write a full card for each. Give each its "kind" and set region "gulf". Prefer kinds that work as a second card (material, element, object) unless a tradition is clearly missing.` : "";
-  return `Gulf depth request: ${input.area}. Write one full card for each named word; drop one only if it cannot be done accurately or respectfully, and say why. Set region "gulf" unless the word gives another region.\n\n${named}${extra}\n\nEvery card carries "word" (the named word exactly, or your new word) and "kind".`;
+  const others = GULF_GROUPS.filter((g) => g.key !== input.key).flatMap((g) => g.words.map((w) => w.word));
+  const elsewhere = input.extra > 0 ? `
+
+Other requests already cover these words; do not repeat them or write near duplicates: ${others.join("; ")}.` : "";
+  return `Gulf depth request: ${input.area}. Write one full card for each named word; drop one only if it cannot be done accurately or respectfully, and say why. Set region "gulf" unless the word gives another region.\n\n${named}${extra}\n\nEvery card carries "word" (the named word exactly, or your new word) and "kind".${elsewhere}`;
 }
 
 const dropped: Array<{ request: string; word: string; why: string }> = [];
@@ -212,12 +227,12 @@ export default defineJob<Input, IngredientCard>({
     const seen = new Set<string>();
     const added: IngredientCard[] = [];
     for (const c of fresh) {
-      if (j3.has(c.id) || seen.has(c.id)) {
+      if (j3.has(c.id) || seen.has(c.id) || SKIP_IDS.has(c.id)) {
         ctx.log(`  skipped, id already a card: ${c.id}`);
         continue;
       }
       seen.add(c.id);
-      added.push(c);
+      added.push(REGION_FIX[c.id] ? { ...c, region: REGION_FIX[c.id] } : c);
     }
     mkdirSync(PATHS.review, { recursive: true });
     writeFileSync(join(PATHS.review, "r1-gulf-cards-dropped.json"), JSON.stringify(dropped, null, 2));

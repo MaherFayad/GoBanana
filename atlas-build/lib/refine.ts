@@ -6,12 +6,13 @@
  * again (or rebuilding it with --from-raw) gives the same result. Rebuild order after the J jobs:
  *
  *   npx tsx run.ts j3-cards --from-raw
- *   npx tsx run.ts r1-audit --from-raw        (card-audit: the critic's flags, build only)
- *   npx tsx run.ts r1-rewrite --from-raw      (cards: flagged cards rewritten, same ids and families)
- *   npx tsx run.ts r1-gulf-cards --from-raw   (cards: new Gulf and Arabic cards added)
- *   npx tsx run.ts j4-fit --from-raw, j4-elements --from-raw, j4b-page-fit --from-raw
- *   npx tsx run.ts r1-gulf-fit --from-raw     (fit: the new cards on every domain)
- *   npx tsx run.ts r1-lines --from-raw        (card-elements: lines for new and rewritten cards)
+ *   npx tsx run.ts r1-gulf-cards --from-raw     (cards: new Gulf and Arabic cards added)
+ *   npx tsx run.ts r1-audit --from-raw          (card-audit: the critic's flags on J3 cards, build only)
+ *   npx tsx run.ts r1-gulf-audit --from-raw     (card-audit-gulf: fact check of the new cards, build only)
+ *   npx tsx run.ts r1-rewrite --from-raw        (cards: flagged cards rewritten, same ids and families)
+ *   npx tsx run.ts j4-fit --from-raw, j4-elements --from-raw, j4b-page-fit --from-raw  (J3 cards only)
+ *   npx tsx run.ts r1-gulf-fit --from-raw       (fit: the new cards on every domain)
+ *   npx tsx run.ts r1-lines --from-raw          (card-elements: lines for new and rewritten cards)
  *   npx tsx run.ts r1-gulf-page-fit --from-raw  (page-fit: the new cards on their domains' pages)
  *   npx tsx run.ts r1-weak-page-fit --from-raw  (page-fit: Qatar services and flight checkout rejudged)
  */

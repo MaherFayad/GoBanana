@@ -7,10 +7,12 @@
  * mergeByKey). A rewrite that fails the schema or the J3 checks leaves the old card in place and is
  * listed in rejects/r1-rewrite.jsonl.
  *
- *   needs out/v1/cards (J3) and out/v1/card-audit (r1-audit)
+ *   needs out/v1/cards (J3 and r1-gulf-cards), out/v1/card-audit (r1-audit), out/v1/card-audit-gulf (r1-gulf-audit)
  *   npx tsx run.ts r1-rewrite --dry
  */
-import { OPUS } from "../config.ts";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { OPUS, PATHS } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import type { FontIndex } from "../lib/fonts.ts";
 import { defineJob, withShipPairs } from "../lib/job.ts";
@@ -26,6 +28,15 @@ const SYSTEM = `${J3_SYSTEM}
 
 Rewrite requests: a critic flagged an existing card. You get the card, the critic's problems and the fix it asks for. Write the whole card again so every problem is gone, keeping what was good. Keep the same word and the same kind and family. Keep the name unless the critic says the name itself is loose or wrong (a tradition named only as "Islamic art"), then name it exactly. When the card cannot be made respectful or accurate (it rests on sacred text, a flag or a fact you cannot stand behind), turn it into the nearest sound card on the same word, for example the craft's construction grammar instead of its sacred content, and say so in culturalNotes. Reply with {"cards": [the one card], "dropped": []}.`;
 
+/**
+ * Cards that stay region "gulf" whatever the critic says about region: square Kufic carries
+ * GoBanana's Gulf "kufic" lens; its rewrite still fixes the credit (Iranian and Central Asian banna'i
+ * brickwork). Mashrabiya is not kept: its rewrite credits the turners of Cairo and is now "mena"
+ * (the Gulf form is the Hejazi rawashin card), although banana-server lib/bend/market.ts still lists
+ * it as a Gulf tradition for the word-list path.
+ */
+const KEEP_GULF = new Set(["square-kufic-lettering"]);
+
 /** Request ids stay unique and within 64 characters. */
 const requestId = (cardId: string) => `rw-${cardId}`.slice(0, 64);
 
@@ -37,7 +48,7 @@ function prepare(raw: unknown, input: Input, ctx: { fonts: () => FontIndex }): u
   r.id = old.id;
   r.kind = old.kind;
   r.family = old.family;
-  if (!input.audit.tags.includes("region")) {
+  if (!input.audit.tags.includes("region") || KEEP_GULF.has(old.id)) {
     if (old.region) r.region = old.region;
     else delete r.region;
   }
@@ -67,7 +78,9 @@ export default defineJob<Input, IngredientCard>({
 
   loadInputs: () => {
     const cards = new Map(readKindRecords<IngredientCard>("cards").map((c) => [c.id, c]));
-    return readKindRecords<CardAudit>("card-audit")
+    // J3 flags (r1-audit) and flags on the new Gulf cards (r1-gulf-audit, once it has run).
+    const gulf = existsSync(join(PATHS.out, "card-audit-gulf")) ? readKindRecords<CardAudit>("card-audit-gulf") : [];
+    return [...readKindRecords<CardAudit>("card-audit"), ...gulf]
       .filter((a) => cards.has(a.cardId))
       .sort((a, b) => a.cardId.localeCompare(b.cardId))
       .map((audit) => ({ card: cards.get(audit.cardId)!, audit }));

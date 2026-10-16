@@ -43,7 +43,7 @@ type Input = { n: number; cards: IngredientCard[] };
 let cardsCache: IngredientCard[] | null = null;
 const cards = () => (cardsCache ??= readKindRecords<IngredientCard>("cards").filter((c) => j3CardIds().has(c.id)).sort((a, b) => a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id)));
 
-const SYSTEM = `You are the critic for GoBanana's ingredient cards. Each card turns one surprising word into a whole visual system (palette, type, texture, imagery, motion) that leads the design of one app or web page. Below is the full brief the cards were written to. Read each card against it and flag only the cards with a real problem a careful design lead or a cultural reviewer would send back.
+export const SYSTEM = `You are the critic for GoBanana's ingredient cards. Each card turns one surprising word into a whole visual system (palette, type, texture, imagery, motion) that leads the design of one app or web page. Below is the full brief the cards were written to. Read each card against it and flag only the cards with a real problem a careful design lead or a cultural reviewer would send back.
 
 ${PROMPT_RULES}
 
@@ -100,7 +100,7 @@ export default defineJob<Input, CardAudit>({
   parse: (text) => {
     const v = extractJson(text) as { flags?: Array<{ id?: string; tags?: unknown; problems?: unknown; fix?: unknown }> };
     const ids = j3CardIds();
-    return (v.flags ?? []).filter((f) => typeof f.id === "string" && ids.has(f.id)).map((f) => ({ cardId: f.id, tags: f.tags, problems: f.problems, fix: f.fix }));
+    return (v.flags ?? []).filter((f) => typeof f.id === "string" && ids.has(f.id)).map((f) => ({ cardId: f.id, tags: f.tags, problems: f.problems, fix: typeof f.fix === "string" && f.fix ? f.fix : "Fix every problem listed, keeping what works." }));
   },
   finalize: (records, ctx) => {
     const byId = new Map<string, CardAudit>();
