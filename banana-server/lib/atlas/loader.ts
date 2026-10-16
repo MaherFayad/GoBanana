@@ -9,6 +9,7 @@
  *   pages/<n>            PageAnatomy[]      every shard is read (brief parsing needs all names)
  *   domains/<n>          DomainEntry[]      every shard is read
  *   fit/<domainId>       FitScore[]         one shard per domain
+ *   page-fit/<domainId>  PageFitScore[]     one shard per domain (J4b: top cards on the pages that matter)
  *   cards/<bucket>       IngredientCard[]   bucket = bucketOf(card.id, shard count)
  *   lines/<bucket>       CardElementLine[]  bucket = bucketOf(line.cardId, shard count)
  *   mechanics/<element>  Mechanic[]         one shard per UiElement
@@ -33,7 +34,7 @@
 import { cyrb53 } from "@/lib/bend/prng";
 import type { QueryRecipe } from "./types";
 
-export const ATLAS_KINDS = ["pages", "domains", "fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop", "shaders", "motion", "type-pairs"] as const;
+export const ATLAS_KINDS = ["pages", "domains", "fit", "page-fit", "cards", "lines", "mechanics", "lenses", "recipes", "cc0", "slop", "shaders", "motion", "type-pairs"] as const;
 export type AtlasKind = (typeof ATLAS_KINDS)[number];
 
 export interface ManifestShard {

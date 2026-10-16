@@ -33,3 +33,48 @@ export function recipeHoldsTopic(o: { productNoun?: string | null; topic?: strin
   }
   return (q) => content(q).some((w) => topicWords.includes(w));
 }
+
+/**
+ * The topic slot of a J7 page recipe (Gate 2 round 2): recipes are judged on the page alone ("pricing
+ * page website ui") and stored as templates ("{topic} pricing page website ui"); the bend and the
+ * search plan fill the slot with the brief's product noun, so a recipe names the topic and can pass
+ * recipeHoldsTopic. No new Serper run: the judged precision is the page wording's.
+ */
+export const TOPIC_SLOT = "{topic}";
+
+/** Most words a filled UI recipe may have (a two word topic on a seven word wording). */
+export const MAX_RECIPE_WORDS = 9;
+
+/**
+ * A page recipe's wording as a template: the slot goes right before the first page phrase it holds
+ * (longest first), else in front. A wording that already has the slot is returned as it is.
+ */
+export function topicTemplate(query: string, pagePhrases: readonly string[]): string {
+  const q = query.trim().replace(/\s+/g, " ");
+  if (q.includes(TOPIC_SLOT)) return q;
+  const lower = ` ${q.toLowerCase()} `;
+  for (const phrase of [...pagePhrases].map((p) => p.trim().toLowerCase()).filter(Boolean).sort((a, b) => b.length - a.length)) {
+    const at = lower.indexOf(` ${phrase} `);
+    if (at >= 0) return `${q.slice(0, at)} ${TOPIC_SLOT} ${q.slice(at)}`.replace(/\s+/g, " ").trim();
+  }
+  return `${TOPIC_SLOT} ${q}`;
+}
+
+/**
+ * The wording with the slot filled by the topic. Topic words the wording already holds are left out
+ * ("flight" on "{topic} flight checkout app ui"), so nothing is said twice. No slot: unchanged.
+ */
+export function fillTopic(query: string, topic: string | null | undefined): string {
+  if (!query.includes(TOPIC_SLOT)) return query;
+  const have = new Set(norm(query.replace(TOPIC_SLOT, " ")).trim().split(/\s+/));
+  const t = (topic ?? "")
+    .split(/\s+/)
+    .filter((w) => w && !have.has(norm(w).trim()))
+    .join(" ");
+  return query.replace(TOPIC_SLOT, t).replace(/\s+/g, " ").trim();
+}
+
+/** Recipes with their topic slot filled (the same topic gives the same wording, so the same recipe id). */
+export function fillRecipes<T extends { query: string }>(recipes: readonly T[], topic: string | null | undefined): T[] {
+  return recipes.map((r) => (r.query.includes(TOPIC_SLOT) ? { ...r, query: fillTopic(r.query, topic) } : r));
+}

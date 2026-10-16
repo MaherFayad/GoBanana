@@ -41,6 +41,8 @@ export const BUDGETS: Record<string, number> = {
   j2: 3,
   j3: 17,
   j4: 9,
+  /** Gate 2 round 2: page fit (j4b-page-fit.ts), top 40 cards per domain on its pages. */
+  j4b: 12,
   j5: 8,
   j6: 7,
   j7: 25,
@@ -53,7 +55,7 @@ export const BUDGETS: Record<string, number> = {
 };
 /** Section 6.4 block caps: the guard also refuses when a block's total would pass its cap. */
 export const BLOCKS: Array<{ name: string; jobs: string[]; cap: number }> = [
-  { name: "Atlas v1 and search fix", jobs: ["j1", "j2", "j3", "j4", "j5", "j6", "j7"], cap: 79 },
+  { name: "Atlas v1 and search fix", jobs: ["j1", "j2", "j3", "j4", "j4b", "j5", "j6", "j7"], cap: 79 },
   { name: "Measure", jobs: ["j8", "j9", "j10", "j11", "j12"], cap: 54 },
   { name: "Stunning layer", jobs: ["j13"], cap: 45 },
 ];

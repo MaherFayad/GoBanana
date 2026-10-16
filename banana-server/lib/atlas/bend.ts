@@ -7,11 +7,15 @@
  *   1. Parse the brief into a domain (J2), a page (J1) and a product noun.
  *   2. Candidate cards with a fit of 2 or more for the domain; fit 1 at wildness 4 and 5; the
  *      domain's clash families only at 5.
- *   3. Pick by diversity (MMR over family and kind), honoring moves, lens and Gulf-first.
+ *   3. Pick by diversity (MMR over family and kind), honoring moves, lens and Gulf-first. With a J4b
+ *      page fit for the brief's page, a card leads with its page score (leadFit), and rule or
+ *      layout cards never lead (isRuleCard; they can be the second card, which adds their rule).
  *   4. Clash check between the lead card and the card that adds texture or motion.
- *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines).
+ *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines), the element the
+ *      lead's page reason names first (reasonElements).
  *   6. The spec from the lead card; a second card adds only texture or motion.
- *   7. Queries from recipes (J7), the Phase 0 lanes after them.
+ *   7. Queries from recipes (J7, page recipes with their topic slot filled by briefTopic), the
+ *      Phase 0 lanes after them.
  *
  * Learning (W2): card and mechanic weights from `atlasWeights` and recipe draws from `pickRecipe`
  * (lib/atlas/learning.ts, the nightly `atlas_weights` table plus the user's own ratings), and the
@@ -44,9 +48,9 @@ import type { BendInput, BendResult, Direction, Ingredients, MoveId } from "@/li
 import { WILDNESS } from "@/lib/bend/wildness";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
-import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, UiElement } from "./types";
+import type { CardElementLine, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, PageFitScore, QueryRecipe, ShaderRecipe, UiElement } from "./types";
 
 /** Most shader and motion recipes one direction carries (VAL-14). Ids only. */
 export const MAX_SHADERS = 1;
@@ -272,6 +276,74 @@ function briefCasing(brief: string, noun: string): string {
   return at >= 0 ? brief.slice(at, at + noun.length) : noun;
 }
 
+/** Element card families that are a layout or UI part, not an idea (Progress Bars, toggles). */
+const LAYOUT_FAMILIES = new Set(["controls and UI bits"]);
+
+/**
+ * A rule or layout card ("Everything in a Bento Grid", "Numbers in Tabular Figures", Progress Bars):
+ * a constraint, or an element card that is itself a UI part. It never leads a direction, it can only
+ * be the second card (Gate 2 round 2: rules as leads read as a rule with no idea).
+ */
+export function isRuleCard(c: { kind: IngredientCard["kind"]; family: string }): boolean {
+  return c.kind === "constraint" || (c.kind === "element" && LAYOUT_FAMILIES.has(c.family));
+}
+
+/**
+ * How much less a card counts when the domain's page fit (J4b) did not judge it on this page. Two: a
+ * fit 3 card outside the judged top cards ranks with a page 1, so a Gulf bonus alone never lifts an
+ * unjudged card over the cards judged for the page (the first round 2 dry run led Dubai listings
+ * with unjudged carvings, "suits property").
+ */
+export const PAGE_UNJUDGED_DROP = 2;
+
+/** Words of a page fit reason and the UI elements they name, in the order they are tried. */
+const REASON_ELEMENTS: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = [
+  [/\b(step|steps|stage|stages|progress|streak|journey|stops?|legs?)\b/, ["progress", "stepper"]],
+  [/\b(done|finished|success|stamp|stamps|stamped|confirmed|completed?)\b/, ["success", "progress"]],
+  [/\b(total|totals|fare|fares|bill|sum)\b/, ["total", "price-breakdown"]],
+  // An offer or a deal is announced (a banner); a price or a plan is picked (the plan, its button).
+  [/\b(offer|offers|deal|deals|discount|discounts|sale)\b/, ["header", "hero"]],
+  [/\b(price|prices|plan|plans|tier|tiers)\b/, ["paywall-plan", "price-breakdown", "cta"]],
+  [/\b(header|hero|banner|headline|title|masthead|cover|welcome)\b/, ["header", "hero"]],
+  [/\b(empty|zero|invites?|first)\b/, ["empty-state"]],
+  [/\b(tabs?|sections?|anchors?|nav)\b/, ["section-nav", "nav-tabs", "bottom-nav"]],
+  [/\b(button|press|tap)\b/, ["cta"]],
+  [/\b(divider|dividers|band|bands)\b/, ["divider"]],
+];
+/** Score an element gains when the lead card's page reason names it (over the wild spot order). */
+export const REASON_ELEMENT_BONUS = 4;
+
+/** The UI elements a page fit reason names, in REASON_ELEMENTS order, without repeats. */
+export function reasonElements(reason: string): UiElement[] {
+  const text = reason.toLowerCase();
+  return [...new Set(REASON_ELEMENTS.filter(([re]) => re.test(text)).flatMap(([, els]) => els))];
+}
+
+/**
+ * The fit a card leads this page with: its J4b page score when the page was judged for the domain,
+ * else its domain fit less PAGE_UNJUDGED_DROP. `page` undefined: no page fit for this page, the
+ * domain fit as before.
+ */
+export function leadFit(domainFit: number, page: number | null | undefined): number {
+  if (page === undefined) return domainFit;
+  return page === null ? Math.max(0, domainFit - PAGE_UNJUDGED_DROP) : page;
+}
+
+/**
+ * What the brief is about, in its own words, for the J7 topic slot and the recipe guard: the product
+ * noun it names ("eSIM"), else the longest domain name it holds ("food delivery", "real estate"), else
+ * its words the domain's names share ("kids reading", "banking"), else the subject head. The subject
+ * head alone gave "fitness empty", "estate listing" and "services dashboard" (Gate 2 round 2).
+ */
+export function briefTopic(brief: string, domain: DomainEntry, noun: string | null, fallback: string): string {
+  if (noun) return briefCasing(brief, noun);
+  const named = domain.names.en.filter((n) => has(brief, n)).sort((a, b) => words(b).length - words(a).length || b.length - a.length)[0];
+  if (named) return briefCasing(brief, named);
+  const nameWords = new Set(domain.names.en.flatMap(contentWords));
+  const shared = [...new Set(contentWords(brief).filter((w) => nameWords.has(w)))];
+  return shared.length > 0 ? shared.slice(0, 3).join(" ") : fallback;
+}
+
 /** True when the card's avoid list names the other card (its name or family). */
 export function clashes(a: IngredientCard, b: IngredientCard): boolean {
   const hit = (x: IngredientCard, y: IngredientCard) => x.avoid.some((av) => has(av, y.name) || has(av, y.family));
@@ -323,8 +395,8 @@ export function tieBreaks(cards: readonly IngredientCard[], fitOf: (c: Ingredien
 interface Pick {
   lead: IngredientCard;
   second: IngredientCard | null;
-  /** What the second card adds. */
-  adds: "texture" | "motion" | null;
+  /** What the second card adds: its texture, its motion, or (a rule or layout card) its rule. */
+  adds: "texture" | "motion" | "rule" | null;
 }
 
 /** The Atlas elements a direction's mechanic may land on, wild spots first. */
@@ -412,7 +484,7 @@ export function cardSpec(input: SpecInput): VisualSpec {
     ),
     typeVoice: voice,
     color: sentence(`Palette from ${lead.name}: ${colors.join(", ")}${pairs.length ? `; ship pairs ${pairs.join(", ")}` : ""}; text at 4.5 to 1 or more`),
-    layout: sentence(`${lead.name} carries the ${part}, the ${input.pageLabel} keeps its usual order around it${grid}`),
+    layout: sentence(`${lead.name} carries the ${part}, the ${input.pageLabel} keeps its usual order around it${grid}${adds === "rule" && second ? `; one rule from ${second.name}: ${second.idea.replace(/[.\s]+$/, "")}` : ""}`),
     imagery: sentence(lead.imagery),
     motion: sentence(`${motionCard.motion.verb} in ${motionCard.motion.ms}ms${motionCard !== lead ? ` (from ${motionCard.name})` : ""}; with reduced motion on, ${motionCard.motion.reduced}`),
     texture: sentence(`${textureCard.texture}${textureCard !== lead ? ` (from ${textureCard.name})` : ""}; text sits on solid panels, never on the texture`),
@@ -501,7 +573,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const parsedDomain = parseDomain(input.brief, domains, page);
   if (!page || !parsedDomain) return null;
   const { domain } = parsedDomain;
-  const productNoun = parsedDomain.productNoun ? briefCasing(input.brief, parsedDomain.productNoun) : subject.head;
+  const productNoun = briefTopic(input.brief, domain, parsedDomain.productNoun, subject.head);
   const pageLabel = pagesIn[0] ?? page.names.en[0] ?? page.id.replace(/-/g, " ");
 
   // 2. Candidates by fit. A theme domain the brief also names ("Ramadan" on a food delivery page)
@@ -513,17 +585,19 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const themeOf = new Map<string, number>(themeFit.map((f) => [f.cardId, f.score]));
   const minFit = wildness >= 4 ? 1 : 2;
   const fitOf = new Map<string, FitScore>(fit.map((f) => [f.cardId, f]));
+  // J4b page fit (Gate 2 round 2): how well a card can lead this page of this domain. A failed read
+  // or no rows for the page leaves the domain fit in charge (the bend before J4b).
+  const pageFitOf = new Map<string, PageFitScore>(((await source.pageFit(domain.id)) ?? []).filter((r) => r.pageId === page.id).map((r) => [r.cardId, r]));
   // Brief words that tell this domain's cards apart: named by fewer than RARE_SHARE of its fit
   // reasons ("reading" on a kids reading brief counts, "kids" does not).
-  const reasonWords = new Map<string, Set<string>>(fit.map((f) => [f.cardId, new Set(contentWords(f.reason))]));
+  const reasonWords = new Map<string, Set<string>>(fit.map((f) => [f.cardId, new Set(contentWords(`${f.reason} ${pageFitOf.get(f.cardId)?.reason ?? ""}`))]));
   const briefWords = new Set(
     contentWords(`${input.brief} ${pageLabel}`).filter((w) => [...reasonWords.values()].filter((r) => r.has(w)).length < RARE_SHARE * Math.max(1, fit.length)),
   );
   /** Fit for this brief: the domain fit, plus a share of the theme fit and of rare brief words in the fit reason. */
   const fitScore = (cardId: string): number => {
-    const f = fitOf.get(cardId);
     const shared = [...(reasonWords.get(cardId) ?? [])].filter((w) => briefWords.has(w)).length;
-    return (f?.score ?? 0) + THEME_SHARE * (themeOf.get(cardId) ?? 0) + Math.min(REASON_MAX, REASON_STEP * shared);
+    return leadFit(fitOf.get(cardId)?.score ?? 0, pageFitOf.size > 0 ? (pageFitOf.get(cardId)?.score ?? null) : undefined) + THEME_SHARE * (themeOf.get(cardId) ?? 0) + Math.min(REASON_MAX, REASON_STEP * shared);
   };
   const candidateIds = fit
     .filter((f) => f.score >= minFit || (f.score >= 1 && themeOf.get(f.cardId) === 3))
@@ -585,7 +659,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   };
   const lensCards = lens ? cards.filter(isLensCard) : [];
   if (lens && lensCards.length === 0) return null;
-  const nonLens = cards.filter((c) => !lensCards.includes(c));
+  // Rule and layout cards never lead (Gate 2 round 2); they stay in the pool for the second card.
+  const nonLens = cards.filter((c) => !lensCards.includes(c) && !isRuleCard(c));
   const leadsLens = mmr(lensCards, GENERATED);
   const leads = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
@@ -595,7 +670,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const picks: Pick[] = leads.map((lead, i) => {
     const wantsSecond = wildness >= TWIST_FROM_WILDNESS || (lens && !isLensCard(lead));
     if (!wantsSecond) return { lead, second: null, adds: null };
-    const adds: Pick["adds"] = i % 2 === 0 ? "texture" : "motion";
+    const adds: "texture" | "motion" = i % 2 === 0 ? "texture" : "motion";
     const pool = (lens && !isLensCard(lead) ? lensCards : cards).filter((c) => c.id !== lead.id && !leads.includes(c) && !clashes(lead, c));
     const pool2 = pool.length > 0 ? pool : (lens && !isLensCard(lead) ? lensCards : []).filter((c) => c.id !== lead.id);
     const ranked = [...pool2].sort(
@@ -606,7 +681,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     );
     const second = ranked[0] ?? null;
     if (second) usedSecond.add(second.id);
-    return { lead, second, adds: second ? (lens && !isLensCard(lead) ? "texture" : adds) : null };
+    // A rule or layout card as the second card adds its rule, not its texture or motion.
+    return { lead, second, adds: second ? (isRuleCard(second) ? "rule" : lens && !isLensCard(lead) ? "texture" : adds) : null };
   });
 
   // 5. Mechanics: the page's wild spot elements, by the lead card's lines, spread over the bend.
@@ -626,15 +702,23 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   };
   const elementUse = new Map<MechanicElement, number>();
   const usedMechanics = new Set<string>();
-  const ranked = (lead: IngredientCard) =>
-    order
+  const ranked = (lead: IngredientCard) => {
+    // The element the lead's page reason names comes first (Gate 2 round 2 run g2g: "each finished
+    // step lands as stamp" was built as a divider, "punched holes show step progress" as a header).
+    const named = reasonElements(pageFitOf.get(lead.id)?.reason ?? "");
+    return order
       .map((el, idx) => ({
         el,
-        score: (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) + Math.max(0, 3 - idx) - 2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0),
+        score:
+          (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) +
+          Math.max(0, 3 - idx) -
+          2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0) +
+          (named.includes(el) ? REASON_ELEMENT_BONUS : 0),
         idx,
       }))
       .sort((a, b) => b.score - a.score || a.idx - b.idx)
       .map((x) => x.el);
+  };
 
   type Built = { pick: Pick; id: string; element: UiElement; mechanic: Mechanic | null; d: Direction };
   const built: Built[] = [];
@@ -652,7 +736,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (second && !ingredients[KIND_SLOT[second.kind]]) ingredients[KIND_SLOT[second.kind]] = second.name;
     const idea = words(lead.name.toLowerCase()).slice(0, 5).join(" ");
     const elements = ranked(lead);
-    let why = fitOf.get(lead.id)?.reason ?? `${lead.idea}`;
+    // The page reason (J4b) says what on this page the card serves; the domain reason is the fallback.
+    const pageReason = pageFitOf.get(lead.id);
+    let why = (pageReason && pageReason.score >= 2 && pageReason.reason) || fitOf.get(lead.id)?.reason || `${lead.idea}`;
     if (whys.has(why)) why = `${lead.name}: ${why}`;
 
     const draw = async (attempt: number) => {
@@ -757,7 +843,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const allKeys = built.flatMap((b) => Object.values(keysFor(b)).flat()).map(normKey);
   const uniqueKeys = [...new Map(allKeys.map((k) => [JSON.stringify(k), k])).values()];
   // Missing recipes are not an error: the Phase 0 lanes (P0-17 taste lanes included) take over.
-  const recipes = (await source.recipes(uniqueKeys)) ?? [];
+  // J7 page recipes are templates: the slot takes the brief's product noun (lib/atlas/recipe-fit.ts).
+  const recipes = fillRecipes((await source.recipes(uniqueKeys)) ?? [], productNoun);
   const byKey = new Map<string, QueryRecipe[]>();
   for (const r of recipes) {
     const k = JSON.stringify(normKey(r.key));
@@ -766,7 +853,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // A UI recipe must name the brief's topic, not only the page, and be judged at least as precise as
   // the Phase 0 lane it replaces (lib/atlas/recipe-fit.ts).
   const topicOk = recipeHoldsTopic({ productNoun, topic: subject.head, pageId: page.id });
-  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= 7;
+  const uiOk = (r: QueryRecipe) => holdsNoun(r.query, productNoun, page) && topicOk(r.query) && words(r.query).length <= MAX_RECIPE_WORDS;
   const laneOk = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const artOk = (r: QueryRecipe) => !UI_WORDS.test(r.query);
   const usedQueries = new Set<string>();

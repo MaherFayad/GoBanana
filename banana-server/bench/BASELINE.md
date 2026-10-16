@@ -222,7 +222,93 @@ Notes:
   board's directions.
 - **Relevance did not move past 20%.** The right domain removed every direction rated 1 (mean 2.43 to 2.73), but
   the card draw inside the domain is still generic (GATE2-DIAGNOSIS.md cause 5).
-- **J10 judge: not scored yet.** The batch for g2e and g2f (`msgbatch_016e1k3y2b59B3KdWYxJKhsX`, 156 requests, estimate under $3 at the measured rate of the g2a scoring) was submitted at 17:26 UTC and stayed at 0 of 156 done for two hours. Its id is saved in `atlas-build/state/j10-judge.json` in this worktree: `J10_RUNS=2026-10-16g2e,2026-10-16g2f npx tsx run.ts j10-judge` resumes it at no new cost and writes `ratings-judge.json` for both runs.
+- **J10 judge** (the batch `msgbatch_016e1k3y2b59B3KdWYxJKhsX`, resumed in round 2, $1.23): on its trusted metrics
+  g2e precision 44.3% (58 of 131), great 6.9%; g2f precision 32.1% (45 of 140), great 6.4%; coherence and wow median
+  3 on both. Relevance agreement with the gold is 70% this time, still under the 75% trust bar.
 - **Gate 2 verdict: not passed.** 0 shared queries and 0 coherence failures are met; 80% on brief is not (20%).
 - Spend: Serper 423 credits by the account balance (2,500 before, 2,077 after; the bench counted 141, 142 and 144 requests); Claude
   $0 so far (the J10 batch is billed when it finishes; no other API calls).
+
+## Gate 2 round 2 (2026-10-16)
+
+- Branch `next/gate2-r2` (from `next/phase-1`, ce65aa1). What changed (details in `bench/GATE2-DIAGNOSIS.md`, round 2):
+  1. **J4b page fit** (`atlas-build/jobs/j4b-page-fit.ts`, kind `page-fit`, one shard per domain): for each of the 60
+     domains, its top 40 cards by J4 fit (rule and layout cards left out) against the 12 pages that matter for it (the
+     Bench briefs' pages of the domain, pages named like the domain, then the core pages), each pair scored 0 to 3 with
+     a short reason. Opus 5.5, batch, every page summary in the cached prefix: 28,800 pairs, 1,007 scored 3 (3.5%),
+     0 rejects, $4.17 (budget j4b $12). The bend leads with the page score (`leadFit`; a card the page fit did not judge
+     counts its domain fit less 2) and gives the page reason as the why.
+  2. **Rule and layout cards never lead** (`isRuleCard`: constraints and "controls and UI bits" elements). As the second
+     card they add their rule to the layout. Leads that were rules: 6 of 30 in g2d, 0 in g2g to g2i.
+  3. **J7 topic slot**: kept page recipes on Pinterest, Dribbble and Behance are templates ("dark minimal {topic} landing
+     page website ui", 338 of 367), filled at run time with the brief's topic (`briefTopic`: the product noun, else the
+     domain name the brief holds, else its words the domain's names share). Rebuilt from raw, no Serper. Gallery recipes
+     stay page-only: in g2g "coffee shop landing page" on SiteInspire and "analytics SaaS pricing page" on Awwwards kept
+     0 results. The round 1 guard (topic and Phase 0 precision) is unchanged.
+  4. **One deep shared request per board**: the first direction search also asks the fidelity lane's page 2, and what the
+     brief-level lanes (fidelity, taste) found but did not place is kept on the canvas baseline as a pool (at most 16);
+     each later direction takes up to 4 (`lib/sources/baseline.ts`). No request is sent twice.
+  5. **CC0 art in the bench**: `scripts/bench-run.mjs` never passed `allowImage` or `loadTakedowns` to search_references.
+     The museum hosts are on the allowlist, but with no `allowImage` the plan refuses every CC0 item, and the merge needs
+     the takedown list. Wired as the live tool wires them: 5 CC0 results show per run. CC0 matching is stricter (two
+     shared words, or one telling word the item's title or motif names).
+  6. Fixes found by run g2g: an empty fidelity lane is still saved on the board (its request ran twice on coffee), and
+     pooled results push out art past the art quota when a direction has little UI of its own.
+  7. The one more evidence-based fix after g2h: the mechanic lands on the element the lead's page reason names
+     (`reasonElements`). In g2g and g2h, 6 of the 14 directions off brief had their idea built on another element
+     ("each finished step lands as stamp" built as a divider).
+- Atlas: local, built from the committed raw files plus `raw/j4b-page-fit.jsonl` (`atlas-build/out/server/v1`, 288 shards,
+  manifest `dc639915fe6b`). Not uploaded.
+- Three runs, same 10 briefs, budget 150 each, product setup (canvas baseline wired):
+  - `g2g`: items 1 to 5.
+  - `g2h`: g2g plus item 6 (same 30 directions as g2g).
+  - `g2i`: g2h plus item 7 (same cards; 9 directions build their mechanic on another element).
+- Rated by Claude (agent) as in round 1: contact sheets of the hotlinked results in headless Chrome against
+  `docs/taste-bar.md` and the owner's picks. References rated on the same brief in an earlier run reuse that rating (100,
+  124 and 134); the rest were rated by eye (37, 30 and 15). Directions were rated from their specs. Not the owner's
+  ratings: spot check.
+
+| Metric | Phase 0 (10-15b) | Fix g2e | R2 g2g | R2 g2h | R2 g2i | Target |
+| --- | --- | --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5) | 13.3% (4 of 30) | 20% (6 of 30) | **53.3% (16 of 30)** | **53.3% (16 of 30)** | **56.7% (17 of 30)** | 80% or more |
+| Relevance mean (1 to 5) | 3.03 | 2.73 | 3.53 | 3.53 | 3.57 | |
+| Spec coherence (failures; rated median) | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3 | 0 of 30; median 3.5 | 0 |
+| Query overlap (shared UI queries) | 21 | 0 | 1 | **0** | **0** | 0 |
+| Reference precision (good or great, top 8 UI) | 69.5% (98 of 141) | 59.5% (78 of 131) | 58.4% (80 of 137) | 55.8% (86 of 154) | 55.0% (82 of 149) | 75% or more |
+| Great share (top 8 UI) | 13.5% (19 of 141) | 7.6% (10 of 131) | 10.9% (15 of 137) | 10.4% (16 of 154) | 9.4% (14 of 149) | rising |
+| Directions searched | 18 | 19 | 19 | 20 | 20 | |
+| CC0 results shown | 0 | 0 | 5 | 5 | 5 | |
+| Wow (median) | 3 | 3 | 3 | 3 | 3 | 4 |
+| Serper credits (per search) | 144 (8) | 142 (7.5) | 142 (7.5) | 145 (7.3) | 142 (7.1) | |
+
+J10 judge on the same runs (batch, $1.75). Calibration on the gold this time: relevance 80% agreement (trusted for the
+first time, it was 73.3% and 70%), coherence 96.7%, wow 90%, precision 84.3%, great 85.7%.
+
+| Judge metric | g2e | g2f | R2 g2g | R2 g2h | R2 g2i |
+| --- | --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5) | 63.3% (19 of 30) | 60% (18 of 30) | 73.3% (22 of 30) | 79.3% (23 of 29) | **80% (24 of 30)** |
+| Reference precision | 44.3% | 32.1% | 49.6% (68 of 137) | 48.7% (75 of 154) | 42.3% (63 of 149) |
+| Great share | 6.9% | 6.4% | 6.6% | 4.5% | 4% |
+| Coherence; wow (median) | 3; 3 | 3; 3 | 3; 3 | 3; 3 | 4; 3 |
+
+The judge is more lenient on relevance than the agent rater (80% against 56.7% on g2i) and stricter on references.
+g2e and g2f were judged before this calibration, when relevance was not trusted.
+
+Notes:
+
+- **Relevance moved from 20% to 53 to 57%** (mean 2.73 to 3.57). The page fit picks cards that serve the page's job and
+  says so ("Stacked lit prices per data plan", "Each finished step lands as stamp", "Empty sash invites first patch"),
+  where the domain fit said "Sport gear suits fitness". 13 of 30 are still off brief: cards that serve the page but not
+  the brief's world, a Gulf card from the wrong country or on a global brief, and ideas that name a protected element.
+- **References did not move.** Precision 55 to 58% against 59.5% (g2e) and 69.5% (Phase 0); great share 9.4 to 10.9%
+  against 7.6% (g2e). The later directions now show more UI results (51 in g2e, 69 to 74 now) at about the same
+  precision: pooled results are 55 to 58% good (15 of 26 in g2h, 14 of 27 in g2i). Two boards pull precision down in
+  every run: Ramadan food offers (1 or 2 good of 12 to 14: prayer apps; the Phase 0 topic "ramadan offers" drops the food
+  delivery) and SaaS pricing (5 to 7 of 16: the fidelity wording returns analytics dashboards). Real estate is 14 to 15
+  of 16.
+- **Gate 2 verdict: not passed on the agent ratings** (the same method as every earlier table). 0 shared queries (g2h,
+  g2i) and 0 coherence failures are met; 80% on brief is not (56.7% at best). The J10 judge, now trusted on relevance,
+  scores g2i at exactly 80%, so the gate turns on the rater: the owner's spot check of the g2i directions decides.
+  What remains: `bench/GATE2-DIAGNOSIS.md`, round 2.
+- Spend: Serper 429 credits (142, 145, 142; budget 450). Claude $7.15: J4b $4.17 (budget $12), J10 $2.98 (resume
+  $1.23, round 2 runs $1.75; cap $5).

@@ -61,6 +61,9 @@ export interface IngredientCard {
 
 export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
 
+/** J4b (Gate 2 round 2): how well a card can lead one page of one domain. reason only for 2 and 3. */
+export interface PageFitScore { cardId: string; domainId: string; pageId: string; score: 0 | 1 | 2 | 3; reason?: string }
+
 export interface CardElementLine { cardId: string; element: UiElement; how: string; buildability: 1 | 2 | 3 | 4 | 5 }
 
 export interface Mechanic {

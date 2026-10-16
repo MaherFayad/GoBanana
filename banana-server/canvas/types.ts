@@ -143,9 +143,28 @@ export const STATE_VERSION = 1;
  * requests (query and source) any direction search on this canvas already sent for the key, so no
  * request runs twice on one canvas. Set only by the MCP tools.
  */
-export type CanvasBaseline = { key: string; referenceIds: string[]; at: string; sent?: string[] };
+export type CanvasBaseline = { key: string; referenceIds: string[]; at: string; sent?: string[]; pool?: PooledReference[] };
 /** Most requests a canvas baseline remembers as sent. */
 export const MAX_BASELINE_SENT = 64;
+
+/**
+ * A brief-level result the first direction search fetched but did not place (Gate 2 round 2): the
+ * board's later directions take their share of these instead of sending the request again.
+ */
+export type PooledReference = {
+  id: string;
+  thumbUrl: string;
+  imageUrl: string;
+  sourceUrl: string;
+  sourceSite: string;
+  title?: string;
+  width?: number;
+  height?: number;
+  lane?: "fidelity" | "taste";
+  query?: string;
+};
+/** Most pooled results a canvas baseline keeps. */
+export const MAX_BASELINE_POOL = 16;
 
 /** The JSON saved in `canvases.state` (spec section 11: nodes + viewport, plus the tray). */
 export interface CanvasState {

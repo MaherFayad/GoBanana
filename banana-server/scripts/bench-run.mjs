@@ -88,6 +88,7 @@ const { createWebSearchAdapter } = await import("@/lib/sources/web-search");
 const { compileTakedowns } = await import("@/lib/takedown");
 const { ART_NEG } = await import("@/lib/sources/plan");
 const { mergeBaseline } = await import("@/lib/sources/baseline");
+const { allowlistFromEnv, isAllowedImageUrl } = await import("@/lib/sources/allowlist");
 
 /** The local Atlas (--atlas), or null: an AtlasSource over the files through the real loader. */
 async function localAtlas(dir) {
@@ -268,7 +269,9 @@ if (dry) {
         usage: createMemoryUsageStore(),
         getPlan: async () => "pro_monthly",
         getDirection: async () => searchDirection(b, b._bend, bd),
-        ...(atlas ? { atlasSource: () => atlas.source() } : {}),
+        // The CC0 index (art zone) needs the image host check and the takedown list, as the live tool
+        // wires them (createDbDeps). Without them no CC0 result is ever shown (Gate 2 round 2).
+        ...(atlas ? { atlasSource: () => atlas.source(), allowImage: (url) => isAllowedImageUrl(url, allowlistFromEnv()), loadTakedowns: async () => matcher } : {}),
         addToTray: async (_user, _canvas, _refs, _dir, opts) => {
           if (wireBaseline && opts?.baseline) baselines.set(b.id, mergeBaseline(baselines.get(b.id), opts.baseline, new Date(opts.baseline.at)));
           return true;

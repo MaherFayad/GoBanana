@@ -4,12 +4,14 @@
  * back to the current engine or the Phase 0 lanes.
  */
 import { bucketOf, recipeKeyString, type AtlasLoader } from "./loader";
-import type { CardElementLine, CC0Item, DomainEntry, FitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, SlopRule, TypePair, UiElement } from "./types";
+import type { CardElementLine, CC0Item, DomainEntry, FitScore, PageFitScore, IngredientCard, Mechanic, MotionRecipe, PageAnatomy, QueryRecipe, ShaderRecipe, SlopRule, TypePair, UiElement } from "./types";
 
 export interface AtlasSource {
   pages(): Promise<PageAnatomy[] | null>;
   domains(): Promise<DomainEntry[] | null>;
   fit(domainId: string): Promise<FitScore[] | null>;
+  /** J4b page fit of one domain (every page it was judged on); an empty list when the Atlas has none for it. */
+  pageFit(domainId: string): Promise<PageFitScore[] | null>;
   /** Cards by id (unknown ids are left out). */
   cards(ids: readonly string[]): Promise<Map<string, IngredientCard> | null>;
   /** Element lines of these cards. */
@@ -67,6 +69,10 @@ export function loaderSource(loader: AtlasLoader): AtlasSource {
     pages: () => loader.all<PageAnatomy>("pages"),
     domains: () => loader.all<DomainEntry>("domains"),
     fit: (domainId) => loader.shard<FitScore>("fit", domainId),
+    async pageFit(domainId) {
+      if (!loader.names("page-fit").includes(domainId)) return [];
+      return loader.shard<PageFitScore>("page-fit", domainId);
+    },
     async cards(ids) {
       const want = new Set(ids);
       const rows = await fromBuckets<IngredientCard>(loader, "cards", ids, (c) => want.has(c.id));

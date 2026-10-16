@@ -83,6 +83,9 @@ export interface IngredientCard {
 
 export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
 
+// Added for Gate 2 round 2 (J4b, not in section 6.2): fit per card, domain and page. reason only for 2 and 3.
+export interface PageFitScore { cardId: string; domainId: string; pageId: string; score: 0 | 1 | 2 | 3; reason?: string }
+
 export interface CardElementLine { cardId: string; element: UiElement; how: string; buildability: 1 | 2 | 3 | 4 | 5 }
 
 export interface Mechanic {
@@ -274,6 +277,14 @@ export const FitScoreSchema = z.object({
   reason: text,
 });
 
+export const PageFitScoreSchema = z.object({
+  cardId: id,
+  domainId: id,
+  pageId: id,
+  score: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  reason: words(10).optional(),
+});
+
 export const CardElementLineSchema = z.object({ cardId: id, element: UiElementSchema, how: text, buildability });
 
 export const MechanicSchema = z.object({
@@ -439,6 +450,7 @@ export const SCHEMAS = {
   domains: DomainEntrySchema,
   cards: IngredientCardSchema,
   fit: FitScoreSchema,
+  "page-fit": PageFitScoreSchema,
   "card-elements": CardElementLineSchema,
   mechanics: MechanicSchema,
   lenses: LensPackSchema,
@@ -463,6 +475,7 @@ export type _SchemaChecks = [
   Assert<Same<z.infer<typeof DomainEntrySchema>, DomainEntry>>,
   Assert<Same<z.infer<typeof IngredientCardSchema>, IngredientCard>>,
   Assert<Same<z.infer<typeof FitScoreSchema>, FitScore>>,
+  Assert<Same<z.infer<typeof PageFitScoreSchema>, PageFitScore>>,
   Assert<Same<z.infer<typeof CardElementLineSchema>, CardElementLine>>,
   Assert<Same<z.infer<typeof MechanicSchema>, Mechanic>>,
   Assert<Same<z.infer<typeof LensPackSchema>, LensPack>>,

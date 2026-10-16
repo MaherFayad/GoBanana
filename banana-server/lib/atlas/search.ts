@@ -24,7 +24,7 @@ import { ELEMENT_TO_MECHANIC } from "./bend";
 import { atlasTermKey } from "@/lib/learning/arms";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
-import { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
+import { fillRecipes, MAX_RECIPE_WORDS, PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 import type { AtlasSource } from "./source";
 import type { CC0Item, QueryRecipe, UiElement } from "./types";
 
@@ -89,19 +89,34 @@ function itemWords(item: CC0Item): Set<string> {
   return new Set((text.match(/[\p{L}\p{N}]+/gu) ?? []).filter((w) => w.length >= 3));
 }
 
-const CC0_STOP = new Set(["the", "and", "with", "for", "art", "close", "pattern", "texture", "poster", "graphic", "print", "design", "vintage"]);
+const CC0_STOP = new Set(["the", "and", "with", "for", "from", "art", "close", "pattern", "texture", "poster", "graphic", "print", "design", "vintage", "style", "styles", "modern"]);
+/**
+ * Words too common in museum titles to match an item on their own ("Single Leaf Excised from a
+ * Gospel Book" for "saz leaf tile", "Millefiori Glass Tile" for "karak tea glass": Gate 2 round 2).
+ */
+const CC0_WEAK = new Set(["leaf", "leaves", "glass", "paper", "number", "numbers", "sign", "head", "house", "field", "border", "fragment", "panel", "board", "color", "colour", "line", "lines", "star", "stars", "scene", "scenes", "figure", "figures", "book", "page", "piece", "card", "night", "city", "light", "lights", "water", "wood", "stone", "gold", "metal", "red", "blue", "green", "white", "black", "small", "large", "single", "double", "shadow", "drawing", "study", "view", "plate", "cover", "box"]);
+
+/** Enough overlap to show an item: two shared words, or one telling word (5 letters or more, not weak) its title or motif names. */
+function cc0Match(item: CC0Item, shared: readonly string[]): boolean {
+  if (shared.length >= 2) return true;
+  const w = shared[0];
+  if (!w || w.length < 5 || CC0_WEAK.has(w)) return false;
+  const named = new Set(`${item.title} ${item.motif.join(" ")}`.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
+  return named.has(w);
+}
 
 /**
- * Local search over CC0 index items: items whose title, culture or motif share a word with the art
- * words, most shared words first, only when their image host is allowed (`allowImage`: the image
+ * Local search over CC0 index items: items whose title, culture or motif share two words with the art
+ * words, or one telling word (cc0Match), most shared words first, only when their image host is allowed (`allowImage`: the image
  * host allowlist; museum hosts join it when the owner confirms, J9).
  */
 export function searchCc0(items: readonly CC0Item[], artText: readonly string[], allowImage: (url: string) => boolean, limit = MAX_CC0_RESULTS): Reference[] {
-  const want = new Set(artText.join(" ").toLowerCase().match(/[\p{L}\p{N}]+/gu)?.filter((w) => w.length >= 3 && !CC0_STOP.has(w)) ?? []);
+  const want = new Set(artText.join(" ").toLowerCase().match(/[\p{L}\p{N}]+/gu)?.filter((w) => w.length >= 3 && !CC0_STOP.has(w) && !/\d/.test(w)) ?? []);
   if (want.size === 0) return [];
   return items
-    .map((item) => ({ item, score: [...itemWords(item)].filter((w) => want.has(w)).length }))
-    .filter((x) => x.score > 0 && allowImage(x.item.imageUrl) && /^https:\/\//.test(x.item.pageUrl))
+    .map((item) => ({ item, shared: [...itemWords(item)].filter((w) => want.has(w)) }))
+    .map((x) => ({ ...x, score: x.shared.length }))
+    .filter((x) => cc0Match(x.item, x.shared) && allowImage(x.item.imageUrl) && /^https:\/\//.test(x.item.pageUrl))
     .sort((a, b) => b.score - a.score || a.item.id.localeCompare(b.item.id))
     .slice(0, limit)
     .map(({ item }) => ({
@@ -153,12 +168,14 @@ export async function atlasSearchPlan(
   }
   keys.push({ lane: "concept", cardId }, { lane: "art", cardId });
   const unique = [...new Map(keys.map(keyFields).map((k) => [JSON.stringify(k), k])).values()];
-  const recipes = await source.recipes(unique);
-  if (!recipes) return null;
+  const read = await source.recipes(unique);
+  if (!read) return null;
+  // The same topic the bend filled the templates with, so the recipe ids it chose match.
+  const recipes = fillRecipes(read, atlas.productNoun ?? base.topic);
 
   const chosen = new Set(atlas.recipeIds);
   const topicOk = recipeHoldsTopic({ productNoun: atlas.productNoun, topic: base.topic, pageId: page });
-  const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= 7;
+  const uiOk = (r: QueryRecipe) => topicOk(r.query) && r.query.split(/\s+/).length <= MAX_RECIPE_WORDS;
   // A recipe replaces a Phase 0 lane only when it was judged at least as precise as that lane.
   const beats = (lane: keyof typeof PHASE0_PRECISION) => (r: QueryRecipe) => uiOk(r) && r.precision >= PHASE0_PRECISION[lane];
   const ofLane = (lane: QueryRecipe["key"]["lane"]) => recipes.filter((r) => r.key.lane === lane);
