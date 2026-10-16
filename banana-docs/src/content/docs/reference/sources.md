@@ -3,7 +3,7 @@ title: Sources
 description: Every site search_references can search, which platform and zone each one feeds, the style words that pull it in, and the image hosts it loads from.
 ---
 
-Every source is reached **only through web image search** with a `site:` filter. GoBanana never scrapes, never fetches pages and never stores images. A result is kept only if its link is one piece of work on that site (one shot, pin, site or screen); list, tag and search pages are dropped. Source of truth: `banana-server/lib/sources/registry.ts`.
+Every source is reached **only through web image search** with a `site:` filter. GoBanana never scrapes, never fetches pages and never stores images. A result is kept only if its link is one piece of work on that site (one shot, pin, site or screen); list, tag and search pages are dropped. Source of truth: `banana-server/lib/sources/registry.ts`. X posts are not a search source: they come in by link and show with X's own embed (see [X posts](#x-posts)).
 
 ## Core sources
 
@@ -15,6 +15,21 @@ Searched with UI wording on every platform. Pinterest and Behance also feed the 
 | `dribbble` | Dribbble | UI | `dribbble.com/shots/…` |
 | `behance` | Behance | UI and art | `behance.net/gallery/…` |
 | `awwwards` | Awwwards | UI, websites | `awwwards.com/sites/…` |
+
+## Web showcase styles
+
+For a **website** brief that names one of these styles, the showcase galleries (Awwwards) come first and are searched with the style's own words, not the brief's topic. Mobile, tablet and web app briefs are not affected.
+
+| Style | Words that name it | Awwwards searches |
+| --- | --- | --- |
+| Playful | playful, fun, too fun, whimsical, quirky, cartoon | playful illustration |
+| WebGL | webgl, three.js, shader, real time 3d | webgl portfolio |
+| 3D | 3d, three dimensional | 3d landing page |
+| Scroll story | scroll story, scrollytelling, storytelling, immersive scroll, parallax | scroll storytelling |
+| Kinetic type | kinetic type, kinetic typography, animated type | kinetic typography |
+| Motion | motion, motion first, animated, animation, micro interactions | animation |
+| Interactive | interactive, gamified, playable | interactive |
+| Experimental | experimental, avant garde, unconventional | experimental |
 
 ## UI galleries by platform
 
@@ -53,6 +68,20 @@ Picked when the direction's art queries or idea name their tags.
 | `arena` | Are.na | collage, moodboard, experimental, archive |
 | `designspiration` | Designspiration | poster, print, graphic design, illustration |
 
+## Deck and brand briefs
+
+A brief that names no phone, tablet, website or web app, but names a deck or a brand, gets its own lane instead of the UI lanes:
+
+- **Presentation** (`deck` lane): pitch deck, keynote, slide layout, data slide, editorial deck, dark deck, big number slide. Searched on Dribbble, Behance, Pinterest and Pitch's template gallery, dark by default unless your taste or brief names another style.
+- **Branding** (`brand` lane): brand identity, logo system, brand guidelines, visual identity, poster, packaging, typographic. Searched on The Brand Identity, BP&O, Brand New, Fonts In Use and typo/graphic posters first, then Behance, Dribbble and Pinterest.
+
+Results must name the kind of work in their titles (a screen or app result is dropped); gallery items pass as they are. "Pitch deck for a fintech startup" and "packaging for an olive oil brand" use these lanes; "pitch deck builder web app" stays a web app brief.
+
+| Id | Site | Genre | Item pages |
+| --- | --- | --- | --- |
+| `pitch` | Pitch templates | Presentation | `pitch.com/templates/…` |
+| `brandnew` | Brand New (UnderConsideration) | Branding | `underconsideration.com/brandnew/archives/….php` |
+
 ## How a search picks sources
 
 For one direction search the server picks:
@@ -68,6 +97,19 @@ Pass `sources` (1 to 4 ids) to `search_references` only when you want specific s
 Images load in your browser straight from these hosts (also the canvas content security policy). If your network blocks one, its tiles show as link cards.
 
 `i.pinimg.com` · `cdn.dribbble.com` · `mir-s3-cdn-cf.behance.net` · `mir-cdn.behance.net` · `assets.awwwards.com` · `cdn.lapa.ninja` · `r2.siteinspire.com` · `www.cssdesignawards.com` · `cssdesignawards.com` · `cdn.landing.love` · `unsection.b-cdn.net` · `pub-26e6aa63ed7942ecb7e9dbc72f09f164.r2.dev` (Supahero) · `thefwa.com` · `httpster.net` · `sidhvpjhuucqcehkevrl.supabase.co` (Dark Design) · `bentogrids.com` · `cdn.21st.dev` · `images.refero.design` · `cdn.prod.website-files.com` (SaaSFrame) · `assets.nicelydone.club` · `media.screensdesign.com` · `video.gumlet.io` and `framerusercontent.com` (60fps) · `s3-alpha.figma.com` · `s3-figma-hubfile-images-production-cdn-cgi.figma.com` · `original.fontsinuse.com` · `assets.fontsinuse.com` · `images.typographicposters.com` · `assets.typographicposters.com` · `www.swissted.com` · `the-brandidentity.com` · `bpando.org` · `cdn.cosmos.so` · `d2w9rnfcy7mm78.cloudfront.net` and `images.are.na` (Are.na) · `dspncdn.com`
+
+Deck and brand galleries also load from `imgproxy.services.pitch.com` and `pitch-static-assets.imgix.net` (Pitch) and `www.underconsideration.com` (Brand New).
+
+## X posts
+
+X posts go on the board **by link**, never through image search: a post link you or your agent give `add_to_canvas` (`{ "type": "xpost", "url": "https://x.com/<handle>/status/<id>" }`), or an X post link that a web search happened to return, which `search_references` lists as a link only, with no image.
+
+- **What is kept:** the post link, its id, the author's name and handle, the post text and your own note and Ship or Explore mark. They come from X's public oEmbed endpoint (`publish.x.com/oembed`, the one X documents for embeds), cached by post id for a day. No X image or video is ever stored or copied.
+- **Web board:** the post shows with X's official embed (`platform.twitter.com/widgets.js`), loaded only when the tile is on screen, so videos play inside the post. If X cannot load, the tile is a card with the author, the text and **Open on X**.
+- **Inline board in chat:** a link card with the author and **Open on X**. The chat frame does not allow X's embed, and X's developer terms do not allow showing X content inside a frame.
+- **Exports:** a link with the credit, like "Post by Name (@handle) on X".
+- **Never a model input:** a post has no thumbnail, so GoBanana never shows it to a model, and the post text stays out of what the tools send back.
+- **Frankenstein parts:** your own agent captures a screenshot of that one post and attaches it with [attach_screenshot](/docs/reference/tools/attach-screenshot/); then it is cut like any upload, and every part keeps the post link and the credit. GoBanana never fetches or captures X itself.
 
 ## Adding a gallery source
 

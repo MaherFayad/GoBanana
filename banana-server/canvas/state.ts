@@ -15,6 +15,7 @@ import type { Zone } from "@/lib/direction-detail";
 import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
 import type { Part } from "@/lib/stitch/types";
 import { cleanTaste } from "@/lib/taste";
+import { MAX_POST_TEXT, parsePostUrl, X_SITE } from "@/lib/xpost";
 import {
   type CanvasBaseline,
   type CanvasFlowNode,
@@ -33,6 +34,7 @@ import {
   type SwatchNodeData,
   type TrayReference,
   type TypeSampleNodeData,
+  type XPostNodeData,
 } from "./types";
 
 /** Predicate for the takedown list. The matcher lives in `lib/takedown.ts`; pass `matcher.isBlocked`. */
@@ -128,6 +130,36 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
   });
 }
 
+/** Same-origin upload path only (`/api/uploads/<uuid>`): an attached screenshot is always the user's own upload. */
+function uploadPathOnly(v: unknown): string | undefined {
+  const s = str(v, 120);
+  return s && /^\/api\/uploads\/[0-9a-f-]{36}$/i.test(s) ? s : undefined;
+}
+
+/** An X post: a real post link with its id, the author and text. Never media URLs (lib/xpost). */
+function xpostData(d: Record<string, unknown>): XPostNodeData | null {
+  const link = parsePostUrl(d.sourceUrl);
+  const handle = str(d.authorHandle, 15);
+  if (!link || !handle || !/^[A-Za-z0-9_]{1,15}$/.test(handle)) return null;
+  const screenshotUrl = uploadPathOnly(d.screenshotUrl);
+  return compact({
+    sourceUrl: `https://x.com/${handle}/status/${link.postId}`,
+    sourceSite: X_SITE,
+    postId: link.postId,
+    authorName: str(d.authorName, 100) ?? handle,
+    authorHandle: handle,
+    text: typeof d.text === "string" ? d.text.trim().slice(0, MAX_POST_TEXT) : "",
+    note: str(d.note, 2000) ?? null,
+    tag: isTag(d.tag) ? d.tag : null,
+    zone: isZone(d.zone) ? d.zone : undefined,
+    culture: cleanCulture(d.culture),
+    screenshotUrl,
+    screenshotWidth: screenshotUrl ? positiveNum(d.screenshotWidth) : undefined,
+    screenshotHeight: screenshotUrl ? positiveNum(d.screenshotHeight) : undefined,
+    placedAt: typeof d.placedAt === "string" && Number.isFinite(Date.parse(d.placedAt)) ? d.placedAt.slice(0, 40) : undefined,
+  });
+}
+
 /** Clean node data of a given type. Returns null when required fields are missing or unsafe. */
 export function cleanData<K extends CanvasNodeType>(type: K, raw: unknown): NodeDataByType[K] | null {
   const d = isObject(raw) ? raw : {};
@@ -135,6 +167,8 @@ export function cleanData<K extends CanvasNodeType>(type: K, raw: unknown): Node
     case "image":
     case "upload":
       return referenceData(d) as NodeDataByType[K] | null;
+    case "xpost":
+      return xpostData(d) as NodeDataByType[K] | null;
     case "note": {
       const out: NoteNodeData = compact({
         text: typeof d.text === "string" ? d.text.slice(0, 2000) : "",
@@ -306,6 +340,7 @@ function orderStored(nodes: StoredNode[]): StoredNode[] {
 }
 
 function blockedRef(ref: { imageUrl?: string | null; thumbUrl?: string | null; sourceUrl?: string | null }, isBlocked: IsBlocked): boolean {
+  // An X post has no image: its post link (and the author's profile) is what a takedown names.
   return [ref.sourceUrl, ref.imageUrl, ref.thumbUrl].some((u) => typeof u === "string" && u !== "" && isBlocked(u));
 }
 
@@ -317,7 +352,7 @@ export function filterBlocked(state: CanvasState, isBlocked?: IsBlocked): { stat
   if (!isBlocked) return { state, removed: 0 };
   let removed = 0;
   const nodes = state.nodes.filter((n) => {
-    if ((n.type === "image" || n.type === "upload") && blockedRef(n.data, isBlocked)) {
+    if ((n.type === "image" || n.type === "upload" || n.type === "xpost") && blockedRef(n.data, isBlocked)) {
       removed += 1;
       return false;
     }
@@ -469,6 +504,11 @@ export function stateToItems(state: CanvasState): CanvasItem[] {
       case "upload": {
         const { width: _w, height: _h, ...d } = n.data;
         return [{ ...geo, type: "upload", ...d }];
+      }
+      case "xpost": {
+        // The post text stays in the canvas (web card); snapshots never carry it (lib/xpost).
+        const { text: _t, ...d } = n.data;
+        return [{ ...geo, type: "xpost", ...d }];
       }
       case "note": {
         const { manualHeight: _m, ...d } = n.data;

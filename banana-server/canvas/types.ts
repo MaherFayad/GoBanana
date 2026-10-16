@@ -16,6 +16,7 @@ import type {
   Tag,
   TypeSampleItem,
   UploadItem,
+  XPostItem,
 } from "@/lib/canvas/types";
 import type { Zone } from "@/lib/direction-detail";
 import type { Part, StitchData } from "@/lib/stitch/types";
@@ -34,6 +35,8 @@ export type UploadNodeData = Omit<UploadItem, Geometry> & {
   width?: number | null;
   height?: number | null;
 };
+/** The stored node keeps the post text (from X's oEmbed) for the web card; snapshots leave it out. */
+export type XPostNodeData = Omit<XPostItem, Geometry | "text"> & { text: string };
 export type NoteNodeData = Omit<NoteItem, Geometry> & {
   /**
    * The user set this note's height (resize drag, + and -, "Compact"). Missing means auto:
@@ -56,6 +59,7 @@ export type StitchNodeData = Pick<StitchData, keyof StitchData>;
 
 export type ImageFlowNode = Node<ImageNodeData, "image">;
 export type UploadFlowNode = Node<UploadNodeData, "upload">;
+export type XPostFlowNode = Node<XPostNodeData, "xpost">;
 export type NoteFlowNode = Node<NoteNodeData, "note">;
 export type SwatchFlowNode = Node<SwatchNodeData, "swatch">;
 export type TypeSampleFlowNode = Node<TypeSampleNodeData, "typeSample">;
@@ -66,6 +70,7 @@ export type ReferenceFlowNode = ImageFlowNode | UploadFlowNode;
 export type CanvasFlowNode =
   | ImageFlowNode
   | UploadFlowNode
+  | XPostFlowNode
   | NoteFlowNode
   | SwatchFlowNode
   | TypeSampleFlowNode
@@ -77,6 +82,7 @@ export type CanvasNodeType = CanvasFlowNode["type"];
 export interface NodeDataByType {
   image: ImageNodeData;
   upload: UploadNodeData;
+  xpost: XPostNodeData;
   note: NoteNodeData;
   swatch: SwatchNodeData;
   typeSample: TypeSampleNodeData;
@@ -84,7 +90,7 @@ export interface NodeDataByType {
   stitch: StitchNodeData;
 }
 
-export const NODE_TYPES: readonly CanvasNodeType[] = ["image", "upload", "note", "swatch", "typeSample", "section", "stitch"];
+export const NODE_TYPES: readonly CanvasNodeType[] = ["image", "upload", "xpost", "note", "swatch", "typeSample", "section", "stitch"];
 
 /**
  * A search result waiting in the tray. Same fields as `Reference` in
@@ -155,6 +161,8 @@ export interface CanvasState {
 export const DEFAULT_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   image: { w: 280, h: 210 },
   upload: { w: 280, h: 210 },
+  // Room for X's embed (550 px max) at a card width, with a short video.
+  xpost: { w: 340, h: 420 },
   note: { w: 220, h: 140 },
   swatch: { w: 220, h: 250 },
   typeSample: { w: 320, h: 170 },
@@ -167,6 +175,7 @@ export const DEFAULT_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
 export const MIN_SIZE: Record<CanvasNodeType, { w: number; h: number }> = {
   image: { w: 120, h: 96 },
   upload: { w: 120, h: 96 },
+  xpost: { w: 220, h: 160 },
   // One line of note text with room around it (canvas/note-layout.ts NOTE_MIN_HEIGHT). The note's
   // controls sit in the pill above it, not inside, so it can be this short.
   note: { w: 140, h: 64 },

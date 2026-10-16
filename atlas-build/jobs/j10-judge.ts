@@ -25,7 +25,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { JUDGE, PATHS, ROOT } from "../config.ts";
 import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
-import { fetchThumbBlock } from "../lib/thumbs.ts";
+import { fetchThumbBlock, modelInputOk } from "../lib/thumbs.ts";
 import { extractJson } from "../lib/validate.ts";
 
 export const BENCH = join(ROOT, "..", "banana-server", "bench");
@@ -129,7 +129,7 @@ export function calibrationInputs(gold: GoldFile, bench = BENCH): Input[] {
     const first = list[0]!;
     const found = findDirection(readRun(first.run, bench), first.briefId, first.directionId);
     if (!found) continue;
-    const refs = list.map((g) => found.direction.search?.references?.find((r) => r.id === g.refId)).filter((r): r is RunRef => !!r);
+    const refs = list.map((g) => found.direction.search?.references?.find((r) => r.id === g.refId)).filter((r): r is RunRef => !!r && modelInputOk(r));
     if (refs.length > 0) out.push({ kind: "references", mode: "calibrate", run: first.run, ...found, refs, gold: list.filter((g) => refs.some((r) => r.id === g.refId)) });
   }
   return out;
@@ -141,7 +141,8 @@ export function scoringInputs(run: BenchRun): Input[] {
   for (const brief of run.briefs) {
     for (const direction of brief.directions) {
       out.push({ kind: "direction", mode: "score", run: run.run, brief, direction });
-      const ui = (direction.search?.references ?? []).filter((r) => r.zone === "ui").slice(0, TOP_UI);
+      // Link-out only sources (Best Designs on X, Craftwork: registry noModelInputHosts) are never shown to the judge, so not scored.
+      const ui = (direction.search?.references ?? []).filter((r) => r.zone === "ui" && modelInputOk(r)).slice(0, TOP_UI);
       if (ui.length > 0) out.push({ kind: "references", mode: "score", run: run.run, brief, direction, refs: ui });
     }
   }
@@ -336,7 +337,7 @@ export default defineJob<Input, JudgeRecord>({
     const blocks: Anthropic.ContentBlockParam[] = [{ type: "text", text: `${briefText(input.brief)}\n${directionText(input.direction)}` }];
     if (input.kind === "direction") {
       const refs = input.direction.search?.references ?? [];
-      const shown = [...refs.filter((r) => r.zone === "ui").slice(0, DIR_UI), ...refs.filter((r) => r.zone === "art").slice(0, DIR_ART)];
+      const shown = [...refs.filter((r) => r.zone === "ui" && modelInputOk(r)).slice(0, DIR_UI), ...refs.filter((r) => r.zone === "art" && modelInputOk(r)).slice(0, DIR_ART)];
       if (shown.length === 0) blocks.push({ type: "text", text: "This direction was not searched: rate it on the idea alone." });
       else {
         blocks.push({ type: "text", text: `Its first ${shown.length} references, for context:` });

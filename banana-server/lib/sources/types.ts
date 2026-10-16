@@ -5,6 +5,7 @@
  * image bytes (spec section 2, rules 2 and 4).
 */
 import type { Zone } from "../direction-detail";
+import type { Genre } from "./genre";
 import { SOURCE_REGISTRY, sourceEntry, type RegistrySite } from "./registry";
 
 export type { Zone };
@@ -46,8 +47,11 @@ export function isGallery(site: SourceSite): boolean {
  *   Behance galleries, the wild idea as images. No UI gate; a junk gate instead (shops, product
  *   listings, fashion, stock, logo sheets). Its results carry zone "art" and are never mixed into
  *   the UI references.
+ * - Genre lanes (2026-10-16, lib/sources/genre.ts): `deck` (presentation design) and `brand`
+ *   (graphic and branding design), planned only for a brief with a genre. They fill the UI zone,
+ *   with the genre's title gate instead of the UI gate.
  */
-export const LANE_NAMES = ["fidelity", "taste", "component", "hero", "bridge", "locale", "gallery", "art"] as const;
+export const LANE_NAMES = ["fidelity", "taste", "component", "hero", "bridge", "locale", "gallery", "art", "deck", "brand"] as const;
 export type LaneName = (typeof LANE_NAMES)[number];
 /** UI lanes. `gallery` searches curated UI galleries (lib/sources/registry.ts) with topic words. */
 export const UI_LANES: readonly LaneName[] = ["fidelity", "taste", "component", "hero", "bridge", "locale", "gallery"];
@@ -88,6 +92,11 @@ export type SourceQuery = {
   preferCreators?: readonly string[];
   /** "art": the words as is on Pinterest and Behance with the art junk gate. Default "ui". */
   zone?: Zone;
+  /**
+   * A non-UI genre (lib/sources/genre.ts): the plain query is worded for it and gated by its
+   * title words. Without it, a query that names no UI and names a genre ("pitch deck") gets one.
+   */
+  genre?: Genre;
 };
 
 export interface SourceAdapter {

@@ -22,6 +22,7 @@ import {
 import type { Culture } from "@/lib/culture";
 import { canvasWithThumbs } from "@/lib/vision/wrap";
 import { UNTRUSTED_NOTE, webTitle } from "@/lib/mcp/untrusted";
+import { postCredit } from "@/lib/xpost";
 import { loadReviews, reviewLines, type DirectionReview } from "@/lib/review";
 import { DEFAULT_SWIPE_LIMIT, MAX_SWIPE_LIMIT, swipeLines, type SwipeItem } from "@/lib/swipe";
 import { lenient, parseArgs, toolMessage, toolResult, type RegisterTool, type ToolResult } from "./types";
@@ -81,12 +82,15 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
     sections: c.sections.map((s) => ({ id: s.id, title: s.title, directionId: s.directionId ?? null })),
     items: c.items.map((it) => {
       const dir = it.sectionId ? sectionDir.get(it.sectionId) : null;
-      const culture = it.type === "image" || it.type === "upload" || it.type === "note" ? it.culture : undefined;
+      const culture = it.type === "image" || it.type === "upload" || it.type === "xpost" || it.type === "note" ? it.culture : undefined;
       const base = { id: it.id, type: it.type, ...(dir ? { directionId: dir } : {}), ...(culture ? { culture: `${culture.tradition} (${culture.tier})` } : {}) };
       switch (it.type) {
         case "image":
         case "upload":
           return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
+        case "xpost":
+          // The credit only: the post text stays out of model inputs (lib/xpost).
+          return { ...base, title: postCredit(it), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
         case "note":
           return { ...base, note: clip(it.text, 160) };
         case "swatch":
@@ -199,6 +203,8 @@ function describeItem(it: CanvasItem): string {
     case "image":
     case "upload":
       return `${it.type} ${it.id}: ${webTitle(it.title)} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
+    case "xpost":
+      return `X post ${it.id}: ${postCredit(it)} ${it.sourceUrl}${it.screenshotUrl ? " [screenshot attached]" : " [no screenshot: attach_screenshot before cut_parts]"}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "note":
       return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}${it.culture ? ` culture: ${cultureLine(it.culture)}` : ""}`;
     case "swatch":

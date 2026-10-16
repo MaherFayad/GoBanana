@@ -16,10 +16,34 @@ export const THUMBNAIL_HOSTS: readonly string[] = [
 export const MUSEUM_IMAGE_HOSTS: readonly string[] = ["images.metmuseum.org", "openaccess-cdn.clevelandart.org"];
 
 /**
+ * Image hosts whose pictures are never a model input: no thumbnail pass-through to the agent
+ * (lib/vision), no Atlas judging job (atlas-build/lib/thumbs.ts). They still show on the canvas,
+ * linked to their source. Best Designs on X and Craftwork are out of search (DECISIONS.md
+ * 2026-10-16) and only in the owner's private taste picker; X's terms bar using its content to
+ * train or fine-tune models, and Craftwork's license bars testing AI models on its previews.
+ */
+export const NO_MODEL_IMAGE_HOSTS: readonly string[] = [
+  "cdn.bestdesignsonx.com",
+  "craftwork-products.b-cdn.net",
+  "marketstorage.b-cdn.net",
+  "curated-images.b-cdn.net",
+  "curated-video.b-cdn.net",
+  "cfw6.b-cdn.net",
+];
+
+/** The allowlist without the hosts in `drop` (exact entries): for model inputs. */
+export function withoutHosts(allowlist: ImageHostAllowlist, drop: readonly string[] = NO_MODEL_IMAGE_HOSTS): ImageHostAllowlist {
+  const out = new Set(drop.map((h) => h.toLowerCase()));
+  return parseAllowlist(allowlist.entries.filter((e) => !out.has(e)));
+}
+
+/**
  * Image hosts the canvas may load from (spec sections 9 and 15): the Google thumbnail hosts plus
  * every source's image hosts from the source registry (lib/sources/registry.ts), each measured on
  * live Serper results. Exact hosts only. Shared CDNs in the list, flagged in the registry:
  * framerusercontent.com and video.gumlet.io (60fps), cdn.prod.website-files.com (SaaSFrame).
+ * Bunny CDN hosts (*.b-cdn.net) are listed one exact pull zone at a time, each the source's own
+ * (Unsection), never the zone.
  *
  * The same list feeds `_meta.ui.csp.resourceDomains` for the inline canvas, so any
  * search result whose image would load from another host is changed or dropped

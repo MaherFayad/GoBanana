@@ -64,6 +64,17 @@ memory only) and one judge call. Only wordings and scores are stored. It needs `
 - `npx tsx j7-taste.ts` writes `data/j7-taste-notes.md` from the exemplar picks (`picks.json`, else
   `picks.default.json`) once, so the judge prompt carries notes instead of images. Rerun it after the
   owner saves `picks.json`.
+- Picks carry a `genre` (banana-server/bench/taste/genres.mjs). `j7-taste.ts` reads the Mobile UI
+  and Web UI picks by default; `npx tsx j7-taste.ts --genre presentation` and `--genre branding`
+  write `data/j7-taste-notes-<genre>.md` from that genre's picks, which the judge prompt reads for the
+  genre lanes.
+- Craftwork never reaches a model (its license bars testing or training AI models on its previews):
+  `j7-taste.ts` drops Craftwork picks, and `lib/thumbs.ts` leaves Craftwork's hosts out of the
+  thumbnail allowlist every judging job fetches through (`noModelInputHosts` in banana-server
+  lib/sources/registry.ts; tests/licence.test.ts).
+- Genre lane inputs (`deck` and `brand`, banana-server lib/sources/genre.ts): up to 4 wordings for
+  each of the 13 genre kinds (key `{ lane: "deck" | "brand", page: <kind slug> }`), appended after
+  the art inputs so chunk offsets of earlier runs stay put. About 50 extra Serper credits.
 - The key is read from `SERPER_API_KEY` or `banana-server/.dev.vars`. A real run checks the account
   balance first and refuses a slice that would take it under 2,500 credits (the product's runtime
   credits). Every search is logged to `serper.csv` next to `costs.csv`.

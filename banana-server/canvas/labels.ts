@@ -33,6 +33,10 @@ function baseLabel(n: CanvasFlowNode): string {
       const tag = n.data.tag ? `, ${tagLabel(n.data.tag)}` : "";
       return `${what}: ${n.data.title || "Untitled"}, from ${site}${tag}`;
     }
+    case "xpost": {
+      const tag = n.data.tag ? `, ${tagLabel(n.data.tag)}` : "";
+      return `X post by ${n.data.authorName} (@${n.data.authorHandle})${tag}`;
+    }
     case "note": {
       const text = n.data.text.trim();
       return `Note: ${text ? text.slice(0, 80) : "empty"}`;
@@ -54,6 +58,8 @@ export function shortLabel(n: CanvasFlowNode): string {
     case "image":
     case "upload":
       return n.data.title || "image";
+    case "xpost":
+      return `X post by @${n.data.authorHandle}`;
     case "note":
       return "note";
     case "swatch":

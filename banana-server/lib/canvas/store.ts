@@ -397,6 +397,7 @@ export type PlacedNode = { id: string; type: CanvasNodeType; x: number; y: numbe
 const PREFIX: Record<CanvasNodeType, string> = {
   image: "img",
   upload: "up",
+  xpost: "xp",
   note: "note",
   swatch: "sw",
   typeSample: "type",

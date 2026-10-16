@@ -23,8 +23,17 @@
  *   order, never as a direction's gallery (P0-17: shipped screens that never reach the taste bar).
  * - oneWord: searched with the topic's one head word ("analytics", not "analytics dashboard").
  * - pages: picked only when the brief names one of these pages (60fps: pay, card, checkout, wallet).
+ * - showcase: a web showcase gallery (Awwwards). When a website brief names a showcase
+ *   style (lib/sources/showcase.ts: playful, 3D, WebGL, motion, ...), it is searched with that
+ *   style's phrase instead of the topic.
+ * - genres: the non-UI genres (lib/sources/genre.ts) whose lane may search this gallery. A genre
+ *   gallery has no platforms and no tags of its own, so pickGalleries never picks it for a UI brief.
+ * - templatesOk: every item is a template by design (Pitch's gallery): the kit filter is skipped.
+ * - httpsImages: the site still links some images over http; they are asked for over https.
  */
 import type { Platform, Zone } from "../direction-detail";
+import { SHOWCASE_TAGS } from "./showcase";
+import type { Genre } from "./genre";
 
 export type SourceMeasure = {
   /** Day of the live measurement (YYYY-MM-DD). */
@@ -66,6 +75,11 @@ export type SourceEntry = {
   baseline?: number;
   oneWord?: boolean;
   pages?: readonly string[];
+  /** Web showcase gallery: searched with the showcase style's phrase (see the header). */
+  showcase?: "phrase";
+  genres?: readonly Genre[];
+  templatesOk?: boolean;
+  httpsImages?: boolean;
   measured: SourceMeasure;
 };
 
@@ -145,8 +159,18 @@ export const SOURCE_REGISTRY = [
     role: "gallery",
     zone: "ui",
     platforms: ["website"],
-    tags: ["award", "immersive"],
-    measured: gallery(1, 8, 8, 8, "through the deployed server; the earlier 0 was a planner bug (all requests moved to the first picked site)"),
+    // Showcase styles (2026-10-16): a website brief that names one ("playful", "3d", "webgl")
+    // searches it with the style's phrase ("playful illustration"), see lib/sources/showcase.ts.
+    tags: ["award", "immersive", ...SHOWCASE_TAGS],
+    showcase: "phrase",
+    measured: {
+      date: "2026-10-16",
+      queries: 11,
+      results: 110,
+      items: 90,
+      unique: 70,
+      note: "showcase phrases 10 of 10 item pages each; topic plus style (\"3d coffee shop\", \"playful coffee shop\") 0 of 20, Google dropped the site filter; 2026-10-12: 8 of 8 through the deployed server",
+    },
   },
   // Website galleries.
   {
@@ -402,6 +426,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["typography", "big typography", "editorial", "type", "lettering", "poster", "serif", "retro"],
+    genres: ["branding"],
     measured: gallery(5, 50, 50, 42),
   },
   {
@@ -415,6 +440,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["poster", "typography", "big typography", "swiss style", "experimental"],
+    genres: ["branding"],
     measured: gallery(5, 50, 46, 26),
   },
   {
@@ -442,6 +468,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["branding", "identity", "brand", "luxury"],
+    genres: ["branding"],
     measured: gallery(5, 50, 50, 35),
   },
   {
@@ -455,6 +482,7 @@ export const SOURCE_REGISTRY = [
     zone: "art",
     platforms: [],
     tags: ["packaging", "branding", "label"],
+    genres: ["branding"],
     measured: gallery(5, 50, 45, 31, "older posts (2013 to 2016) show up"),
   },
   {
@@ -496,6 +524,52 @@ export const SOURCE_REGISTRY = [
     tags: ["poster", "print", "graphic design", "illustration"],
     measured: gallery(5, 50, 50, 50, "user saves; 68% big enough, the size rule drops the rest"),
   },
+  // Genre galleries (2026-10-16): searched only by a genre lane (lib/sources/genre.ts) or when a
+  // call names them in `sources`. No platforms and no tags, so UI briefs never pick them.
+  {
+    id: "pitch",
+    name: "Pitch templates",
+    domain: "pitch.com",
+    scope: "pitch.com/templates",
+    item: /^\/templates\/(?!collections\/)[A-Za-z0-9-]+-[A-Za-z0-9]{20,}\/?$/,
+    imageHosts: ["imgproxy.services.pitch.com", "pitch-static-assets.imgix.net"],
+    role: "gallery",
+    zone: "ui",
+    platforms: [],
+    tags: [],
+    genres: ["presentation"],
+    templatesOk: true,
+    measured: {
+      date: "2026-10-16",
+      queries: 1,
+      results: 10,
+      items: 6,
+      unique: 6,
+      note: "Pitch's own template gallery (robots allow all); 4 of 10 were the collection page; images 7 imgproxy, 2 imgix, 1 on a shared S3 bucket host (left out: thumbnail fallback)",
+    },
+  },
+  {
+    id: "brandnew",
+    name: "Brand New",
+    domain: "underconsideration.com",
+    scope: "underconsideration.com/brandnew/archives",
+    item: /^\/brandnew\/archives\/(?!tag\/)[a-z0-9_]+\.php$/i,
+    imageHosts: ["www.underconsideration.com"],
+    role: "gallery",
+    zone: "art",
+    platforms: [],
+    tags: [],
+    genres: ["branding"],
+    httpsImages: true,
+    measured: {
+      date: "2026-10-16",
+      queries: 1,
+      results: 10,
+      items: 9,
+      unique: 9,
+      note: "UnderConsideration's identity reviews; 1 of 10 a tag page; 3 of 10 image URLs were http (asked for over https, which the host serves); lead images are often before and after logo pairs",
+    },
+  },
 ] as const satisfies readonly SourceEntry[];
 
 export type RegistrySite = (typeof SOURCE_REGISTRY)[number]["id"];
@@ -510,6 +584,33 @@ export function sourceEntry(site: RegistrySite): SourceEntry {
 /** Every image host the registry needs, in registry order, no repeats. */
 export function registryImageHosts(): string[] {
   return [...new Set(SOURCE_REGISTRY.flatMap((s) => s.imageHosts))];
+}
+
+/**
+ * Hosts whose images and pages must never reach a model input. Craftwork and Best Designs on X
+ * were link-out only sources; the owner removed both from search (DECISIONS.md 2026-10-16) and
+ * keeps their picks in the taste picker as a private reference only, so the guard stays:
+ * atlas-build/lib/thumbs.ts and j7-taste.ts read it. Craftwork: license bars testing or training
+ * AI models on its previews. Best Designs on X: X posts by third-party designers (its site, its
+ * media CDN and X itself, since every item's source link is the X post), no license for AI use.
+ */
+const NO_MODEL_INPUT_HOSTS: readonly string[] = [
+  "craftwork.design",
+  "www.craftwork.design",
+  "craftwork-products.b-cdn.net",
+  "marketstorage.b-cdn.net",
+  "curated-images.b-cdn.net",
+  "curated-video.b-cdn.net",
+  "cfw6.b-cdn.net",
+  "bestdesignsonx.com",
+  "www.bestdesignsonx.com",
+  "cdn.bestdesignsonx.com",
+  "x.com",
+  "www.x.com",
+];
+
+export function noModelInputHosts(): string[] {
+  return [...NO_MODEL_INPUT_HOSTS];
 }
 
 /** True when the path is one piece of work on this site (Awwwards list paths excluded). */
@@ -581,6 +682,11 @@ export function pickGalleries(input: {
   key: string;
   /** The art queries and the idea, for art galleries. */
   artText?: readonly string[];
+  /**
+   * Tags whose galleries go before every other tag match (a website brief's showcase styles, so
+   * "landing page" in the brief does not crowd Awwwards out). None: no change.
+   */
+  prefer?: readonly string[];
 }): GalleryPick {
   const words = [...(input.styleWords ?? []), ...(input.brief ? [input.brief] : [])];
   const galleries = SOURCE_REGISTRY.filter((s) => s.role === "gallery");
@@ -603,7 +709,8 @@ export function pickGalleries(input: {
   // Tag matches only count when the gallery suits the platform or has no platform of its own.
   const taggedOk = tagged.filter((s) => s.platforms.length === 0 || !platform || (s.platforms as readonly string[]).includes(platform));
   const ui: RegistrySite[] = [];
-  for (const s of [...rotate(taggedOk, "tag"), ...rotate(forPlatform, "platform")]) {
+  const preferred = input.prefer?.length ? taggedOk.filter((s) => matchesTags(s, input.prefer!)) : [];
+  for (const s of [...rotate(preferred, "prefer"), ...rotate(taggedOk, "tag"), ...rotate(forPlatform, "platform")]) {
     if (!ui.includes(s.id)) ui.push(s.id);
     if (ui.length >= MAX_UI_GALLERIES) break;
   }

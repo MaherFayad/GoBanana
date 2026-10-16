@@ -430,7 +430,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference, screen or note can carry culture: { tradition, region, community?, tier open|care|sacred, meaning, credit, sourceUrl? } in plain text; the board shows a culture chip.",
+      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. An xpost is one X post link (x.com/<handle>/status/<id>): the board keeps its link, author and text and shows X's own embed. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference, screen or note can carry culture: { tradition, region, community?, tier open|care|sacred, meaning, credit, sourceUrl? } in plain text; the board shows a culture chip.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -457,6 +457,7 @@
                   "enum": [
                     "reference",
                     "screen",
+                    "xpost",
                     "note",
                     "swatch",
                     "section"
@@ -464,6 +465,10 @@
                 },
                 "referenceId": {
                   "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "For xpost items: one X post link, x.com/<handle>/status/<id>. The web board shows X's own embed."
                 },
                 "imageUrl": {
                   "type": "string",
@@ -705,6 +710,21 @@
             "default": "page",
             "description": "page (default): only the named pages, inherits the project's design system. system: the direction becomes the product's design system."
           }
+        }
+      }
+    },
+    {
+      "name": "attach_screenshot",
+      "title": "Attach screenshot",
+      "description": "Attach your screenshot of one X post on the canvas (itemId) so cut_parts and Frankenstein can use it. Capture that one post with your own screenshot or browser tool; image is base64 PNG, JPEG or WebP; sourceUrl is the post link. Stored as the user's upload.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["canvasId", "itemId", "image", "sourceUrl"],
+        "properties": {
+          "canvasId": { "type": "string" },
+          "itemId": { "type": "string", "description": "The X post item on the canvas (add_to_canvas { type: 'xpost', url } places one)." },
+          "image": { "type": "string", "description": "The screenshot as base64 (a data:image/...;base64, prefix is fine). PNG, JPEG or WebP, up to 10 MB." },
+          "sourceUrl": { "type": "string", "description": "The post link, x.com/<handle>/status/<id>." }
         }
       }
     },

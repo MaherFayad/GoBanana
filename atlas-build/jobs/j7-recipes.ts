@@ -30,8 +30,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type Anthropic from "@anthropic-ai/sdk";
 import { recipeId, recipeKeyString } from "../../banana-server/lib/atlas/loader.ts";
+import { GENRES, GENRE_LANE, GENRE_NEG, GENRE_PROFILES, type Genre } from "../../banana-server/lib/sources/genre.ts";
 import { isItemPage } from "../../banana-server/lib/sources/item-page.ts";
 import { SOURCE_REGISTRY } from "../../banana-server/lib/sources/registry.ts";
+import { SHOWCASE_STYLES } from "../../banana-server/lib/sources/showcase.ts";
 import { JUDGE, PATHS, ROOT } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
@@ -59,7 +61,56 @@ export type Wording = { query: string; source: string };
 
 export type PageInput = { kind: "page"; key: QueryRecipe["key"]; wording: Wording; context: string; priority: number };
 export type ArtInput = { kind: "art"; key: QueryRecipe["key"]; wording: Wording; context: string; priority: number };
-export type Input = PageInput | ArtInput;
+/** A genre lane wording (banana-server lib/sources/genre.ts): key lane "deck" or "brand", page = the kind's slug. */
+export type GenreInput = { kind: "genre"; key: QueryRecipe["key"]; wording: Wording; context: string; priority: number };
+export type Input = PageInput | ArtInput | GenreInput;
+
+/** Wordings per genre kind. */
+export const GENRE_WORDINGS = 4;
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+/**
+ * The wordings of one genre kind, best first, at most GENRE_WORDINGS: the kind's own wordings as the
+ * server words them with no subject (core sites with the genre's default style, galleries plain),
+ * then the genre's lead gallery with the kind's keyword, then the first core wording without the
+ * style word. No negatives here: searchQueryFor adds GENRE_NEG on core sites.
+ */
+export function genreKindWordings(genre: Genre, keyword: string, count = GENRE_WORDINGS): Wording[] {
+  const p = GENRE_PROFILES[genre];
+  const kind = p.kinds.find((k) => k.keyword === keyword);
+  if (!kind) return [];
+  const fill = (t: string, style: string) => t.replace("{style}", style).replace("{s}", "").replace(/\s+/g, " ").trim();
+  const core = (site: string) => CORE_SOURCES.has(site);
+  const out: Wording[] = [];
+  const seen = new Set<string>();
+  const push = (source: string, query: string) => {
+    const k = `${source}|${query.toLowerCase()}`;
+    if (!query || seen.has(k) || words(query).length > MAX_WORDS || out.length >= count) return;
+    seen.add(k);
+    out.push({ source, query });
+  };
+  for (const w of kind.wordings) push(w.site, fill(w.text, core(w.site) ? (p.defaultStyle ?? "") : "") || keyword);
+  if (p.galleries[0]) push(p.galleries[0], keyword);
+  const firstCore = kind.wordings.find((w) => core(w.site));
+  if (firstCore) push(firstCore.site, fill(firstCore.text, ""));
+  return out;
+}
+
+/** Every genre lane input, kinds in profile order, appended after the page and art inputs (priority 4). */
+export function genreInputs(): GenreInput[] {
+  const out: GenreInput[] = [];
+  for (const genre of GENRES) {
+    const p = GENRE_PROFILES[genre];
+    for (const kind of p.kinds) {
+      const key: QueryRecipe["key"] = { lane: GENRE_LANE[genre], page: slug(kind.keyword) };
+      for (const wording of genreKindWordings(genre, kind.keyword)) {
+        out.push({ kind: "genre", key, wording, priority: 4, context: `${p.label}: the "${kind.keyword}" kind (a ${GENRE_LANE[genre]} lane, not a screen)` });
+      }
+    }
+  }
+  return out;
+}
 
 type PageLike = Pick<PageAnatomy, "id" | "names" | "queryNouns" | "platforms">;
 
@@ -169,6 +220,30 @@ export function artWordings(card: Pick<IngredientCard, "artQueries">, count = AR
   return out;
 }
 
+/**
+ * Web showcase styles J7 judges per website page (2026-10-16, owner request: "too fun", 3D and
+ * motion-led award sites). Their keys carry `style`, so they never compete with a page's plain
+ * baseline wordings and the server does not read them until a lane asks for a style.
+ */
+export const SHOWCASE_RECIPE_STYLES = ["playful", "3d", "webgl", "animation"] as const;
+
+/**
+ * The wordings of one website page in one showcase style: Awwwards "{style} {page}" and "{style}
+ * {page} website", and Dribbble "{style} {page} website ui". The style's page-free phrase
+ * ("playful illustration", lib/sources/showcase.ts) is not judged here: its results are the same
+ * for every page. Craftwork is never a J7 source: its license bars testing AI models on its previews.
+ */
+export function showcaseWordings(p0: string, styleId: string): Wording[] {
+  const style = SHOWCASE_STYLES.find((s) => s.id === styleId);
+  if (!style) return [];
+  const out: Wording[] = [
+    { source: "awwwards", query: `${style.id} ${p0}` },
+    { source: "awwwards", query: `${style.id} ${p0} website` },
+    { source: "dribbble", query: `${style.id} ${p0} website ui` },
+  ];
+  return out.filter((w) => words(w.query).length <= MAX_WORDS);
+}
+
 export type PageMeta = { id: string; from?: string };
 
 /**
@@ -176,7 +251,12 @@ export type PageMeta = { id: string; from?: string };
  * pages; within a page every platform, all wordings together so a key completes; then the art
  * wordings in card order.
  */
-export function buildInputs(pages: readonly PageLike[], meta: readonly PageMeta[], cards: readonly Pick<IngredientCard, "id" | "name" | "texture" | "imagery" | "artQueries">[]): Input[] {
+export function buildInputs(
+  pages: readonly PageLike[],
+  meta: readonly PageMeta[],
+  cards: readonly Pick<IngredientCard, "id" | "name" | "texture" | "imagery" | "artQueries">[],
+  genre: readonly GenreInput[] = [],
+): Input[] {
   const from = new Map(meta.map((m) => [m.id, m.from ?? ""]));
   const rank = (id: string) => (from.get(id) === "bench" ? 0 : from.get(id) === "wild-spots" ? 1 : 2);
   const ordered = pages.map((p, i) => ({ p, i })).sort((a, b) => rank(a.p.id) - rank(b.p.id) || a.i - b.i);
@@ -195,20 +275,41 @@ export function buildInputs(pages: readonly PageLike[], meta: readonly PageMeta[
       out.push({ kind: "art", key, wording, priority: 3, context: `the ingredient card "${c.name}" (texture: ${c.texture}; imagery: ${c.imagery})` });
     }
   }
+  // Web showcase wordings go last, so chunked runs (--offset) keep their old positions.
+  for (const { p } of ordered) {
+    if (!p.platforms.includes("website")) continue;
+    const { p0 } = pagePhrases(p);
+    for (const style of SHOWCASE_RECIPE_STYLES) {
+      const key: QueryRecipe["key"] = { lane: "baseline", page: p.id, platform: "website", style };
+      for (const wording of showcaseWordings(p0, style)) {
+        out.push({
+          kind: "page",
+          key,
+          wording,
+          priority: 4,
+          context: `the ${p.names.en[0] ?? p.id} page (${p.id}) on website, in a ${style} web showcase style: award-level sites like Awwwards Sites of the Year, where the ${style} look is the point`,
+        });
+      }
+    }
+  }
+  // Genre lanes last, so the offsets of a chunked run over pages and art stay as they were.
+  out.push(...genre);
   return out;
 }
+
+const isGenreLane = (lane: QueryRecipe["key"]["lane"]) => lane === "deck" || lane === "brand";
 
 /** The stable request id of one wording: [a-zA-Z0-9_-], under 64 characters. */
 export function requestIdOf(input: Pick<Input, "key" | "wording">): string {
   const h = createHash("sha1").update(`${recipeKeyString(input.key)}|${input.wording.source}|${input.wording.query.toLowerCase()}`).digest("hex").slice(0, 20);
-  return `${input.key.lane === "art" ? "ar" : "pg"}-${h}`;
+  return `${input.key.lane === "art" ? "ar" : isGenreLane(input.key.lane) ? "gn" : "pg"}-${h}`;
 }
 
 /** The Serper query for a wording: its words, the server's negatives on core and art searches, the source's site scope. */
 export function searchQueryFor(input: Pick<Input, "key" | "wording">): string {
   const { query, source } = input.wording;
   const entry = (SOURCE_REGISTRY as readonly { id: string; scope: string }[]).find((s) => s.id === source);
-  const neg = input.key.lane === "art" ? ART_NEG : CORE_SOURCES.has(source) ? UI_NEG : "";
+  const neg = input.key.lane === "art" ? ART_NEG : !CORE_SOURCES.has(source) ? "" : isGenreLane(input.key.lane) ? GENRE_NEG : UI_NEG;
   return [query, neg, entry ? `site:${entry.scope}` : ""].filter(Boolean).join(" ");
 }
 
@@ -259,7 +360,11 @@ ${readIf(join(ROOT, "..", "docs", "taste-bar.md"))}
 
 What the owner's exemplar pins show (notes written from the picked exemplars, banana-server/bench/taste/):
 
-${readIf(join(ROOT, "data", "j7-taste-notes.md")) || "(no exemplar notes yet: run `npx tsx j7-taste.ts`)"}`;
+${readIf(join(ROOT, "data", "j7-taste-notes.md")) || "(no exemplar notes yet: run `npx tsx j7-taste.ts`)"}
+
+Genre lanes (a "deck" or "brand" recipe) are not screens: a deck recipe should find presentation slides (pitch decks, keynote slides, data slides, editorial report layouts) and a brand recipe identity work (logo systems, brand guidelines, posters, packaging, type-led work), judged by the "Presentation" and "Branding" sections of the taste bar above. For them a screen or app UI is bad, and so is a template sales sheet or a mockup pack.
+
+${GENRES.map((g) => `What the owner's ${g} exemplars show:\n\n${readIf(join(ROOT, "data", `j7-taste-notes-${g}.md`)) || `(no ${g} notes yet: run \`npx tsx j7-taste.ts --genre ${g}\`)`}`).join("\n\n")}`;
 
 // ---------------------------------------------------------------------------------------------
 // Serper and thumbnails: in memory only, fetched a few wordings ahead of the request loop.
@@ -321,7 +426,7 @@ function prefetch(id: string, input: Input, ctx: JobContext): Promise<Shown> {
 
 function recipeHead(input: Input): string {
   const k = input.key;
-  const lane = k.lane === "art" ? "art lane" : "UI lane (baseline: a page and platform)";
+  const lane = k.lane === "art" ? "art lane" : isGenreLane(k.lane) ? `genre lane (${k.lane}: ${k.lane === "deck" ? "presentation design" : "graphic and branding design"})` : k.style ? `UI lane (web showcase: a website page in the ${k.style} style)` : "UI lane (baseline: a page and platform)";
   return `Recipe: ${lane}. Judge for ${input.context}. Wording "${input.wording.query}", searched on ${input.wording.source}. The top results follow.`;
 }
 
@@ -354,7 +459,7 @@ export default defineJob<Input, QueryRecipe>({
   async loadInputs(ctx) {
     const { pages, meta } = loadPages();
     const cards = readKindRecords<IngredientCard>("cards");
-    const all = buildInputs(pages, meta, cards);
+    const all = buildInputs(pages, meta, cards, genreInputs());
     loadedKeys = new Set(all.map((i) => recipeKeyString(i.key)));
     const by = (f: (i: Input) => boolean) => all.filter(f).length;
     ctx.log(`Inputs: ${all.length} wordings (${by((i) => i.kind === "page")} for ${new Set(all.filter((i) => i.kind === "page").map((i) => recipeKeyString(i.key))).size} page and platform pairs, ${by((i) => i.kind === "art")} art wordings for ${new Set(all.filter((i) => i.kind === "art").map((i) => i.key.cardId)).size} cards). Serper credits needed: ${all.length}.`);

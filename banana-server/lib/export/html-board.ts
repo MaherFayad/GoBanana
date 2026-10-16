@@ -5,6 +5,7 @@
  */
 import type { CanvasItem } from "../canvas/types";
 import { isReference } from "../canvas/types";
+import { postCredit, X_SITE } from "../xpost";
 import type { KitModel, Reference } from "./model";
 import { defaultPairing, findPairing } from "./model";
 import { scopeSentence } from "./scope";
@@ -47,6 +48,17 @@ function itemHtml(item: CanvasItem, origin: { x: number; y: number }, refs: Map<
   const style = box(item, origin);
   if (isReference(item)) return referenceTile(item, refs.get(item.id), style);
   switch (item.type) {
+    case "xpost": {
+      // A link card with the author credit: no picture and no post text (lib/xpost).
+      const ref = refs.get(item.id);
+      const url = ref?.url ?? safeUrl(item.sourceUrl);
+      const title = ref?.title ?? postCredit(item);
+      const n = ref ? `${ref.n}. ` : "";
+      const body = `<span class="card-title" dir="auto">${e(title)}</span><span class="cap"><span dir="auto">${e(n)}${e(X_SITE)}: Open on X</span>${tagLabel(item.tag)}</span>`;
+      return url
+        ? `<a class="tile ref" style="${style}" href="${e(url)}" ${LINK_ATTRS} aria-label="${e(`${title}, open on X`)}">${body}</a>`
+        : `<div class="tile ref" style="${style}">${body}</div>`;
+    }
     case "note": {
       const text = plainBlock(item.text, 2000);
       return `<div class="tile note" style="${style}" dir="auto">${e(text).replace(/\n/g, "<br>")}</div>`;

@@ -32,7 +32,13 @@ Look at <id> <source>: 1200 x 900 px.
 Crop fractions from this image: x = left edge px / 1200, w = part width px / 1200, y = top edge px / 900, h = part height px / 900. Pass them as crop on cut_parts. Never download or save the image.
 Without cuts, end with: Next: cut_parts with cuts, each with a crop measured on the image below.
 
+X posts: a cut or look with itemId xp_302 needs a screenshot. If no attach_screenshot call for xp_302 with a successful answer is in the history, reply only with these two lines and nothing else:
+Cut <n>: X post xp_302 has no screenshot yet. Capture that one post with your own screenshot or browser tool and pass it to attach_screenshot; if you cannot capture, ask the user for one. Never bulk crawl X.
+Nothing was cut.
+After a successful attach_screenshot, its source is: Post by Lena Ortiz (@lenaui) on X (x.com): https://x.com/lenaui/status/1840000000000000302
+
 Sources:
+- it_301: Settings page, two column (dribbble.com): https://dribbble.com/shots/20000301-settings
 - it_201: Dev tool landing page, dark (lapa.ninja): https://www.lapa.ninja/post/devtool-dark/
 - it_202: Coffee roaster homepage (awwwards.com): https://www.awwwards.com/sites/coffee-roaster
 - it_203: Fintech pricing page, bento cards (dribbble.com): https://dribbble.com/shots/20000203-fintech-pricing

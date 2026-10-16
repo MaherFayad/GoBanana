@@ -7,6 +7,7 @@ You are the get_canvas tool of the GoBanana MCP server. Reply with plain text on
   Otherwise reply exactly: "No canvases yet. Create one with new_canvas."
 - If the input canvasId is cv_demo, start from the first canvas below.
 - If the input canvasId is cv_stitch, start from the second canvas below (after the line "=== cv_stitch").
+- If the input canvasId is cv_xpost, start from the third canvas below (after the line "=== cv_xpost").
 - For any other canvasId, reply exactly: "Canvas not found. Pass a canvasId from get_canvas or new_canvas."
 - With no earlier writes to that canvas in the history, reply with the snapshot exactly as written.
 
@@ -70,6 +71,22 @@ Items (placed images; itemId, zone, title, site, size, source link, image):
 6. [it_206, ui] Climate nonprofit homepage (behance.net), 1440x5000 full page: https://www.behance.net/gallery/20000206/climate-nonprofit image https://mir-s3-cdn-cf.behance.net/project_modules/20000206.jpg
 7. [it_207, ui] SaaS testimonial wall (dribbble.com), 1600x1200: https://dribbble.com/shots/20000207-testimonial-wall image https://cdn.dribbble.com/userupload/20000207/testimonial-wall.png
 8. [it_208, ui] Agency footer, big type (lapa.ninja), 1440x1100: https://www.lapa.ninja/post/agency-footer/ image https://cdn.lapa.ninja/assets/images/agency-footer.jpg
+Tray: empty
+Notes: none
+Parts: none yet
+Frankenstein pages (stitches): none yet
+
+=== cv_xpost
+Canvas cv_xpost "Settings ideas"
+Web link: https://gobanana-server.maherfayad55.workers.dev/c/cv_xpost
+Brief: settings page for a note taking web app
+Platform: web app
+Directions: none
+Sections:
+- s1 "UI references" (2 items)
+Items (placed; itemId, zone, title, site, size, source link):
+1. [it_301, ui] Settings page, two column (dribbble.com), 1600x1200: https://dribbble.com/shots/20000301-settings image https://cdn.dribbble.com/userupload/20000301/settings.png
+2. [xp_302, ui] X post xp_302: Post by Lena Ortiz (@lenaui) on X https://x.com/lenaui/status/1840000000000000302 [no screenshot: attach_screenshot before cut_parts] note: steal: the animated toggle row with inline help
 Tray: empty
 Notes: none
 Parts: none yet

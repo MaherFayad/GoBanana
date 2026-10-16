@@ -949,6 +949,64 @@
   text-underline-offset: 0.2em;
 }
 
+/* X post tiles (canvas/nodes/XPostNode.tsx): X's embed scrolls inside the tile; the card is
+   the fallback and the inline view. */
+.bn-xpost-frame {
+  cursor: default;
+  background: var(--st-bg-surface);
+}
+
+.bn-xpost-embed {
+  block-size: 100%;
+  overflow: auto;
+  padding-block-end: var(--st-space-9xl);
+}
+
+.bn-xpost-embed > * {
+  margin-block: 0 !important;
+}
+
+.bn-xpost-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--st-space-2xs);
+  block-size: 100%;
+  overflow: auto;
+  padding: var(--st-space-l) var(--st-space-l) var(--st-space-9xl);
+  color: var(--st-text);
+}
+
+.bn-xpost-author {
+  margin: var(--st-space-l) 0 0;
+  font-size: var(--st-text-s);
+}
+
+.bn-xpost-name {
+  font-weight: var(--st-weight-semibold);
+}
+
+.bn-xpost-handle {
+  color: var(--st-text-muted);
+}
+
+.bn-xpost-text {
+  margin: 0;
+  font-size: var(--st-text-s);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bn-xpost-open {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--st-target-min);
+  color: var(--st-link);
+  font-weight: var(--st-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 /* Sticky notes: fixed paper in both themes, ink text. Sizes are board pixels and match
    canvas/note-layout.ts (the server estimate and the compact rule use the same numbers). A note
    never scrolls: it fits its text, or shows the compact presentation below. */

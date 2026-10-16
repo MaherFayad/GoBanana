@@ -83,15 +83,21 @@ export async function createUpload(
   };
 }
 
-/** True when a stored canvas state has a node that shows this upload. */
+/**
+ * True when a stored canvas state shows this upload: a node's image (or an X post's attached
+ * screenshot), or a part cut from it for a Frankenstein page.
+ */
 export function stateShowsUpload(state: unknown, uploadId: string): boolean {
-  const nodes = (state as { nodes?: unknown } | null)?.nodes;
-  if (!Array.isArray(nodes)) return false;
   const path = uploadPath(uploadId);
-  return nodes.some((n) => {
-    const data = (n as { data?: Record<string, unknown> } | null)?.data;
-    return !!data && (data.imageUrl === path || data.thumbUrl === path || data.sourceUrl === path);
-  });
+  const nodes = (state as { nodes?: unknown } | null)?.nodes;
+  const parts = (state as { parts?: unknown } | null)?.parts;
+  const inNodes =
+    Array.isArray(nodes) &&
+    nodes.some((n) => {
+      const data = (n as { data?: Record<string, unknown> } | null)?.data;
+      return !!data && (data.imageUrl === path || data.thumbUrl === path || data.sourceUrl === path || data.screenshotUrl === path);
+    });
+  return inNodes || (Array.isArray(parts) && parts.some((p) => (p as { imageUrl?: unknown } | null)?.imageUrl === path));
 }
 
 export type Viewer = { userId?: string | null; shareToken?: string | null };

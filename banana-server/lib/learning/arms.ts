@@ -26,6 +26,7 @@
  */
 import { cyrb53, mulberry32, type Rng } from "../bend/prng";
 import { componentAppText } from "../bend/queries";
+import { genreRequests, laneGenre } from "../sources/genre";
 import { bridgeHead, planRequests, retryBridgeWord, type LaneTexts, type PlannedRequest } from "../sources/plan";
 import type { LaneName, SourceSite, ZoneInput } from "../sources/types";
 import { MAX_KEY_LENGTH, queryWords } from "./terms";
@@ -161,6 +162,11 @@ export function planLane(
   } else if (lane === "gallery") {
     lanes.topic = text;
     lanes.galleries = base.galleries?.length ? base.galleries : [];
+  } else if (lane === "deck" || lane === "brand") {
+    // A genre lane re-search: the genre's wordings for the new words (lib/sources/genre.ts).
+    const genre = laneGenre(lane)!;
+    lanes.genre = genre;
+    lanes.genreRequests = genreRequests(text, genre);
   } else lanes[lane] = text;
   if (lane === "bridge") {
     const word = retryBridgeWord(text, base);
