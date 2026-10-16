@@ -9,7 +9,8 @@
  */
 import type Anthropic from "@anthropic-ai/sdk";
 import { fetchThumbIntoMemory, type FetchLike } from "../../banana-server/lib/palette/fetch.ts";
-import { DEFAULT_IMAGE_HOSTS, isAllowedImageUrl, parseAllowlist, type ImageHostAllowlist } from "../../banana-server/lib/sources/allowlist.ts";
+import { DEFAULT_IMAGE_HOSTS, NO_MODEL_IMAGE_HOSTS, isAllowedImageUrl, parseAllowlist, withoutHosts, type ImageHostAllowlist } from "../../banana-server/lib/sources/allowlist.ts";
+import { NO_MODEL_HOSTS } from "../../banana-server/bench/taste/genres.mjs";
 import { MOBBIN_IMAGE_HOSTS } from "../../banana-server/lib/sources/mobbin.ts";
 import { parseHttpUrl } from "../../banana-server/lib/sources/url.ts";
 
@@ -17,9 +18,15 @@ import { parseHttpUrl } from "../../banana-server/lib/sources/url.ts";
 export const MAX_THUMB_BYTES = 300 * 1024;
 export const THUMB_TIMEOUT_MS = 3_000;
 
-/** The thumbnail allowlist: the image allowlist plus Mobbin's image hosts (as the server does). */
+/**
+ * The thumbnail allowlist: the image allowlist plus Mobbin's image hosts (as the server does),
+ * without the hosts whose images are never a model input: Best Designs on X (the server's
+ * NO_MODEL_IMAGE_HOSTS) and, for these judging jobs, Craftwork (its license bars testing AI
+ * models on its previews; bench/taste/genres.mjs NO_MODEL_HOSTS). Every job here that sends an
+ * image to a model fetches it through this list, so those images can never reach one.
+ */
 export function thumbAllowlist(): ImageHostAllowlist {
-  return parseAllowlist([...DEFAULT_IMAGE_HOSTS, ...MOBBIN_IMAGE_HOSTS]);
+  return withoutHosts(parseAllowlist([...DEFAULT_IMAGE_HOSTS, ...MOBBIN_IMAGE_HOSTS]), [...NO_MODEL_IMAGE_HOSTS, ...NO_MODEL_HOSTS]);
 }
 
 /** Copied from banana-server/lib/vision/thumbs.ts: the source CDN's own small variant. */

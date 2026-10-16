@@ -9,7 +9,7 @@
  * costs.csv under job "j7-taste" (the j7 budget). Run it again when the owner saves picks.json.
  */
 import Anthropic from "@anthropic-ai/sdk";
-import { genreOf } from "../banana-server/bench/taste/genres.mjs";
+import { genreOf, modelInputOk } from "../banana-server/bench/taste/genres.mjs";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { JUDGE, PATHS, ROOT, loadEnv } from "./config.ts";
@@ -44,9 +44,13 @@ export function genreArg(argv: readonly string[] = process.argv): string | undef
   const i = argv.indexOf("--genre");
   return i >= 0 ? argv[i + 1] : undefined;
 }
-/** The picks a notes run reads: one genre's, else the UI genres'. Picks without `genre` count by platform. */
+/**
+ * The picks a notes run reads: one genre's, else the UI genres'. Picks without `genre` count by
+ * platform. Picks from sources that are never a model input (Best Designs on X, Craftwork:
+ * genres.mjs modelInputOk) are left out even when the owner picked them.
+ */
 export function exemplarPicks<T extends { genre?: unknown; platform?: unknown }>(picks: readonly T[], genre?: string): T[] {
-  return picks.filter((p) => (genre ? genreOf(p) === genre : UI_GENRES.includes(genreOf(p))));
+  return picks.filter((p) => modelInputOk(p as Parameters<typeof modelInputOk>[0]) && (genre ? genreOf(p) === genre : UI_GENRES.includes(genreOf(p))));
 }
 export const notesName = (genre?: string) => (genre ? `j7-taste-notes-${genre}.md` : "j7-taste-notes.md");
 const GENRE_SYSTEM = (genre: string) =>
