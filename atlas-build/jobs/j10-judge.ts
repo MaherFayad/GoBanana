@@ -63,8 +63,8 @@ export type JudgeRecord = z.infer<typeof JudgeRecordSchema>;
 // ---------------------------------------------------------------------------------------------
 // Bench data
 
-type RunRef = { id: string; zone: "ui" | "art"; lane?: string; query?: string; title?: string; imageUrl?: string; thumbUrl?: string; sourceUrl?: string };
-type RunDirection = {
+export type RunRef = { id: string; zone: "ui" | "art"; lane?: string; query?: string; title?: string; imageUrl?: string; thumbUrl?: string; sourceUrl?: string };
+export type RunDirection = {
   id: string;
   title: string;
   twist?: string;
@@ -74,12 +74,12 @@ type RunDirection = {
   spec?: Record<string, unknown>;
   search?: { references?: RunRef[] };
 };
-type RunBrief = { id: string; brief: string; platform: string; wildness: number; market?: string; mustKeep?: string[]; directions: RunDirection[] };
+export type RunBrief = { id: string; brief: string; platform: string; wildness: number; market?: string; mustKeep?: string[]; directions: RunDirection[] };
 export type BenchRun = { run: string; engine?: { atlas?: unknown }; briefs: RunBrief[] };
 
-type GoldDirection = { run: string; briefId: string; directionId: string; relevance: number; coherence: number; wow: number };
+export type GoldDirection = { run: string; briefId: string; directionId: string; relevance: number; coherence: number; wow: number };
 type GoldReference = { run: string; briefId: string; directionId: string; refId: string; verdict: VerdictT };
-type GoldFile = { directions: GoldDirection[]; references: GoldReference[] };
+export type GoldFile = { directions: GoldDirection[]; references: GoldReference[] };
 
 export type Input =
   | { kind: "direction"; mode: "calibrate" | "score"; run: string; brief: RunBrief; direction: RunDirection; gold?: GoldDirection }
@@ -181,7 +181,7 @@ The taste bar:
 
 ${tasteBar()}`;
 
-function briefText(brief: RunBrief): string {
+export function briefText(brief: RunBrief): string {
   return `Brief: ${brief.brief} (${brief.platform}, wildness ${brief.wildness} of 5${brief.market ? `, market ${brief.market}` : ""}${brief.mustKeep?.length ? `, must keep: ${brief.mustKeep.join(", ")}` : ""}).`;
 }
 
@@ -198,7 +198,7 @@ export function directionText(d: RunDirection): string {
     .join("\n");
 }
 
-async function thumb(r: RunRef, ctx: JobContext): Promise<Anthropic.ContentBlockParam> {
+export async function thumb(r: RunRef, ctx: JobContext): Promise<Anthropic.ContentBlockParam> {
   if (ctx.dry) return placeholderImage();
   const t = await fetchThumbBlock({ imageUrl: r.imageUrl ?? null, thumbUrl: r.thumbUrl ?? null });
   return t.ok ? t.block : { type: "text", text: "(this image did not load: judge it bad)" };
