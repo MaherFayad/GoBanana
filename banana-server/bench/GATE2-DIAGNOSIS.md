@@ -201,4 +201,6 @@ and method: `BASELINE.md`, "Gate 2 round 2".
 
 - 0 shared queries: **met** (g2h, g2i).
 - 0 coherence failures: **met** (0 of 30 on every run; rated median 3 to 3.5).
-- 80% on brief: **not met** (56.7% at best, from 20%).
+- 80% on brief: **not met on the agent ratings** (56.7% at best, from 20%). The J10 judge, trusted on relevance for
+  the first time (80% agreement with the gold), scores g2i at 80% (24 of 30); the owner's spot check decides which
+  rater the gate follows.

@@ -281,7 +281,18 @@ Notes:
 | Wow (median) | 3 | 3 | 3 | 3 | 3 | 4 |
 | Serper credits (per search) | 144 (8) | 142 (7.5) | 142 (7.5) | 145 (7.3) | 142 (7.1) | |
 
-J10_R2_TABLE
+J10 judge on the same runs (batch, $1.75). Calibration on the gold this time: relevance 80% agreement (trusted for the
+first time, it was 73.3% and 70%), coherence 96.7%, wow 90%, precision 84.3%, great 85.7%.
+
+| Judge metric | g2e | g2f | R2 g2g | R2 g2h | R2 g2i |
+| --- | --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5) | 63.3% (19 of 30) | 60% (18 of 30) | 73.3% (22 of 30) | 79.3% (23 of 29) | **80% (24 of 30)** |
+| Reference precision | 44.3% | 32.1% | 49.6% (68 of 137) | 48.7% (75 of 154) | 42.3% (63 of 149) |
+| Great share | 6.9% | 6.4% | 6.6% | 4.5% | 4% |
+| Coherence; wow (median) | 3; 3 | 3; 3 | 3; 3 | 3; 3 | 4; 3 |
+
+The judge is more lenient on relevance than the agent rater (80% against 56.7% on g2i) and stricter on references.
+g2e and g2f were judged before this calibration, when relevance was not trusted.
 
 Notes:
 
@@ -295,6 +306,9 @@ Notes:
   every run: Ramadan food offers (1 or 2 good of 12 to 14: prayer apps; the Phase 0 topic "ramadan offers" drops the food
   delivery) and SaaS pricing (5 to 7 of 16: the fidelity wording returns analytics dashboards). Real estate is 14 to 15
   of 16.
-- **Gate 2 verdict: not passed.** 0 shared queries (g2h, g2i) and 0 coherence failures are met; 80% on brief is not
-  (56.7% at best). What remains: `bench/GATE2-DIAGNOSIS.md`, round 2.
-- Spend: Serper 429 credits (142, 145, 142; budget 450). Claude: J4b $4.17, J10 J10_R2_COST.
+- **Gate 2 verdict: not passed on the agent ratings** (the same method as every earlier table). 0 shared queries (g2h,
+  g2i) and 0 coherence failures are met; 80% on brief is not (56.7% at best). The J10 judge, now trusted on relevance,
+  scores g2i at exactly 80%, so the gate turns on the rater: the owner's spot check of the g2i directions decides.
+  What remains: `bench/GATE2-DIAGNOSIS.md`, round 2.
+- Spend: Serper 429 credits (142, 145, 142; budget 450). Claude $7.15: J4b $4.17 (budget $12), J10 $2.98 (resume
+  $1.23, round 2 runs $1.75; cap $5).
