@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "default",
-  "count": 40,
+  "count": 55,
   "picks": [
     {
       "id": "b004",
@@ -322,6 +322,141 @@
       "sourceUrl": "https://www.pinterest.com/pin/424393964909111615",
       "platform": "mobile",
       "page": "booking"
+    },
+    {
+      "id": "w001",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2025/10/68eb96833074e144081699.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/lando-norris",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w002",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2025/10/68dcb7b97f4f5666322368.png",
+      "sourceUrl": "https://www.awwwards.com/sites/messenger",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w003",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2024/06/6679694854f32131923081.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/igloo-inc",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w004",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2024/02/65e0411959dfb340668755.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/dont-board-me",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w006",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2023/09/6509b304676c1320691558.png",
+      "sourceUrl": "https://www.awwwards.com/sites/lusion-v3",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w007",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2023/02/63f69f7277500885066793.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/mana-yerba-mate",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w010",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2022/05/627cb037dcd65706143574.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/persepolis-reimagined",
+      "platform": "website",
+      "page": "scroll-story",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w014",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2021/01/5ffef154518b5815765611.png",
+      "sourceUrl": "https://www.awwwards.com/sites/umami-land",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w017",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2020/12/5fe07bd347a09649895274.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/kode",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w018",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2019/11/5dbfff28a14dd803277060.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/bruno-simon-portfolio",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w025",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2017/09/59ca11ebdd968.jpg",
+      "sourceUrl": "https://www.awwwards.com/sites/simply-chocolate",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w033",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2026/09/6aba68db754cc087859975.png",
+      "sourceUrl": "https://www.awwwards.com/sites/townhouse",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w044",
+      "origin": "search",
+      "imageUrl": "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2026/09/6ab2b857172ba068632032.png",
+      "sourceUrl": "https://www.awwwards.com/sites/cognichip-aci-enterprise",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w054",
+      "origin": "search",
+      "imageUrl": "https://curated-images.b-cdn.net/objects/ae389c8fb117cf5729fac446782d283df303cfabadd1528167b450b472bc15ee/53c23528911826ae45bf8e25f567ab25ea1dd8b314fdc131c077e2a68e2791ba/retina-v1/card-image-1600.webp?token=_bv_jU0X66OcQ9VQJeA97iV6-G96BItb24mLAjn_9nA&expires=2107509990",
+      "sourceUrl": "https://craftwork.design/curated/website/utopia-tokyo",
+      "platform": "website",
+      "page": "playful",
+      "genre": "web-showcase"
+    },
+    {
+      "id": "w068",
+      "origin": "search",
+      "imageUrl": "https://curated-images.b-cdn.net/objects/bd61266ad9839a25ee814ebd5535ba5697e547c69ef1772fb7afa6812b6e4447/8dca5991c6aadd2a3ac65cc59ae52bb4872a84156d9173d54b8491edb4e2ab5f/retina-v1/card-image-1600.webp?token=WrZlWfld4sKYEriKzMC_CW7Bz2K4hVsNpUSJdYZb2hM&expires=2107509497",
+      "sourceUrl": "https://craftwork.design/curated/website/poch",
+      "platform": "website",
+      "page": "3d",
+      "genre": "web-showcase"
     }
   ]
 }
