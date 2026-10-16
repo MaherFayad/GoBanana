@@ -14,7 +14,7 @@ import { SOURCE_REGISTRY, noModelInputHosts } from "@/lib/sources/registry";
 import type { Reference } from "@/lib/sources/types";
 import { referenceId, type WebSearchResult } from "@/lib/sources/web-search";
 import { EMPTY_TAKEDOWNS, compileTakedowns } from "@/lib/takedown";
-import { pickThumbUrl, thumbAllowlist } from "@/lib/vision/thumbs";
+import { pickThumbUrl, thumbAllowlist, thumbBlocks } from "@/lib/vision/thumbs";
 import candidates from "../bench/taste/candidates.json";
 import picks from "../bench/taste/picks.default.json";
 
@@ -62,6 +62,14 @@ describe("never a model input", () => {
     expect(pickThumbUrl({ imageUrl: item.imageUrl, thumbUrl: item.thumbUrl }, thumbs)).toBeNull();
     // Other sources still pass through.
     expect(pickThumbUrl({ imageUrl: "https://cdn.dribbble.com/userupload/1.png", thumbUrl: null }, thumbs)).not.toBeNull();
+  });
+
+  it("tells the agent why there is no picture, and fetches nothing", async () => {
+    const fetchImpl = vi.fn();
+    const { blocks, shown } = await thumbBlocks([{ label: "1. bx", imageUrl: item.imageUrl, thumbUrl: item.thumbUrl }], { allowlist: thumbAllowlist(allowlist), fetchImpl });
+    expect(shown).toBe(0);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(blocks).toEqual([{ type: "text", text: expect.stringContaining("link out only (Best Designs on X") }]);
   });
 
   it("is never a taste exemplar by default for a model: its default picks are marked by group", () => {

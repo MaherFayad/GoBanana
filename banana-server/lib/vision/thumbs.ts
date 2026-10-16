@@ -11,7 +11,7 @@
  * keep images small; an image without a small variant that is over the cap is skipped and named.
  */
 import { fetchThumbIntoMemory, type FetchLike } from "@/lib/palette/fetch";
-import { allowlistFromEnv, isAllowedImageUrl, parseAllowlist, withoutHosts, type ImageHostAllowlist } from "@/lib/sources/allowlist";
+import { NO_MODEL_IMAGE_HOSTS, allowlistFromEnv, isAllowedImageUrl, parseAllowlist, withoutHosts, type ImageHostAllowlist } from "@/lib/sources/allowlist";
 import { MOBBIN_IMAGE_HOSTS } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
 
@@ -138,9 +138,18 @@ const REASONS: Record<string, string> = {
   network_error: "the image did not load from its source",
   too_many_redirects: "the image link redirects too many times",
   format: "its format is not one agents can read (JPEG, PNG, GIF or WebP)",
+  no_model: "its source is link out only (Best Designs on X: the designer's X post), so it is never shown to a model; it is on the board for people, rate it from its title or leave it unrated",
   over_cap: "over the 12 thumbnails per call",
   over_budget: "over the size budget for one call",
 };
+
+/** True when a target's image or thumbnail is on a host that is never a model input. */
+function noModelImage(t: Pick<ThumbTarget, "imageUrl" | "thumbUrl">): boolean {
+  return [t.imageUrl, t.thumbUrl].some((u) => {
+    const p = parseHttpUrl(u ?? "");
+    return Boolean(p && NO_MODEL_IMAGE_HOSTS.includes(p.hostname.toLowerCase()));
+  });
+}
 
 type Fetched = { ok: true; data: string; mimeType: string; bytes: number } | { ok: false; reason: string };
 
@@ -193,7 +202,7 @@ export async function thumbBlocks(targets: readonly ThumbTarget[], opts: ThumbOp
   targets.forEach((t, i) => {
     const url = urls[i];
     if (!url) {
-      blocks.push({ type: "text", text: `${t.label} (no thumbnail: ${REASONS.not_allowed})` });
+      blocks.push({ type: "text", text: `${t.label} (no thumbnail: ${noModelImage(t) ? REASONS.no_model : REASONS.not_allowed})` });
       return;
     }
     const r = byUrl.get(url) ?? { ok: false as const, reason: "over_cap" };
