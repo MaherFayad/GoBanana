@@ -1,32 +1,30 @@
 **What the exemplars share**
-- One hero number or line per screen (68, 13,143, $22,677.45, 730, "How can I help you today?"), set huge and light. Labels are small and muted.
-- Mostly near-black or deep navy grounds. Light screens are clean off-white with soft tinted cards.
-- Accent color is used sparingly: one neon green, orange, coral, or violet, sometimes a soft gradient glow behind the content.
-- Rounded cards with generous padding and clear grouping. Segmented pills for time ranges (Day, Week, Month, Year).
-- Depth comes from blur, glass panels, and soft glows, never heavy drop shadows.
-- Data looks real and plausible: specific values, deltas like +8.4% in green or red, dates, units.
-- Texture is subtle where it appears: dot matrix, halftone, grain, bar ticks.
+- One hero number or sentence per screen or card ($63,000, 13,143 steps, "You slept well"), with small muted labels, strong size contrast, and generous padding.
+- Near-black or deep navy bases (or soft off-white) with one accent: lime, orange, electric blue, violet, magenta. Gradients appear as glowing orbs or blurred light, never rainbow.
+- Clean grotesk sans, big tight-tracked numerals, occasional italic or mono.
+- Depth from large-radius cards, frosted glass, soft glows, and subtle inner borders. No heavy bevels.
+- Simple data: one smooth line chart, tick rulers, segmented bars, rings, and tooltips.
+- Believable content: real times, amounts, names, deltas with arrows, avatars, and status pills.
+- Texture such as grain, heatmap dots, or ticked strips, used sparingly.
 
 **By page family**
-- **Home and widgets:** a single-purpose widget with a big number or timer, a tidy library list, and photo-led cards.
-- **Analytics and dashboards:** a large KPI, one smooth line or bar chart, a tooltip on a point, and a small stat grid underneath.
-- **Wallet and finance:** a balance in big type, a delta line, Send, Receive and Swap buttons, holdings or activity rows, and card stacks with glow.
-- **Paywall and onboarding:** a clear plan headline, a highlighted plan card, one strong CTA, and Apple or Google sign-in buttons.
-- **Chat and AI tools:** a glowing orb or blob, a short greeting, a pill input field, and mostly empty space.
-- **Health and calendar:** a week strip with the selected day marked, a score ring, and timeline blocks colored by category.
-- **Dev tools and CRM:** sidebar navigation, compact KPI tiles, monochrome or single-accent charts, and a glass panel over a landscape backdrop.
+- Home and widgets: rounded tiles, one function each, with a time or count as hero, consistent radius, and a tidy grid.
+- Analytics and dashboards: a KPI row, one large chart with a tooltip, period toggles, an accent bar or glow on one series, and a table below.
+- Wallet and finance: balance first, action pills (Send, Receive, Swap), a card stack or holdings list, and green and red deltas.
+- Paywall and onboarding: tiered plans with one highlighted tier and a savings tag, glossy abstract art, one primary button, and a short dark carousel or OTP field.
+- Chat and AI tools: glowing orb or voice wave, a centered greeting, a prompt field with chips, and minimal sidebars or node graphs.
+- Health and calendar: a week strip with today selected, score rings, timelines with colored blocks, stat tiles with units, and a summarizing greeting.
+- Dev tools and CRM: dense but ordered panels, sparkline tiles, contact or lead lists with avatars, status pills, and muted gray with one accent.
 
 **Platform differences**
-- **Mobile:** a single column with a status bar and bottom tab bar or floating CTA. Often shown in a clean device frame on a flat backdrop.
-- **Web app:** a sidebar plus a card grid, data tables with status pills, denser yet still airy. Floating widget crops are fine.
+- Mobile: realistic device frame on a plain backdrop, a status bar, single column, a bottom tab bar or floating plus, and thumb-sized pills.
+- Web app: left sidebar, multi-panel card grids, window chrome or an angled crop, often over a blurred landscape. Denser, but still one focal metric.
 
-**Mark bad even when it matches the words**
-- UI kit sheets of many generic components, wireframes, or gray placeholder blocks.
-- Lorem ipsum or obviously fake data, such as rows of identical numbers.
-- Concept comps with unreadable tiny text, chaotic neon, or more than three competing accents.
-- Stock photos of people holding phones where the UI is not the subject. Illustration-only or 3D mascot art.
-- Heavy skeuomorphism, harsh drop shadows, cramped spacing, or default chart styling.
-- Low-resolution or blurry captures, or watermarks dominating the frame.
-
-**Good, not great**
-- The layout is correct but the hero number is weak, the accent is generic blue, depth is flat, or the spacing is uneven.
+**What to mark bad even when it matches the words**
+- UI kit sheets, wireframes, gray boxes, or lorem ipsum.
+- Concept comps with fake 3D clutter, neon overload, impossible layouts, or illegible tiny type.
+- Stock photos of people holding phones with unreadable screens.
+- Posters, social grids, logos, brand boards, or 3D renders with no interface.
+- Rainbow palettes, skeuomorphic chrome, heavy shadows, cramped or mismatched type.
+- Fake data such as zeros everywhere, identical rows, or unlabeled charts.
+- Generic flat templates with default blue, no focal number, and no depth. These are good at best, never great.
