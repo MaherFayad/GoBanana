@@ -1,11 +1,11 @@
 ---
 name: gobanana-explore
-description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "explore directions", "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
+description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (graphic systems, each mapped to a UI part) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "explore directions", "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
 ---
 
 # GoBanana explore
 
-Turn a fuzzy "make it cooler" into six to eight sharp, buildable directions for one page or two, each in its own visual language, then fill a board with 100 to 150 clustered references: a Space section that maps what the category does, then two zones per direction, the wild idea as images (art direction) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
+Turn a fuzzy "make it cooler" into six to eight sharp, buildable directions for one page or two, each in its own visual language, then fill a board with 100 to 150 clustered references: a Space section that maps what the category does, then two zones per direction: art direction (the world's graphic systems the idea borrows, each translated into a UI part) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
 
 GoBanana is for one crazy idea over a page or two: a launch page, onboarding, an empty state, a 404, a paywall, a year in review. It is not the product's main design direction. Say so when the user asks to redesign the whole product, and help them pick where the weirdness should go.
 
@@ -18,7 +18,8 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Do not describe images you have not seen.** Talk about the direction and the titles, not pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never name an idea dropped for no UI path, weak references or as a duplicate. Declined challengers are the one exception: they show on one compact line with what a kept direction took from them (step 7b).
-- **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build. With clusters (step 12), art items carry the cluster `art` and UI items never do.
+- **Two zones, never mixed.** Each direction has art references (zone `art`: the world's graphic systems, such as identity and signage programs, posters, patterns, type specimens and notation, never plain objects) and UI references (zone `ui`: screens and components for the platform). Never count art toward the UI total and never present art as a screen to build. Every placed art item carries `stealAxis` and `becomes` and sits in the cluster of the part it informs (step 12). UI items never carry the cluster `art`.
+- **Art must become something.** Keep an art reference only if you can name the UI part it becomes. A beautiful image that becomes nothing is junk here: rate it `bad` with `no_translation`, and a plain object photo `bad` with `object_only`.
 - **Mode first.** Ask which mode before any other work (see "First: ask the mode"). Never skip it to go further.
 - **Explore writes nothing.** Explore never writes project files or code. It ends at the board and the directions with the question "Draft any of these?".
 - **Taste first.** Ask the user for 3 to 5 style words or a reference board before `bend_brief`, in the same turn as the mode question; never invent them.
@@ -223,10 +224,10 @@ Keep an idea only if all of these hold:
 For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 24`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: the sweep (1 search, step 6c), plus one search per shortlisted direction (at most 8), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
 
 - **UI lanes** (`zone: "ui"`): `fidelity` (real screens for the page), `taste` (the style words on the page), `hero`, `component`, `bridge` (the idea already applied to UI, so each direction gets UI of its own idea; it runs right after fidelity, and the reply says when it found nothing), `locale` (Arabic UI, also when only the board brief says Arabic or RTL). The server words them for the platform and picks sources to match: website briefs pull from website galleries (hero sections, landing pages, bento layouts), mobile briefs from mobile app and motion galleries, web apps from dashboard galleries, plus Pinterest, Dribbble, Behance and Awwwards.
-- **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
+- **Art lanes** (`zone: "art"`): the server walks a ladder for each of the direction's `artQueries`, first hit wins: `art:system` (the ingredient's identity or signage system, on Behance), `art:graphic` (its graphic design or posters, on Pinterest), `art:pattern` (its patterns or typography, on Pinterest), then `art:raw` (the raw ingredient, last). An explicit art retry comes back as `art:retry`. Art is the world's graphic systems (identity, signage, posters, patterns, type, notation), not its objects. The server filters listing titles (buy, price, sale, shop), but check anyway. An `art:raw` result is often a plain object photo: keep it only when it shows a system you can take.
 - The server keeps at most 2 results per studio, prefers newer work, and drops UI kits and templates.
 
-Each result line shows `[referenceId, lane]` and its zone. Do not pass a direction's query as `query` when you have its id. Use `zone: "ui"` or `zone: "art"` only to search one zone again. Leave `sources` at the default (the server picks UI galleries by platform) unless the user asks for a specific source.
+Each result line shows `[referenceId, lane]` and its zone; art lanes read `art:system`, `art:graphic`, `art:pattern`, `art:raw` or `art:retry`. Do not pass a direction's query as `query` when you have its id. Use `zone: "ui"` or `zone: "art"` only to search one zone again. Leave `sources` at the default (the server picks UI galleries by platform) unless the user asks for a specific source.
 
 ### 10. Audit and rate every search, both zones
 
@@ -237,11 +238,13 @@ The server does not look at images. You do.
 1. **Judge every result** from its image when you can see it, and from its title, site and URL.
 2. **Call `rate_references`** with the `canvasId`, once per search. Rate only two kinds of result: the junk (`bad`) and the 1 to 3 standouts (`great`). Leave ordinary good results unrated; there is no "ok" verdict, so never mark every usable result `great`. Always rate the junk so it leaves the tray:
    - **UI zone, `bad`:** wrong platform (a web dashboard on a phone brief), shops, stock, UI kit sales, cluttered sheets, duplicates, near empty mockups, apps for another product, anything not UI.
-   - **Art zone, `bad`:** shops and product listings, prices, fashion and clothing listings, Etsy or Amazon pages, logo sheets, stock, and anything off the idea (a car air freshener on a weaving direction). Art does not have to be UI; it has to be the idea.
-   - Reasons: `off_topic`, `stock_or_shop`, `not_ui` (UI zone only), `cluttered`, `duplicate`, `low_craft`, `wrong_style`.
+   - **Art zone, `bad`:** shops and product listings, prices, fashion and clothing listings, Etsy or Amazon pages, logo sheets, stock, and anything off the idea (a car air freshener on a weaving direction). Then the translation test on every art result that is left: name the UI part of this page it becomes ("the progress bar", "the step divider", "the plan card header"). If you cannot name one, it is `bad`. Art does not have to be UI; it has to become UI.
+     - `object_only`: a plain object or product photo with no graphic system to take (a mug on a table, a bag of beans, a brass key).
+     - `no_translation`: a beautiful image that maps to no UI part of the page.
+   - Reasons: `off_topic`, `stock_or_shop`, `not_ui` (UI zone only), `object_only` and `no_translation` (art zone only), `cluttered`, `duplicate`, `low_craft`, `wrong_style`.
    - **`great`** for standouts only, 1 to 3 per search: `great_craft`, `on_style`, `on_brief`.
-3. **Retry a weak lane, only then.** If more than 40% of one lane's results are bad, you must search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: keep the idea's main word and name the screen or component ("film frame seat picker ui", not "oversized film frames"). A `bridge` retry filters titles by its own main word, so short words work ("islamic pattern app", "rawashin pattern app"). Art lane: `lane: "art"` with words for the raw thing, no UI words ("sadu weaving close up", "risograph two ink print"). Rate the retry's results too. At most 2 retries per lane; each counts toward the quota. If the lane is still bad after 2 retries, stop and say so in one line. When no lane is over 40% bad, do not retry anything: clean results need no second search.
-4. **Count** usable UI references per direction for test (b), and usable art references separately.
+3. **Retry a weak lane, only then.** If more than 40% of one lane's results are bad, you must search that lane again: `search_references` with `directionId`, `canvasId`, `lane` and a new `query`. UI lanes: keep the idea's main word and name the screen or component ("film frame seat picker ui", not "oversized film frames"). A `bridge` retry filters titles by its own main word, so short words work ("islamic pattern app", "rawashin pattern app"). Art lane: `lane: "art"` with raw words for the graphic system, never UI words ("departure board signage system", "sadu weaving pattern", "riyal banknote typography"); its results read `art:retry`. All art lanes of a direction count as one lane here, and `object_only` and `no_translation` count as bad. Rate the retry's results too. At most 2 retries per lane; each counts toward the quota. If the lane is still bad after 2 retries, stop and say so in one line. When no lane is over 40% bad, do not retry anything: clean results need no second search.
+4. **Count** usable UI references per direction for test (b), and translated art references separately (the ones with a UI part you can name).
 
 ### 11. Shipped vs next (only when step 0 found Mobbin)
 
@@ -272,7 +275,14 @@ A short note on a Space item is optional; when you write one, it starts with `st
 - `type`: the type voice and scale.
 - `color`: the palette and how much of it.
 - `motion`: how things move or change state.
-- `art`: art zone items only, 3 to 5 per direction, in the Art direction row: `steal: the misregistered second ink as the price highlight`.
+- `art`: art items only, when their `stealAxis` is pattern, texture or notation and they inform no single part. Art that informs a part, the type or the color goes in that cluster instead.
+
+**Art items, 4 to 6 per direction**, all translated. Each one carries:
+
+- `stealAxis`: what you take from it, one of `type`, `color`, `pattern`, `composition`, `texture`, `motion`, `notation`.
+- `becomes`: the UI part of this page it turns into, 1 to 80 characters ("the step divider: one woven band per step", "the plan card header in condensed caps"). An art item without both is refused.
+- `note`: the `steal:` line for the why ("steal: the misregistered second ink as the price highlight").
+- `cluster`: the cluster of what it informs. Without one, the server files it by `stealAxis` (type, color and motion keep their name; composition goes to `layout`; pattern, texture and notation go to `art`). Pass `cluster: "component: <part>"` when it informs a part, so a pattern that becomes the divider sits next to the divider UI: `{ "type": "reference", "referenceId": "a7", "stealAxis": "pattern", "becomes": "the step divider: one woven band per step", "cluster": "component: divider", "note": "steal: ..." }`.
 
 - **UI references** come from the UI zone only, including the Mobbin screens from step 11 when Mobbin ran (give them a cluster too): `steal: the bottom sheet that holds the fare breakdown`.
 - **One idea note** per section: `<TRACK>: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>. LANGUAGE: <the 7 values of its language>. RISK: <its honest risk>.` TRACK is SHIP, STRETCH or WILD; the subtract direction starts `SUBTRACT:` and names what it removes. A direction that took a raise from a declined challenger ends its note with the `RAISE from <challenger title>: ...` line (step 7b.3).
@@ -280,11 +290,11 @@ A short note on a Space item is optional; when you write one, it starts with `st
 
 Spread the items evenly across directions. Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board.
 
-**Board item limit.** When a plan message says the board holds 40 items (Free), place the best fitting set under it: a small Space section (6 to 8 items) and, per direction, the idea note plus 3 or 4 references in at least 3 clusters (one of them `art` when there is usable art). Say once that Pro shows the full board, with the message's link. Never loop, and never retry the rejected items one by one.
+**Board item limit.** When a plan message says the board holds 40 items (Free), place the best fitting set under it: a small Space section (6 to 8 items) and, per direction, the idea note plus 3 or 4 references in at least 3 clusters (one of them an art item with its `becomes`, when there is usable art). Say once that Pro shows the full board, with the message's link. Never loop, and never retry the rejected items one by one.
 
 Then call `arrange_canvas` once with `by_cluster`, after the last `add_to_canvas`: inside each section, one labeled row per cluster (layout, components, type, color, motion, art, others, then Other for items without a cluster). Do not read the board back between these calls.
 
-If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its top count and keep the UI grid UI only.
+If the user asked for raw inspiration (textures, objects, posters, "less UI"), give art its top count (6 per direction), still translated: patterns, posters and type that each become a part, and keep the UI references UI only.
 
 ### 13. Show the board and present the kept directions
 
@@ -301,23 +311,23 @@ Present each kept direction as a compact card, five lines (six with a raise), wi
 - **Feel:** its `language` in one short line, in plain words: type voice, color strategy, ground, density with composition, material, motion. Never name a shadcn style (Vega, Nova, Maia, Lyra, Mira) or any other preset name.
 - **Risk:** one honest line on how it could fail with real users.
 - **RAISE from <challenger title>:** only on the card that took a raise (step 7b.3).
-- **Refs:** 2 UI references and 1 art reference, each written exactly as `[title](sourceUrl) (site)`.
+- **Refs:** 2 UI references and 1 art reference, each written exactly as `[title](sourceUrl) (site)`; the art one ends with what it becomes, in a few words.
 
 > **1. Frosted vinyl sleeve** (Stretch)
 > Mechanic: total = the sleeve frames the total; the amount stays plain and large.
 > Feel: condensed type, restrained color, light ground, airy cards, glass, glide.
 > Risk: the frosted layer can wash out the total on low brightness screens.
-> Refs: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com); art: [Frosted record sleeve](sourceUrl) (pinterest.com)
+> Refs: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com); art: [Record label sleeve identity system](sourceUrl) (behance.net) becomes the frame around the total
 
 The subtract card says what it removes in its Mechanic line. The full spec is on the board and in the hand-off files; do not repeat every field here.
 
-If the user asked for raw inspiration, add one line: "The raw stuff (textures, objects, posters) lives in each direction's Art direction row; the UI references stay in their own grid."
+If the user asked for raw inspiration, add one line: "The raw stuff (patterns, posters, type, textures) sits in each direction's Art direction rows, each piece next to the part it becomes; the UI references stay in their own grid."
 
 Then:
 
 - **One line** on declined challengers, if any, each with what it lent: "Declined challengers: Kitchen ticket rail (raised into 3: one strip per agent), Airport gate sign (raised into 5: one status word per row)."
 - **One line** on other dropped ideas, counts and reasons only: "Dropped 2 of 8 ideas: 1 had no clear screen idea, 1 shared a language with another." Never name these or list them one by one, not even in brackets.
-- **One line** on removed results, and any lane you retried: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea); retried the bridge lane once as 'film strip seat picker ui'."
+- **One line** on removed results, and any lane you retried: "Removed 7 results (2 shop listings, 1 web dashboard, 2 object photos, 2 art with no UI use); retried the bridge lane once as 'film strip seat picker ui'."
 - **One line** on the board total and what you could not see, if anything: "126 references on the board; I could not see the thumbnails of r13 to r40 in the sweep and judged them from the ones I saw."
 - **One line** on shipped screens, if Mobbin ran: "Shipped today: [Airbnb, checkout](link), [Revolut, payment](link)."
 
@@ -332,6 +342,6 @@ In Explore (and in Finished, which runs Explore for now), the last line of the r
 - **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs.
 - **Canvas limit:** see step 6.4. Never delete without an explicit yes.
 - **Board item limit (Free: 40 items):** see step 12. Place the best fitting set, say once that Pro shows the full board, never loop.
-- **An art lane comes back empty or all junk after 2 retries:** place no art for that direction and say so in one line. The direction can still pass on UI.
+- **An art lane comes back empty, all junk or with nothing that translates after 2 retries:** place no art for that direction and say so in one line. The direction can still pass on UI.
 - **Tool error or timeout:** retry once at most, then tell the user in one line and continue with what you have.
 - **GoBanana tools missing:** the GoBanana MCP server is not connected. Tell the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

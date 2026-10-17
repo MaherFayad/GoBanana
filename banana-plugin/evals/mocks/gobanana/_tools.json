@@ -135,7 +135,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find references in two zones: ui (screens and components for the platform, from UI galleries by platform plus Pinterest, Dribbble, Behance and Awwwards) and art (the wild idea as images: raw ingredient on Pinterest and Behance; shops and listings dropped). Every result has a zone and links to its source: always show the source link. Pass a directionId from bend_brief (zone defaults to both) or a query (zone ui). Before any direction exists, pass sweep: true with canvasId and query (the page), plus up to 3 components (working parts of the page) and up to 3 adjacent phrases (the same job in other industries): one call plans the sweep-fidelity (Dribbble and Pinterest), sweep-component, sweep-adjacent, taste and locale lanes and counts as one search; not with directionId or lane. Pass canvasId to add results to that canvas tray. Every search skips results already placed on the canvas or in its tray. count up to 40. Results show up to 12 thumbnails per call. Without taste, the direction's own style words are used. At most 2 results per studio, newer first, UI kits dropped. To redo one lane, pass directionId, lane and query; lane art re-searches the art zone. Rate results with rate_references.",
+      "description": "Find references in two zones: ui (screens and components for the platform, from UI galleries by platform plus Pinterest, Dribbble, Behance and Awwwards) and art (the world's graphic systems, not objects: per art query a ladder, first hit wins: art:system for its identity or signage system on Behance, art:graphic for its graphic design or posters on Pinterest, art:pattern for its patterns or typography on Pinterest, art:raw for the raw ingredient last; an explicit art query reads art:retry; listing titles with buy, price, sale or shop dropped). Every result has a zone and links to its source: always show the source link. Pass a directionId from bend_brief (zone defaults to both) or a query (zone ui). Before any direction exists, pass sweep: true with canvasId and query (the page), plus up to 3 components (working parts of the page) and up to 3 adjacent phrases (the same job in other industries): one call plans the sweep-fidelity (Dribbble and Pinterest), sweep-component, sweep-adjacent, taste and locale lanes and counts as one search; not with directionId or lane. Pass canvasId to add results to that canvas tray. Every search skips results already placed on the canvas or in its tray. count up to 40. Results show up to 12 thumbnails per call. Without taste, the direction's own style words are used. At most 2 results per studio, newer first, UI kits dropped. To redo one lane, pass directionId, lane and query; lane art re-searches the art zone (name the graphic system in raw words, no UI words). Rate results with rate_references.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -187,7 +187,7 @@
               "locale",
               "art"
             ],
-            "description": "With directionId and query: search only this lane. UI lanes get \"app ui\" or the platform's words added when the query names no UI; lane art searches raw images with no UI words."
+            "description": "With directionId and query: search only this lane. UI lanes get \"app ui\" or the platform's words added when the query names no UI; lane art searches the query as a graphic system (raw words, no UI words); its results read art:retry."
           },
           "mix": {
             "type": "string",
@@ -235,7 +235,7 @@
     {
       "name": "rate_references",
       "title": "Rate references",
-      "description": "Rate search results so later searches get better. Free. Pass referenceIds from search_references with verdict \"bad\" (off topic, shop or stock, cluttered, duplicate) or \"great\" (standouts only). Bad results leave the canvas tray and never come back in this user's searches. Each bad rating returns a hint for re-searching its lane.",
+      "description": "Rate search results so later searches get better. Free. Pass referenceIds from search_references with verdict \"bad\" (off topic, shop or stock, cluttered, duplicate; for art only also object_only, a plain object photo with no graphic system, and no_translation, nothing maps to a UI part) or \"great\" (standouts only). Bad results leave the canvas tray and never come back in this user's searches. Each bad rating returns a hint for re-searching its lane.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -279,11 +279,14 @@
                       "duplicate",
                       "wrong_style",
                       "not_ui",
+                      "object_only",
+                      "no_translation",
                       "great_craft",
                       "on_style",
                       "on_brief"
                     ]
-                  }
+                  },
+                  "description": "Why. not_ui is for the UI zone only; object_only and no_translation are for art results only."
                 }
               }
             }
@@ -440,7 +443,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference or screen can carry a cluster (1 to 40 characters: layout, component: <part>, type, color, motion, art; in the Space section category, adjacent, outliers) that arrange_canvas by_cluster turns into labeled rows.",
+      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. Every art item must carry stealAxis (type, color, pattern, composition, texture, motion or notation) and becomes (1 to 80 characters: the UI part it turns into); an art item without them is refused. An art item without a cluster is filed by its stealAxis: type, color and motion keep their name; composition goes to layout; pattern, texture and notation go to art; an explicit cluster wins. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference or screen can carry a cluster (1 to 40 characters: layout, component: <part>, type, color, motion, art; in the Space section category, adjacent, outliers) that arrange_canvas by_cluster turns into labeled rows.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -518,6 +521,25 @@
                   "minLength": 1,
                   "maxLength": 40,
                   "description": "For reference and screen items: what to take from it, for example layout, component: fare summary, type, color, motion, art; in the Space section category, adjacent or outliers."
+                },
+                "stealAxis": {
+                  "type": "string",
+                  "enum": [
+                    "type",
+                    "color",
+                    "pattern",
+                    "composition",
+                    "texture",
+                    "motion",
+                    "notation"
+                  ],
+                  "description": "Required for art items: what you take from the art reference. Sets the default cluster (type, color, motion keep their name; composition goes to layout; pattern, texture, notation to art)."
+                },
+                "becomes": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80,
+                  "description": "Required for art items: the UI part it turns into, for example the approval gate: one strip per agent, color by state."
                 }
               }
             }

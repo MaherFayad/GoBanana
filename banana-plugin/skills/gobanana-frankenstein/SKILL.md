@@ -16,7 +16,7 @@ This is for ideas over one page, not the product's design system. A Frankenstein
 - **Trust write results.** The `cut_parts`, `frankenstein_page`, `update_frankenstein` and `remix_frankenstein` answers are the record: read the parts and pages from them. Do not call `get_canvas` after each write to check it; read the board once at the start, and again only if you truly need something the answers did not give.
 - **Do not describe pixels you did not see.** Say what you saw, what the user told you, or what the title says, and say which.
 - **Right platform.** Mobile pages take mobile parts, websites take website parts, web apps take web app parts. Skip references for another platform.
-- **UI zone only.** Cut from UI references (placed board items or tray references in zone `ui`). Art direction images are mood, not page parts. Never cut a reference rated `bad`.
+- **UI zone only.** Cut from UI references (placed board items or tray references in zone `ui`). Art references are not page parts: their `becomes` line names the part they inform, so use it to pick and note the UI part for that role, never cut the art itself. Never cut a reference rated `bad`.
 - **Mobbin screens are parts too, as accents.** Mobbin screens on the board (source chip mobbin.com, placed from the user's Mobbin connector) are UI items: cut them by `itemId` like any other. Use one when it is wild or fits the direction, for example a real pay bar or tab bar under a wild hero, so the page keeps a pattern users know. Never build the whole page from Mobbin parts, and give each one its `[App, screen](mobbin link) (mobbin.com)` link like any part. Their crops are guessed as one screen, not a phone presentation.
 - Plain words, short sentences, no em dashes.
 

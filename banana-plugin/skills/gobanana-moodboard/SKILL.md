@@ -11,7 +11,8 @@ Turn the tray into a board people can read: one section per direction, the wild 
 
 - **Every tile keeps its source link**, on the GoBanana canvas, in FigJam and in any HTML board.
 - **Never download, save or copy reference images** to the repo or to disk. Boards point at the source URLs.
-- **Two zones, never mixed.** Tray references carry a `zone`: `art` (the idea as raw images) or `ui` (screens and components). Art goes in the section's "Art direction" row; UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
+- **Two zones, never mixed.** Tray references carry a `zone`: `art` (graphic systems the idea borrows: identity, signage, posters, patterns, type, notation) or `ui` (screens and components). Art goes in the section's "Art direction" row (or, with clusters, in the cluster of the part it informs); UI goes in the "UI references" grid. Never move an art item into the UI grid to fill it.
+- **Art must become something.** Every art item you place carries `stealAxis` and `becomes` (the UI part it turns into); the server refuses an art item without them. If you cannot name the UI part an art reference becomes, leave it in the tray.
 - **The server only returns text.** When a file is needed (HTML board), you write it.
 - **Trust write results.** The `add_to_canvas` and `arrange_canvas` answers are the record. Read the board once in step 1; do not call `get_canvas` again to check each write.
 - **Always arrange.** Every run that places or moves items ends with one `arrange_canvas` call, after the last `add_to_canvas`.
@@ -30,7 +31,7 @@ If the tray is empty, run the gobanana-explore flow first.
 Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 1. One `{ "type": "section", "title": "<direction title>" }` per kept direction, unless sections exist. Skip dropped directions.
-2. **Art row: 2 to 4** art references, best first: `{ "type": "reference", "referenceId": "...", "note": "steal: <what to take>" }`. The server puts art items in the "Art direction" row above the UI grid.
+2. **Art row: 4 to 6** art references, best first: `{ "type": "reference", "referenceId": "...", "stealAxis": "pattern", "becomes": "the step divider: one woven band per step", "note": "steal: <what to take>" }`. `stealAxis` is one of `type`, `color`, `pattern`, `composition`, `texture`, `motion`, `notation`; `becomes` is the UI part of the page, 1 to 80 characters. The server puts art items in the "Art direction" row above the UI grid.
 3. **UI grid: 6 to 8** UI references, best first, each with a `steal:` note the same way.
 4. One idea note per section: `{ "type": "note", "text": "WILD: <twist>. PATTERN: <pattern>. SIGNATURE: <signature>." }`, from the direction's spec when you have it.
 5. If a palette exists, swatches as `{ "type": "swatch", "hex": "...", "role": "..." }`.
@@ -38,7 +39,7 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 **Steal notes:** up to 280 characters, start with `steal:`, name one concrete thing for the page: `steal: the stamped date as a section divider`, `steal: the tab bar that hides on scroll`. Draw them from the direction's `spec.steal` and from what the title says. Look at the returned thumbnails before rating or noting: `get_canvas` and `add_to_canvas` results carry a small image after each reference's line, so write the note from what you see in it. Links in notes are clickable on the board.
 
-**Clusters:** a reference or screen can also carry a `cluster` (1 to 40 characters) that says what to take from it. Use the gobanana-explore labels: `layout`, `component: <part>`, `type`, `color`, `motion` and `art` (art zone only) in direction sections; `category`, `adjacent` and `outliers` in the Space section. Keep the labels when the board already uses them.
+**Clusters:** a reference or screen can also carry a `cluster` (1 to 40 characters) that says what to take from it. Use the gobanana-explore labels: `layout`, `component: <part>`, `type`, `color`, `motion` and `art` (art zone only) in direction sections; an art item without a cluster is filed by its `stealAxis` (type, color and motion keep their name; composition goes to `layout`; pattern, texture and notation go to `art`), and `component: <part>` puts it next to the part it becomes; `category`, `adjacent` and `outliers` in the Space section. Keep the labels when the board already uses them.
 
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message and stop adding.
 

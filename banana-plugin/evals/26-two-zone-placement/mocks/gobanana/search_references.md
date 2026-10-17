@@ -21,9 +21,9 @@ UI references (zone ui) for fidelity "hotel room picker app ui", taste "minimal 
 9. [u9, fidelity] Hotel booking app checkout screen (pinterest.com): https://www.pinterest.com/pin/300000000000000009/
 10. [u10, hero] Hotel app room gallery screen (dribbble.com): https://dribbble.com/shots/30000010-room-gallery
 Art direction (zone art) for art "vintage hotel key tags", "brass room key fob":
-11. [a1, art] Vintage hotel key tags collection (pinterest.com): https://www.pinterest.com/pin/300000000000000011/
-12. [a2, art] Brass room key fobs, numbered (behance.net): https://www.behance.net/gallery/300000012/brass-key-fobs
-13. [a3, art] Hotel key tag keychain, shop now 12.99 (pinterest.com): https://www.pinterest.com/pin/300000000000000013/
-14. [a4, art] Hotel stationery and key tag identity (behance.net): https://www.behance.net/gallery/300000014/hotel-stationery
-Added to the tray of the canvas when a canvasId was given. Art items go to the Art direction row when placed.
+11. [a1, art:system] Grand hotel key tag numbering system, identity (behance.net): https://www.behance.net/gallery/300000011/key-tag-numbering
+12. [a2, art:graphic] Hotel room number signage, enamel plates poster series (pinterest.com): https://www.pinterest.com/pin/300000000000000012/
+13. [a3, art:raw] Hotel key tag keychain, shop now 12.99 (pinterest.com): https://www.pinterest.com/pin/300000000000000013/
+14. [a4, art:system] Hotel stationery and key tag identity (behance.net): https://www.behance.net/gallery/300000014/hotel-stationery
+Added to the tray of the canvas when a canvasId was given. Art items go to the Art direction row when placed, each with stealAxis and becomes (the UI part it turns into).
 Rate standouts and misses with rate_references (ids in brackets).
