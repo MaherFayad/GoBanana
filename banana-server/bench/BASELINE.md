@@ -522,3 +522,60 @@ that are not in the gold: 30 directions and 134 top 8 UI references (great 9, go
 They are in `bench/gold-candidates/2026-10-17g2l.json` and `.md`, marked `confirmed: false`. Nothing reads that
 folder, and the gold is unchanged. Owner action: review the rows (the on-brief directions matter most, since the gold
 has only 4) and move the confirmed ones into `bench/gold/ratings-gold.json`.
+
+## Refinement R4: directions act on the page (2026-10-17)
+
+Branch `next/refine-r4` (from `next/phase-1`, 5e180c6). Job `atlas-build/jobs/r4-judge-dirs.ts` (job id `r3-dirs`,
+budget r3): bends the 10 Bench briefs with the local Atlas (rebuilt `--from-raw`, manifest `72b82c4ee007`, no
+Serper, `bench-run.mjs --dry --atlas`) into `bench/runs/r4-<tag>/`, then rates the 30 directions from their specs
+with the R3 v2 judge exactly as its g2l score stage did (same system prompt, same 12 gold examples per vote, two
+votes, the R3 second pass where they split). The directions are not searched, so the judge rates the idea alone.
+
+| Bend | What changed | On brief (R3 judge, final) | Split votes |
+| --- | --- | --- | --- |
+| r4-0 | none (next/phase-1) | 73.3% (22 of 30), the same as g2l | 1 |
+| r4-1 | page span, main part on the page, page parse | 96.7% (29 of 30) | 1 |
+| **r4-2** | r4-1 plus wild spot fallback and task part ranking | **100% (30 of 30)** | 0 |
+
+What changed in the bend (`lib/atlas/page-span.ts`, `lib/atlas/bend.ts`), deterministic, no model calls:
+
+- **The mechanic spans the page.** Each direction names 2 or 3 parts from the page's J1 anatomy (its sections on
+  this platform, then its wild spots), the mechanic's own part first and at least one flow part (steps, slides, a
+  sheet) or structure part (plan cards, deal cards, listing rows, map, chart, hero). A part's line is the lead card's
+  J4 line for that element (buildability 3 or more), else a J5 mechanic already loaded for it. Parts are ranked by
+  kind, J1 wild spots, the J4b page reason's elements and required sections, and spread over the bend. A part a
+  must-keep protects (the total, the main button, plan cards) is never named. `mechanic.parts` and `mechanic.task`
+  carry them; the layout line and the prompt say them.
+- **The main task works differently.** One sentence: the brief's own task list when it has one ("review the
+  itinerary, add bags and seats, pay"), else the part's task ("comparing and picking a plan"), now runs through the
+  part that carries the task most (wild spots and required sections first). Then the must-keep line.
+- **The mechanic's own part is one the page has.** A section on this platform or a wild spot gains 3, a flow or
+  structure element 1.5, and a page reason's element counts as named only when the page has it (r4-0 put a dotted
+  leader total on an offers page with no total). Among named elements a structure one comes first ("offer" names the
+  hero, the season banner, before the top bar).
+- **Page parse.** A narrower page whose name holds the matched name's words and more of the brief wins ("kids reading
+  app home screen" is kids-home, not app-home).
+
+The judge's r4-0 complaint (the world only skins a button, a header band, nav chips or the dividers: Jebena, Googie,
+Qamar al-Din, Ruler Ticks, Coral Stone, Barjeel, Stickers, Wool Felt) is gone from every r4-2 note; what remains are
+coherence and wow notes (a twist that never shows, an expected idea). Caveats: specs only, no references (g2l was
+rated with 4 UI and 2 art thumbnails); the judge was calibrated on gold with only 4 on-brief items, and the new
+layout line says outright that the idea acts on the page, which is what its rubric asks, so a searched Bench run
+and the owner's spot check should confirm it. Spend: $2.91 (r3-dirs).
+
+### Crop test: each part names its screen
+
+`r3-crops.ts` has a third list order, `screens`: the gold parts are grouped into screens by horizontal overlap
+(counted from the left) and each part is asked for with its screen ("screen 2 of 3: status-header, cards"), as a
+real agent that knows which screen it wants would. And a candidate cut_parts look line, `screen` (find the named
+screen and its edges first, never cross into another screen). Held-out images (19, 95 parts), Sonnet 5.5:
+
+| Prompt | List | Held-out mean IoU | At 0.8 or more |
+| --- | --- | --- | --- |
+| plain (today) | grouped (R3, 2 repeats) | 0.702 | 57 to 58% |
+| plain (today) | screen by screen in gold order (R3, 1 repeat) | 0.729 | 58% |
+| plain (today) | **each part names its screen** (2 repeats) | **0.732** (0.729, 0.736) | 63% |
+| screen rule | each part names its screen (2 repeats) | 0.691 (0.679, 0.703) | 57% |
+
+Naming the screen is worth 0.03 on held-out (the fairer J11 number is 0.73), still under the 0.8 gate. The screen
+rule loses to plain, so **no cut_parts change ships**: the look text stays as it is. Spend $0.27 (r3-crops).

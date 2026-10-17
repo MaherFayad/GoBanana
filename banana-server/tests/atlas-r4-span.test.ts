@@ -130,7 +130,7 @@ describe("spanPage", () => {
     expect(layout.startsWith("Passport Stamp Page runs the flight checkout across the trip header with back, ")).toBe(true);
     expect(layout).toContain(span.task);
     expect(layout.endsWith("Must keep: clear total, one primary action.")).toBe(true);
-    expect(layout).not.toMatch(/—/);
+    expect(layout).not.toContain(String.fromCharCode(0x2014));
   });
 });
 

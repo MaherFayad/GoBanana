@@ -90,5 +90,5 @@ Wild spots for <platform> (where weirdness pays off):
 1. <page>: <why in under 12 words>
 
 Then always end with:
-Build each direction around its mechanic: that element is where the wild idea works as a real part of the page; keep everything else familiar. When you search, look for UI that has this element.
+Build each direction around its mechanic: that element is where the wild idea works as a real part of the page; keep everything else familiar. When you search, look for UI that has this element. (With the Atlas engine a mechanic also lists `parts`, 2 or 3 page parts with at least one flow or structure part, and a `task` line; then the layout line names those parts, the main task and the must keeps, and the idea is built across all of them.)
 Pass a direction id as directionId (with this canvasId) to search_references. Judge each idea for this page and call rate_directions to keep the usable ones and drop the rest.
