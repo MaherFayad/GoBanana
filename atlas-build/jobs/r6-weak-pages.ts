@@ -20,6 +20,9 @@
  * mechanic still lands on a header, an empty state or one button, since list rows, cards and maps
  * are not mechanic elements in the bend. Kept with its saved replies for a later bend that can use it.
  *
+ * R8: in the rebuild order (lib/refine.ts, after r1-weak-page-fit). With the R8 work part mechanics
+ * the same judge puts 43 of 45 on brief with it against 41 without, and mean wow rises.
+ *
  * Output: the whole page-fit kind with the new pairs added. A domain whose shard would pass the
  * size budget drops the score 1 rows of the new pages (the bend reads an unjudged card about as a 1).
  *

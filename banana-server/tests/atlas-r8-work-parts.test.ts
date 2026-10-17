@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { ELEMENT_TO_MECHANIC, reasonElements } from "@/lib/atlas/bend";
-import { spanPage, type SpanInput } from "@/lib/atlas/page-span";
+import { briefWorks, placeMap, spanPage, type SpanInput } from "@/lib/atlas/page-span";
 import type { CardElementLine, PageAnatomy, UiElement } from "@/lib/atlas/types";
 import { MECHANIC_ELEMENTS, pickMechanic, protectedElements, WORK_ELEMENTS } from "@/lib/bend/mechanic";
 import { PART } from "@/lib/bend/spec";
@@ -93,6 +93,14 @@ describe("R8 work parts", () => {
     expect(span.parts[0]).toMatchObject({ element: "list-row", label: "result list" });
     expect(span.parts.map((p) => p.element)).not.toContain("empty-state");
     expect(span.task).toContain("result list");
+  });
+
+  it("read a seat map as no place map and take the task's work parts from the brief's task list", () => {
+    expect(placeMap("Seat map")).toBe(false);
+    expect(placeMap("Seat or zone map")).toBe(false);
+    expect(placeMap("Location map and nearby places")).toBe(true);
+    expect([...briefWorks("food delivery app home: browse nearby restaurants, filter by cuisine")]).toEqual(["card", "list-row", "chip-filter"]);
+    expect(briefWorks("luxury real estate listing page for Dubai apartments").size).toBe(0);
   });
 
   it("keep the must keeps of a paying brief", () => {

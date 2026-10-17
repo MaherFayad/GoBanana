@@ -716,3 +716,100 @@ Request ids hash the text the judge reads, so an unchanged direction reuses its 
   2 directions, so 29 to 32 is a small gain and it comes from one brief. Some off-brief notes remain: telecom home
   and rental search put the mechanic on an empty state, and several twists never show. Both belong to the bend, which
   R5 is live checking.
+
+## Refinement R8: page mechanics for list rows, cards, maps, forms and filters (2026-10-17)
+
+Branch `next/refine-r8` (from `next/phase-1`, 33fc5a8). Budget `r8` ($30), spent $4.19: r8-lines $1.69, r8-dirs
+$1.96, r8-expand $0.43, r8-mechanics $0.11. Sonnet wrote the data, Opus judged. No Serper. The local Atlas is rebuilt
+from every raw file in the order of `atlas-build/lib/refine.ts` (manifest `3e60961d0581`, not uploaded); a clean
+rebuild reproduces the judged bends exactly.
+
+### What changed
+
+- **The bend can land the idea where the work happens.** List rows, result cards, the map, form fields and filters
+  are now mechanic elements (`lib/bend/mechanic.ts` `WORK_ELEMENTS`, `lib/atlas/bend.ts` `ELEMENT_TO_MECHANIC`). The
+  lists engine never picks them, so the web, deck and brand lanes are unchanged. After the page's wild spots, the bend
+  offers the work parts its sections show on this platform. A wild spot alone does not count (the suggestion cards of
+  an empty state page), and a seat map is not a place map. Page fit reasons that name rows, listings, the map,
+  fields, filters or cards (not plan cards) now point at these parts.
+- **Part selection (R4's span).** A work part stands for its required section ("result list", not "recent
+  searches"). On a page with a required work part, the empty state is where the work fails, not where it happens: it
+  loses its bonus as the main part and as a span part. The main task runs through the part the brief's task list
+  names ("browse nearby restaurants, filter by cuisine": the cards and filters, not the live order bar).
+- **New data, both through the refine rebuild path:**
+  - `r8-lines` (Sonnet, 68 requests): every card's lines for list-row, card, map, form-field, chip-filter and search
+    are rewritten so the idea acts on the part while the task still works. The old J4 lines only decorated it ("rows
+    separated by a hairline rule with a small ring bullet"). New examples: "Each row is a menu board line: dish name,
+    dotted leader, then price in plain type"; "The form is an order pad: fields are ruled lines with a printed label";
+    "Filters are small plots; the picked plot fills with palm green dots and a channel line to an x that clears it".
+    4,858 of 4,860 lines were replaced.
+  - `r8-mechanics` (Sonnet, 6 requests): 70 J5-shaped page mechanics for the same six parts, built as objects or
+    systems that an idea can take over (Tag rail rows, Catalog card drawer, Pinned acetate overlay, Lettered grid
+    squares, Pegboard hook chips, Ledger column heads). They join the J5 mechanics for these elements.
+  - `r6-weak-pages` is back in the rebuild order (see below).
+- **Judge job** `atlas-build/jobs/r8-judge-dirs.ts` (`r8-dirs`): R6's setup (the R3 judge on specs, 12 gold examples,
+  two votes, second pass on splits) for either set, `R8_SET=weak|bench`. Always finish with `--from-raw`: a
+  `--missing` run writes only the directions it sent.
+
+### Results (R3 judge on specs; runs in `bench/runs/r8-*`)
+
+| Run | Change | Weak briefs on brief | Telecom, food, real estate | Weak wow (mean; 4 or more) |
+| --- | --- | --- | --- | --- |
+| r6-3 (before, same as an R8 rebuild of next/phase-1) | none | 32 of 45 | 10, 13, 9 | 3.24; 18 of 45 |
+| r8-w1 | work part mechanics, R8 lines and mechanics | 41 of 45 | 13, 15, 13 | 3.44; 21 |
+| r8-w2 | r8-w1 plus seat map and empty page fixes | 41 of 45 | 13, 15, 13 | 3.44; 21 |
+| **r8-w3** | **r8-w2 plus R6 page fit for the 16 pages** | **43 of 45** | 14, 15, 14 | **3.53; 25** |
+
+| Run | Bench briefs on brief | Bench wow (mean; 4 or more) | Coherence mean |
+| --- | --- | --- | --- |
+| r8-b0 (before) | 29 of 30 | 3.63; 19 | 3.70 |
+| r8-b1 | 28 of 30 | 3.67; 21 | 3.57 |
+| **r8-b2** (final; the R6 page fit does not move any Bench direction) | **30 of 30** | **3.67; 21** | 3.63 |
+
+Per domain, mean wow went from 3.33, 3.20, 3.20 (telecom, food, real estate) to 3.60, 3.40, 3.60. The main parts on
+the weak briefs moved from header 23, empty state 4 to header 11, card 6, list row 4, filters 4, map 2, form 1, and
+no direction lands on an empty state any more.
+
+r8-b1 dropped two Bench directions, and both were fixed in r8-w2/b2: Air Traffic Flight Strip put a radar map of
+priced pins on the flight checkout's seat map (a seat map is no longer a place map), and Arcade Cabinet put the idea
+on "result cards" that an empty fitness page does not have (a wild spot alone is no longer a work part, and the part
+is now called "cards").
+
+Examples, before (r6-3) and after (r8-w3), relevance and wow:
+
+- Rental search results: Barjeel Wind Towers, "small slotted tower outline above a short line and one button" on the
+  no results state (3, 2), becomes Asiri Slate-Banded Mud Towers on the filters: "short slate slabs set in a row; a
+  picked slab drops lower, fills slate blue with a check, and an x clears it", with mud course result rows (5, 4).
+- Telecom usage home: Perforated Metal, "a grid of empty holes" on the empty state (3, 2), becomes "each card is a
+  punched steel panel with data shown as a small hole grid, orange holes filled to the value" on the usage cards (4, 4).
+- Telecom bill payment: Punch Card on the header strip (4, 3) becomes Bilingual Baqala Receipt on the bill cards:
+  "narrow receipt strips with a zigzag bottom edge; the Arabic title sits right-aligned above the English title" (5, 4).
+
+### R6 page fit for the 16 pages
+
+`r6-weak-pages` (R6's saved replies, no new calls) now helps: 43 of 45 with it against 41 without, and wow rises
+(telecom 3.47 to 3.60, real estate 3.47 to 3.60). It changes 12 weak directions (sign-up, bill payment, fiber plans,
+rental search) and no Bench direction. It runs after `r1-weak-page-fit`.
+
+### Would a designer take it further? (optional, `jobs/r8-expand.ts`)
+
+Opus read each spec and rated 1 to 5 whether a designer could take the draft and expand it into something original.
+This is a new question with no gold examples, so read it only as before and after on the same briefs:
+
+| Run | Mean | 4 or more |
+| --- | --- | --- |
+| r6-3 (weak, before) | 2.93 | 11 of 45 |
+| r8-w3 (weak, after) | 3.33 | 17 of 45 |
+| r8-b0 (Bench, before) | 3.33 | 11 of 30 |
+| r8-b2 (Bench, after) | 3.43 | 13 of 30 |
+
+### What is left
+
+- Two weak directions are off brief: Frutiger Aero on telecom sign-up (a glossy button, "familiar") and Nubian House
+  Painting on the property portal home (a plan preview the page does not have).
+- The restaurant menu page's required card section is its "offers and promo strip", so all three menu directions run
+  the main task through the promo strip (the judge calls it muddled, though all stay on brief). J1's menu anatomy
+  needs a dish list section, an owner call on the anatomy.
+- Several lines and twists still read as familiar (Flat Design 2013 tiles, star filters, Frutiger Aero). The judge's
+  wow is still median 3 to 4; no direction reached 5.
+- Specs only, no references; 2 votes over 45 and 30 directions spread by about 1 to 2 directions.
