@@ -13,6 +13,13 @@ export interface Mechanic {
   element: MechanicElement;
   /** One line: how the idea works as that part. */
   how: string;
+  /**
+   * Atlas engine (R4): the 2 or 3 page parts the idea changes (this part first, at least one flow or
+   * structure part), each with how it works there.
+   */
+  parts?: { element: string; label: string; how: string }[];
+  /** Atlas engine (R4): how the page's main task works differently. */
+  task?: string;
 }
 
 /** Words in an ingredient that suit an element, checked in this order. */
