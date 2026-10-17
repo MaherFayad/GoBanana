@@ -76,7 +76,12 @@ const MUST_KEEP_WORDS: readonly [RegExp, MechanicElement][] = [
 ];
 
 /** Briefs that pay or book keep a clear total and one primary action by default. */
-const TRANSACTION_BRIEF = /\b(checkout|payment|payments|pay|cart|booking|purchase|order|orders|basket|billing)\b/i;
+const TRANSACTION_BRIEF = /\b(checkout|payment|payments|pay|cart|booking|purchase|order|orders|basket|billing|pricing|paywall|subscribe|plan|plans|upgrade)\b/i;
+
+/** True when the brief or its pages pay, book or price something: only then does a screen have a total or a main button to carry a mechanic. */
+export function isTransaction(brief: string, pages: readonly string[] = []): boolean {
+  return TRANSACTION_BRIEF.test(`${brief} ${pages.join(" ")}`);
+}
 
 /** Parts a mechanic must not reskin when protected: users read the amount and press the button. */
 const RISKY: ReadonlySet<MechanicElement> = new Set(["total", "cta"]);
@@ -130,14 +135,17 @@ export interface MechanicInput {
   /** The other moves' entries, for affinity after the lead. */
   others: readonly { move: MoveId; entry: ListEntry }[];
   protect: ReadonlySet<MechanicElement>;
+  /** True when the brief or pages are a transaction (see isTransaction). Without it, "total" and "cta" are never picked. */
+  transaction?: boolean;
   /** Elements earlier directions of this bend landed on: spread over the top candidates. */
   used: ReadonlyMap<MechanicElement, number>;
 }
 
 /**
  * The mechanic for a direction: the element its lead idea suits best (its words, then the other
- * ingredients' words, then its move's default), never a protected total or main button, and
- * spread over the top three candidates so one bend does not land every idea on the same part.
+ * ingredients' words, then its move's default), never a protected total or main button, never a
+ * total or main button on a screen that has none (not a transaction), and spread over the top
+ * three candidates so one bend does not land every idea on the same part.
  */
 export function pickMechanic(input: MechanicInput): Mechanic {
   const ordered: MechanicElement[] = [];
@@ -148,7 +156,7 @@ export function pickMechanic(input: MechanicInput): Mechanic {
   for (const o of input.others) push(affinities(`${o.entry.label} ${o.entry.query}`));
   push(MOVE_DEFAULT[input.lead]);
   push(LAST_RESORT);
-  const allowed = ordered.filter((el) => !(RISKY.has(el) && input.protect.has(el)));
+  const allowed = ordered.filter((el) => !(RISKY.has(el) && (input.protect.has(el) || !input.transaction)));
   const top = allowed.slice(0, 3);
   const least = Math.min(...top.map((el) => input.used.get(el) ?? 0));
   const element = top.find((el) => (input.used.get(el) ?? 0) === least) ?? allowed[0] ?? "header";

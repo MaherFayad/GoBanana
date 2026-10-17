@@ -58,13 +58,13 @@ describe("P5 mechanic", () => {
   it("maps woven and braided ideas to dividers and progress bars", () => {
     const entry = (label: string) => ({ label, query: label, key: label, leads: true, hints: { tone: [], weird: 1 as const, notOn: [], style: [] } });
     const pick = (label: string, lead: "lens" | "transplant" | "scale" = "lens") =>
-      pickMechanic({ lead, entry: entry(label), others: [], protect: new Set(), used: new Map() });
+      pickMechanic({ lead, entry: entry(label), others: [], protect: new Set(), transaction: true, used: new Map() });
     expect(pick("talli gold braid")).toEqual({ element: "progress", how: "Talli gold braid as the progress bar: one segment fills per step, step names stay readable" });
     expect(pick("Sadu geometric bands").element).toBe("divider");
     expect(pick("subway map", "transplant").element).toBe("section-nav");
     expect(pick("numerals", "scale")).toMatchObject({ element: "total", how: expect.stringMatching(/^Giant numerals frames the total/) });
     // Protected, the total goes to the next part; a bend spreads its ideas over several parts.
-    expect(pickMechanic({ lead: "scale", entry: entry("numerals"), others: [], protect: new Set(["total"]), used: new Map() }).element).not.toBe("total");
+    expect(pickMechanic({ lead: "scale", entry: entry("numerals"), others: [], protect: new Set(["total"]), transaction: true, used: new Map() }).element).not.toBe("total");
     const ds = bendBrief({ brief: BRIEF, wildness: 4, lens: "talli", count: 8 }).directions;
     expect(new Set(ds.map((d) => d.mechanic.element)).size).toBeGreaterThan(1);
     expect(ds.some((d) => d.mechanic.element === "progress")).toBe(true);
@@ -76,8 +76,8 @@ describe("P5 mechanic", () => {
         for (const d of bendBrief({ brief, wildness, count: 8 }).directions) expect(["total", "cta"]).not.toContain(d.mechanic.element);
       }
     }
-    // A brief that pays nothing may use them (a giant numerals total on a podcast stats card).
-    const els = bendBrief({ brief: "podcast player stats", wildness: 5, count: 8, moves: ["scale"] }).directions.map((d) => d.mechanic.element);
+    // A transaction by its pages may use them (a giant numerals total on a plans screen).
+    const els = bendBrief({ brief: "podcast player stats", pages: ["Plans"], wildness: 5, count: 8, moves: ["scale"] }).directions.map((d) => d.mechanic.element);
     expect(els).toContain("total");
   });
 

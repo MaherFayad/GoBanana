@@ -16,7 +16,10 @@ export interface Domain {
   audience: string;
 }
 
-/** Checked in order: the first domain with a matching word wins. */
+/**
+ * Checked in order: the first domain with a matching word wins. Travel sits before luxury so a
+ * trip that books a hotel stays travel; ai-agents comes last so a vertical (an AI bank) keeps its own.
+ */
 export const DOMAINS: readonly Domain[] = [
   {
     id: "calm-care",
@@ -54,6 +57,13 @@ export const DOMAINS: readonly Domain[] = [
     audience: "teams who read numbers all day",
   },
   {
+    id: "travel",
+    words: ["travel", "flight", "flights", "airline", "airport", "trip", "trips", "itinerary", "boarding", "visa", "umrah", "سفر", "رحلة"],
+    allow: ["calm", "light", "warm", "energetic", "serious", "luxe"],
+    clash: [],
+    audience: "travellers planning, paying and on the move",
+  },
+  {
     id: "luxury",
     words: ["luxury", "fashion", "jewelry", "jewellery", "perfume", "fragrance", "wine", "hotel", "resort", "boutique", "couture", "beauty", "skincare", "watches", "فاخر"],
     allow: ["luxe", "calm", "dark", "serious", "light", "warm"],
@@ -81,11 +91,20 @@ export const DOMAINS: readonly Domain[] = [
     clash: [],
     audience: "people chasing a personal best",
   },
+  {
+    id: "ai-agents",
+    words: ["agent", "agents", "agentic", "autonomous", "copilot", "assistant", "chatbot", "llm", "ai", "automation", "orchestration", "وكيل"],
+    allow: ["serious", "calm", "cold", "warm", "playful", "light", "dark"],
+    clash: [],
+    audience: "people who hand work to software and still answer for it",
+  },
 ];
 
 /** The domain the brief names, or null. */
 export function detectDomain(brief: string): Domain | null {
   const words = new Set(brief.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}-]*/gu) ?? []);
+  // "AI-powered" also counts as "ai" and "powered"; the whole token stays for "e-services".
+  for (const w of [...words]) if (w.includes("-")) for (const part of w.split("-")) if (part) words.add(part);
   return DOMAINS.find((d) => d.words.some((w) => words.has(w))) ?? null;
 }
 

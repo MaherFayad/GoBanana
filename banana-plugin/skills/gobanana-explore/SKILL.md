@@ -1,11 +1,11 @@
 ---
 name: gobanana-explore
-description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
+description: Bend one page or screen into wild, usable directions, each with a full visual spec, then pull two zones of linked references into a GoBanana moodboard canvas - art direction (the wild idea as images) and platform-correct UI references - with a "steal:" note on each. For one crazy idea over a page or two (launch page, onboarding, empty state, 404, paywall, year in review), not a whole product redesign. Use when the user says "explore directions", "go wild", "push this design", "crazy ideas for", "make it weird", "make it cool", "make it bananas", "something nobody has done", "unexpected directions", "get me out of the box", "fresh take on", "inspire me", "where can we be weird", "this looks like every other app", or asks for bold visual concepts, art directions or references for a screen, page or launch. Runs get_canvas, new_canvas, bend_brief, search_references, rate_references, rate_directions, add_to_canvas, arrange_canvas and open_canvas from the GoBanana MCP server, plus the user's Mobbin connector when it is connected. Use gobanana-moodboard to arrange a board, gobanana-frankenstein to stitch parts of the references into new pages, gobanana-handoff to hand a kept direction to a coding tool.
 ---
 
 # GoBanana explore
 
-Turn a fuzzy "make it cooler" into a few sharp, buildable directions for one page or two, then fill a board with two zones of references: the wild idea as images (art direction) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
+Turn a fuzzy "make it cooler" into six to eight sharp, buildable directions for one page or two, each in its own visual language, then fill a board with two zones of references: the wild idea as images (art direction) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
 
 GoBanana is for one crazy idea over a page or two: a launch page, onboarding, an empty state, a 404, a paywall, a year in review. It is not the product's main design direction. Say so when the user asks to redesign the whole product, and help them pick where the weirdness should go.
 
@@ -19,17 +19,51 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never show a dropped idea.
 - **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build.
-- **Taste first.** Ask the user for 3 to 5 style words or a reference board before `bend_brief`; never invent them.
+- **Mode first.** Ask which mode before any other work (see "First: ask the mode"). Never skip it to go further.
+- **Explore writes nothing.** Explore never writes project files or code. It ends at the board and the directions with the question "Draft any of these?".
+- **Taste first.** Ask the user for 3 to 5 style words or a reference board before `bend_brief`, in the same turn as the mode question; never invent them.
 - **Arabic copy.** Any Arabic UI copy you write (labels, notes, prompts): noun-form labels (الدفع, not ادفع الآن; ملخص الرحلة, not لخص رحلتك), no diacritics, Western digits (0 to 9), Latin IATA codes (RUH, DXB, JED), right to left.
 - **Right platform.** Never show web dashboards or landing pages on a phone brief, and never phone screens on a website or web app brief. Rate them `bad` with `off_topic`.
-- **One question at most per turn.** When you must ask, fold everything you need (subject, platform, where the weirdness goes) into one short question. Never a list of questions.
+- **One question at most per turn.** When you must ask, fold everything you need (mode, taste, subject, platform, where the weirdness goes) into one short question. Never a list of questions.
 - **Trust write results.** `add_to_canvas`, `rate_directions`, `rate_references` and `arrange_canvas` answers are the record. Do not call `get_canvas` after each write to check it. Read the board at most once, at the end, and only if you need something from it.
 
 ## Steps
 
+### First: ask the mode
+
+Before any work (no search, no canvas, not even the free `bend_brief` in step 3), ask once. In Claude Code use AskUserQuestion; in the Claude app and elsewhere ask in chat. One question, four options, Explore first:
+
+> How far should I take this?
+> 1. **Explore directions (Recommended):** 6 to 8 very different directions with references on the board. Nothing is drafted or built until you say so.
+> 2. **Explore, then draft my picks:** the same, and I draft the directions you pick as quick screens.
+> 3. **Finished from the first go:** I work like a design team: problem, space, specs, wireframes, references, directions for you to pick, then the full app with components, tokens and a clean file structure.
+> 4. **Just references:** a big clustered board, no directions yet.
+
+In the Claude app, option 3 reads: "Finished needs Claude Code; I'll do drafts here and give you a build pack to finish there."
+
+Fold the taste question into this same turn, so the user is asked once. If style words or a reference board are missing, add one line under the options (in AskUserQuestion, a second question in the same call): "Also give me 3 to 5 style words or a reference board." If the subject or platform is also missing, fold those in too (step 1). Then stop and wait.
+
+**Skip the question** only when the user already said which:
+
+- "explore", "directions", "go wild", "inspire me" -> Explore
+- "draft it", "mock it up" -> Drafts (explore, then draft my picks)
+- "build the whole app", "ship it" -> Finished
+- "just references", "moodboard" -> Just references
+
+When unsure, ask. Never skip it to go further. When you skip it, say the mode in one line ("Mode: Explore") and go on. If taste is still missing, ask only for taste (step 1).
+
+**What each mode does:**
+
+- **Explore:** steps 0 to 14. No project files, no code. It ends at the board and the directions with the question "Draft any of these?".
+- **Drafts:** the Explore flow first. Draft only after the user picks, and only the picks, as quick screens.
+- **Finished:** the full build pipeline is not built yet. Say in one line that it is coming, run Explore now, and offer drafting the picks next. In the Claude app, say Finished needs Claude Code and offer drafts plus a build pack (gobanana-handoff).
+- **Just references:** steps 0 to 2 and 6, then one `search_references` with the brief as `query`, no `directionId` and `count: 24`; rate it (step 10), place the usable ones and call `arrange_canvas` with `masonry`. No `bend_brief`, no directions.
+
+Every mode can move up a step later without redoing the work ("draft these", "build it"): the board and the directions carry over.
+
 ### 0. Check for Mobbin first
 
-Before anything else, look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. Note the answer; steps 6b, 8, 11 and 12 use it. When it is connected, the run uses both: Mobbin for what real shipped apps do on this page (the baseline and the usable patterns, placed on the board as screens), GoBanana for the wild directions and references that go past it. If none exist, skip every Mobbin step silently: do not mention Mobbin.
+Right after the mode is settled, look for the user's own Mobbin connector: tools named like `mcp__*Mobbin*__search_screens`, `search_flows` or `search_sections`. Note the answer; steps 6b, 8, 11 and 12 use it. When it is connected, the run uses both: Mobbin for what real shipped apps do on this page (the baseline and the usable patterns, placed on the board as screens), GoBanana for the wild directions and references that go past it. If none exist, skip every Mobbin step silently: do not mention Mobbin.
 
 ### 1. Shape the brief
 
@@ -40,11 +74,25 @@ Write a one-line brief (max 500 characters). A good brief names:
 - **The default to escape**, if they named one ("looks like every fintech app").
 - **Must keep**, if any (brand color, Arabic and English).
 
-If the ask is too vague to name a subject ("make it cool"), ask ONE short question that folds in the platform, the taste and states the wildness default, then stop and wait:
+If the ask is too vague to name a subject ("make it cool"), ask ONE short question that folds in the platform, the taste and states the wildness default (in the same turn as the mode question when that is still open), then stop and wait:
 
 > What should I make cool, and is it for a phone app, a website or a web app? Give me 3 to 5 style words or a reference board. I'll go at 3 of 5 unless you say otherwise.
 
-**Taste first.** When the subject is clear but the user gave no style words or board, ask for them in that same one question ("Give me 3 to 5 style words, like minimal or big typography, or a reference board"). Do not ask about wildness or anything else separately. Ask once. If the user said "just go", do not ask; never invent style words for them: each direction then uses its own `spec.styleWords`, and you say so.
+**Taste first.** When the subject is clear but the user gave no style words or board, ask for them in that same one question ("Give me 3 to 5 style words, like minimal or big typography, or a reference board"). Do not ask about wildness or anything else separately. Ask once, together with the mode question. If the user said "just go", do not ask; never invent style words for them: each direction then uses its own `spec.styleWords`, and you say so.
+
+### 1b. Light Stage 0: problem and worth questioning
+
+Infer a short problem summary from the brief and the repo (README, copy, screens; analytics or ticket tools if connected). Ask nothing extra beyond the mode and taste question. Never invent numbers, customers or benchmarks; write "unknown" instead. Keep it in your head, not in a file:
+
+- **Job:** the one thing the user of this page must get done.
+- **Who:** the person, their situation and device.
+- **Goal and metric:** what the business needs, and the number that shows it, if known.
+- **Must keep:** brand, languages, legal parts, the one primary action. These also go into `mustKeep` (step 7).
+- **Edge cases:** the 3 to 5 situations that break the happy path (empty, error, long names, Arabic and RTL, slow network).
+
+Then note up to 5 **Worth questioning** items: complexity that comes from business decisions, not user needs. Look for extra pricing tiers, a sign up before value, a required field nobody uses, a confirmation for a reversible action, a choice a sensible default could make. Each is one line: what to change (cut, merge, default, defer) and why. Never remove anything silently. Never challenge legal or accessibility needs (PDPL consent, ZATCA invoice fields, WCAG); make them easier to complete, never optional. Simpler is not emptier: never hide the total, fees or cancellation terms.
+
+The list goes in the final reply (step 13). It is not a gate the user must pass. The subtract direction (step 7) applies it; items the user accepts later become constraints for drafts, and rejected ones are not raised again.
 
 ### 2. Pin the platform
 
@@ -113,26 +161,48 @@ Use both in the next steps: put the default to escape into the brief you pass to
 
 ### 7. Bend the brief, wide
 
-Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from step 1 and step 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
+Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` (the most it takes) and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from steps 1, 1b and 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
 
 **Build every direction around its mechanic.** `mechanic` is `{ element, how }`: the working part of the page the wild idea becomes (`progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state`; for example a braid as the progress bar, tabs as sections, a woven band as the section divider). It never breaks a must keep: the server drops a direction whose ingredients would. Use it in the pattern you describe, in the card, and in searches: look for UI that has that element ("flight checkout progress bar app ui").
 
+### 7b. Directions: six to eight, each its own language
+
+The server does not take candidates or a language yet. Your grounded list is your own thinking: use it to judge, rename and pick the 8 directions `bend_brief` returns. Never pass it as a tool input.
+
+1. **Ground first, before the step 7 call.** From the problem summary, the Worth questioning list and the brief, think of 7 to 10 candidates from the audience's world: objects, places, rituals, graphic traditions, publications, signage, data graphics. Each gets a line on why it resonates, how it looks, and its material family. Span at least 4 families. First name the category default and its predictable opposite; neither may appear. Never use a tool the audience itself operates (for AI products: no terminal, no chat bubble, no robot).
+2. **Match the bend to them.** Keep the rolled directions that hit a candidate or beat one. You may give a direction a sharper title in your cards and idea notes when a candidate names it better; keep its `directionId`.
+3. **Write its language,** one line per direction, a value on each of 7 axes, from its `spec`:
+   - type voice (grotesk, neo-grotesk, editorial serif, classic serif, mono, condensed, rounded, display retro, script, slab)
+   - color strategy (restrained, committed, full palette, drenched)
+   - ground (light, dark, colored, photographic)
+   - density (airy, balanced, dense)
+   - composition (grid, editorial, poster, spatial or layered, list-first, card-first)
+   - material (flat, paper and print, glass and light, 3D and object, photographic, textile and pattern)
+   - motion (still, snap, glide, spring, cinematic)
+4. **Check before you show anything:**
+   - **Difference:** every pair of kept directions differs on at least 4 of the 7 axes. No two share both type voice and color strategy. No two share a tension or a material family. When a pair fails, drop the weaker as `duplicate_idea`.
+   - **Memory test:** what would someone describe an hour after seeing the first screen? If the answer is a mood, it fails.
+   - **Category test:** if someone could guess the look from the category name alone, it fails.
+   - **Saturated looks:** cream plus serif plus terracotta; near black plus one neon; broadsheet hairlines plus italic serif plus mono labels; flat ink plus hard offset shadows. Landing on one the brief did not ask for fails.
+   - **Job:** it still does the Job from step 1b and keeps every must keep.
+5. **The spread:** 2 Ship, 2 or 3 Stretch, 2 or 3 Wild. One Ship direction is the **subtract** direction: the same job with the Worth questioning items applied and nothing added. Take the calmest rolled direction for it and say what it removes. On calm task pages (forms, checkout steps, tables) every direction changes only type, palette, density and one signature move, never the layout, navigation or controls.
+
 ### 8. Triage the ideas (before you show any)
 
-Keep an idea only if all three hold:
+Keep an idea only if all of these hold:
 
 - **(a) UI path.** Its `mechanic`, `spec.pattern` and `spec.signature` give the named page a concrete UI move on this platform ("fare cards that stack like boarding passes"). If you cannot say it in a few words, it fails.
-- **(b) Usable UI references.** After search and audit it has at least 6 on-topic UI references for the platform. Art references do not count here.
-- **(c) Not a near duplicate** of a kept idea.
+- **(b) Usable UI references.** After search and audit it has at least 4 on-topic UI references for the platform. Art references do not count here.
+- **(c) Its own language.** It passes the checks in step 7b.
 - **With Mobbin (step 6b):** also drop an idea that lands on the baseline (it only restyles what shipped apps already do), and prefer ideas whose `spec.pattern` keeps the must keeps. Name the Mobbin pattern a kept idea builds on.
 
-1. **First pass, free:** apply (a) and (c) to all 8. Shortlist the number the user asked for, or 3 when they gave no number. Never more than 4. Each shortlisted direction costs one search (step 9). If a shortlisted idea fails (b), you may search one backup idea, still within 4.
-2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 6: drop it.
-3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every one of the 8 ideas: `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
+1. **First pass, free:** apply (a) and (c) to all 8. Shortlist 6 to 8, or the number the user asked for. Each shortlisted direction costs one search (step 9). Fewer than 6 pass when the user asked for no smaller number: call `bend_brief` once more (other `moves`, a `lens`, or an unused candidate's words in the brief), shortlist from both rolls, and if still under 6, go on with what you have and say why in one line. Never bend a third time.
+2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 4: drop it.
+3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every idea from every bend (8, or 16 after a second bend): `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
 
 ### 9. Search both zones for the shortlist
 
-For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 12`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: one search per shortlisted direction (at most 4), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
+For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 12`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: one search per shortlisted direction (at most 8), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
 
 - **UI lanes** (`zone: "ui"`): `fidelity` (real screens for the page), `taste` (the style words on the page), `hero`, `component`, `bridge` (the idea already applied to UI, so each direction gets UI of its own idea; it runs right after fidelity, and the reply says when it found nothing), `locale` (Arabic UI, also when only the board brief says Arabic or RTL). The server words them for the platform and picks sources to match: website briefs pull from website galleries (hero sections, landing pages, bento layouts), mobile briefs from mobile app and motion galleries, web apps from dashboard galleries, plus Pinterest, Dribbble, Behance and Awwwards.
 - **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
@@ -157,9 +227,9 @@ The server does not look at images. You do.
 
 ### 11. Shipped vs next (only when step 0 found Mobbin)
 
-Use the screens from step 6b. For each kept direction, pick 2 to 4 Mobbin screens that fit it: the real pattern it builds on (its BUILD ON anchors) or a shipped screen that is already wild in its way. Search again (`search_sections` for a component, such as "seat picker" or "bottom sheet") only when step 6b did not already give one. Skip a screen that only shows the baseline the direction escapes. Then, in step 12:
+Use the screens from step 6b. For each kept direction, pick 1 or 2 Mobbin screens that fit it (2 to 4 when you keep 3 or fewer directions): the real pattern it builds on (its BUILD ON anchors) or a shipped screen that is already wild in its way. Search again (`search_sections` for a component, such as "seat picker" or "bottom sheet") only when step 6b did not already give one. Skip a screen that only shows the baseline the direction escapes. Then, in step 12:
 
-- Place them as images in that direction's UI grid, each as one `add_to_canvas` item `{ "type": "screen", "imageUrl": "<image_url>", "sourceUrl": "<mobbin_url>", "app": "Revolut", "title": "payment sheet", "platform": "ios", "directionId": "<id>", "note": "steal: the pinned total above the pay button" }`. Pass the URLs exactly as the Mobbin tool returned them. They count toward the 6 to 8 UI items, so the GoBanana UI references fill the rest. The tile's source chip reads mobbin.com and links to the screen page; if the image link has expired, the tile shows a link card instead.
+- Place them as images in that direction's UI grid, each as one `add_to_canvas` item `{ "type": "screen", "imageUrl": "<image_url>", "sourceUrl": "<mobbin_url>", "app": "Revolut", "title": "payment sheet", "platform": "ios", "directionId": "<id>", "note": "steal: the pinned total above the pay button" }`. Pass the URLs exactly as the Mobbin tool returned them. They count toward the UI items, so the GoBanana UI references fill the rest. The tile's source chip reads mobbin.com and links to the screen page; if the image link has expired, the tile shows a link card instead.
 - Add the baseline to the board as **one** note: `{ "type": "note", "text": "Shipped today: [Airbnb, checkout](mobbin link), [Revolut, payment sheet](mobbin link), ..." }`. Up to 3 of its screens may sit next to it as `screen` items (same call, no `directionId`), when the board has room under its item limit. Place it even if the wild directions end up thin.
 - In each kept direction's idea note, add its anchor: `BUILD ON: [Revolut, payment sheet](mobbin link)`. This is what keeps the wild idea usable.
 - Mention them in your reply in one line, as the "what works" baseline next to the wild directions.
@@ -169,47 +239,45 @@ Use the screens from step 6b. For each kept direction, pick 2 to 4 Mobbin screen
 
 For each kept direction, call `add_to_canvas` with its `sectionId` (create the section first if it does not exist):
 
-- **Art direction row: 2 to 4 art items**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
-- **UI references grid: 6 to 8 UI items**, best first, from the UI zone only, including the 2 to 4 Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
-- **One idea note** per section: `WILD: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>.`
+Counts depend on how many directions you keep. With 4 to 8: 1 to 3 art and 4 to 6 UI each. With 1 to 3 (the user asked for fewer): 2 to 4 art and 6 to 8 UI each.
+
+- **Art direction row**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
+- **UI references grid**, best first, from the UI zone only, including the Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
+- **One idea note** per section: `<TRACK>: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>. LANGUAGE: <the 7 axes from step 7b>.` TRACK is SHIP, STRETCH or WILD; the subtract direction starts `SUBTRACT:` and names what it removes.
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
-Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+Spread the items evenly across directions. When the board's item limit (Free: 40) cannot hold it all, place fewer per direction, at least 3 UI and 1 art each, and say so in one line. Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
 
-If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its full 4 items and keep the UI grid UI only.
+If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its top count and keep the UI grid UI only.
 
 ### 13. Show the board and present the kept directions
 
 Call `open_canvas` with the `canvasId`. If the client shows it inline, say it is open above. **Always** give the web link too: "Open the board here: <webUrl>".
 
-Keep the reply short and in this order: the board link, one line with platform, page and wildness, the direction cards, the one-liners below, then next steps (step 14). No prose paragraphs.
+Keep the reply short and in this order: the board link, one line with mode, platform, page and wildness, the Worth questioning list (step 1b, up to 5 one-line items), the direction cards, the one-liners below, then next steps and the closing question (step 14). No prose paragraphs.
 
-Present each kept direction as a compact card, from its `spec`, five short lines at most, and always end it with its highlights: 2 to 3 UI references and 1 or 2 art references, each written exactly as `[title](sourceUrl) (site)`:
+Present each kept direction as a compact card, four lines at most, with equal weight, Ship first, then Stretch, then Wild. End each with its highlights: 2 UI references and 1 art reference, each written exactly as `[title](sourceUrl) (site)`:
 
-> **1. Frosted vinyl sleeve** (transplant + material)
-> Mechanic: total = the sleeve frames the total; the amount stays plain and large. Pattern: fare summary slides out of a sleeve.
-> Look: condensed grotesk, frosted off-white with one ink blue accent; the sleeve slides 200ms, still with reduced motion.
-> Why it fits: travel tickets are objects people keep.
-> Art direction: [Frosted record sleeve](sourceUrl) (pinterest.com), [Clear vinyl packaging](sourceUrl) (behance.net)
-> UI: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com)
+> **1. Frosted vinyl sleeve** (Stretch)
+> Mechanic: total = the sleeve frames the total; the amount stays plain and large.
+> Language: condensed, restrained, light, airy, card-first, glass and light, glide.
+> Refs: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com); art: [Frosted record sleeve](sourceUrl) (pinterest.com)
 
-The full spec is on the board and in the hand-off files; do not repeat every field here.
+The subtract card says what it removes in its Mechanic line. The full spec is on the board and in the hand-off files; do not repeat every field here.
 
 If the user asked for raw inspiration, add one line: "The raw stuff (textures, objects, posters) lives in each direction's Art direction row; the UI references stay in their own grid."
 
 Then:
 
-- **One line** on dropped ideas, counts and reasons only: "Dropped 5 of 8 ideas: 3 had no clear screen idea, 1 found too few UI references, 1 repeated another." Never name the dropped ideas or list them one by one, not even in brackets.
+- **One line** on dropped ideas, counts and reasons only: "Dropped 2 of 8 ideas: 1 had no clear screen idea, 1 shared a language with another." Never name the dropped ideas or list them one by one, not even in brackets.
 - **One line** on removed results, and any lane you retried: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea); retried the bridge lane once as 'film strip seat picker ui'."
 - **One line** on shipped screens, if Mobbin ran: "Shipped today: [Airbnb, checkout](link), [Revolut, payment](link)."
 
-### 14. Offer next steps
+### 14. Offer next steps, then ask
 
-- **Hand off:** turn a kept direction into scoped files for Claude Code, Cursor, Copilot, v0 or Lovable (gobanana-handoff).
-- **Build then critique:** build the page, then screenshot and grade it against the direction (gobanana-critique).
-- **Palette:** colors from the art direction or UI references, with WCAG checks (gobanana-palette).
-- **Frankenstein it:** cut the best parts out of the UI references (a nav from one, a hero from another, cards from a third) and stitch 3 or 4 new page variants on the board, each part linked to its source (gobanana-frankenstein).
-- **Turn it up or down:** wildness N+1 or N-1, a lens, other taste words, or another page from the wild spots.
+One short line of other next steps: hand off (gobanana-handoff), Frankenstein it (gobanana-frankenstein: stitch new pages from parts of the UI references, each part linked to its source), palette with WCAG checks (gobanana-palette), or turn it up or down (wildness, a lens, other taste words, another page).
+
+In Explore (and in Finished, which runs Explore for now), the last line of the reply is always the question **"Draft any of these?"**, with the card numbers to pick from. Write no files and no code until the user answers. In Drafts mode, ask the same question, then draft only the picks.
 
 ## When things go wrong
 

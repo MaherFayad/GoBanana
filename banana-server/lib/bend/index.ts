@@ -37,7 +37,7 @@ import {
 import { WILDNESS } from "./wildness";
 import { familyOf } from "./families";
 import { briefMarket, LATIN_ONLY_CONSTRAINTS, MARKET_TRADITIONS, needsArabic, type Market } from "./market";
-import { brokenMustKeep, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
+import { brokenMustKeep, isTransaction, pickMechanic, protectedElements, type MechanicElement } from "./mechanic";
 
 export { parseBendInput, bendInputSchema, BendInputError, MAX_COUNT, DEFAULT_COUNT } from "./input";
 export { LENSES, LENS_IDS, LISTS } from "./lists";
@@ -68,7 +68,7 @@ export type { BendInput, BendResult, Direction, MoveId, Wildness, WildSpot } fro
 export { detectPlatform, PLATFORM_PROFILES } from "@/lib/platform";
 export { fixCase, VERIFIED_STYLE_WORDS } from "./spec";
 export { detectDomain } from "./tone";
-export { MECHANIC_ELEMENTS, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
+export { MECHANIC_ELEMENTS, isTransaction, pickMechanic, protectedElements, brokenMustKeep } from "./mechanic";
 export type { Mechanic, MechanicElement } from "./mechanic";
 
 /** How many wild spots a result suggests. */
@@ -540,6 +540,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   // a direction whose ingredients break one is dropped; a mechanic never reskins a protected total
   // or main button. Never part of the seed, so ids never move.
   const protect = protectedElements(input.brief, input.mustKeep ?? []);
+  const transaction = isTransaction(input.brief, pages);
   const mechanicUse = new Map<MechanicElement, number>();
 
   /** First template in rotation that fits the word cap and is not taken, or null. */
@@ -656,6 +657,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       entry: leadEntry,
       others: promptMoves.filter((m) => m !== lead).map((m) => ({ move: m, entry: (m === garnishMove ? twistEntry : picked[moves.indexOf(m)])! })).filter((o) => o.entry),
       protect,
+      transaction,
       used: mechanicUse,
     });
     mechanicUse.set(mechanic.element, (mechanicUse.get(mechanic.element) ?? 0) + 1);
