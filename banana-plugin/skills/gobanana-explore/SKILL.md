@@ -219,6 +219,18 @@ Keep an idea only if all of these hold:
 2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 4: drop it.
 3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every idea from every bend (8, or 16 after a second bend): `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. A declined challenger is a `drop` with `off_brief`. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
 
+### Parallel run (Claude Code)
+
+Use this only when the Agent tool and the plugin agents `gobanana:gb-scout` and `gobanana:gb-curator` are both there (Claude Code and Cowork). In the Claude app there are no plugin agents: run steps 9 to 12 inline as written. Subagents start with no context: they do not see this conversation or this skill, so write the full packet into every prompt. They never ask the user; only you ask.
+
+1. **After `bend_brief` and the first triage pass (step 8.1)**, spawn the scouts in one message, in parallel: one per 2 shortlisted directions, plus one for the sweep only if step 6c has not run. Never more than 4 at once (search sends up to 4 requests in flight and Serper allows 5 a second). If that makes 5, run the sweep inline first.
+2. **Each scout prompt** carries, written out: `canvasId`, the brief, `platform`, `page`, `taste` (or "none"), and its lanes: `sweep` with the query, components and adjacent phrases, or its 1 or 2 directions, each with `directionId`, title, mechanic, language (the 7 axes) and `spec.steal`. Add one line: "Follow the rating, retry and art rules in your agent file."
+3. **Wait for all scouts.** A scout that returns `NO_TOOLS`: run its lanes inline. A plan message: relay it once. From the returned `COUNTS` run the second triage pass (step 8.2), then `rate_directions` (step 8.3).
+4. **Spawn one `gb-curator`** with the `canvasId`, the kept directions (id, title, sectionId if the board has one, the idea note you wrote per step 12), the "Shipped today" note and each direction's Mobbin screens (step 11, with imageUrl, sourceUrl, app, title, platform, cluster and note, exactly as the connector returned the URLs) if Mobbin ran, the board item limit if known, and every kept line from the scouts, for kept directions and the Space only.
+5. **Then step 13 as usual:** `open_canvas` and the reply. Take the card refs, the Space line, removed counts and the unseen ids from the scouts' returns.
+
+Everything else (the mode question, Stage 0, the sweep, the bend, triage, the reply) stays the same.
+
 ### 9. Search both zones for the shortlist
 
 For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 24`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: the sweep (1 search, step 6c), plus one search per shortlisted direction (at most 8), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
