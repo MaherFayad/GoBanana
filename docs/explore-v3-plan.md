@@ -5,7 +5,7 @@ Scope: `banana-server/lib/bend`, `banana-server/lib/mcp`, `banana-plugin/skills`
 
 ## Positioning (one line)
 
-GoBanana explores; it does not solve. Every direction is a **bet on the business problem**, shown in three tracks (Ship, Stretch, Wild), and drafts live where the user works: the repo in Claude Code, an Artifact in the Claude app, or wherever the user says.
+GoBanana explores; it does not solve. Every direction is a **bet on the business problem**, shown in three tracks (Ship, Stretch, Wild). **The user picks before anything is built:** in Claude Code the first output is a Pick page (an Artifact) that shows the directions side by side. Drafts come only after a pick, and they live where the user works: the repo in Claude Code, an Artifact in the Claude app, or wherever the user says.
 
 ## The problems, with evidence
 
@@ -60,12 +60,72 @@ The skill decides from what Claude can see itself:
 
 The server `host` block breaks ties.
 
+### Pick first (Claude Code)
+
+In Claude Code the first thing the user sees is a **Pick page**, not code. Code is expensive and hard to compare; a page of options is cheap and easy to compare. Only the directions the user picks get drafted.
+
+This matches two sources:
+- Claude Code's own guidance for artifacts: "Lay out several design or implementation options side by side" and "Bring the result back to your session" (an export control that hands the choice back to the terminal).
+- Impeccable v4, which shows its direction choices on a local decision page (`impeccable serve-question`) before it builds anything.
+
+#### The flow
+
+1. **Context.** Read the repo (Workstream B): framework, tokens, components, the route of the named page.
+2. **Directions.** Bend, search and fill the board as today. The board holds the references.
+3. **Pick page.** Publish an Artifact with the kept directions side by side: one Ship, one Stretch and one Wild, with "My pick" marked (Workstream E).
+4. **Choose.** In the same turn, ask with **AskUserQuestion** (`multiSelect: true`):
+   - one option per direction, "My pick" first and marked "(Recommended)"
+   - "Other" lets the user mix ("Ship's layout with Wild's palette")
+5. **Draft.** Draft only what the user picked, as code in the sandbox route (routing table below). Screenshot each draft onto the board as `type: "build"`.
+6. **Record.** Republish the Pick page to the same URL with each draft's screenshot and a "Drafted" or "Not picked" state. This is allowed because a screenshot of the user's own build is their own work. The page becomes the decision log for the run.
+
+#### What a direction card shows
+
+The page is an HTML Artifact. Its CSP blocks every external image, and GoBanana never re-hosts reference images, so **no reference image goes on the Pick page.** References stay on the board, and the page links to them.
+
+Each card shows:
+- **Header:** the track and the title, for example "Ship · Flight strip approvals".
+- **A rough sketch** of the named page drawn in HTML and CSS: low fidelity, the direction's type and palette, and the **mechanic drawn in place** (for example the approval gate as a flight strip). On the Ship card the sketch uses the project's own tokens, so it looks like their product.
+- **The bet:** hypothesis, tension and what to measure, plus the edge case it survives.
+- **Cost to build:** "this sprint, existing components" or "new component: approval strip". Plus the must keeps it holds.
+- **Links:** 2 to 3 reference links as `title (site)` and the board link.
+- **Steering hints:** "Reply safer, wilder, cleaner or more business for this card."
+
+Extra blocks:
+- A **"Shipped today" strip** at the top when Mobbin ran: text links only, the baseline the directions escape.
+- A **"Copy as prompt"** button. It copies the pick, any mix and any notes as one line to paste into the terminal. It needs no capability, and is the fallback when the terminal question has scrolled away.
+
+#### How the choice gets back to Claude
+
+| Option | How | For | Against | Verdict |
+| --- | --- | --- | --- | --- |
+| A. Look on the page, choose in the terminal | Pick page plus AskUserQuestion in the same turn, with Copy as prompt as a backup | Instant; no runtime capability, so no publish permission prompt; works offline from the page | Choosing happens in a second place | **Ship this** |
+| B. Choose on the page (`db` capability) | Card buttons write picks to a `picks` collection, and Claude reads them with ArtifactData | Choices stay saved; teammates can vote on a shared page | Declaring a capability asks before publish; a db write does not wake the session, so the user still has to say "done" | Later, for team reviews |
+| C. Claude Design canvas | `/design` drafts one artboard per direction (beta template, Claude Code v2.1.265+) | Editable, exports PNG or PDF | Already a draft, not a cheap choice; reading the choice back is unclear; beta | Option for the draft step, not the pick |
+| D. GoBanana inline canvas | MCP Apps | Already built | Claude Code does not render MCP Apps (it declares no UI extension) | No |
+
+#### When artifacts are not available
+
+Claude Code artifacts need:
+- a Pro, Max, Team or Enterprise plan
+- a claude.ai login (an API key, a gateway token or a cloud provider credential cannot publish)
+- the Anthropic API as the provider
+
+They are off in `-p` runs, the Agent SDK and the GitHub Action.
+
+When publishing fails:
+1. Write the same page to `design/explorations/<slug>/pick.html` in the repo. It is the user's own scoped folder, which matches the existing hand-off convention.
+2. Say where it is in one line.
+3. Still ask with AskUserQuestion.
+
+Never block the pick on the page.
+
 ### Draft routing table
 
 | Where | Draft target | How |
 | --- | --- | --- |
-| Claude Code, in a repo | Real code in the project's framework, in a sandbox route or `design/explorations/<slug>/drafts/` | Never touch production routes or shared components. Screenshot with Playwright and place the shot on the board as `type: "build"`. Optional: publish a Claude Code artifact page for sharing. |
-| Claude Code, no repo | Standalone HTML drafts in `design/explorations/<slug>/drafts/` | Same screenshot loop |
+| Claude Code, in a repo | **After the Pick page and a pick:** real code in the project's framework, in a sandbox route or `design/explorations/<slug>/drafts/` | Never touch production routes or shared components. Screenshot with Playwright and place the shot on the board as `type: "build"`. Republish the Pick page with the result. |
+| Claude Code, no repo | **After the Pick page and a pick:** standalone HTML drafts in `design/explorations/<slug>/drafts/` | Same screenshot loop |
 | Claude app (web, Desktop, mobile) | An Artifact (HTML page, or the Design template canvas when listed) | Add a `note` on the board linking to the artifact. The server cannot create artifacts; only the model or host can. |
 | Unknown, or the user named nothing and has no memory | Ask once | See the question below |
 
@@ -287,7 +347,7 @@ The Ship track follows Impeccable's "mode-operate" rule: "The world lends four t
 | **P0: not boring** (server) | Domain packs: ai-agents, ai-assistant, travel. Pack-anchored ingredient draw. Page-aware mechanics. `total` and `cta` only on transactions. `bet` and `edgeCase` fields; `whyItFits` from the bet. | The probe above re-run: every AI brief detects its domain; no mechanic says "total" off a transaction; at least 5 of 8 directions use a pack tension; no two `whyItFits` lines match. |
 | **P1: tracks and steering** (server plus explore skill) | `tracks`, `track`, the `scenario` move, steering verbs, "My pick". | Default run shows Ship, Stretch and Wild with one pick; "safer" re-bends to Ship and keeps the mechanic. |
 | **P2: context** (skills plus canvas field) | `CONTEXT.md` in the repo, `context` on the canvas, intake of 3 fields at most, repo read in Claude Code. | A new chat with no memory on an existing board asks nothing it already knows; Claude Code names the framework and tokens before bending. |
-| **P3: surfaces** (server plus skills) | `host` block, text-only `open_canvas` fallback, per-request capabilities (MCP 2026-07-28), draft routing table, the one question when unsure. | "Make drafts" in Claude Code writes to `design/explorations/<slug>/drafts/` and screenshots to the board. In the Claude app it makes an Artifact and links it from the board. Unknown host: one question. |
+| **P3: pick first and surfaces** (skills first, then server) | Pick page in Claude Code (`references/pick-page.md` in `gobanana-explore`: card layout, sketch rules, Copy as prompt, no external images). AskUserQuestion in the same turn. Local `pick.html` fallback. Republish with screenshots after drafting. Then the `host` block, text-only `open_canvas` fallback, per-request capabilities (MCP 2026-07-28), the draft routing table, and the one question when unsure. | In Claude Code a run ends on a Pick page plus one AskUserQuestion; no code is written before a pick. "Make drafts" then writes only the picked directions to `design/explorations/<slug>/drafts/`, screenshots them to the board, and republishes the Pick page. In the Claude app it makes an Artifact and links it from the board. Unknown host: one question. |
 | **P4: clean floor** (build, critique, draft) | `clean-floor.md`; critique runs axe and contrast; optional Impeccable detector interop. | A Ship draft passes the floor with zero P0 findings. |
 
 ## New evals (`banana-plugin/evals`)
@@ -296,6 +356,9 @@ The Ship track follows Impeccable's "mode-operate" rule: "The world lends four t
 | --- | --- | --- |
 | 47-ai-agent-not-generic | "Go wild on the agent activity view of our support agents dashboard, minimal and editorial" | No mechanic on `total`. At least 2 kept directions name an agent tension. No reflex (purple gradient, sparkle, orb) in specs. |
 | 48-code-reads-repo | Claude Code in a fixture repo with Tailwind tokens | Names the framework and tokens before `bend_brief`. Ship direction uses project tokens. |
+| 48b-code-pick-first | Claude Code in a fixture repo: "go wild on the onboarding and draft it" | Publishes a Pick page (Artifact tool used) and asks with AskUserQuestion in the same turn. No Write or Edit to project source before the answer. No `<img>` with an external `src` in the page. |
+| 48c-pick-fallback | Same, artifacts disabled (`CLAUDE_CODE_DISABLE_ARTIFACT=1`) | Writes `design/explorations/<slug>/pick.html`, says where it is, still asks with AskUserQuestion. |
+| 48d-draft-only-picked | Follow-up: picks 1 of 3 | Drafts only that direction in the sandbox path. Places a `build` screenshot on the board. Republishes the Pick page to the same URL. |
 | 49-drafts-claude-app | "Make drafts of the 3 directions", Artifact tool present, no repo | Makes an Artifact. Adds a board note linking it. Writes no HTML items to the board. |
 | 50-drafts-unknown-asks | "Make drafts", no repo, no Artifact tool | One question with the 3 options. No drafts yet. |
 | 51-no-memory-board-context | New chat, board has `context` | Asks no question the context answers. |
@@ -311,6 +374,7 @@ Server Vitest: domain detection for AI and travel briefs; mechanic never `total`
 2. **Canvas `context` stored on the server.** It touches the privacy page and PDPL data minimisation. Recommendation: yes, business facts only, deleted with the canvas.
 3. **Intake allows 3 questions in one turn** (replacing "one question at most" for intake). Recommendation: yes.
 4. **Optional Impeccable interop** in critique. Recommendation: yes, detect-only and never required.
+5. **How the pick comes back in Claude Code:** look on the Pick page and choose in the terminal (A), or choose on the page with the `db` capability (B). Recommendation: A now, B later for team reviews.
 
 ## References
 
@@ -339,7 +403,15 @@ Claude surfaces and MCP
 - `getUiCapability` helper: https://apps.extensions.modelcontextprotocol.io/api/functions/server-helpers.getUiCapability.html
 - Client extension matrix: https://modelcontextprotocol.io/extensions/client-matrix
 - MCP 2026-07-28 (per-request client info and capabilities): https://blog.modelcontextprotocol.io/posts/2026-07-28/ and https://claude.com/blog/bringing-mcp-2026-07-28-to-claude
-- Artifacts: https://support.claude.com/en/articles/17153992-what-are-artifacts and https://code.claude.com/docs/en/artifacts
+- Artifacts: https://support.claude.com/en/articles/17153992-what-are-artifacts
+- Claude Code artifacts: https://code.claude.com/docs/en/artifacts. The parts this plan relies on:
+  - "Compare alternatives" and "Bring the result back to your session" (a Copy as prompt export)
+  - the CSP "blocks every external image"
+  - the availability rules (plan, `/login`, Anthropic API only, off in `-p` and the Agent SDK, `CLAUDE_CODE_DISABLE_ARTIFACT`)
+  - a publish that declares capabilities asks first
+  - comments sent to Claude wake the session (v2.1.228+)
+  - `/design` drafts a Claude Design canvas (v2.1.265+, beta)
+- Impeccable decision page before building: `impeccable serve-question` in https://github.com/pbakaus/impeccable/blob/main/skill/reference/new-work.md
 - Claude Code MCP (roots, `CLAUDE_PROJECT_DIR`, elicitation): https://code.claude.com/docs/en/mcp
 - Claude Code memory: https://code.claude.com/docs/en/memory
 - Claude memory (on by default for Free, Pro and Max; off per member on Team and Enterprise): https://support.claude.com/en/articles/11817273
