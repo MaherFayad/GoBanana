@@ -24,6 +24,9 @@ import j4b, { domainPages, type Input } from "./j4b-page-fit.ts";
 import { newCards } from "./r1-gulf-fit.ts";
 
 /** Domains whose pages r1-weak-page-fit rejudges in full (Qatar services and flight checkout boards). */
+// Tried and dropped (2026-10-17): adding telecom, food-delivery and real-estate here. The strict joint
+// rejudge flattened their J4b 3s, and the dry Bench lost Gas Station Price Sign on the eSIM board and
+// led Dubai with Topographic Map, Graph Paper and Cyanotype; the calibrated r1-gulf-page-fit keeps them.
 export const WEAK_DOMAINS = ["government", "travel", "airline"] as const;
 
 export function readBenchBriefs(): Array<{ brief: string; pages?: string[] }> {
