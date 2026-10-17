@@ -33,7 +33,7 @@ export default defineJob<Input, ShaderRecipe>({
   expectedOutputTokens: 9000,
   effort: "high",
 
-  loadInputs: () => rewriteInputs<ShaderRecipe>("shaders"),
+  loadInputs: (ctx) => rewriteInputs<ShaderRecipe>("shaders", ctx, "r2-rewrite-shaders", (id) => `rws-${id}`.slice(0, 64)),
   requestId: (input) => `rws-${input.rec.id}`.slice(0, 64),
   buildPrompt: (input) => rewritePrompt("ShaderRecipe", input, "texture"),
   prepare: (raw, input) => {

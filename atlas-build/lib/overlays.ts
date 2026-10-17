@@ -83,10 +83,19 @@ export function applyOverlays<T>(kind: string, records: readonly T[], ov: Overla
   const verdicts = ov.verdicts.get(kind) ?? new Map<string, string>();
   const second = ov.rewriteVerdicts.get(kind) ?? new Map<string, string>();
   const tags = ov.tags.get(kind) ?? new Map<string, string[]>();
+  const tagged = (rec: Rec): Rec => {
+    if (rec.styles && rec.styles.length > 0) return rec;
+    const styles = cleanStyles(tags.get(rec.id!));
+    if (!styles) return rec;
+    counts.tagged++;
+    return { ...rec, styles };
+  };
   const out = (records as readonly Rec[]).flatMap((r): Rec[] => {
     let rec = r;
     const re = rewrites.get(r.id!) as Rec | undefined;
     if (re && (second.get(r.id!) === "drop" || second.get(r.id!) === "rewrite")) {
+      // A lift (the old record was kept) that does not pass keeps the old record; otherwise both go.
+      if (verdicts.get(r.id!) === "keep") return [tagged(r)];
       counts.dropped++;
       return [];
     }
@@ -97,11 +106,7 @@ export function applyOverlays<T>(kind: string, records: readonly T[], ov: Overla
       counts.dropped++;
       return [];
     }
-    if (rec.styles && rec.styles.length > 0) return [rec];
-    const styles = cleanStyles(tags.get(rec.id!));
-    if (!styles) return [rec];
-    counts.tagged++;
-    return [{ ...rec, styles }];
+    return [tagged(rec)];
   });
   return { records: out as unknown as T[], counts };
 }

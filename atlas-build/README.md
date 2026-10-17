@@ -160,10 +160,17 @@ R2 jobs never change another job's output. Each writes its own kind, keyed by re
   removes it unless a rewrite with the same id exists.
 - `r2-rewrite-shaders` and `r2-rewrite-motion` (Opus, batch): rewrites of the "rewrite" verdicts,
   render checked like J13 (one repair each), in `out/v1/shaders-rewrites/` and
-  `out/v1/motion-rewrites/`.
+  `out/v1/motion-rewrites/`. They also take the lift: records kept at score 3 that the judge
+  advised rewriting. A real run sends only verdicts with no saved reply yet.
+- `r2-taste-rewrites` (Opus, batch, vision): the same judge on every rewrite, in
+  `out/v1/rewrite-verdicts/`. A rewrite that fails again is not tried a third time: the record is
+  left out, unless it was a lift, in which case the old record stays.
+- `r2-mechanics-fix` (Sonnet, batch, text): a critic per element that rewrites vague, low
+  buildability, theme-only or job-breaking J5 mechanics, in `out/v1/mechanics-rewrites/`.
 
 Rebuild: the base jobs (`j3-cards`, `j5-mechanics`, `j5-dedupe`, `j13-shaders`, `j13-motion`,
-`j7-recipes`) with `--from-raw`, then the R2 jobs in that order with `--from-raw`.
+`j7-recipes`) with `--from-raw`, then `r2-styles`, `r2-taste`, `r2-rewrite-shaders`,
+`r2-rewrite-motion`, `r2-taste-rewrites` and `r2-mechanics-fix` with `--from-raw`.
 
 ## Tests
 

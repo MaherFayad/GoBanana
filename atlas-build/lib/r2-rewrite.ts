@@ -3,7 +3,10 @@
  * the inputs (the r2-taste "rewrite" verdicts with their J13 record), the J13 context each record
  * was written for, and the rewrite prompt.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { PATHS } from "../config.ts";
+import type { JobContext } from "./job.ts";
 import { STYLES } from "../../banana-server/lib/styles/index.ts";
 import type { FullVerdict } from "../jobs/r2-taste.ts";
 import type { MotionRecipe, ShaderRecipe } from "../schema.ts";
@@ -29,8 +32,22 @@ export function j13InputOf(rec: { id: string; cardIds: string[]; lensIds: string
 }
 
 /** The "rewrite" verdicts of one kind with their J13 record and its main style tag. */
-export function rewriteInputs<R extends { id: string; cardIds: string[]; lensIds: string[] }>(kind: "shaders" | "motion"): RewriteInput<R>[] {
-  const verdicts = readKind<FullVerdict>(PATHS.out, "taste-verdicts").filter((v) => v.kind === kind && v.verdict === "rewrite");
+/** Request ids that already have a saved reply in raw/<job>.jsonl. */
+export function answered(jobId: string): Set<string> {
+  const file = join(PATHS.raw, `${jobId}.jsonl`);
+  if (!existsSync(file)) return new Set();
+  return new Set(readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean).map((l) => (JSON.parse(l) as { id: string }).id));
+}
+
+/**
+ * The "rewrite" verdicts of one kind with their J13 record and its main style tag. On a real run
+ * (not --from-raw) records that already have a saved reply are left out, so a later round (the
+ * lift) pays only for the new ones; the runner keeps the earlier replies.
+ */
+export function rewriteInputs<R extends { id: string; cardIds: string[]; lensIds: string[] }>(kind: "shaders" | "motion", ctx?: JobContext, jobId?: string, reqId?: (id: string) => string): RewriteInput<R>[] {
+  const skip = ctx && !ctx.dry && ctx.run && !ctx.run.fromRaw && jobId && reqId ? answered(jobId) : new Set<string>();
+  // The "rewrite" verdicts, plus the lift: records kept at score 3 that the judge advised rewriting.
+  const verdicts = readKind<FullVerdict>(PATHS.out, "taste-verdicts").filter((v) => v.kind === kind && (v.verdict === "rewrite" || v.advice === "rewrite"));
   const recs = new Map(readKind<R>(PATHS.out, kind).map((r) => [r.id, r]));
   let tags = new Map<string, string[]>();
   try {
@@ -39,7 +56,7 @@ export function rewriteInputs<R extends { id: string; cardIds: string[]; lensIds
     // no tags built
   }
   return verdicts
-    .filter((v) => recs.has(v.id))
+    .filter((v) => recs.has(v.id) && !skip.has(reqId ? reqId(v.id) : v.id))
     .sort((a, b) => a.id.localeCompare(b.id))
     .map((v) => {
       const rec = recs.get(v.id)!;

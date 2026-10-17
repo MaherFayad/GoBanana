@@ -12,7 +12,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type Anthropic from "@anthropic-ai/sdk";
 import { JUDGE, PATHS } from "../config.ts";
-import { defineJob, placeholderImage } from "../lib/job.ts";
+import { defineJob, placeholderImage, type JobContext } from "../lib/job.ts";
+import { answered } from "../lib/r2-rewrite.ts";
 import { escapeHtml } from "../lib/review.ts";
 import { readKind } from "../lib/shards.ts";
 import { extractJson } from "../lib/validate.ts";
@@ -21,7 +22,11 @@ import { describe, SYSTEM, TasteVerdictSchema, verdictOf, type FullVerdict, type
 
 const dirOf = (kind: Input["kind"]) => (kind === "shaders" ? "r2-rewrite-shaders" : "r2-rewrite-motion");
 
-function inputs(): Input[] {
+const reqId = (input: Input) => `t2${input.kind === "shaders" ? "s" : "m"}-${input.rec.id}`.slice(0, 64);
+
+/** Every rewrite; on a real run only the ones with no saved verdict yet (the runner keeps the earlier replies). */
+function inputs(ctx: JobContext): Input[] {
+  const skip = !ctx.dry && ctx.run && !ctx.run.fromRaw ? answered("r2-taste-rewrites") : new Set<string>();
   const out: Input[] = [];
   for (const kind of ["shaders", "motion"] as const) {
     let recs: (ShaderRecipe | MotionRecipe)[] = [];
@@ -30,7 +35,10 @@ function inputs(): Input[] {
     } catch {
       continue;
     }
-    for (const rec of recs.sort((a, b) => a.id.localeCompare(b.id))) out.push({ kind, rec, styles: rec.styles ?? [] });
+    for (const rec of recs.sort((a, b) => a.id.localeCompare(b.id))) {
+      const input: Input = { kind, rec, styles: rec.styles ?? [] };
+      if (!skip.has(reqId(input))) out.push(input);
+    }
   }
   return out;
 }
@@ -48,7 +56,7 @@ export default defineJob<Input, FullVerdict>({
   imageTokens: 400,
 
   loadInputs: inputs,
-  requestId: (input) => `t2${input.kind === "shaders" ? "s" : "m"}-${input.rec.id}`.slice(0, 64),
+  requestId: reqId,
   buildPrompt: (input, ctx) => {
     let image: Anthropic.ImageBlockParam;
     if (ctx.dry) image = placeholderImage();

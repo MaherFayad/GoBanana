@@ -35,7 +35,7 @@ export default defineJob<Input, MotionRecipe>({
   expectedOutputTokens: 5000,
   effort: "high",
 
-  loadInputs: () => rewriteInputs<MotionRecipe>("motion"),
+  loadInputs: (ctx) => rewriteInputs<MotionRecipe>("motion", ctx, "r2-rewrite-motion", (id) => `rwm-${id}`.slice(0, 64)),
   requestId: (input) => `rwm-${input.rec.id}`.slice(0, 64),
   buildPrompt: (input) => rewritePrompt("MotionRecipe", input, "motion"),
   prepare: (raw, input) => {

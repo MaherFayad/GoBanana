@@ -38,13 +38,14 @@ describe("R2 overlays", () => {
   it("a rewrite the second look turns down leaves the record out", () => {
     const ov = overlaysFrom(
       kinds({
-        "taste-verdicts": [{ id: "a", kind: "motion", verdict: "rewrite" }, { id: "b", kind: "motion", verdict: "rewrite" }],
-        "motion-rewrites": [{ id: "a", v: 2 }, { id: "b", v: 2 }],
-        "rewrite-verdicts": [{ id: "a", kind: "motion", verdict: "keep" }, { id: "b", kind: "motion", verdict: "rewrite" }],
+        "taste-verdicts": [{ id: "a", kind: "motion", verdict: "rewrite" }, { id: "b", kind: "motion", verdict: "rewrite" }, { id: "d", kind: "motion", verdict: "keep" }],
+        "motion-rewrites": [{ id: "a", v: 2 }, { id: "b", v: 2 }, { id: "d", v: 2 }],
+        "rewrite-verdicts": [{ id: "a", kind: "motion", verdict: "keep" }, { id: "b", kind: "motion", verdict: "rewrite" }, { id: "d", kind: "motion", verdict: "drop" }],
       }),
     );
-    const { records, counts } = applyOverlays("motion", [{ id: "a", v: 1 }, { id: "b", v: 1 }, { id: "c", v: 1 }], ov);
-    expect(records).toEqual([{ id: "a", v: 2 }, { id: "c", v: 1 }]);
+    const { records, counts } = applyOverlays("motion", [{ id: "a", v: 1 }, { id: "b", v: 1 }, { id: "c", v: 1 }, { id: "d", v: 1 }], ov);
+    // d was kept at 3 and its lift failed: the old record stays.
+    expect(records).toEqual([{ id: "a", v: 2 }, { id: "c", v: 1 }, { id: "d", v: 1 }]);
     expect(counts).toEqual({ tagged: 0, rewritten: 1, dropped: 1 });
   });
 
