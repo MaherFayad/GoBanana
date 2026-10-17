@@ -10,6 +10,7 @@
  *   node scripts/bench-run.mjs --date 2026-10-15 --count 12
  *   node scripts/bench-run.mjs --atlas ../atlas-build/out/server/v1   # the Atlas engine over local shards
  *   node scripts/bench-run.mjs --no-baseline    # every direction reruns the canvas baseline lane (runs before g2)
+ *   node scripts/bench-run.mjs --briefs bench/r6-weak-briefs.json --dry --atlas <dir>   # another briefs file (R6)
  *
  * --atlas <dir> reads a local Atlas in the server layout (atlas-build lib/layout.ts: <dir>/manifest.json
  * and <dir>/<kind>/<shard>.json) through the real loader, bends with the Atlas engine first and the
@@ -75,7 +76,7 @@ const only = arg("only")?.split(",").map((s) => s.trim());
 const devVarsFile = resolve(arg("dev-vars", join(ROOT, ".dev.vars")));
 const atlasDir = arg("atlas") ? resolve(arg("atlas")) : null;
 
-const briefsFile = join(ROOT, "bench", "briefs.json");
+const briefsFile = arg("briefs") ? resolve(arg("briefs")) : join(ROOT, "bench", "briefs.json");
 const bench = JSON.parse(readFileSync(briefsFile, "utf8"));
 const briefs = bench.briefs.filter((b) => !only || only.includes(b.id));
 const perBrief = Number(arg("directions", String(bench.directions ?? 3)));

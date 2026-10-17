@@ -634,3 +634,85 @@ leads (Swiss Style 1960s on pricing, Tally Marks on kids reading; the judge call
 wildness 5").
 
 Spend: Serper 243 credits (r5a 145, r5b 98), under the 250 cap. Claude $1.50 of the r5 budget ($26).
+
+## Refinement R6: crops and weak domains (2026-10-17)
+
+Branch `next/refine-r6` (from `next/phase-1`, 3223c77). Budget `r6` ($16), spent $1.93: r6-crops $0.66, r6-dirs
+$0.93, r6-weak-pages $0.33, r6-page-names $0.01. No Serper. The local Atlas was rebuilt from every raw file
+(manifest `77a33509b67a` before R6). It differs from R4's bends because R1 was merged after R4.
+
+### Task A: crop accuracy (J11, cut_parts)
+
+First, an error analysis of the saved R3 and R4 replies (no API calls). With each part named with its screen, **no
+part lands on the wrong screen**: 0 of 190 held-out parts, 0 of 105 dev parts. So the screens list already solves
+screen attribution. The remaining loss is inside one screen:
+
+- **Which instance.** Several cards, buttons or text blocks on one phone share a role, and the model picked a
+  different one than the gold labeller did. For example, the black "Discover" card instead of the row of Liability
+  and Home cards, or the top text block instead of the lower one. 19 of 190 held-out parts score under 0.3, almost all
+  of them this way.
+- **Where a bar ends.** The gold status-header sometimes includes the large title under it and sometimes does not
+  (held-out status-header: 0.41). On held-out images, boxes run about 12% too tall.
+
+When the model boxes the same element as the gold, IoU is 0.85 to 0.95.
+
+Tried: **screens found in code**, with no model (`atlas-build/lib/screens.ts`). A backdrop flood fill from the image
+border finds the screens, with a column profile as the fallback. Size and shape checks give no hint on overlapping,
+cropped or full-bleed shots. It found screens on 21 of the 31 gold images that decode (webp does not decode on the
+server), and on 19 of those 21 every gold part's center sits inside a found screen. Results from `jobs/r6-crops.ts` (Sonnet 5.5, 2 repeats each):
+
+| Variant | Dev (20 images, tuning) | Held-out (19 images) |
+| --- | --- | --- |
+| control (today's look text, parts named by screen as in R4) | 0.769 | **0.746** (0.751, 0.741), 64% at 0.8 |
+| segnum (screens counted from the found boxes, no hint line) | 0.764 | not run |
+| seg (segnum plus a look line giving each found screen's edges) | 0.769 | 0.734 (0.737, 0.730), 63% at 0.8 |
+
+The hint is flat on dev and loses on held-out, so **cut_parts does not change**, and the finder stays an eval helper
+in atlas-build. Today's held-out number is 0.746 (R4 measured 0.732; repeats differ by about 0.01), still under the
+0.8 gate. What would move it is the instance problem. The eval asks for a role ("cards"), but a real agent knows
+which card it wants. A J11 eval that names each part ("the black Discover card") would measure crop skill instead.
+That needs gold descriptions, which is an owner call.
+
+### Task B: weak domains (telecom, food delivery, real estate)
+
+Measured offline on `bench/r6-weak-briefs.json`: 15 briefs, 5 per domain. They are the 3 Bench briefs, the 4 J8
+briefs that parse to these domains, and 8 new briefs on the pages these products use most. Each brief is bent dry
+with the local Atlas (`bench-run.mjs --briefs ... --dry --atlas`). `jobs/r6-judge-dirs.ts` rates the 45 directions
+from their specs with the trusted R3 judge, as R4 did: 12 gold examples, two votes, and a second pass on splits.
+Request ids hash the text the judge reads, so an unchanged direction reuses its reply.
+
+| Bend | Change | On brief | Telecom | Food | Real estate | Wow (telecom, food, real estate) |
+| --- | --- | --- | --- | --- | --- | --- |
+| r6-0 | none | 29 of 45 (64.4%) | 10 of 15 | 13 of 15 | 6 of 15 | 3.33, 3.20, 3.00 |
+| r6-1 | page fit on unjudged pages | 27 of 45 | 8 | 13 | 6 | 3.27, 3.20, 3.13 |
+| r6-2 | r6-1 plus page names | 30 of 45 | 8 | 13 | 9 | 3.27, 3.20, 3.33 |
+| **r6-3** | **page names only** | **32 of 45 (71.1%)** | 10 | 13 | 9 | 3.33, 3.20, 3.20 |
+
+- **Why these domains are weak.** Their J4b scores on the pages that were judged are not the problem: those reasons
+  are as specific as the R1-rejudged domains, and there are more 3s. The problem is coverage. J4b judged 12 pages per
+  domain and filled the list with core pages. Real estate got a paywall and a hotel page but never search, the map or
+  booking a viewing. Telecom never got sign-up, bill payment or plan comparison. Also, "apartment detail page"
+  matched no J1 page name, so it bent as a pricing page with plan cards (0 of 3 on brief).
+- **Shipped: `r6-page-names`** (Sonnet, one request). It adds the names users of these domains type to their pages,
+  such as "apartment detail page", "data usage screen", "restaurant menu page", "schedule a viewing" and "saved
+  properties". A deterministic guard keeps a name only when it moves no Bench brief and no J8 brief. The guard
+  dropped 3 names: "track my delivery", "live courier map" and "book a viewing". The Bench dry bend is unchanged.
+  On the R6 briefs only apartment detail moves, from 0 to 3 of 3 on brief, and its leads (Ruler Ticks, Abu Dhabi
+  Cultural Foundation, Graph Paper) now act on the listing. Food checkout keeps the same three cards in a new order.
+  The job runs last in the rebuild (`lib/refine.ts`), because J4b's `domainPages` matches page name words.
+- **Tried, not shipped: `r6-weak-pages`** (Opus, $0.33). It scored the cards these domains already have on 16 pages
+  that J4b skipped. Calibration follows R1's Gulf page fit: each new page shows the scores on its nearest judged page.
+  Existing pairs are never rejudged, so no scores flatten. The share of new 3s is 5% for telecom, 4% for food and 2%
+  for real estate, in line with the old pages. The leads became more page specific and stayed wild: a bilingual
+  baqala receipt on bill payment (5), Eastern Arabic digits (5) and a boxing poster (4) on fiber plans, and a Najdi
+  wooden lock. But the judge put 2 fewer directions on brief: sign-up lost Gauge Dials to Frutiger Aero and 1970s
+  airline branding. On search pages the mechanic still lands on the no-results state or the header. The cause is in
+  the bend: list rows, result cards, the map and form fields are not mechanic elements (`ELEMENT_TO_MECHANIC`), so a
+  page fit reason that names them has nowhere to go. The job and its replies are kept for a bend that can use them,
+  but it is not in the rebuild order.
+- **Wildness.** The shipped change keeps it. No lead changed outside apartment detail. Mean wow rose on real estate
+  (3.00 to 3.20) and stayed the same on telecom and food. No safe or literal card replaced a surprising one.
+- **Caveats.** These are specs only, with no references. With 45 directions and 2 votes, results spread by about 1 to
+  2 directions, so 29 to 32 is a small gain and it comes from one brief. Some off-brief notes remain: telecom home
+  and rental search put the mechanic on an empty state, and several twists never show. Both belong to the bend, which
+  R5 is live checking.

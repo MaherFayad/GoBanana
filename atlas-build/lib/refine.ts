@@ -1,5 +1,5 @@
 /**
- * Shared parts of the refinement rounds (budget keys r1 to r3, config.ts "Refine" block).
+ * Shared parts of the refinement rounds (budget keys r1 to r6, config.ts "Refine" block).
  *
  * A refine job reads an earlier job's output, changes or adds some records, and writes the whole
  * kind back (like j5-dedupe does for mechanics). Records merge by key, so running a refine job
@@ -17,6 +17,14 @@
  *   npx tsx run.ts r1-lines --from-raw          (card-elements: lines for new and rewritten cards)
  *   npx tsx run.ts r1-gulf-page-fit --from-raw  (page-fit: the new cards on their domains' pages)
  *   npx tsx run.ts r1-weak-page-fit --from-raw  (page-fit: Qatar services and flight checkout rejudged)
+ *
+ * Last, after every job that reads page names into its inputs (J4b's domainPages matches name words,
+ * so the added names would shift its pages and misread its saved replies; J7 and the rest):
+ *
+ *   npx tsx run.ts r6-page-names --from-raw     (anatomy: names users of the weak domains type, parse guarded)
+ *
+ * Not in the order (tried in R6, not shipped): r6-weak-pages (page fit on the pages J4b skipped for
+ * telecom, food delivery and real estate; the trusted judge scored it 2 directions lower).
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
