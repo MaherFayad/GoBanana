@@ -135,7 +135,7 @@
     {
       "name": "search_references",
       "title": "Search references",
-      "description": "Find references for a direction in two zones: ui (screens and components for the direction's platform, from UI galleries by platform plus Pinterest, Dribbble, Behance and Awwwards) and art (the wild idea as images: raw ingredient on Pinterest and Behance; shops and listings dropped). Every result has a zone and links to its source: always show the source link. Pass a directionId from bend_brief (zone defaults to both) or a query (zone ui). Pass canvasId to add results to that canvas tray. Without taste, the direction's own style words are used. At most 2 results per studio, newer first, UI kits dropped. To redo one lane, pass directionId, lane and query; lane art re-searches the art zone. Rate results with rate_references.",
+      "description": "Find references in two zones: ui (screens and components for the platform, from UI galleries by platform plus Pinterest, Dribbble, Behance and Awwwards) and art (the wild idea as images: raw ingredient on Pinterest and Behance; shops and listings dropped). Every result has a zone and links to its source: always show the source link. Pass a directionId from bend_brief (zone defaults to both) or a query (zone ui). Before any direction exists, pass sweep: true with canvasId and query (the page), plus up to 3 components (working parts of the page) and up to 3 adjacent phrases (the same job in other industries): one call plans the sweep-fidelity (Dribbble and Pinterest), sweep-component, sweep-adjacent, taste and locale lanes and counts as one search; not with directionId or lane. Pass canvasId to add results to that canvas tray. Every search skips results already placed on the canvas or in its tray. count up to 40. Results show up to 12 thumbnails per call. Without taste, the direction's own style words are used. At most 2 results per studio, newer first, UI kits dropped. To redo one lane, pass directionId, lane and query; lane art re-searches the art zone. Rate results with rate_references.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -161,7 +161,7 @@
           "count": {
             "type": "integer",
             "minimum": 4,
-            "maximum": 24,
+            "maximum": 40,
             "default": 12
           },
           "canvasId": {
@@ -206,6 +206,28 @@
               "both"
             ],
             "description": "Which zone to search. Default both for a directionId, ui for a plain query."
+          },
+          "sweep": {
+            "type": "boolean",
+            "description": "Map the space before directions: with canvasId and query (the page). Plans the sweep-fidelity (Dribbble and Pinterest), sweep-component, sweep-adjacent, taste and locale lanes in one call; counts as one search. Not with directionId or lane."
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "maxItems": 3,
+            "description": "With sweep: 0 to 3 working parts of the page, as nouns (fare summary, payment sheet)."
+          },
+          "adjacent": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "maxItems": 3,
+            "description": "With sweep: 0 to 3 phrases naming the same job in other industries (concert ticket checkout)."
           }
         }
       }
@@ -418,7 +440,7 @@
     {
       "name": "add_to_canvas",
       "title": "Add to canvas",
-      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable.",
+      "description": "Add references, Mobbin screens, notes, swatches or sections to a canvas. Reference items keep their zone: art items land in the section's Art direction row above the UI references grid. A screen is a Mobbin screen from the user's Mobbin connector (imageUrl and sourceUrl on mobbin.com), placed as a hotlinked UI reference. A reference or screen can carry a note (what to steal, up to 280 characters). Links in notes are clickable. A reference or screen can carry a cluster (1 to 40 characters: layout, component: <part>, type, color, motion, art; in the Space section category, adjacent, outliers) that arrange_canvas by_cluster turns into labeled rows.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -490,6 +512,12 @@
                   "type": "string",
                   "maxLength": 280,
                   "description": "For reference and screen items: what to steal from it, for example steal: the stamped date as a section divider."
+                },
+                "cluster": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "description": "For reference and screen items: what to take from it, for example layout, component: fare summary, type, color, motion, art; in the Space section category, adjacent or outliers."
                 }
               }
             }
@@ -500,7 +528,7 @@
     {
       "name": "arrange_canvas",
       "title": "Arrange canvas",
-      "description": "Lay out canvas items: by_direction, masonry, grid or hero.",
+      "description": "Lay out canvas items: by_direction, by_cluster, masonry, grid or hero. by_cluster: inside each section, one labeled row per cluster (layout, components, type, color, motion, art, others, then Other for items without a cluster).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -515,6 +543,7 @@
             "type": "string",
             "enum": [
               "by_direction",
+              "by_cluster",
               "masonry",
               "grid",
               "hero"

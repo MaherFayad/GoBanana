@@ -1,6 +1,6 @@
 ---
 description: "Flagship explore flow from a clear brief."
-expected_outcome: "new_canvas, bend_brief, one search_references call per shortlisted direction (2 to 4), add_to_canvas with 2 to 4 art and 6 to 8 UI references per kept direction, then open_canvas to show the finished board; short list of directions, source links, canvas link, next steps."
+expected_outcome: "new_canvas, bend_brief, one sweep search_references call, then one per shortlisted direction (2 to 4), add_to_canvas with a clustered Space section and 12 to 18 clustered references per kept direction, then open_canvas to show the finished board; short list of directions, source links, canvas link, next steps."
 tags: [explore, smoke]
 max_turns: 25
 timeout_seconds: 600

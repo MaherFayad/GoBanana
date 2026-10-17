@@ -13,10 +13,11 @@ Where items go: into the input sectionId when given. Without one, items that fol
 Write first: "Added <number of items> items to canvas <canvasId>."
 Then one line per input item, in order:
 - section: "<section id>: section "<title>""
-- reference: "<item id>: reference <referenceId> in <section id or "board">, <"Art direction row" if the referenceId starts with "a" or its tray zone is art, else "UI references grid">, note: <the note, or "none">"
-- screen: "<item id>: Mobbin screen <app> <title> in <section id, the section of its directionId, or "board">, UI references grid, source mobbin.com <sourceUrl>, note: <the note, or "none">". If sourceUrl is not an https page on mobbin.com or imageUrl is not https on mobbin.com, write "Skipped item <n>: sourceUrl must be the https link to the screen's page on mobbin.com." instead.
+- reference: "<item id>: reference <referenceId> in <section id or "board">, <"Art direction row" if the referenceId starts with "a" or its tray zone is art, else "UI references grid">, cluster: <the cluster, or "none">, note: <the note, or "none">"
+- screen: "<item id>: Mobbin screen <app> <title> in <section id, the section of its directionId, or "board">, UI references grid, source mobbin.com <sourceUrl>, cluster: <the cluster, or "none">, note: <the note, or "none">". If sourceUrl is not an https page on mobbin.com or imageUrl is not https on mobbin.com, write "Skipped item <n>: sourceUrl must be the https link to the screen's page on mobbin.com." instead.
 - note: "<item id>: note in <section id or "board">: <the first 60 characters of the text>"
 - swatch: "<item id>: swatch <hex> <role>"
+If an item's cluster is longer than 40 characters, write "Skipped item <n>: cluster must be 1 to 40 characters." instead of its line.
 Then end with these lines:
-Art references sit in the section's Art direction row, above the UI references grid. Notes on references are shown under each tile; links in notes are clickable.
+Art references sit in the section's Art direction row, above the UI references grid. Items with a cluster form labeled rows with arrange_canvas by_cluster. Notes on references are shown under each tile; links in notes are clickable.
 Web link: https://gobanana-server.maherfayad55.workers.dev/c/<canvasId>

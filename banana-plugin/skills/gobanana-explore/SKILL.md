@@ -5,7 +5,7 @@ description: Bend one page or screen into wild, usable directions, each with a f
 
 # GoBanana explore
 
-Turn a fuzzy "make it cooler" into six to eight sharp, buildable directions for one page or two, each in its own visual language, then fill a board with two zones of references: the wild idea as images (art direction) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
+Turn a fuzzy "make it cooler" into six to eight sharp, buildable directions for one page or two, each in its own visual language, then fill a board with 100 to 150 clustered references: a Space section that maps what the category does, then two zones per direction, the wild idea as images (art direction) and real UI for the platform. Mobbin shows what works. GoBanana shows what's next.
 
 GoBanana is for one crazy idea over a page or two: a launch page, onboarding, an empty state, a 404, a paywall, a year in review. It is not the product's main design direction. Say so when the user asks to redesign the whole product, and help them pick where the weirdness should go.
 
@@ -18,7 +18,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Do not describe images you have not seen.** Talk about the direction and the titles, not pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
 - **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never name an idea dropped for no UI path, weak references or as a duplicate. Declined challengers are the one exception: they show on one compact line with what a kept direction took from them (step 7b).
-- **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build.
+- **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build. With clusters (step 12), art items carry the cluster `art` and UI items never do.
 - **Mode first.** Ask which mode before any other work (see "First: ask the mode"). Never skip it to go further.
 - **Explore writes nothing.** Explore never writes project files or code. It ends at the board and the directions with the question "Draft any of these?".
 - **Taste first.** Ask the user for 3 to 5 style words or a reference board before `bend_brief`, in the same turn as the mode question; never invent them.
@@ -54,7 +54,7 @@ When unsure, ask. Never skip it to go further. When you skip it, say the mode in
 
 **What each mode does:**
 
-- **Explore:** steps 0 to 14. No project files, no code. It ends at the board and the directions with the question "Draft any of these?".
+- **Explore:** steps 0 to 14, with the wide sweep (step 6c) before the bend. No project files, no code. It ends at the board and the directions with the question "Draft any of these?".
 - **Drafts:** the Explore flow first. Draft only after the user picks, and only the picks, as quick screens.
 - **Finished:** the full build pipeline is not built yet. Say in one line that it is coming, run Explore now, and offer drafting the picks next. In the Claude app, say Finished needs Claude Code and offer drafts plus a build pack (gobanana-handoff).
 - **Just references:** steps 0 to 2 and 6, then one `search_references` with the brief as `query`, no `directionId` and `count: 24`; rate it (step 10), place the usable ones and call `arrange_canvas` with `masonry`. No `bend_brief`, no directions.
@@ -159,6 +159,25 @@ Before you bend, search Mobbin once per page for the same page on the same platf
 
 Use both in the next steps: put the default to escape into the brief you pass to `bend_brief` when it helps ("not the usual summary card and payment sheet"), and keep each screen's `mobbin_url`, `image_url`, app name and platform for steps 11 and 12.
 
+### 6c. Wide sweep: map the space before any direction
+
+Before you write candidates, look at what the space already does. Call `search_references` once with:
+
+- `sweep: true`, the `canvasId` and `count: 40`.
+- `query`: the page, as people name it on its platform ("flight checkout iPhone app", "coffee roaster launch page").
+- `components`: up to 3 working parts of the page, as nouns, from the brief and the mechanics you expect ("fare summary", "payment sheet", "seat map").
+- `adjacent`: up to 3 phrases that name the same job in other industries, written by you and concrete ("concert ticket checkout", "food delivery order summary", "hotel booking payment"), never vague ("other apps", "modern UI").
+- `taste` when you have it, and `sources` only when the user picked sites.
+
+Never pass `directionId` or `lane` with `sweep`. The server plans the lanes in this one call (sweep-fidelity on Dribbble and Pinterest, sweep-component, sweep-adjacent, taste and locale), and it counts as one search. Every search skips results already placed on the canvas or in its tray, so later searches do not repeat the sweep.
+
+1. **Look and rate it like any search** (step 10): one `rate_references` call for the sweep, `bad` for the junk, `great` for 1 to 3 standouts. The sweep has no lane retries.
+2. **Read the space**, in a few words for yourself:
+   - **Category:** what most results for this page share (layout, the usual components, the default palette and type). This is the rut that step 7b.1 names and avoids.
+   - **Adjacent:** what the other industries do for the same job that this category does not.
+   - **Outliers:** 2 to 5 results that break the category pattern and still work.
+3. **Keep the usable result ids** for the Space section (step 12). Grounded candidates (step 7b.1) may borrow from the adjacent worlds and the outliers, never from the category default.
+
 ### 7. Bend the brief, wide
 
 Write the grounded `candidates` first (step 7b.1). Then call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` (the most it takes), `candidates` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from steps 1, 1b and 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits), `artQueries`, a `source` (`candidate`, `challenger` or `lists`) and a `language` (7 axes, step 7b.2). The result also carries `diversity`: `{ minAxesApart, pairsBelow4 }`. It is free and unlimited.
@@ -169,7 +188,7 @@ Write the grounded `candidates` first (step 7b.1). Then call `bend_brief` with `
 
 You propose, the server rolls. You write the grounded candidates; the server picks which lead directions, adds challengers from its own lists and gives every direction a language.
 
-1. **Ground first, then pass them as `candidates`.** Before listing, name the rut in your head: the category default and its predictable opposite. Neither may appear. Then, from the problem summary, the Worth questioning list and the brief, write 7 to 10 candidates from the audience's world: objects, places, rituals, graphic traditions, publications, signage, data graphics. Each is one object:
+1. **Ground first, then pass them as `candidates`.** Before listing, name the rut in your head from what the sweep showed (step 6c): the category default and its predictable opposite. Neither may appear. Then, from the problem summary, the Worth questioning list and the brief, write 7 to 10 candidates from the audience's world: objects, places, rituals, graphic traditions, publications, signage, data graphics. Each is one object:
    - `name` (up to 60 characters): the thing itself ("Railway departure board").
    - `why` (up to 160): why it resonates with this audience and how it can carry the mechanic.
    - `looks` (up to 160): ground, main colors, type voice and the one signature ("black ground, amber split flap letters, condensed caps, rows that flip in place").
@@ -195,13 +214,13 @@ Keep an idea only if all of these hold:
 - **(c) Its own language.** It passes the checks in step 7b.
 - **With Mobbin (step 6b):** also drop an idea that lands on the baseline (it only restyles what shipped apps already do), and prefer ideas whose `spec.pattern` keeps the must keeps. Name the Mobbin pattern a kept idea builds on.
 
-1. **First pass, free:** apply (a) and (c) to all 8, after the challenger verdicts (step 7b.3). Shortlist 6 to 8, or the number the user asked for. Each shortlisted direction costs one search (step 9). Fewer than 6 pass when the user asked for no smaller number: call `bend_brief` once more (new candidates in place of the failed ones, other `moves` or a `lens`), shortlist from both rolls, and if still under 6, go on with what you have and say why in one line. Never bend a third time.
+1. **First pass, free:** apply (a) and (c) to all 8, after the challenger verdicts (step 7b.3). Shortlist 6 to 8, or the number the user asked for. Each shortlisted direction costs one search (step 9), on top of the one sweep. Fewer than 6 pass when the user asked for no smaller number: call `bend_brief` once more (new candidates in place of the failed ones, other `moves` or a `lens`), shortlist from both rolls, and if still under 6, go on with what you have and say why in one line. Never bend a third time.
 2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 4: drop it.
 3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every idea from every bend (8, or 16 after a second bend): `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. A declined challenger is a `drop` with `off_brief`. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
 
 ### 9. Search both zones for the shortlist
 
-For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 12`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: one search per shortlisted direction (at most 8), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
+For each shortlisted direction call `search_references` once with `directionId`, `canvasId` and `count: 24`. The default `zone` for a direction is `both`: about a third art, the rest UI, in one search. That is the whole search budget: the sweep (1 search, step 6c), plus one search per shortlisted direction (at most 8), plus lane retries from step 10.3 (at most 2 per lane). Do not search again for any other reason.
 
 - **UI lanes** (`zone: "ui"`): `fidelity` (real screens for the page), `taste` (the style words on the page), `hero`, `component`, `bridge` (the idea already applied to UI, so each direction gets UI of its own idea; it runs right after fidelity, and the reply says when it found nothing), `locale` (Arabic UI, also when only the board brief says Arabic or RTL). The server words them for the platform and picks sources to match: website briefs pull from website galleries (hero sections, landing pages, bento layouts), mobile briefs from mobile app and motion galleries, web apps from dashboard galleries, plus Pinterest, Dribbble, Behance and Awwwards.
 - **Art lane** (`lane: "art"`, `zone: "art"`): the direction's `artQueries` on Pinterest and Behance: the raw ingredient as images (the weave, the receipt, the riso print). The art row may also draw on poster and type galleries. The server drops shops and listings, but check anyway.
@@ -213,9 +232,9 @@ Each result line shows `[referenceId, lane]` and its zone. Do not pass a directi
 
 The server does not look at images. You do.
 
-**Look at the returned thumbnails before rating or noting.** `search_references` and `add_to_canvas` results carry a small thumbnail after the line that names each reference: name the colors and layout you see, and base every rating and `steal:` note on the image, not the title.
+**Look at every thumbnail before rating or placing.** `search_references` and `add_to_canvas` results carry a small thumbnail after the line that names each reference, up to 12 thumbnails per call: name the colors and layout you see, and base every rating, cluster and `steal:` note on the image, not the title. When a call returns more results than thumbnails, judge the rest from what you saw (their title, site and link next to the ones you did see), rate only clear junk among them, and say in one line which ids you could not see. Never invent what an image shows.
 
-1. **Judge every result** from its title, site and URL, and the image when you can see it.
+1. **Judge every result** from its image when you can see it, and from its title, site and URL.
 2. **Call `rate_references`** with the `canvasId`, once per search. Rate only two kinds of result: the junk (`bad`) and the 1 to 3 standouts (`great`). Leave ordinary good results unrated; there is no "ok" verdict, so never mark every usable result `great`. Always rate the junk so it leaves the tray:
    - **UI zone, `bad`:** wrong platform (a web dashboard on a phone brief), shops, stock, UI kit sales, cluttered sheets, duplicates, near empty mockups, apps for another product, anything not UI.
    - **Art zone, `bad`:** shops and product listings, prices, fashion and clothing listings, Etsy or Amazon pages, logo sheets, stock, and anything off the idea (a car air freshener on a weaving direction). Art does not have to be UI; it has to be the idea.
@@ -234,18 +253,36 @@ Use the screens from step 6b. For each kept direction, pick 1 or 2 Mobbin screen
 - Mention them in your reply in one line, as the "what works" baseline next to the wild directions.
 - Never pass Mobbin links to `search_references`, never place Mobbin screens as `reference` items, never download them.
 
-### 12. Place both zones with steal notes
+### 12. Place the Space and both zones, clustered, with steal notes
 
-For each kept direction, call `add_to_canvas` with its `sectionId` (create the section first if it does not exist):
+Target 100 to 150 references on the board in total. Every placed reference and screen carries a `cluster` (1 to 40 characters) that says what to take from it. Use these labels exactly, so `by_cluster` rows line up across sections.
 
-Counts depend on how many directions you keep. With 4 to 8: 1 to 3 art and 4 to 6 UI each. With 1 to 3 (the user asked for fewer): 2 to 4 art and 6 to 8 UI each.
+**The Space section first.** Create one section titled "Space" (no `directionId`) and place 30 to 50 usable sweep results from step 6c (all of them when fewer are usable), best first, each with one cluster:
 
-- **Art direction row**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
-- **UI references grid**, best first, from the UI zone only, including the Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
+- `category`: what the category does on this page (the shared layout, the usual components).
+- `adjacent`: the same job in other industries.
+- `outliers`: the results that break the category pattern and still work.
+
+A short note on a Space item is optional; when you write one, it starts with `steal:` too.
+
+**Then each kept direction**, with its `sectionId` (create the section first if it does not exist). Place 12 to 18 references per direction, best first, spread across at least 3 clusters, each with a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`:
+
+- `layout`: the page structure and order to take.
+- `component: <part>`: one working part, named ("component: fare summary", "component: progress"); the direction's mechanic element first.
+- `type`: the type voice and scale.
+- `color`: the palette and how much of it.
+- `motion`: how things move or change state.
+- `art`: art zone items only, 3 to 5 per direction, in the Art direction row: `steal: the misregistered second ink as the price highlight`.
+
+- **UI references** come from the UI zone only, including the Mobbin screens from step 11 when Mobbin ran (give them a cluster too): `steal: the bottom sheet that holds the fare breakdown`.
 - **One idea note** per section: `<TRACK>: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>. LANGUAGE: <the 7 values of its language>. RISK: <its honest risk>.` TRACK is SHIP, STRETCH or WILD; the subtract direction starts `SUBTRACT:` and names what it removes. A direction that took a raise from a declined challenger ends its note with the `RAISE from <challenger title>: ...` line (step 7b.3).
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
-Spread the items evenly across directions. When the board's item limit (Free: 40) cannot hold it all, place fewer per direction, at least 3 UI and 1 art each, and say so in one line. Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
+Spread the items evenly across directions. Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board.
+
+**Board item limit.** When a plan message says the board holds 40 items (Free), place the best fitting set under it: a small Space section (6 to 8 items) and, per direction, the idea note plus 3 or 4 references in at least 3 clusters (one of them `art` when there is usable art). Say once that Pro shows the full board, with the message's link. Never loop, and never retry the rejected items one by one.
+
+Then call `arrange_canvas` once with `by_cluster`, after the last `add_to_canvas`: inside each section, one labeled row per cluster (layout, components, type, color, motion, art, others, then Other for items without a cluster). Do not read the board back between these calls.
 
 If the user asked for raw inspiration (textures, objects, posters, "less UI"), give the art row its top count and keep the UI grid UI only.
 
@@ -253,7 +290,9 @@ If the user asked for raw inspiration (textures, objects, posters, "less UI"), g
 
 Call `open_canvas` with the `canvasId`. If the client shows it inline, say it is open above. **Always** give the web link too: "Open the board here: <webUrl>".
 
-Keep the reply short and in this order: the board link, one line with mode, platform, page and wildness, the Worth questioning list (step 1b, up to 5 one-line items), the direction cards, the one-liners below, then next steps and the closing question (step 14). No prose paragraphs.
+Keep the reply short and in this order: the board link, one line with mode, platform, page and wildness, one line on the Space, the Worth questioning list (step 1b, up to 5 one-line items), the direction cards, the one-liners below, then next steps and the closing question (step 14). No prose paragraphs.
+
+The Space line names its counts and the rut it showed: "Space: 36 references (22 category, 8 adjacent, 6 outliers); most checkouts share a fare card over a white sheet with a blue pay button."
 
 Present each kept direction as a compact card, five lines (six with a raise), with equal weight and the same anatomy on every card, Ship first, then Stretch, then Wild. A winning or competitive challenger is a card like any other; mark it "(Stretch, challenger)". Lines, in order:
 
@@ -279,6 +318,7 @@ Then:
 - **One line** on declined challengers, if any, each with what it lent: "Declined challengers: Kitchen ticket rail (raised into 3: one strip per agent), Airport gate sign (raised into 5: one status word per row)."
 - **One line** on other dropped ideas, counts and reasons only: "Dropped 2 of 8 ideas: 1 had no clear screen idea, 1 shared a language with another." Never name these or list them one by one, not even in brackets.
 - **One line** on removed results, and any lane you retried: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea); retried the bridge lane once as 'film strip seat picker ui'."
+- **One line** on the board total and what you could not see, if anything: "126 references on the board; I could not see the thumbnails of r13 to r40 in the sweep and judged them from the ones I saw."
 - **One line** on shipped screens, if Mobbin ran: "Shipped today: [Airbnb, checkout](link), [Revolut, payment](link)."
 
 ### 14. Offer next steps, then ask
@@ -291,6 +331,7 @@ In Explore (and in Finished, which runs Explore for now), the last line of the r
 
 - **Quota or plan message:** show it as is, with the link, once. Do not retry or loop. `bend_brief` is still free; offer to keep refining the directions and their specs.
 - **Canvas limit:** see step 6.4. Never delete without an explicit yes.
+- **Board item limit (Free: 40 items):** see step 12. Place the best fitting set, say once that Pro shows the full board, never loop.
 - **An art lane comes back empty or all junk after 2 retries:** place no art for that direction and say so in one line. The direction can still pass on UI.
 - **Tool error or timeout:** retry once at most, then tell the user in one line and continue with what you have.
 - **GoBanana tools missing:** the GoBanana MCP server is not connected. Tell the user to enable the GoBanana connector (or run `/mcp` in Claude Code and log in).

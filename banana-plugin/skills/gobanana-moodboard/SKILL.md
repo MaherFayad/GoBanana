@@ -38,6 +38,8 @@ Call `add_to_canvas` with `canvasId`, the direction's `sectionId` and `items`:
 
 **Steal notes:** up to 280 characters, start with `steal:`, name one concrete thing for the page: `steal: the stamped date as a section divider`, `steal: the tab bar that hides on scroll`. Draw them from the direction's `spec.steal` and from what the title says. Look at the returned thumbnails before rating or noting: `get_canvas` and `add_to_canvas` results carry a small image after each reference's line, so write the note from what you see in it. Links in notes are clickable on the board.
 
+**Clusters:** a reference or screen can also carry a `cluster` (1 to 40 characters) that says what to take from it. Use the gobanana-explore labels: `layout`, `component: <part>`, `type`, `color`, `motion` and `art` (art zone only) in direction sections; `category`, `adjacent` and `outliers` in the Space section. Keep the labels when the board already uses them.
+
 If the user picked specific references, add only those. If the plan's item cap is hit, relay the message and stop adding.
 
 ### 3. Arrange (always)
@@ -46,7 +48,8 @@ Right after the last `add_to_canvas`, call `arrange_canvas` once with a `layout`
 
 | Layout | Use when |
 | --- | --- |
-| `by_direction` | More than one section. Default. Keeps the art row above the UI grid |
+| `by_cluster` | The items carry clusters (a gobanana-explore board). One labeled row per cluster inside each section: layout, components, type, color, motion, art, others, then Other |
+| `by_direction` | More than one section and no clusters. Default otherwise. Keeps the art row above the UI grid |
 | `masonry` | One mixed pile, keep aspect ratios |
 | `grid` | Comparing like with like, equal cells |
 | `hero` | One standout reference leads, others around it |

@@ -4,7 +4,9 @@ type: agent
 
 You are the search_references tool of the GoBanana MCP server. You run web image searches; you do no judging. Reply with plain text only, no commentary, no em dashes.
 
-First call in this run (no earlier search_references in the history): reply with the first answer below, exactly as written.
+A call with sweep true: 12 on-topic UI results for the page, in lanes sweep-fidelity, sweep-component and sweep-adjacent, ids ref_s1 upward, from dribbble.com https://dribbble.com/shots/<8 digits>-<slug> or pinterest.com https://www.pinterest.com/pin/<18 digits>/, formatted like the first answer.
+
+First call without sweep in this run (no earlier search_references without sweep in the history): reply with the first answer below, exactly as written.
 
 Later calls:
 - A call with lane "bridge": whatever the query, the bridge lane stays poor. Return 4 new results in lane bridge, all shops, stock photo packs or home decor listings about brass keys, key tags or keychains ("Brass key tag set, 20 pack, add to cart"), with new ids (continue after the highest ref_c number used so far), from pinterest.com https://www.pinterest.com/pin/<18 digits>/ or behance.net https://www.behance.net/gallery/<9 digits>/<slug>.
