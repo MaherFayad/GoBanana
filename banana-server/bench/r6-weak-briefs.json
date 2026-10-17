@@ -1,0 +1,22 @@
+{
+ "version": 1,
+ "note": "R6 weak domain briefs (bench/BASELINE.md, Refinement R6): telecom, food delivery and real estate, for offline bends only (bench-run.mjs --briefs ... --dry --atlas). The three Bench briefs of these domains, the J8 briefs (atlas-build raw/j8-briefs.jsonl) that parse to them, and new ones on the pages users of these products use most. Not Bench briefs: nothing rates them as Bench runs.",
+ "directions": 3,
+ "briefs": [
+  { "id": "esim-plan-picker", "brief": "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy", "platform": "mobile", "wildness": 3, "market": "gcc", "mustKeep": ["clear price", "one primary action"], "why": "Bench brief." },
+  { "id": "telecom-usage-home", "brief": "prepaid telecom app home screen: see data, minutes and balance left, top up fast", "platform": "mobile", "wildness": 1, "market": "gcc", "why": "J8 brief mobile-gcc-telecom-usage-dashboard." },
+  { "id": "telecom-sign-up", "brief": "new telecom app sign-up: verify the phone number with OTP, pick a plan, activate the SIM", "platform": "mobile", "wildness": 2, "market": "gcc", "why": "J8 brief mobile-gcc-telecom-sign-up." },
+  { "id": "telecom-bill-payment", "brief": "postpaid bill payment screen for a Saudi mobile operator: see this month's bill by line, pay with mada", "platform": "mobile", "wildness": 2, "market": "gcc", "mustKeep": ["clear total", "one primary action"], "why": "New: bill payment." },
+  { "id": "telecom-fiber-plans", "brief": "home fiber plans page for a Kuwait telecom website: compare speeds and prices, book installation", "platform": "website", "wildness": 3, "market": "gcc", "mustKeep": ["clear price"], "why": "New: plan comparison on the web." },
+  { "id": "ramadan-food-delivery", "brief": "Ramadan offers page for a Saudi food delivery app", "platform": "mobile", "wildness": 3, "market": "gcc", "why": "Bench brief." },
+  { "id": "food-delivery-home", "brief": "food delivery app home for Riyadh: browse nearby restaurants, filter by cuisine, reorder a favorite", "platform": "mobile", "wildness": 2, "market": "gcc", "why": "J8 brief mobile-gcc-food-delivery-home." },
+  { "id": "food-order-tracking", "brief": "order tracking screen for a Kuwait food delivery app: see the courier on the map, the arrival time and call the rider", "platform": "mobile", "wildness": 3, "market": "gcc", "mustKeep": ["clear status"], "why": "New: order tracking." },
+  { "id": "food-restaurant-menu", "brief": "restaurant menu page in a food delivery app: browse dishes, pick add-ons, add to cart", "platform": "mobile", "wildness": 4, "market": "global", "why": "New: restaurant menu." },
+  { "id": "food-delivery-checkout", "brief": "food delivery checkout: review the cart, pick a delivery time, tip the courier, pay", "platform": "mobile", "wildness": 2, "market": "global", "mustKeep": ["clear total", "one primary action"], "why": "New: checkout." },
+  { "id": "dubai-real-estate", "brief": "luxury real estate listing page for Dubai apartments", "platform": "website", "wildness": 4, "market": "gcc", "why": "Bench brief." },
+  { "id": "villa-developer-home", "brief": "villa developer home page in Dammam: browse new compounds, see floor plans, book a viewing", "platform": "website", "wildness": 2, "market": "gcc", "why": "J8 brief web-gcc-villa-developer-listings." },
+  { "id": "rental-search-results", "brief": "property search results for Riyadh rentals: filter by district, price and rooms, see homes on a map", "platform": "mobile", "wildness": 2, "market": "gcc", "why": "New: search results." },
+  { "id": "apartment-detail", "brief": "apartment detail page for an Abu Dhabi rental app: photos, floor plan, rent installments, book a viewing", "platform": "mobile", "wildness": 3, "market": "gcc", "mustKeep": ["clear price"], "why": "New: listing detail on mobile." },
+  { "id": "property-portal-home", "brief": "property portal home page for buyers in London: search homes for sale, see new listings, value my home", "platform": "website", "wildness": 3, "market": "global", "why": "New: a non Gulf real estate brief." }
+ ]
+}
