@@ -14,7 +14,9 @@
  *      lead's family, only a region the brief allows), and the clash check.
  *   5. The mechanic for the page's wild spot element (J5 plus the card's J4 lines), the element the
  *      lead's page reason names first (reasonElements).
- *   6. The spec from the lead card; a second card adds only texture or motion.
+ *   6. The spec from the lead card; a second card adds only texture or motion. The mechanic spans the
+ *      page (R4, lib/atlas/page-span.ts): 2 or 3 J1 parts, at least one flow or structure part, the
+ *      main task through it and the must keeps, in the layout line and the prompt.
  *   7. Queries from recipes (J7, page recipes with their topic slot filled by briefTopic), the
  *      Phase 0 lanes after them.
  *
@@ -53,6 +55,7 @@ import { neighbourOf, type StyleId } from "@/lib/styles/index";
 import { isStyleId } from "@/lib/styles/ids";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
 import { searchHints } from "./search-hints";
+import { isStructural, platformSections, spanLayout, spanPage } from "./page-span";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, type PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
@@ -256,17 +259,30 @@ export function contentWords(text: string): string[] {
  * or one when the name has a single content word), so "bank onboarding flow" still finds a page.
  */
 export function parsePage(text: string, pages: readonly PageAnatomy[]): PageAnatomy | null {
-  let best: { page: PageAnatomy; score: number } | null = null;
+  let best: { page: PageAnatomy; score: number; name: string } | null = null;
   for (const page of pages) {
     for (const name of [...page.names.en, page.id.replace(/-/g, " ")]) {
       if (!has(text, name)) continue;
       const score = words(name).length;
-      if (!best || score > best.score) best = { page, score };
+      if (!best || score > best.score) best = { page, score, name };
     }
-    for (const name of page.names.ar) if (name && text.includes(name) && !best) best = { page, score: 1 };
+    for (const name of page.names.ar) if (name && text.includes(name) && !best) best = { page, score: 1, name: "" };
   }
-  if (best) return best.page;
   const brief = new Set(contentWords(text));
+  if (best && !best.name) return best.page;
+  if (best) {
+    // R4: a narrower page whose name holds the matched name's words and more of the brief's own
+    // ("kids reading app home screen": "kids app home screen" over "app home screen").
+    const base = new Set(contentWords(best.name));
+    let narrow: { page: PageAnatomy; n: number } | null = null;
+    for (const page of pages) {
+      for (const name of page.names.en) {
+        const w = [...new Set(contentWords(name))];
+        if (w.length > base.size && [...base].every((x) => w.includes(x)) && w.every((x) => brief.has(x)) && (!narrow || w.length > narrow.n)) narrow = { page, n: w.length };
+      }
+    }
+    return narrow?.page ?? best.page;
+  }
   let near: { page: PageAnatomy; score: number } | null = null;
   for (const page of pages) {
     for (const name of [...page.names.en, page.id.replace(/-/g, " ")]) {
@@ -388,6 +404,10 @@ const REASON_ELEMENTS: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = 
   [/\b(button|press|tap)\b/, ["cta"]],
   [/\b(divider|dividers|band|bands)\b/, ["divider"]],
 ];
+/** R4: score an element gains when the page has it (a section on this platform or a wild spot). */
+export const ON_PAGE_BONUS = 3;
+/** R4: score a flow or structure element gains over a surface one (header strip, dividers, one button). */
+export const STRUCTURE_BONUS = 1.5;
 /** Score an element gains when the lead card's page reason names it (over the wild spot order). */
 export const REASON_ELEMENT_BONUS = 4;
 
@@ -857,6 +877,13 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   };
   const elementUse = new Map<MechanicElement, number>();
   const usedMechanics = new Set<string>();
+  // R4: page parts earlier directions named, so a board's directions spread over the page.
+  const partUse = new Map<UiElement, number>();
+  // R4: the mechanic's own part should be one the page has (a section on this platform or a wild
+  // spot): r4-0 put a dotted-leader total on an offers page with no total. A flow or structure part
+  // comes before a surface one (a header strip, the dividers, one button), the judge's thin idea.
+  const onPage = new Set<UiElement>([...platformSections(page, platform).map((s) => s.element), ...page.wildSpots.map((w) => w.element)]);
+  const pageHas = (el: UiElement) => onPage.has(el) || [...onPage].some((o) => ELEMENT_TO_MECHANIC[o] !== undefined && ELEMENT_TO_MECHANIC[o] === ELEMENT_TO_MECHANIC[el] && o !== "hero" && el !== "hero");
   const ranked = (lead: IngredientCard) => {
     // The element the lead's page reason names comes first (Gate 2 round 2 run g2g: "each finished
     // step lands as stamp" was built as a divider, "punched holes show step progress" as a header).
@@ -864,19 +891,25 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     // moves "punched holes show step progress" to the header); a protected one is not in `order`, so
     // the next element the reason names takes its place.
     const named = reasonElements(pageFitOf.get(lead.id)?.reason ?? "");
+    // R4: a named element counts only when the page has it (r4-0: "total" on an offers page), and
+    // among named elements a flow or structure one comes before a surface one ("offer" names the
+    // header and the hero: the season banner, not the top bar).
+    const namedRank = (el: UiElement) => (named.includes(el) && pageHas(el) ? named.length - named.indexOf(el) + (isStructural(el) ? 1 : 0) : 0);
     return order
       .map((el, idx) => ({
         el,
         // Among named elements, the reason's own order first ("prices per plan": the plan cards).
-        named: named.includes(el) ? named.length - named.indexOf(el) : 0,
+        named: namedRank(el),
         score:
           (lineOf.get(`${lead.id}|${el}`)?.buildability ?? 2) +
           Math.max(0, 3 - idx) -
           2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0) +
-          (named.includes(el) ? REASON_ELEMENT_BONUS : 0),
+          (named.includes(el) ? REASON_ELEMENT_BONUS : 0) +
+          (pageHas(el) ? ON_PAGE_BONUS : 0) +
+          (isStructural(el) ? STRUCTURE_BONUS : 0),
         idx,
       }))
-      .sort((a, b) => Number(b.named) - Number(a.named) || b.score - a.score || a.idx - b.idx)
+      .sort((a, b) => Number(b.named > 0) - Number(a.named > 0) || b.named - a.named || b.score - a.score || a.idx - b.idx)
       .map((x) => x.el);
   };
 
@@ -929,6 +962,29 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     if (drawn.mech) usedMechanics.add(drawn.mech.id);
     whys.add(why);
 
+    // R4: the mechanic acts on the page, not one element: 2 or 3 parts, the main task, the must keeps.
+    const span = spanPage({
+      brief: input.brief,
+      page,
+      platform,
+      main: { element: drawn.el, mechanic: drawn.dm.element, how: drawn.dm.how },
+      lineOf: (el) => lineOf.get(`${lead.id}|${el}`),
+      mechanicsOf: (el) => mechanicsByElement.get(el) ?? [],
+      named: reasonElements(pageReason?.reason ?? ""),
+      forbidden: (el) => {
+        const m = ELEMENT_TO_MECHANIC[el];
+        return m !== undefined && forbiddenElement(m, protect);
+      },
+      used: partUse,
+      mustKeep: input.mustKeep ?? [],
+      protect,
+    });
+    if (span) {
+      for (const p of span.parts.slice(1)) partUse.set(p.element, (partUse.get(p.element) ?? 0) + 1);
+      drawn.dm = { ...drawn.dm, parts: span.parts.map(({ element, label, how }) => ({ element, label, how })), task: span.task };
+      drawn.spec = { ...drawn.spec, layout: spanLayout(lead.name, pageLabel, span, profile.gridShort ? ` on ${profile.gridShort}` : "") + (pick.adds === "rule" && second ? ` One rule from ${second.name}: ${sentence(second.idea)}` : "") };
+    }
+
     // A long card name is the title on its own ("Layout Mirrors by Language", not "The Layout Mirrors").
     const name = lead.name.replace(/^(the|a|an)\s+/i, "");
     const titleBase = words(name).length >= MAX_TITLE_WORDS ? clipTitle(name) : clipTitle(`${name} ${subject.head}`);
@@ -942,6 +998,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
         sentence(lead.idea),
         sentence(lead.surprise),
         `Build it this way: ${drawn.dm.how}.`,
+        drawn.dm.task ? `Across the page: ${drawn.spec.layout}` : "",
         second ? `${second.name} adds only its ${pick.adds}.` : "",
         lead.culturalNotes ? sentence(lead.culturalNotes) : "",
         platform === "any" ? "Built for any screen." : `Built for a ${profile.label}.`,
