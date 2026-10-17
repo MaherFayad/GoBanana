@@ -100,7 +100,9 @@ Pages that have this element (use these ids for pages): ${input.pages.join(", ")
 How those pages label it: ${input.labels.join("; ") || "not labeled"}
 Taken ids and names (do not reuse or repeat these ideas): ${input.taken.join("; ")}`,
 
-  parse: (text) => toRecords(extractJson(text)),
+  // As in J5, one reply put a stray JS call after a pages array (`[...].filter(function(p){...})`):
+  // keep the array (prepare drops unknown page ids anyway) and parse the rest.
+  parse: (text) => toRecords(extractJson(text.replace(/\]\.filter\(function\s*\([^)]*\)\s*\{[^}]*\}\)/g, "]"))),
   prepare: (raw, input) => {
     if (!raw || typeof raw !== "object") return raw;
     const r = raw as Record<string, unknown>;

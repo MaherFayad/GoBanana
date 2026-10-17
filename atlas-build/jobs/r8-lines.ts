@@ -39,12 +39,12 @@ Good lines (for a card about airport luggage tags):
 - map: "The map becomes a stamped travel chart: each home is an ink stamp holding its price, the chosen one inked solid."
 - form-field: "The form fills in like a boarding pass: name, date and seat panels in fixed boxes, the stub tears off on submit."
 - chip-filter: "Filters are destination tags threaded on a cord; a picked tag swings forward, filled, with a small x to clear it."
-Bad lines: "Rows with a thin tag-colored border" (decoration only), "A luggage tag drawing in the corner of the list" (beside the part, not the part), "Rows scattered like tags dropped on a table" (breaks scanning), "Fields hidden inside folded tags" (hides the task).
+Bad lines: "Rows with a thin tag-colored border" (decoration only), "Filters are pennant tags in sky blue; a picked one fills orange" (a color swap on a chip), "Fields are cream bands with a tall caps label" (a restyle), "A luggage tag drawing in the corner of the list" (beside the part, not the part), "Rows scattered like tags dropped on a table" (breaks scanning), "Fields hidden inside folded tags" (hides the task).
 
 ${PROMPT_RULES}
 
 For each card and each element, write:
-- how: one plain sentence, 10 to 24 words, that a front-end developer can build from: what the part becomes in this card's world (its object, structure, rule or motion, named concretely) and what stays plain so the task still works (names, prices, distances, typed text, labels, the selected state). Use the card's own things, not generic UI words. It must stay usable: readable text in plain type, 44 px targets, keyboard and screen reader use, visible selected and error states. A map keeps real geography, north up and readable pins; a form keeps real labels, typed text and visible errors; filters keep a visible selected state and a way to clear; a sorted list keeps its order easy to read; search keeps the typed query and suggestions plain.
+- how: one plain sentence, 10 to 24 words, that a front-end developer can build from: what the part becomes in this card's world (its object, structure, rule or motion, named concretely) and what stays plain so the task still works (names, prices, distances, typed text, labels, the selected state). Use the card's own things, not generic UI words. Colors, borders and fonts alone are not the idea (the palette and type are set elsewhere): spend the words on the object, structure or rule the part becomes and how it behaves (a menu board line with dotted leaders, an order pad, numbered exhibit steps, a stamped chart). It must stay usable: readable text in plain type, 44 px targets, keyboard and screen reader use, visible selected and error states. A map keeps real geography, north up and readable pins; a form keeps real labels, typed text and visible errors; filters keep a visible selected state and a way to clear; a sorted list keeps its order easy to read; search keeps the typed query and suggestions plain.
 - buildability: 5 = plain CSS and components in an afternoon; 4 = a day, small SVG or a little motion; 3 = custom drawing, masks or canvas; 2 = heavy custom work or real performance risk; 1 = barely shippable. Be honest: most lines are 3 or 4.
 Try first to find an object or a rule in the card's world that can carry the part; most cards have one. Only when the card truly has nothing for a part, write an honest modest line with buildability 2, never a forced gimmick. Vary the six lines of one card: do not reuse the same object for every part.
 
@@ -81,7 +81,7 @@ export default defineJob<Input, CardElementLine>({
     return out;
   },
   // The first card id names the chunk, so a card added later shifts only the chunks after it.
-  requestId: (input) => `r8l-${input.n}-${input.cards[0]!.id}`.slice(0, 64),
+  requestId: (input) => `r8l2-${input.n}-${input.cards[0]!.id}`.slice(0, 64),
   buildPrompt: (input) => `Write the ${WORK_PARTS.length} part lines for each of these ${input.cards.length} cards.\n\n${input.cards.map(cardBrief).join("\n\n")}`,
 
   parse: (text, input) => {

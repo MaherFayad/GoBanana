@@ -23,6 +23,11 @@
  *
  *   npx tsx run.ts r6-page-names --from-raw     (anatomy: names users of the weak domains type, parse guarded)
  *
+ * R8, after the R2 jobs (r2-mechanics-fix) and r6-page-names:
+ *
+ *   npx tsx run.ts r8-mechanics --from-raw      (mechanics: page mechanics for list rows, result cards, map, form fields, filters, search)
+ *   npx tsx run.ts r8-lines --from-raw          (card-elements: every card's lines for those six parts, rewritten to act on the part)
+ *
  * Not in the order (tried in R6, not shipped): r6-weak-pages (page fit on the pages J4b skipped for
  * telecom, food delivery and real estate; the trusted judge scored it 2 directions lower).
  */
