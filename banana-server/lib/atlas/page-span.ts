@@ -21,6 +21,8 @@ export const FLOW_ELEMENTS: ReadonlySet<UiElement> = new Set(["stepper", "progre
 export const STRUCTURE_ELEMENTS: ReadonlySet<UiElement> = new Set(["card", "list-row", "paywall-plan", "price-breakdown", "map", "chart", "chip-filter", "form-field", "sidebar", "hero", "empty-state"]);
 /** R8: the parts where a search, listing, browse or form page's work happens (mechanic elements in the bend). */
 export const WORK_ELEMENTS: ReadonlySet<UiElement> = new Set(["list-row", "card", "map", "form-field", "chip-filter"]);
+/** R8: a map section that shows places (not a seat or cabin map), the kind the R8 map lines are written for. */
+export const placeMap = (label: string) => !/\b(seats?|cabin)\b|\bzone map\b/i.test(label);
 /** Section roles that frame the page rather than do its task (a footer of links, the top bar, a logo strip). */
 const FRAME_ROLES: ReadonlySet<string> = new Set(["footer", "nav", "status-header", "logos", "tabbar"]);
 
@@ -135,6 +137,20 @@ export function taskSentence(brief: string, part: Pick<SpanPart, "element" | "la
   return `${clean(`The main task, ${phrase}, now runs through the ${part.label}: ${lowerFirst(part.how)}`)}.`;
 }
 
+/** R8: brief words for the work the user does, and the work part it happens on. */
+const BRIEF_WORK: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = [
+  [/\b(browse|browsing|results?|listings?|list|nearby|restaurants|homes|dishes|menu)\b/i, ["card", "list-row"]],
+  [/\b(filter|filters|sort|narrow)\b/i, ["chip-filter"]],
+  [/\b(map|maps|courier|route)\b/i, ["map"]],
+  [/\b(sign-?up|verify|otp|enter|fill|address|details|form)\b/i, ["form-field"]],
+];
+
+/** R8: the work parts a brief's task list (after the colon) names ("browse nearby restaurants, filter by cuisine": cards, rows, filters). */
+export function briefWorks(brief: string): Set<UiElement> {
+  const task = brief.split(":").slice(1).join(":");
+  return new Set(BRIEF_WORK.filter(([re]) => re.test(task)).flatMap(([, els]) => els));
+}
+
 /** Protected parts that stay plain, for a brief with no must-keeps of its own. */
 const KEEP_NAME: Partial<Record<MechanicElement, string>> = { total: "the total", cta: "the main button", plan: "each plan's name and price" };
 
@@ -197,7 +213,8 @@ function candidates(input: SpanInput): Candidate[] {
     seen.push(el);
     // R8: a work part with several sections stands for its required one ("result list", not "recent searches").
     const own = !("spot" in s) && WORK_ELEMENTS.has(el) ? (partSection(sections, (x) => x === el) ?? s) : s;
-    const line = input.lineOf(el);
+    // The R8 map lines draw places: a seat map keeps to a J5 mechanic, if one is loaded.
+    const line = el === "map" && !placeMap(own.label) ? undefined : input.lineOf(el);
     let how = line && line.buildability >= MIN_LINE ? clean(line.how) : "";
     if (!how) {
       const m = [...(input.mechanicsOf?.(el) ?? [])]
@@ -264,7 +281,7 @@ export function spanPage(input: SpanInput): PageSpan | null {
   const sections = platformSections(input.page, input.platform);
   const wild = new Set(input.page.wildSpots.map((w) => w.element));
   const rank = (p: SpanPart) =>
-    p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0) + (wild.has(p.element) ? 1 : 0) + (sections.some((s) => samePart(s.element, p.element) && s.required) ? 0.5 : 0);
+    p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0) + (wild.has(p.element) ? 1 : 0) + (sections.some((s) => samePart(s.element, p.element) && s.required) ? 0.5 : 0) + (briefWorks(input.brief).has(p.element) ? 2 : 0);
   const taskPart = parts.reduce((best, p) => (rank(p) > rank(best) ? p : best), parts[0]!);
   return { parts, task: taskSentence(input.brief, taskPart), keep: keepLine(input.mustKeep, input.protect) };
 }

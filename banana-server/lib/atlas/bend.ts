@@ -55,7 +55,7 @@ import { neighbourOf, type StyleId } from "@/lib/styles/index";
 import { isStyleId } from "@/lib/styles/ids";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
 import { searchHints } from "./search-hints";
-import { isStructural, platformSections, spanLayout, spanPage } from "./page-span";
+import { isStructural, placeMap, platformSections, spanLayout, spanPage } from "./page-span";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, type PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
@@ -578,9 +578,15 @@ function elementOrder(page: PageAnatomy, protect: ReadonlySet<MechanicElement>, 
     const m = ELEMENT_TO_MECHANIC[el];
     return m !== undefined && forbiddenElement(m, protect);
   };
-  const work = platformSections(page, platform).map((s) => s.element).filter((el) => WORK_PARTS.includes(el));
+  // A work part counts only when a section on this platform shows it (a wild spot alone, like the
+  // suggestion cards of an empty state page, is not where the work happens), and a map only when it
+  // shows places (a seat map is not one: r8-b1 put a radar of priced pins on a flight checkout).
+  const work = platformSections(page, platform)
+    .filter((s) => WORK_PARTS.includes(s.element) && (s.element !== "map" || placeMap(s.label)))
+    .map((s) => s.element);
   const out: UiElement[] = [];
   for (const el of [...page.wildSpots.map((w) => w.element), ...work, ...FALLBACK_ELEMENTS]) {
+    if (WORK_PARTS.includes(el) && !work.includes(el)) continue;
     if (ELEMENT_TO_MECHANIC[el] && !risky(el) && !out.includes(el)) out.push(el);
   }
   return out;

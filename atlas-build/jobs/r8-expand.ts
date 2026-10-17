@@ -22,7 +22,9 @@ const RUNS = (process.env.R8_RUNS ?? "r6-3").split(",").map((s) => s.trim()).fil
 
 const Rec = z.object({ run: z.string(), briefId: z.string(), directionId: z.string(), title: z.string(), expand: z.number().int().min(1).max(5), reason: z.string() });
 type R = z.infer<typeof Rec>;
-type Input = { run: string; brief: RunBrief; direction: RunDirection };
+type Input = { runs: string[]; brief: RunBrief; direction: RunDirection };
+const textKey = (brief: RunBrief, d: RunDirection) => `${brief.id}-${cyrb53(`${briefText(brief)}
+${directionText(d)}`).toString(36)}`;
 
 const SYSTEM = `You are a senior product designer. A tool hands you a draft design direction for one app or web page: a wild idea, how it acts on the page's parts, and a visual spec. You decide whether it is a draft you would take and expand into something original, or one you would set aside.
 
@@ -48,13 +50,23 @@ export default defineJob<Input, R>({
   maxTokens: 2000,
   expectedOutputTokens: 300,
   effort: "low",
-  loadInputs: () => RUNS.flatMap((run) => readRun(run).briefs.flatMap((brief) => brief.directions.map((direction) => ({ run, brief, direction })))),
+  loadInputs: () => {
+    // One request per distinct text: a direction that is the same in two runs is rated once, for both.
+    const byKey = new Map<string, Input>();
+    for (const run of RUNS) for (const brief of readRun(run).briefs) for (const direction of brief.directions) {
+      const k = textKey(brief, direction);
+      const had = byKey.get(k);
+      if (had) had.runs.push(run);
+      else byKey.set(k, { runs: [run], brief, direction });
+    }
+    return [...byKey.values()];
+  },
   // The text decides the id, so the same direction in two runs shares one reply.
-  requestId: (i) => `r8x-${i.brief.id}-${cyrb53(`${briefText(i.brief)}\n${directionText(i.direction)}`).toString(36)}`.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 64),
+  requestId: (i) => `r8x-${textKey(i.brief, i.direction)}`.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 64),
   buildPrompt: (i) => `${briefText(i.brief)}\n\n${directionText(i.direction)}\n\nWould you take this draft and expand it into something original? Rate it.`,
   parse: (text, i) => {
     const j = extractJson(text) as { expand?: unknown; reason?: unknown };
-    return [{ run: i.run, briefId: i.brief.id, directionId: i.direction.id, title: i.direction.title, expand: Number(j.expand), reason: String(j.reason ?? "") }];
+    return i.runs.map((run) => ({ run, briefId: i.brief.id, directionId: i.direction.id, title: i.direction.title, expand: Number(j.expand), reason: String(j.reason ?? "") }));
   },
   finalize: (records, ctx) => {
     if (ctx.dry) return records;

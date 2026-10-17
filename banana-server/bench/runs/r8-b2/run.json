@@ -1,0 +1,3175 @@
+{
+ "run": "r8-b2",
+ "dry": true,
+ "createdAt": "2026-10-17T03:20:37.460Z",
+ "budget": 150,
+ "count": 12,
+ "credits": 0,
+ "engine": {
+  "checkCoherence": true,
+  "canvasBaseline": true,
+  "atlas": {
+   "dir": "C:\\Users\\Admin\\Documents\\GitHub\\Gobanana\\.claude\\worktrees\\agent-a5145cc65667dbc9d\\atlas-build\\out\\server\\v1",
+   "hash": "73381a6b7eb059695386f3c53e9b05ee39839c2cabd3b924b0b0a96ad5f13988",
+   "shards": 302
+  }
+ },
+ "briefs": [
+  {
+   "id": "esim-plan-picker",
+   "brief": "eSIM plan picker for a GCC travel app: pick a destination data plan, compare GB and days, buy",
+   "engine": "atlas",
+   "market": "gcc",
+   "platform": "mobile",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "mustKeep": [
+    "clear price",
+    "one primary action"
+   ],
+   "subject": "eSIM plan picker",
+   "lens": null,
+   "suggestedLenses": [
+    "sadu",
+    "talli",
+    "qatt-asiri"
+   ],
+   "directions": [
+    {
+     "id": "bd-7le7dwhz",
+     "title": "Gas Station Price Sign",
+     "twist": "With the texture of Qatari Al Jassasiya Rock",
+     "move": "transplant",
+     "searchQuery": "gas station price sign",
+     "mechanic": {
+      "element": "plan",
+      "how": "Plan is a tall price tile, big price in white, best plan in red",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Plan is a tall price tile, big price in white, best plan in red"
+       },
+       {
+        "element": "hero",
+        "label": "destination and coverage",
+        "how": "Hero is one tall lightbox panel with a huge stacked number and small label"
+       },
+       {
+        "element": "list-row",
+        "label": "networks, speed and plan details",
+        "how": "Each row is a lit price slot on the pylon: name left, a tall stacked price tile right, the best price lit amber"
+       }
+      ],
+      "task": "The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: plan is a tall price tile, big price in white, best plan in red."
+     },
+     "ingredients": {
+      "mood": "board or sign",
+      "object": "Gas Station Price Sign",
+      "element": "Qatari Al Jassasiya Rock Carvings"
+     },
+     "artQueries": [
+      "gas station price sign",
+      "fuel price pylon night",
+      "changeable letter sign"
+     ],
+     "spec": {
+      "typography": "Big Shoulders for display at 34px, Archivo for body at 17px; Arabic in Reem Kufi and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "condensed",
+      "color": "Palette from Gas Station Price Sign: surface #121417, ink #F4F1E8, accent #E23A2C, support #F2B632; ship pairs #F4F1E8 on #121417, #F2B632 on #121417; text at 4.5 to 1 or more.",
+      "layout": "Gas Station Price Sign runs the eSIM plan picker across the plan cards, the destination and coverage and the networks, speed and plan details on a 4 column grid with 16px margins and actions in the thumb zone. The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: plan is a tall price tile, big price in white, best plan in red. Destination and coverage: hero is one tall lightbox panel with a huge stacked number and small label. Networks, speed and plan details: each row is a lit price slot on the pylon: name left, a tall stacked price tile right, the best price lit amber. Must keep: clear price, one primary action.",
+      "imagery": "Night photos of real roadside pylons, cropped tight on the number tiles, high contrast with the glow kept and the brand areas blurred out.",
+      "motion": "Slots in 280ms; with reduced motion on, The new number swaps in instantly with no slide.",
+      "texture": "Pecked cup marks as slightly uneven inset circles with a 1 px inner shadow, in two parallel rows, on one progress or stats card only. The current mark fills with low sun amber. (from Qatari Al Jassasiya Rock Carvings); text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Plan is a tall price tile, big price in white, best plan in red.",
+      "pattern": "Gas Station Price Sign on the plan cards: Price unit switcher.",
+      "steal": [
+       "The palette of Gas Station Price Sign: forecourt night, lightbox white, price tile red, canopy amber, pylon steel blue.",
+       "The surface: Pecked cup marks as slightly uneven inset circles with a 1 px inner shadow, in two parallel rows, on one progress or stats card only. The current mark fills with low sun amber.",
+       "The imagery: Night photos of real roadside pylons, cropped tight on the number tiles, high contrast with the glow kept and the brand areas blurred out."
+      ],
+      "avoid": [
+       "Real fuel brand logos or colors.",
+       "Neon glow on every element instead of the one price panel.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode",
+       "big typography"
+      ],
+      "whyItFits": "Stacked lit prices per data plan."
+     },
+     "lanes": {
+      "idea": "gas station price sign",
+      "taste": "dark esim plan ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography esim plan ui ios app",
+      "fidelity": "esim plan app ui",
+      "lightTwin": "esim plan ui ios app",
+      "component": [
+       "esim plan cards app ui"
+      ],
+      "bridge": "gas station price sign ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "esim plan",
+      "art": [
+       "gas station price sign",
+       "fuel price pylon night",
+       "changeable letter sign"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-varl85u5",
+     "title": "Eastern Arabic Digits plan",
+     "twist": "With the motion of Eidiya Money Envelope",
+     "move": "transplant",
+     "searchQuery": "eastern arabic digits",
+     "mechanic": {
+      "element": "plan",
+      "how": "Each plan is a plate with a huge price numeral; the chosen one is lit saffron",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Each plan is a plate with a huge price numeral; the chosen one is lit saffron"
+       },
+       {
+        "element": "hero",
+        "label": "destination and coverage",
+        "how": "One huge condensed digit fills the hero over a hairline baseline and digit-height grid"
+       },
+       {
+        "element": "chip-filter",
+        "label": "plan type tabs",
+        "how": "Filters are lift-panel buttons labeled with Eastern Arabic counts; a picked one lights saffron, a range shows its two numbers large, and a clear button resets"
+       }
+      ],
+      "task": "The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: each plan is a plate with a huge price numeral; the chosen one is lit saffron."
+     },
+     "ingredients": {
+      "mood": "glyphs and punctuation",
+      "element": "Eastern Arabic Digits",
+      "object": "Eidiya Money Envelope"
+     },
+     "artQueries": [
+      "Arabic house number plate",
+      "Arabic numerals sign",
+      "Arabic clock face"
+     ],
+     "spec": {
+      "typography": "Big Shoulders for display at 34px, Archivo for body at 17px; Arabic in Reem Kufi and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "condensed",
+      "color": "Palette from Eastern Arabic Digits: surface #141414, ink #F2EFE8, accent #E8A23A, support #3A3D40; ship pairs #F2EFE8 on #141414, #E8A23A on #141414; text at 4.5 to 1 or more.",
+      "layout": "Eastern Arabic Digits runs the eSIM plan picker across the plan cards, the destination and coverage and the plan type tabs on a 4 column grid with 16px margins and actions in the thumb zone. The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: each plan is a plate with a huge price numeral; the chosen one is lit saffron. Destination and coverage: one huge condensed digit fills the hero over a hairline baseline and digit-height grid. Plan type tabs: filters are lift-panel buttons labeled with Eastern Arabic counts; a picked one lights saffron, a range shows its two numbers large, and a clear button resets. Must keep: clear price, one primary action.",
+      "imagery": "Tight photos of digits in real use: house number plates, lift buttons, clock faces and price boards, straight on and evenly lit.",
+      "motion": "Slides out in 320ms (from Eidiya Money Envelope); with reduced motion on, Envelope swaps to its open state with a 120 ms fade.",
+      "texture": "A hairline baseline and digit-height grid behind the hero numeral only, so the low dot of ٠ and the tall strokes of ١ and ٩ show their real proportions.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Each plan is a plate with a huge price numeral; the chosen one is lit saffron.",
+      "pattern": "Eastern Arabic Digits on the plan cards: Center snap carousel.",
+      "steal": [
+       "The palette of Eastern Arabic Digits: lift panel black, enamel plate white, lit button saffron, brushed slate, engraved grey.",
+       "The surface: A hairline baseline and digit-height grid behind the hero numeral only, so the low dot of ٠ and the tall strokes of ١ and ٩ show their real proportions.",
+       "The imagery: Tight photos of digits in real use: house number plates, lift buttons, clock faces and price boards, straight on and evenly lit."
+      ],
+      "avoid": [
+       "Persian forms of four, five and six (۴ ۵ ۶) mixed in with the Arabic set.",
+       "Reversing digit order in right-to-left text; numbers still read left to right.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode",
+       "big typography"
+      ],
+      "whyItFits": "Huge digit leads each plan's data amount."
+     },
+     "lanes": {
+      "idea": "eastern arabic digits",
+      "taste": "dark esim plan ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography esim plan ui ios app",
+      "fidelity": "esim plan app ui",
+      "lightTwin": "esim plan ui ios app",
+      "component": [
+       "esim plan cards app ui"
+      ],
+      "bridge": "eastern arabic digits ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "esim plan",
+      "art": [
+       "Arabic house number plate",
+       "Arabic numerals sign",
+       "Arabic clock face"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-jlzttiy2",
+     "title": "Dial Caliper plan picker",
+     "twist": "With the texture of Kuwait Towers 1979",
+     "move": "transplant + era",
+     "searchQuery": "dial caliper",
+     "mechanic": {
+      "element": "plan",
+      "how": "Plan options are steel plates, the chosen one has an amber face and red needle tick",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Plan options are steel plates, the chosen one has an amber face and red needle tick"
+       },
+       {
+        "element": "hero",
+        "label": "destination and coverage",
+        "how": "Hero is a measuring panel with a big amber dial readout and tick edge"
+       },
+       {
+        "element": "chip-filter",
+        "label": "plan type tabs",
+        "how": "Price and range filters are caliper jaws sliding on a scale; the gap between jaws is the range, a plain readout shows both numbers, reset clears"
+       }
+      ],
+      "task": "The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: plan options are steel plates, the chosen one has an amber face and red needle tick."
+     },
+     "ingredients": {
+      "mood": "device or instrument",
+      "object": "Dial Caliper",
+      "era": "Kuwait Towers 1979"
+     },
+     "artQueries": [
+      "dial caliper",
+      "vernier caliper",
+      "machinist tools"
+     ],
+     "spec": {
+      "typography": "JetBrains Mono for display at 34px, IBM Plex Sans for body at 17px; Arabic in Cascadia Mono and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "mono",
+      "color": "Palette from Dial Caliper: surface #D6D8D6, ink #151719, accent #D4282A, support #3A3D40; ship pairs #151719 on #D6D8D6, #3A3D40 on #D6D8D6; text at 4.5 to 1 or more.",
+      "layout": "Dial Caliper runs the eSIM plan picker across the plan cards, the destination and coverage and the plan type tabs on a 4 column grid with 16px margins and actions in the thumb zone. The main task, pick a destination data plan, compare GB and days, buy, now runs through the plan cards: plan options are steel plates, the chosen one has an amber face and red needle tick. Destination and coverage: hero is a measuring panel with a big amber dial readout and tick edge. Plan type tabs: price and range filters are caliper jaws sliding on a scale; the gap between jaws is the range, a plain readout shows both numbers, reset clears. Must keep: clear price, one primary action.",
+      "imagery": "Macro product photos of a steel caliper reading a real part, shallow focus on the dial, neutral gray backdrop.",
+      "motion": "Slides in 280ms; with reduced motion on, The value updates instantly with no jaw travel.",
+      "texture": "Overlapping disc scales of 10 px circles in blue, green and gray, set in offset rows on the single hero sphere card only. Every other surface stays flat haze white. (from Kuwait Towers 1979); text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Plan options are steel plates, the chosen one has an amber face and red needle tick.",
+      "pattern": "Dial Caliper on the plan cards: Accordion ledger rows.",
+      "steal": [
+       "The palette of Dial Caliper: brushed steel, engraved scale black, needle red, gunmetal jaw, dial face amber.",
+       "The surface: Overlapping disc scales of 10 px circles in blue, green and gray, set in offset rows on the single hero sphere card only. Every other surface stays flat haze white.",
+       "The imagery: Macro product photos of a steel caliper reading a real part, shallow focus on the dial, neutral gray backdrop."
+      ],
+      "avoid": [
+       "Chrome reflections that hurt readability.",
+       "Tick marks too fine to read on mobile.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "big typography"
+      ],
+      "whyItFits": "Slide jaw to pick data amount."
+     },
+     "lanes": {
+      "idea": "dial caliper",
+      "taste": "dark esim plan ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography esim plan ui ios app",
+      "fidelity": "esim plan app ui",
+      "lightTwin": "esim plan ui ios app",
+      "component": [
+       "esim plan cards app ui"
+      ],
+      "bridge": "dial caliper ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "esim plan",
+      "art": [
+       "dial caliper",
+       "vernier caliper",
+       "machinist tools"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "flight-checkout-gcc-ota",
+   "brief": "flight checkout for a GCC OTA: review the itinerary, add bags and seats, pay",
+   "engine": "atlas",
+   "market": "gcc",
+   "platform": "mobile",
+   "wildness": 2,
+   "wildnessLabel": "Bold",
+   "mustKeep": [
+    "clear total",
+    "one primary action"
+   ],
+   "subject": "GCC flight checkout",
+   "lens": null,
+   "suggestedLenses": [
+    "sadu",
+    "talli",
+    "qatt-asiri"
+   ],
+   "directions": [
+    {
+     "id": "bd-4ol6ei7i",
+     "title": "Line Diagrams flight checkout",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "line diagrams",
+     "mechanic": {
+      "element": "progress",
+      "how": "A thick magenta line fills past stops while remaining stops stay grey",
+      "parts": [
+       {
+        "element": "progress",
+        "label": "booking steps",
+        "how": "A thick magenta line fills past stops while remaining stops stay grey"
+       },
+       {
+        "element": "card",
+        "label": "flight summary",
+        "how": "Each card is a carriage panel with a stop strip along its top edge: dots mark photos or sections, the current dot lit, title and price plain"
+       },
+       {
+        "element": "list-row",
+        "label": "bag options",
+        "how": "Each row is a stop on one vertical transit line: a ringed dot on the rail, name and price in plain black, the opened row's dot lit"
+       }
+      ],
+      "task": "The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: A thick magenta line fills past stops while remaining stops stay grey."
+     },
+     "ingredients": {
+      "mood": "data marks",
+      "element": "Line Diagrams"
+     },
+     "artQueries": [
+      "train door line diagram",
+      "metro stop strip",
+      "subway map"
+     ],
+     "spec": {
+      "typography": "Inter Tight for display at 34px, Inter for body at 17px; Arabic in Alexandria and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "grotesk",
+      "color": "Palette from Line Diagrams: surface #FFFFFF, ink #1A1A1A, accent #C2185B, support #00897B; ship pairs #1A1A1A on #FFFFFF, #C2185B on #FFFFFF; text at 4.5 to 1 or more.",
+      "layout": "Line Diagrams runs the flight checkout across the booking steps, the flight summary and the bag options on a 4 column grid with 16px margins and actions in the thumb zone. The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: A thick magenta line fills past stops while remaining stops stay grey. Flight summary: each card is a carriage panel with a stop strip along its top edge: dots mark photos or sections, the current dot lit, title and price plain. Bag options: each row is a stop on one vertical transit line: a ringed dot on the rail, name and price in plain black, the opened row's dot lit. Must keep: clear total, one primary action.",
+      "imagery": "Clean schematic strips and lit station dots cropped as wide panoramas. No real network maps traced from any city.",
+      "motion": "Advances in 400ms; with reduced motion on, The lit dot jumps to the next stop with an instant swap.",
+      "texture": "A single thick magenta line with ringed stop dots runs as the header band of the checkout card. No texture anywhere else.; text sits on solid panels, never on the texture.",
+      "iconography": "Round filled icons, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "A thick magenta line fills past stops while remaining stops stay grey.",
+      "pattern": "Line Diagrams on the progress bar: Seat chair grid.",
+      "steal": [
+       "The palette of Line Diagrams: carriage panel white, station name black, line magenta, interchange teal, passed stop grey.",
+       "The surface: A single thick magenta line with ringed stop dots runs as the header band of the checkout card. No texture anywhere else.",
+       "The imagery: Clean schematic strips and lit station dots cropped as wide panoramas. No real network maps traced from any city."
+      ],
+      "avoid": [
+       "Tracing a real city's transit map.",
+       "Rainbows of many line colors at once.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Checkout stepper as lit stop strip."
+     },
+     "lanes": {
+      "idea": "line diagrams",
+      "taste": "dark flight checkout ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "minimal flight checkout ui ios app",
+      "fidelity": "flight checkout app ui",
+      "lightTwin": "flight checkout ui ios app",
+      "component": [
+       "flight checkout progress bar app ui",
+       "flight checkout itinerary app ui"
+      ],
+      "bridge": "line diagrams ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "flight checkout",
+      "galleries": [
+       "60fps"
+      ],
+      "art": [
+       "train door line diagram",
+       "metro stop strip",
+       "subway map"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-ns524bym",
+     "title": "Air Traffic Flight Strip",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "air traffic flight strip",
+     "mechanic": {
+      "element": "card",
+      "how": "Each card is a tall strip with printed box fields and a colored holder at left; the active strip gets a grease pencil circle",
+      "parts": [
+       {
+        "element": "card",
+        "label": "flight summary",
+        "how": "Each card is a tall strip with printed box fields and a colored holder at left; the active strip gets a grease pencil circle"
+       },
+       {
+        "element": "stepper",
+        "label": "booking steps",
+        "how": "Each step is a strip in a bay, the current one pulled out and marked"
+       },
+       {
+        "element": "list-row",
+        "label": "bag options",
+        "how": "Each row is a paper flight strip in a holder with boxed fields; amber or cyan holder shows type and drag order sets priority"
+       }
+      ],
+      "task": "The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: each step is a strip in a bay, the current one pulled out and marked."
+     },
+     "ingredients": {
+      "mood": "printed card, cover or ticket",
+      "object": "Air Traffic Flight Strip"
+     },
+     "artQueries": [
+      "air traffic flight strip",
+      "flight progress strip board",
+      "control tower strip bay"
+     ],
+     "spec": {
+      "typography": "IBM Plex Mono for display at 34px, IBM Plex Sans for body at 17px; Arabic in Noto Kufi Arabic and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "mono",
+      "color": "Palette from Air Traffic Flight Strip: surface #1B1F22, ink #EFE8D2, accent #F2B134, support #5FB7C9; ship pairs #EFE8D2 on #1B1F22, #F2B134 on #1B1F22; text at 4.5 to 1 or more.",
+      "layout": "Air Traffic Flight Strip runs the flight checkout across the flight summary, the booking steps and the bag options on a 4 column grid with 16px margins and actions in the thumb zone. The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: each step is a strip in a bay, the current one pulled out and marked. Bag options: each row is a paper flight strip in a holder with boxed fields; amber or cyan holder shows type and drag order sets priority. Must keep: clear total, one primary action.",
+      "imagery": "No photos. Use flat top-down diagrams of the strip bay and small route lines drawn in one stroke weight, like the field notes on a real strip.",
+      "motion": "Slides in 220ms; with reduced motion on, Strips swap position instantly with a 120 ms fade on the moved strip.",
+      "texture": "Only the active strip gets a 3 percent paper grain and thin printed box rules splitting it into fields. Hand marks in grease pencil red appear as a single strike or circle on that strip.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Each card is a tall strip with printed box fields and a colored holder at left; the active strip gets a grease pencil circle.",
+      "pattern": "Air Traffic Flight Strip on the cards: Border countdown ring.",
+      "steal": [
+       "The palette of Air Traffic Flight Strip: strip bay charcoal, strip paper buff, arrival holder amber, departure holder cyan, grease pencil red.",
+       "The surface: Only the active strip gets a 3 percent paper grain and thin printed box rules splitting it into fields. Hand marks in grease pencil red appear as a single strike or circle on that strip.",
+       "The imagery: No photos. Use flat top-down diagrams of the strip bay and small route lines drawn in one stroke weight, like the field notes on a real strip."
+      ],
+      "avoid": [
+       "Radar sweep green screens and sci-fi HUD glow.",
+       "Airplane icons and cockpit photos everywhere.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode",
+       "grainy",
+       "big typography"
+      ],
+      "whyItFits": "Flight summary as controller strip."
+     },
+     "lanes": {
+      "idea": "air traffic flight strip",
+      "taste": "dark flight checkout ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "grainy flight checkout ui ios app",
+      "fidelity": "flight checkout app ui",
+      "lightTwin": "flight checkout ui ios app",
+      "component": [
+       "flight checkout cards app ui",
+       "flight checkout itinerary app ui"
+      ],
+      "bridge": "air traffic flight strip ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "flight checkout",
+      "galleries": [
+       "60fps"
+      ],
+      "art": [
+       "air traffic flight strip",
+       "flight progress strip board",
+       "control tower strip bay"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-423nya2k",
+     "title": "1970s Airline Branding flight",
+     "twist": "",
+     "move": "era",
+     "searchQuery": "1970s airline branding",
+     "mechanic": {
+      "element": "list-row",
+      "how": "Each row is a boarding pass line: destination and time in plain type, a thin livery stripe at left, and the selected row shows a bold tail stripe",
+      "parts": [
+       {
+        "element": "list-row",
+        "label": "bag options",
+        "how": "Each row is a boarding pass line: destination and time in plain type, a thin livery stripe at left, and the selected row shows a bold tail stripe"
+       },
+       {
+        "element": "stepper",
+        "label": "booking steps",
+        "how": "Steps are ticket stubs with numbers; completed ones carry the three-stripe mark"
+       },
+       {
+        "element": "card",
+        "label": "flight summary",
+        "how": "Each card is a ticket with a striped header band in red, orange and marigold; route, price and details sit plain on warm white stock below"
+       }
+      ],
+      "task": "The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: steps are ticket stubs with numbers; completed ones carry the three-stripe mark."
+     },
+     "ingredients": {
+      "mood": "mid-century and space age",
+      "era": "1970s Airline Branding"
+     },
+     "artQueries": [
+      "1970s airline livery",
+      "vintage boarding pass",
+      "airline baggage tag"
+     ],
+     "spec": {
+      "typography": "Bricolage Grotesque for display at 34px, Work Sans for body at 17px; Arabic in Alexandria and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "grotesk",
+      "color": "Palette from 1970s Airline Branding: surface #F7F2E8, ink #2A211C, accent #E8541E, support #C42B1C; ship pairs #2A211C on #F7F2E8, #C42B1C on #F7F2E8; text at 4.5 to 1 or more.",
+      "layout": "1970s Airline Branding runs the flight checkout across the bag options, the booking steps and the flight summary on a 4 column grid with 16px margins and actions in the thumb zone. The main task, review the itinerary, add bags and seats, pay, now runs through the booking steps: steps are ticket stubs with numbers; completed ones carry the three-stripe mark. Flight summary: each card is a ticket with a striped header band in red, orange and marigold; route, price and details sit plain on warm white stock below. Must keep: clear total, one primary action.",
+      "imagery": "Flat illustrated aircraft profiles and destination postcards in the three stripe colors, cropped at the tail or wingtip. Warm, slightly faded print tones.",
+      "motion": "Sweeps in 420ms; with reduced motion on, The stripe band appears in place with a short 120 ms fade.",
+      "texture": "Three parallel stripes in red, orange and marigold, curved at the end, on the ticket header band only. A 2 percent paper grain sits on the ticket card.; text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Each row is a boarding pass line: destination and time in plain type, a thin livery stripe at left, and the selected row shows a bold tail stripe.",
+      "pattern": "1970s Airline Branding on the list rows: Radio row with slide.",
+      "steal": [
+       "The palette of 1970s Airline Branding: boarding pass white, cabin brown, livery orange, tail fin red, marigold stripe.",
+       "The surface: Three parallel stripes in red, orange and marigold, curved at the end, on the ticket header band only. A 2 percent paper grain sits on the ticket card.",
+       "The imagery: Flat illustrated aircraft profiles and destination postcards in the three stripe colors, cropped at the tail or wingtip. Warm, slightly faded print tones."
+      ],
+      "avoid": [
+       "Copying a real airline's livery or logo.",
+       "Stripes on every surface instead of one band.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "grainy"
+      ],
+      "whyItFits": "Checkout stepper as tail fin stripe."
+     },
+     "lanes": {
+      "idea": "1970s airline branding",
+      "taste": "dark flight checkout ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "grainy flight checkout ui ios app",
+      "fidelity": "flight checkout app ui",
+      "lightTwin": "flight checkout ui ios app",
+      "component": [
+       "flight checkout list app ui",
+       "flight checkout itinerary app ui"
+      ],
+      "bridge": "1970s airline branding ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "flight checkout",
+      "galleries": [
+       "60fps"
+      ],
+      "artGalleries": [
+       "bpando"
+      ],
+      "art": [
+       "1970s airline livery",
+       "vintage boarding pass",
+       "airline baggage tag"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "coffee-shop-landing",
+   "brief": "coffee shop landing page",
+   "engine": "atlas",
+   "market": "global",
+   "platform": "website",
+   "wildness": 4,
+   "wildnessLabel": "Wild",
+   "mustKeep": [],
+   "subject": "coffee shop",
+   "lens": null,
+   "suggestedLenses": [],
+   "directions": [
+    {
+     "id": "bd-70kpzsc3",
+     "title": "Walnut Veneer coffee shop",
+     "twist": "With the texture of Aluminum Soda Can",
+     "move": "material + transplant",
+     "searchQuery": "walnut veneer",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero is a card with a bookmatched walnut grain mirrored on its center line",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "headline and main action",
+        "how": "Hero is a card with a bookmatched walnut grain mirrored on its center line"
+       },
+       {
+        "element": "header",
+        "label": "top navigation",
+        "how": "Header is flat oiled brown with a cream serif title and a thin brass line"
+       },
+       {
+        "element": "card",
+        "label": "feature blocks",
+        "how": "Cards are flat walnut panels with a maple inlay border; the hero panel alone carries the mirrored grain and a brass pull opens the detail"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the feature blocks: cards are flat walnut panels with a maple inlay border; the hero panel alone carries the mirrored grain and a brass pull opens the detail."
+     },
+     "ingredients": {
+      "mood": "wood, cane and plant",
+      "material": "Walnut Veneer",
+      "object": "Aluminum Soda Can"
+     },
+     "artQueries": [
+      "figured walnut grain",
+      "bookmatched walnut veneer",
+      "walnut sideboard"
+     ],
+     "spec": {
+      "typography": "Fraunces for display at clamp(48px, 8vw, 120px), Newsreader for body at 18px.",
+      "typeVoice": "serif-editorial",
+      "color": "Palette from Walnut Veneer: surface #2B1D14, ink #F1E6D6, accent #C8954A, support #6B4A33; ship pairs #F1E6D6 on #2B1D14, #C8954A on #2B1D14; text at 4.5 to 1 or more.",
+      "layout": "Walnut Veneer runs the landing page across the headline and main action, the top navigation and the feature blocks on a 12 column grid with fluid type. The main task, scanning and picking, now runs through the feature blocks: cards are flat walnut panels with a maple inlay border; the hero panel alone carries the mirrored grain and a brass pull opens the detail. Top navigation: header is flat oiled brown with a cream serif title and a thin brass line.",
+      "imagery": "Tight crops of furniture-quality walnut with figured grain and a satin sheen, lit warm from one side. Products sit on the wood in soft shadow, never inside a styled room.",
+      "motion": "Slides in 320ms; with reduced motion on, Panels appear in place instantly with no travel.",
+      "texture": "Brushed aluminum streaks at 8 percent on the fact panel only, topped by a thin crimped rim line. Every other surface stays flat printed enamel. (from Aluminum Soda Can); text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Balanced; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Hero is a card with a bookmatched walnut grain mirrored on its center line.",
+      "pattern": "Walnut Veneer on the header strip: Docking masthead.",
+      "steal": [
+       "The palette of Walnut Veneer: oiled walnut heartwood, maple inlay cream, satin brass pull, walnut sapwood, dusty grain line.",
+       "The surface: Brushed aluminum streaks at 8 percent on the fact panel only, topped by a thin crimped rim line. Every other surface stays flat printed enamel.",
+       "The imagery: Tight crops of furniture-quality walnut with figured grain and a satin sheen, lit warm from one side. Products sit on the wood in soft shadow, never inside a styled room."
+      ],
+      "avoid": [
+       "Repeating wood grain tiled across every surface like laminate flooring.",
+       "Orange glossy pine tones that read as cheap.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "dark mode",
+       "grainy",
+       "editorial"
+      ],
+      "whyItFits": "Bookmatched hero for roaster brand."
+     },
+     "lanes": {
+      "idea": "walnut veneer",
+      "taste": "dark coffee shop landing page ui design",
+      "fidelity": "coffee shop website ui",
+      "fidelityCore": "shop website ui",
+      "component": [
+       "coffee shop header website ui"
+      ],
+      "bridge": "walnut veneer ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "coffee shop",
+      "galleries": [
+       "httpster",
+       "darkdesign"
+      ],
+      "art": [
+       "figured walnut grain",
+       "bookmatched walnut veneer",
+       "walnut sideboard"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-cm7zfgnd",
+     "title": "Jebena Coffee Pot coffee",
+     "twist": "With the motion of Woven Rattan",
+     "move": "transplant + material",
+     "searchQuery": "jebena coffee pot",
+     "mechanic": {
+      "element": "card",
+      "how": "Cards have a round clay-shaped top curve with a narrow neck notch for the title; the step header card alone gets the burnished grain, text stays plain",
+      "parts": [
+       {
+        "element": "card",
+        "label": "feature blocks",
+        "how": "Cards have a round clay-shaped top curve with a narrow neck notch for the title; the step header card alone gets the burnished grain, text stays plain"
+       },
+       {
+        "element": "hero",
+        "label": "headline and main action",
+        "how": "Hero places a round jebena body silhouette beside a serif headline on clay black"
+       },
+       {
+        "element": "paywall-plan",
+        "label": "plan preview",
+        "how": "Plans are three round cards like cups, the recommended one filled burnt clay"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the feature blocks: cards have a round clay-shaped top curve with a narrow neck notch for the title; the step header card alone gets the burnished grain, text stays plain."
+     },
+     "ingredients": {
+      "mood": "tool, vessel or keepsake",
+      "object": "Jebena Coffee Pot",
+      "material": "Woven Rattan"
+     },
+     "artQueries": [
+      "jebena",
+      "ethiopian coffee ceremony",
+      "jebena clay pot"
+     ],
+     "spec": {
+      "typography": "Fraunces for display at clamp(48px, 8vw, 120px), Work Sans for body at 18px.",
+      "typeVoice": "serif-editorial",
+      "color": "Palette from Jebena Coffee Pot: surface #1C1612, ink #EFE4D2, accent #B5562E, support #6B4A33; ship pairs #EFE4D2 on #1C1612, #C9A46A on #1C1612; text at 4.5 to 1 or more.",
+      "layout": "Jebena Coffee Pot runs the landing page across the feature blocks, the headline and main action and the plan preview on a 12 column grid with fluid type. The main task, scanning and picking, now runs through the feature blocks: cards have a round clay-shaped top curve with a narrow neck notch for the title; the step header card alone gets the burnished grain, text stays plain. Headline and main action: hero places a round jebena body silhouette beside a serif headline on clay black. Plan preview: plans are three round cards like cups, the recommended one filled burnt clay.",
+      "imagery": "Close, warm-lit photos of the pot's round belly and narrow neck, small cups on a tray and roasting beans, shallow focus, no posed people.",
+      "motion": "Wraps in 240ms (from Woven Rattan); with reduced motion on, The 2 px wrap line appears in full instantly, with no draw across.",
+      "texture": "Matte burnished clay sheen, a soft 3 percent grain, only on the step header card.; text sits on solid panels, never on the texture.",
+      "iconography": "Round filled icons.",
+      "density": "Airy; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Cards have a round clay-shaped top curve with a narrow neck notch for the title; the step header card alone gets the burnished grain, text stays plain.",
+      "pattern": "Jebena Coffee Pot on the cards: Sticky pile scroll.",
+      "steal": [
+       "The palette of Jebena Coffee Pot: fired clay black, cup porcelain, burnt clay, roasted bean, woven mat straw.",
+       "The surface: Matte burnished clay sheen, a soft 3 percent grain, only on the step header card.",
+       "The imagery: Close, warm-lit photos of the pot's round belly and narrow neck, small cups on a tray and roasting beans, shallow focus, no posed people."
+      ],
+      "avoid": [
+       "Safari, drums and generic Africa patterns.",
+       "Steam and smoke effects over text.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "dark mode",
+       "grainy",
+       "editorial"
+      ],
+      "whyItFits": "Ceremony story for coffee origins."
+     },
+     "lanes": {
+      "idea": "jebena coffee pot",
+      "taste": "grainy coffee shop landing page ui design",
+      "fidelity": "coffee shop website ui",
+      "fidelityCore": "shop website ui",
+      "component": [
+       "coffee shop cards website ui"
+      ],
+      "bridge": "jebena coffee pot ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "coffee shop",
+      "galleries": [
+       "landinglove",
+       "httpster"
+      ],
+      "art": [
+       "jebena",
+       "ethiopian coffee ceremony",
+       "jebena clay pot"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-utoiuezy",
+     "title": "Googie 1958 coffee shop",
+     "twist": "With the rule of Hand-Lettered Headlines",
+     "move": "era + constraint",
+     "searchQuery": "googie 1958",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero is a tilted sign panel with terrazzo speckle and a script word",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "headline and main action",
+        "how": "Hero is a tilted sign panel with terrazzo speckle and a script word"
+       },
+       {
+        "element": "card",
+        "label": "feature blocks",
+        "how": "The card is a level box capped by a small upswept sign roof, with a script word on it, and the title and price stay plain beneath"
+       },
+       {
+        "element": "cta",
+        "label": "closing call to action",
+        "how": "Button is a roadside red pill tilted a few degrees, with a starburst"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the feature blocks: the card is a level box capped by a small upswept sign roof, with a script word on it, and the title and price stay plain beneath."
+     },
+     "ingredients": {
+      "mood": "mid-century and space age",
+      "era": "Googie 1958",
+      "constraint": "Hand-Lettered Headlines"
+     },
+     "artQueries": [
+      "googie architecture",
+      "coffee shop pylon sign",
+      "upswept roof motel"
+     ],
+     "spec": {
+      "typography": "Yellowtail for display at clamp(48px, 8vw, 120px), Work Sans for body at 18px.",
+      "typeVoice": "script-hand",
+      "color": "Palette from Googie 1958: surface #F4ECD8, ink #1D2B33, accent #E2462F, support #2BB3A8; ship pairs #1D2B33 on #F4ECD8, #1D2B33 on #2BB3A8; text at 4.5 to 1 or more.",
+      "layout": "Googie 1958 runs the landing page across the headline and main action, the feature blocks and the closing call to action on a 12 column grid with fluid type. The main task, scanning and picking, now runs through the feature blocks: the card is a level box capped by a small upswept sign roof, with a script word on it, and the title and price stay plain beneath. Closing call to action: button is a roadside red pill tilted a few degrees, with a starburst. One rule from Hand-Lettered Headlines: Each view gets exactly one headline written in thick marker on card stock, like a grocer's price sign, while every button, label and line of reading text stays in Work Sans.",
+      "imagery": "Low-angle crops of upswept rooflines and pylon signs against a flat sky, posterized to three palette colors. Simple line illustrations of cantilevered canopies, never cartoon diners.",
+      "motion": "Sweeps up in 360ms; with reduced motion on, The tilted panel appears in place with a 120 ms fade, without the upward sweep.",
+      "texture": "Terrazzo speckle at 8 percent, only inside the tilted hero sign panel. Every other surface stays flat cream.; text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke.",
+      "density": "Balanced; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Hero is a tilted sign panel with terrazzo speckle and a script word.",
+      "pattern": "Googie 1958 on the header strip: Tilting depth layers.",
+      "steal": [
+       "The palette of Googie 1958: terrazzo cream, parking lot night, roadside sign red, motel pool turquoise, starburst yellow.",
+       "The surface: Terrazzo speckle at 8 percent, only inside the tilted hero sign panel. Every other surface stays flat cream.",
+       "The imagery: Low-angle crops of upswept rooflines and pylon signs against a flat sky, posterized to three palette colors. Simple line illustrations of cantilevered canopies, never cartoon diners."
+      ],
+      "avoid": [
+       "Script for anything beyond one or two words; body and buttons stay in Work Sans.",
+       "Starbursts, boomerangs and atomic orbits stacked everywhere, which turns it into the atomic age card.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Coffee shop sign roots."
+     },
+     "lanes": {
+      "idea": "googie 1958",
+      "taste": "minimal coffee shop landing page ui design",
+      "fidelity": "coffee shop website ui",
+      "fidelityCore": "shop website ui",
+      "component": [
+       "coffee shop header website ui"
+      ],
+      "bridge": "googie 1958 ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "coffee shop",
+      "galleries": [
+       "lapa",
+       "siteinspire"
+      ],
+      "art": [
+       "googie architecture",
+       "coffee shop pylon sign",
+       "upswept roof motel"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "banking-onboarding",
+   "brief": "banking onboarding",
+   "engine": "atlas",
+   "market": "global",
+   "platform": "mobile",
+   "wildness": 1,
+   "wildnessLabel": "Fresh",
+   "mustKeep": [
+    "clear progress"
+   ],
+   "subject": "banking onboarding",
+   "lens": null,
+   "suggestedLenses": [],
+   "directions": [
+    {
+     "id": "bd-79q2txs2",
+     "title": "Fingerprint banking onboarding",
+     "twist": "",
+     "move": "scale",
+     "searchQuery": "fingerprint",
+     "mechanic": {
+      "element": "progress",
+      "how": "A thin ridge gray line with a stamp blue segment filled in as steps pass",
+      "parts": [
+       {
+        "element": "progress",
+        "label": "step progress",
+        "how": "A thin ridge gray line with a stamp blue segment filled in as steps pass"
+       },
+       {
+        "element": "hero",
+        "label": "step title and reason",
+        "how": "A large generated ridge whorl in stamp blue pressed on a clean white card"
+       },
+       {
+        "element": "success",
+        "label": "account ready moment",
+        "how": "A blue ridge print presses onto the card with a short scale settle"
+       }
+      ],
+      "task": "The main task, moving through the steps, now runs through the step progress: A thin ridge gray line with a stamp blue segment filled in as steps pass."
+     },
+     "ingredients": {
+      "mood": "body and hand",
+      "element": "Fingerprint"
+     },
+     "artQueries": [
+      "fingerprint ink card",
+      "fingerprint whorl",
+      "ten print card"
+     ],
+     "spec": {
+      "typography": "IBM Plex Mono for display at 34px, IBM Plex Sans for body at 17px.",
+      "typeVoice": "mono",
+      "color": "Palette from Fingerprint: surface #F4F1EA, ink #1D1F24, accent #2F4FD8, support #C9C3B6; ship pairs #1D1F24 on #F4F1EA, #2F4FD8 on #F4F1EA; text at 4.5 to 1 or more.",
+      "layout": "Fingerprint runs the bank account opening across the step progress, the step title and reason and the account ready moment on a 4 column grid with 16px margins and actions in the thumb zone. The main task, moving through the steps, now runs through the step progress: A thin ridge gray line with a stamp blue segment filled in as steps pass. Step title and reason: A large generated ridge whorl in stamp blue pressed on a clean white card. Account ready moment: A blue ridge print presses onto the card with a short scale settle. Must keep: clear progress.",
+      "imagery": "Tight macro crops of real ridge patterns in flat ink on paper, black and white, cropped off the edge. No glowing sci-fi scanner graphics.",
+      "motion": "Presses in 240ms; with reduced motion on, The print appears at full opacity with an instant swap.",
+      "texture": "One generated ridge-line whorl in stamp pad blue at 70 percent opacity, with a soft ink-bleed edge, on the profile card only.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "A thin ridge gray line with a stamp blue segment filled in as steps pass.",
+      "pattern": "Fingerprint on the progress bar: Checklist collapses into bar.",
+      "steal": [
+       "The palette of Fingerprint: record card white, ink pad black, stamp pad blue, ridge gray, smudge taupe.",
+       "The surface: One generated ridge-line whorl in stamp pad blue at 70 percent opacity, with a soft ink-bleed edge, on the profile card only.",
+       "The imagery: Tight macro crops of real ridge patterns in flat ink on paper, black and white, cropped off the edge. No glowing sci-fi scanner graphics."
+      ],
+      "avoid": [
+       "Neon green biometric scanner glow.",
+       "Crime scene tape and detective kitsch.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "big typography"
+      ],
+      "whyItFits": "Ridge mark for Nafath identity step."
+     },
+     "lanes": {
+      "idea": "fingerprint",
+      "taste": "dark welcome screen ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography welcome screen ui ios app",
+      "fidelity": "banking onboarding app ui",
+      "lightTwin": "welcome screen ui ios app",
+      "component": [
+       "banking onboarding progress bar app ui"
+      ],
+      "bridge": "fingerprint ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "banking onboarding",
+      "art": [
+       "fingerprint ink card",
+       "fingerprint whorl",
+       "ten print card"
+      ],
+      "artGalleries": [
+       "designspiration"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-9hwrs7gn",
+     "title": "Punch Card banking onboarding",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "punch card",
+     "mechanic": {
+      "element": "progress",
+      "how": "Progress is a grid of numbered columns where each done step is a punched hole",
+      "parts": [
+       {
+        "element": "progress",
+        "label": "step progress",
+        "how": "Progress is a grid of numbered columns where each done step is a punched hole"
+       },
+       {
+        "element": "hero",
+        "label": "step title and reason",
+        "how": "Hero is a buff card with clipped corner and a big mono headline"
+       },
+       {
+        "element": "form-field",
+        "label": "identity and contact fields",
+        "how": "Fields are numbered columns on a card with plain mono labels; typed text stays readable, a completed field gets a punched hole, and errors are marked with a visible text note"
+       }
+      ],
+      "task": "The main task, moving through the steps, now runs through the step progress: progress is a grid of numbered columns where each done step is a punched hole."
+     },
+     "ingredients": {
+      "mood": "printed card, cover or ticket",
+      "object": "Punch Card"
+     },
+     "artQueries": [
+      "punched card",
+      "keypunch card",
+      "computer punch card"
+     ],
+     "spec": {
+      "typography": "IBM Plex Mono for display at 34px, IBM Plex Sans for body at 17px.",
+      "typeVoice": "mono",
+      "color": "Palette from Punch Card: surface #E9DCB8, ink #1F2A2E, accent #2F6F8F, support #A8986C; ship pairs #1F2A2E on #E9DCB8, #11171A on #E9DCB8; text at 4.5 to 1 or more.",
+      "layout": "Punch Card runs the bank account opening across the step progress, the step title and reason and the identity and contact fields on a 4 column grid with 16px margins and actions in the thumb zone. The main task, moving through the steps, now runs through the step progress: progress is a grid of numbered columns where each done step is a punched hole. Step title and reason: hero is a buff card with clipped corner and a big mono headline. Identity and contact fields: fields are numbered columns on a card with plain mono labels; typed text stays readable, a completed field gets a punched hole, and errors are marked with a visible text note. Must keep: clear progress.",
+      "imagery": "Backlit macro crops of punched cards showing the hole grid, and flat card scans. No computer room stock photos.",
+      "motion": "Punches in 140ms; with reduced motion on, Hole appears instantly with no press.",
+      "texture": "Faint printed column digits 0 to 9 at 25 percent on the progress card only, with the top left corner clipped at 45 degrees.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Progress is a grid of numbered columns where each done step is a punched hole.",
+      "pattern": "Punch Card on the progress bar: Draining button countdown.",
+      "steal": [
+       "The palette of Punch Card: manila card buff, keypunch print black, mainframe console blue, column digit tan, reader slot dark.",
+       "The surface: Faint printed column digits 0 to 9 at 25 percent on the progress card only, with the top left corner clipped at 45 degrees.",
+       "The imagery: Backlit macro crops of punched cards showing the hole grid, and flat card scans. No computer room stock photos."
+      ],
+      "avoid": [
+       "Green terminal hacker aesthetics.",
+       "Holes used as decoration that encode nothing.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "big typography"
+      ],
+      "whyItFits": "Punched holes show step progress."
+     },
+     "lanes": {
+      "idea": "punch card",
+      "taste": "dark welcome screen ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography welcome screen ui ios app",
+      "fidelity": "banking onboarding app ui",
+      "lightTwin": "welcome screen ui ios app",
+      "component": [
+       "banking onboarding progress bar app ui"
+      ],
+      "bridge": "punch card ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "banking onboarding",
+      "art": [
+       "punched card",
+       "keypunch card",
+       "computer punch card"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-f016xv0s",
+     "title": "Wax Seals banking onboarding",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "wax seals",
+     "mechanic": {
+      "element": "header",
+      "how": "Cream hero card with a serif headline and a gilt brass rule",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "step title and reason",
+        "how": "Cream hero card with a serif headline and a gilt brass rule"
+       },
+       {
+        "element": "progress",
+        "label": "step progress",
+        "how": "Track is a thin sepia line with a small wax dot at the current point"
+       },
+       {
+        "element": "sheet",
+        "label": "code or ID check sheet",
+        "how": "Cream sheet with a thin sepia top rule and a walnut grab handle"
+       }
+      ],
+      "task": "The main task, moving through the steps, now runs through the step progress: track is a thin sepia line with a small wax dot at the current point."
+     },
+     "ingredients": {
+      "mood": "marks and stamps",
+      "element": "Wax Seals"
+     },
+     "artQueries": [
+      "wax seal letter",
+      "sealing wax stamp",
+      "wax seal impression"
+     ],
+     "spec": {
+      "typography": "Cormorant Garamond for display at 34px, Newsreader for body at 17px.",
+      "typeVoice": "serif-classic",
+      "color": "Palette from Wax Seals: surface #F3ECE0, ink #2A1F1A, accent #9E1B24, support #B8913F; ship pairs #2A1F1A on #F3ECE0, #9E1B24 on #F3ECE0; text at 4.5 to 1 or more.",
+      "layout": "Wax Seals runs the bank account opening across the step title and reason, the step progress and the code or ID check sheet on a 4 column grid with 16px margins and actions in the thumb zone. The main task, moving through the steps, now runs through the step progress: track is a thin sepia line with a small wax dot at the current point. Code or ID check sheet: cream sheet with a thin sepia top rule and a walnut grab handle. Must keep: clear progress.",
+      "imagery": "Close, top-down photos of real wax seals on paper in warm side light, cropped tight so the poured edge fills the frame. The device in the seal is an abstract monogram, never a crest or emblem.",
+      "motion": "Presses in 360ms; with reduced motion on, The seal appears instantly at full size with no scale or squash.",
+      "texture": "Faint laid-paper chain lines at 3 percent run only on the confirmation card. The seal itself has a soft inner shadow and an uneven, poured edge.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Cream hero card with a serif headline and a gilt brass rule.",
+      "pattern": "Wax Seals on the header strip: Field aware side panel.",
+      "steal": [
+       "The palette of Wax Seals: laid paper cream, sepia letter ink, sealing wax red, gilt brass, walnut desk.",
+       "The surface: Faint laid-paper chain lines at 3 percent run only on the confirmation card. The seal itself has a soft inner shadow and an uneven, poured edge.",
+       "The imagery: Close, top-down photos of real wax seals on paper in warm side light, cropped tight so the poured edge fills the frame. The device in the seal is an abstract monogram, never a crest or emblem."
+      ],
+      "avoid": [
+       "Seals stamped on every button and badge until the mark stops meaning anything.",
+       "Fake heraldry, royal crests or real family coats of arms.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "grainy",
+       "editorial"
+      ],
+      "whyItFits": "Seal closes account opening."
+     },
+     "lanes": {
+      "idea": "wax seals",
+      "taste": "dark welcome screen ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "editorial welcome screen ui ios app",
+      "fidelity": "banking onboarding app ui",
+      "lightTwin": "welcome screen ui ios app",
+      "component": [
+       "banking onboarding header app ui"
+      ],
+      "bridge": "wax seals ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "banking onboarding",
+      "art": [
+       "wax seal letter",
+       "sealing wax stamp",
+       "wax seal impression"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "fitness-empty-state",
+   "brief": "fitness app empty state",
+   "engine": "atlas",
+   "market": "global",
+   "platform": "mobile",
+   "wildness": 5,
+   "wildnessLabel": "Bananas",
+   "mustKeep": [],
+   "subject": "fitness empty",
+   "lens": null,
+   "suggestedLenses": [],
+   "directions": [
+    {
+     "id": "bd-83s0dbbw",
+     "title": "Badges fitness empty",
+     "twist": "With the texture of Foosball Table",
+     "move": "transplant",
+     "searchQuery": "badges",
+     "mechanic": {
+      "element": "empty-state",
+      "how": "Empty sash shows blank patch outlines with a line inviting the first earn",
+      "parts": [
+       {
+        "element": "empty-state",
+        "label": "empty illustration",
+        "how": "Empty sash shows blank patch outlines with a line inviting the first earn"
+       },
+       {
+        "element": "cta",
+        "label": "primary action button",
+        "how": "Button is a red patch with stitched dashed border and slab label"
+       },
+       {
+        "element": "card",
+        "label": "cards",
+        "how": "Cards are stitched merit patches with a raised border, in a fixed set of shapes; the title and price stay plain and a pin marks the saved card"
+       }
+      ],
+      "task": "The main task, taking the first step, now runs through the empty illustration: empty sash shows blank patch outlines with a line inviting the first earn."
+     },
+     "ingredients": {
+      "mood": "marks and stamps",
+      "element": "Badges",
+      "object": "Foosball Table"
+     },
+     "artQueries": [
+      "scout merit badges",
+      "embroidered patch",
+      "patch sash"
+     ],
+     "spec": {
+      "typography": "Zilla Slab for display at 34px, Work Sans for body at 17px.",
+      "typeVoice": "slab",
+      "color": "Palette from Badges: surface #ECE6D6, ink #1F2A24, accent #E8A317, support #C2412D; ship pairs #1F2A24 on #ECE6D6, #2F5D8A on #ECE6D6; text at 4.5 to 1 or more.",
+      "layout": "Badges runs the empty state across the empty illustration, the primary action button and the cards on a 4 column grid with 16px margins and actions in the thumb zone. The main task, taking the first step, now runs through the empty illustration: empty sash shows blank patch outlines with a line inviting the first earn. Primary action button: button is a red patch with stitched dashed border and slab label. Cards: cards are stitched merit patches with a raised border, in a fixed set of shapes; the title and price stay plain and a pin marks the saved card.",
+      "imagery": "Flat-lay photos of real stitched patches shot straight down, or simple two-color patch illustrations of a single tool or object each.",
+      "motion": "Pins in 240ms; with reduced motion on, The new patch appears in place instantly with no scale change.",
+      "texture": "Fine felt nap noise at 4 percent only on the main field panel, with the white markings kept crisp on top. (from Foosball Table); text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Empty sash shows blank patch outlines with a line inviting the first earn.",
+      "pattern": "Badges on the empty state: Whole area drop zone.",
+      "steal": [
+       "The palette of Badges: khaki twill, troop green, merit gold, patch red, scout blue.",
+       "The surface: Fine felt nap noise at 4 percent only on the main field panel, with the white markings kept crisp on top.",
+       "The imagery: Flat-lay photos of real stitched patches shot straight down, or simple two-color patch illustrations of a single tool or object each."
+      ],
+      "avoid": [
+       "Military rank insignia or police shields.",
+       "National flags, emblems or religious symbols as patch art.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Empty sash invites first patch."
+     },
+     "lanes": {
+      "idea": "badges",
+      "taste": "dark fitness empty state ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "minimal fitness empty state ui ios app",
+      "fidelity": "fitness empty state app ui",
+      "lightTwin": "fitness empty state ui ios app",
+      "fidelityCore": "empty state app ui",
+      "component": [
+       "empty state app ui"
+      ],
+      "bridge": "badges ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "fitness empty state",
+      "art": [
+       "scout merit badges",
+       "embroidered patch",
+       "patch sash"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-h3nhd8qu",
+     "title": "Arcade Cabinet fitness empty",
+     "twist": "With the rule of Bars Instead of Numbers",
+     "move": "transplant + constraint",
+     "searchQuery": "arcade cabinet",
+     "mechanic": {
+      "element": "empty-state",
+      "how": "An attract screen with insert coin text blinking and one clear start button",
+      "parts": [
+       {
+        "element": "empty-state",
+        "label": "empty illustration",
+        "how": "An attract screen with insert coin text blinking and one clear start button"
+       },
+       {
+        "element": "cta",
+        "label": "primary action button",
+        "how": "Button is a square pink block with black mono text, blinking on focus"
+       },
+       {
+        "element": "card",
+        "label": "cards",
+        "how": "Each card is a game select screen: title in caps, one stat as a score line, and a cyan insert coin button; the focused card gets a steady pink frame"
+       }
+      ],
+      "task": "The main task, taking the first step, now runs through the empty illustration: an attract screen with insert coin text blinking and one clear start button."
+     },
+     "ingredients": {
+      "mood": "dial, panel or machine",
+      "object": "Arcade Cabinet",
+      "constraint": "Bars Instead of Numbers"
+     },
+     "artQueries": [
+      "arcade cabinet",
+      "arcade control panel",
+      "fuel gauge"
+     ],
+     "spec": {
+      "typography": "Press Start 2P for display at 34px, IBM Plex Mono for body at 17px.",
+      "typeVoice": "mono",
+      "color": "Palette from Arcade Cabinet: surface #0B0B14, ink #F2F2E8, accent #FF3B6B, support #3BE8FF; ship pairs #F2F2E8 on #0B0B14, #FF3B6B on #0B0B14; text at 4.5 to 1 or more.",
+      "layout": "Arcade Cabinet runs the empty state across the empty illustration, the primary action button and the cards on a 4 column grid with 16px margins and actions in the thumb zone. The main task, taking the first step, now runs through the empty illustration: an attract screen with insert coin text blinking and one clear start button. Primary action button: button is a square pink block with black mono text, blinking on focus. Cards: each card is a game select screen: title in caps, one stat as a score line, and a cyan insert coin button; the focused card gets a steady pink frame. One rule from Bars Instead of Numbers: Every quantity is shown as a bar length like a fuel gauge, and the exact digit only appears on tap.",
+      "imagery": "Pixel sprites drawn on a strict 16 px grid with no anti-aliasing, scaled up in whole steps. Use no real game characters.",
+      "motion": "Blinks three times, then holds in 500ms; with reduced motion on, No blinking: the new initials appear at once in the steady pink highlight and stay that way until saved.",
+      "texture": "Scanlines at 8 percent with a slight edge vignette, on the high score card only. Body screens stay clean.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "An attract screen with insert coin text blinking and one clear start button.",
+      "pattern": "Arcade Cabinet on the empty state: Fanned type deck.",
+      "steal": [
+       "The palette of Arcade Cabinet: crt black, phosphor white, player one pink, marquee cyan, credit coin yellow.",
+       "The surface: Scanlines at 8 percent with a slight edge vignette, on the high score card only. Body screens stay clean.",
+       "The imagery: Pixel sprites drawn on a strict 16 px grid with no anti-aliasing, scaled up in whole steps. Use no real game characters."
+      ],
+      "avoid": [
+       "Real game characters or cabinet marquee art.",
+       "Press Start 2P used for body text or long labels.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode",
+       "big typography"
+      ],
+      "whyItFits": "Attract screen for empty class list."
+     },
+     "lanes": {
+      "idea": "arcade cabinet",
+      "taste": "dark fitness empty state ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big fitness empty state ui ios app",
+      "fidelity": "fitness empty state app ui",
+      "lightTwin": "fitness empty state ui ios app",
+      "fidelityCore": "empty state app ui",
+      "component": [
+       "empty state app ui"
+      ],
+      "bridge": "arcade cabinet ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "fitness empty state",
+      "art": [
+       "arcade cabinet",
+       "arcade control panel",
+       "fuel gauge"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-p52mflfv",
+     "title": "Munich 1972 Olympics fitness",
+     "twist": "With the texture of Vintage Car Dashboard",
+     "move": "era + transplant",
+     "searchQuery": "munich 1972 olympics",
+     "mechanic": {
+      "element": "empty-state",
+      "how": "A simple geometric pictogram figure with one friendly line and action",
+      "parts": [
+       {
+        "element": "empty-state",
+        "label": "empty illustration",
+        "how": "A simple geometric pictogram figure with one friendly line and action"
+       },
+       {
+        "element": "header",
+        "label": "screen title bar",
+        "how": "Stadium white bar with a neo-grotesk title and a thin light blue line"
+       },
+       {
+        "element": "cta",
+        "label": "primary action button",
+        "how": "Small-radius lake navy button with white neo-grotesk label"
+       }
+      ],
+      "task": "The main task, taking the first step, now runs through the empty illustration: A simple geometric pictogram figure with one friendly line and action."
+     },
+     "ingredients": {
+      "mood": "regional modernism",
+      "era": "Munich 1972 Olympics",
+      "object": "Vintage Car Dashboard"
+     },
+     "artQueries": [
+      "Munich 1972 pictograms",
+      "Munich 1972 poster",
+      "Olympiapark Munich"
+     ],
+     "spec": {
+      "typography": "Inter Tight for display at 34px, Inter for body at 17px.",
+      "typeVoice": "neo-grotesk",
+      "color": "Palette from Munich 1972 Olympics: surface #F4F6F5, ink #1D3F5E, accent #4AA3DF, support #3F9C55; ship pairs #1D3F5E on #F4F6F5, #1D3F5E on #B8BFC4; text at 4.5 to 1 or more.",
+      "layout": "Munich 1972 Olympics runs the empty state across the empty illustration, the screen title bar and the primary action button on a 4 column grid with 16px margins and actions in the thumb zone. The main task, taking the first step, now runs through the empty illustration: A simple geometric pictogram figure with one friendly line and action. Screen title bar: stadium white bar with a neo-grotesk title and a thin light blue line. Primary action button: small-radius lake navy button with white neo-grotesk label.",
+      "imagery": "Geometric pictogram figures built from 45 and 90 degree strokes, plus photos posterized to two flat tones of blue or green. No faces in full color.",
+      "motion": "Strides in 280ms; with reduced motion on, Content swaps in place instantly without the sideways step.",
+      "texture": "Only the main gauge card has a 2 px chrome bezel with a soft highlight gradient and 3 percent grain on its black face. Nothing else is skeuomorphic. (from Vintage Car Dashboard); text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Airy; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "A simple geometric pictogram figure with one friendly line and action.",
+      "pattern": "Munich 1972 Olympics on the empty state: Self ticking checklist.",
+      "steal": [
+       "The palette of Munich 1972 Olympics: stadium white, lake navy, games light blue, park green, medal silver.",
+       "The surface: Only the main gauge card has a 2 px chrome bezel with a soft highlight gradient and 3 percent grain on its black face. Nothing else is skeuomorphic.",
+       "The imagery: Geometric pictogram figures built from 45 and 90 degree strokes, plus photos posterized to two flat tones of blue or green. No faces in full color."
+      ],
+      "avoid": [
+       "Olympic rings or any official emblem.",
+       "Red or black anywhere in the palette.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Pictogram figure on empty screen."
+     },
+     "lanes": {
+      "idea": "Munich 1972 Olympics",
+      "taste": "dark fitness empty state ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "minimal fitness empty state ui ios app",
+      "fidelity": "fitness empty state app ui",
+      "lightTwin": "fitness empty state ui ios app",
+      "fidelityCore": "empty state app ui",
+      "component": [
+       "empty state app ui"
+      ],
+      "bridge": "Munich 1972 Olympics ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "fitness empty state",
+      "art": [
+       "Munich 1972 pictograms",
+       "Munich 1972 poster",
+       "Olympiapark Munich"
+      ],
+      "artGalleries": [
+       "designspiration"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "ramadan-food-delivery",
+   "brief": "Ramadan offers page for a Saudi food delivery app",
+   "engine": "atlas",
+   "market": "gcc",
+   "platform": "mobile",
+   "wildness": 3,
+   "wildnessLabel": "Weird",
+   "mustKeep": [],
+   "subject": "saudi ramadan offers",
+   "lens": null,
+   "suggestedLenses": [
+    "najdi",
+    "qatt-asiri",
+    "sadu"
+   ],
+   "directions": [
+    {
+     "id": "bd-9bm2vxvb",
+     "title": "Qamar al-Din Apricot Sheet",
+     "twist": "With the texture of Asiri Juniper Wood",
+     "move": "material",
+     "searchQuery": "qamar al-din apricot sheet",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero is an amber backlit sheet with faint fibrous streaks that unrolls from a tight roll",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "season banner with countdown",
+        "how": "Hero is an amber backlit sheet with faint fibrous streaks that unrolls from a tight roll"
+       },
+       {
+        "element": "header",
+        "label": "top bar with back, title and cart",
+        "how": "Header is a flat cream bar with rounded title type and an amber underline"
+       },
+       {
+        "element": "card",
+        "label": "deal cards with old and new price",
+        "how": "Each card is a cream sheet with a small rolled edge at the top; the featured card glows amber from behind, and the tap unrolls extra details downward"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the deal cards with old and new price: each card is a cream sheet with a small rolled edge at the top; the featured card glows amber from behind, and the tap unrolls extra details downward."
+     },
+     "ingredients": {
+      "mood": "liquid, wax and candy",
+      "material": "Qamar al-Din Apricot Sheet"
+     },
+     "artQueries": [
+      "qamar al din",
+      "apricot paste sheet",
+      "dried apricot sheet"
+     ],
+     "spec": {
+      "typography": "Baloo Bhaijaan 2 for display at 34px, Work Sans for body at 17px; Arabic in Baloo Bhaijaan 2 and Tajawal at the same sizes, right to left.",
+      "typeVoice": "rounded",
+      "color": "Palette from Qamar al-Din Apricot Sheet: surface #F9EAD2, ink #3B1C0C, accent #D9661B, support #F2B765; ship pairs #3B1C0C on #F9EAD2, #8F3B12 on #F9EAD2; text at 4.5 to 1 or more.",
+      "layout": "Qamar al-Din Apricot Sheet runs the seasonal offers page across the season banner with countdown, the top bar with back, title and cart and the deal cards with old and new price on a 4 column grid with 16px margins and actions in the thumb zone. The main task, scanning and picking, now runs through the deal cards with old and new price: each card is a cream sheet with a small rolled edge at the top; the featured card glows amber from behind, and the tap unrolls extra details downward. Top bar with back, title and cart: header is a flat cream bar with rounded title type and an amber underline.",
+      "imagery": "Close crops of real apricot sheets held to the light, rolled and torn, and glasses of the drink, shot in daylight.",
+      "motion": "Unrolls in 400ms; with reduced motion on, Instant swap to the open state.",
+      "texture": "Fine growth-ring lines at 6 percent on one feature card only. The card runs from a heartwood-red core to a cream sapwood edge. (from Asiri Juniper Wood); text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke, 24pt in the tab bar.",
+      "density": "Balanced; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Hero is an amber backlit sheet with faint fibrous streaks that unrolls from a tight roll.",
+      "pattern": "Qamar al-Din Apricot Sheet on the header strip: Hanging price tag.",
+      "steal": [
+       "The palette of Qamar al-Din Apricot Sheet: apricot cream, dried pit, apricot amber, backlit sheet, folded edge.",
+       "The surface: Fine growth-ring lines at 6 percent on one feature card only. The card runs from a heartwood-red core to a cream sapwood edge.",
+       "The imagery: Close crops of real apricot sheets held to the light, rolled and torn, and glasses of the drink, shot in daylight."
+      ],
+      "avoid": [
+       "Crescents and Ramadan lanterns as decoration.",
+       "Generic arabesque borders.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Ramadan offer banner glows apricot."
+     },
+     "lanes": {
+      "idea": "qamar al-din apricot sheet",
+      "taste": "dark ramadan offers ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "minimal ramadan offers ui ios app",
+      "fidelity": "ramadan offers app ui",
+      "lightTwin": "ramadan offers ui ios app",
+      "fidelityCore": "offers app ui",
+      "component": [
+       "ramadan offers header app ui"
+      ],
+      "bridge": "qamar al-din apricot sheet ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "ramadan offers",
+      "art": [
+       "qamar al din",
+       "apricot paste sheet",
+       "dried apricot sheet"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-pkglkiio",
+     "title": "Hand-Painted Souq Shop Sign",
+     "twist": "With the motion of Asiri Mountain Honey",
+     "move": "transplant + material",
+     "searchQuery": "hand-painted souq shop sign",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero is a big painted sign board with bilingual display words and hard cobalt shadow",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "season banner with countdown",
+        "how": "Hero is a big painted sign board with bilingual display words and hard cobalt shadow"
+       },
+       {
+        "element": "chip-filter",
+        "label": "offer category chips",
+        "how": "Filters are small enamel sign plates with bilingual text; a picked plate turns shopfront red with a mustard trim and a clear x"
+       },
+       {
+        "element": "card",
+        "label": "deal cards with old and new price",
+        "how": "Cards are painted sign boards with a bilingual title at equal weight, a 4 px offset shadow, and plain details beneath"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the deal cards with old and new price: cards are painted sign boards with a bilingual title at equal weight, a 4 px offset shadow, and plain details beneath."
+     },
+     "ingredients": {
+      "mood": "board or sign",
+      "object": "Hand-Painted Souq Shop Sign",
+      "material": "Asiri Mountain Honey"
+     },
+     "artQueries": [
+      "souq shop sign",
+      "hand painted arabic signboard",
+      "old shopfront jeddah"
+     ],
+     "spec": {
+      "typography": "Alfa Slab One for display at 34px, Work Sans for body at 17px; Arabic in Lalezar and Tajawal at the same sizes, right to left.",
+      "typeVoice": "slab",
+      "color": "Palette from Hand-Painted Souq Shop Sign: surface #F7F3EA, ink #161616, accent #D22B2B, support #1F4FA3; ship pairs #161616 on #F7F3EA, #D22B2B on #F7F3EA; text at 4.5 to 1 or more.",
+      "layout": "Hand-Painted Souq Shop Sign runs the seasonal offers page across the season banner with countdown, the offer category chips and the deal cards with old and new price on a 4 column grid with 16px margins and actions in the thumb zone. The main task, scanning and picking, now runs through the deal cards with old and new price: cards are painted sign boards with a bilingual title at equal weight, a 4 px offset shadow, and plain details beneath. Offer category chips: filters are small enamel sign plates with bilingual text; a picked plate turns shopfront red with a mustard trim and a clear x.",
+      "imagery": "Straight-on, perspective-corrected photos of real old souq shopfronts cropped tight to the sign, flat daylight, peeling paint allowed; never a recreated copy of a real shop's name.",
+      "motion": "Settles in 480ms (from Asiri Mountain Honey); with reduced motion on, The fill level swaps instantly to its new height with no tilt.",
+      "texture": "Visible brush edge on the header board letters plus a 2 percent rust speckle on that one board only, and a hard 4 px offset shadow in cobalt behind the display words.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "Hero is a big painted sign board with bilingual display words and hard cobalt shadow.",
+      "pattern": "Hand-Painted Souq Shop Sign on the header strip: Counter moving marquees.",
+      "steal": [
+       "The palette of Hand-Painted Souq Shop Sign: sign board enamel white, sign painter black, shopfront red, cobalt shadow blue, mustard trim yellow.",
+       "The surface: Visible brush edge on the header board letters plus a 2 percent rust speckle on that one board only, and a hard 4 px offset shadow in cobalt behind the display words.",
+       "The imagery: Straight-on, perspective-corrected photos of real old souq shopfronts cropped tight to the sign, flat daylight, peeling paint allowed; never a recreated copy of a real shop's name."
+      ],
+      "avoid": [
+       "Fake Arabic or random letters used as pattern.",
+       "Mocking imperfect English spelling for laughs.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Painted sign shouts the offer."
+     },
+     "lanes": {
+      "idea": "hand-painted souq shop sign",
+      "taste": "dark ramadan offers ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "minimal ramadan offers ui ios app",
+      "fidelity": "ramadan offers app ui",
+      "lightTwin": "ramadan offers ui ios app",
+      "fidelityCore": "offers app ui",
+      "component": [
+       "ramadan offers header app ui"
+      ],
+      "bridge": "hand-painted souq shop sign ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "ramadan offers",
+      "art": [
+       "souq shop sign",
+       "hand painted arabic signboard",
+       "old shopfront jeddah"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-58cmx58y",
+     "title": "Eastern Arabic Digits ramadan",
+     "twist": "With the texture of Najdi Ghada Embers",
+     "move": "transplant + material",
+     "searchQuery": "eastern arabic digits",
+     "mechanic": {
+      "element": "header",
+      "how": "One huge condensed digit fills the hero over a hairline baseline and digit-height grid",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "season banner with countdown",
+        "how": "One huge condensed digit fills the hero over a hairline baseline and digit-height grid"
+       },
+       {
+        "element": "card",
+        "label": "deal cards with old and new price",
+        "how": "Each card carries one huge Eastern Arabic price digit on a baseline grid like an enamel plate, with the name and details plain below it"
+       },
+       {
+        "element": "list-row",
+        "label": "offer terms and dates",
+        "how": "Each row starts with a big condensed Eastern Arabic ordinal on a hairline digit-height grid, with name and price in plain type, and the dot zero marks an empty row"
+       }
+      ],
+      "task": "The main task, scanning and picking, now runs through the deal cards with old and new price: each card carries one huge Eastern Arabic price digit on a baseline grid like an enamel plate, with the name and details plain below it."
+     },
+     "ingredients": {
+      "mood": "glyphs and punctuation",
+      "element": "Eastern Arabic Digits",
+      "material": "Najdi Ghada Embers"
+     },
+     "artQueries": [
+      "Arabic house number plate",
+      "Arabic numerals sign",
+      "Arabic clock face"
+     ],
+     "spec": {
+      "typography": "Big Shoulders for display at 34px, Archivo for body at 17px; Arabic in Reem Kufi and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "condensed",
+      "color": "Palette from Eastern Arabic Digits: surface #141414, ink #F2EFE8, accent #E8A23A, support #3A3D40; ship pairs #F2EFE8 on #141414, #E8A23A on #141414; text at 4.5 to 1 or more.",
+      "layout": "Eastern Arabic Digits runs the seasonal offers page across the season banner with countdown, the deal cards with old and new price and the offer terms and dates on a 4 column grid with 16px margins and actions in the thumb zone. The main task, scanning and picking, now runs through the deal cards with old and new price: each card carries one huge Eastern Arabic price digit on a baseline grid like an enamel plate, with the name and details plain below it. Offer terms and dates: each row starts with a big condensed Eastern Arabic ordinal on a hairline digit-height grid, with name and price in plain type, and the dot zero marks an empty row.",
+      "imagery": "Tight photos of digits in real use: house number plates, lift buttons, clock faces and price boards, straight on and evenly lit.",
+      "motion": "Counts in 300ms; with reduced motion on, The final number appears instantly.",
+      "texture": "One focus card only: 4 percent fine ash speckle and a soft ember glow rising from its bottom edge. The rest of the surface stays flat charcoal. (from Najdi Ghada Embers); text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke, 24pt in the tab bar.",
+      "density": "Dense; one idea per screen, 44pt tap targets, generous spacing on an 8pt rhythm.",
+      "signature": "One huge condensed digit fills the hero over a hairline baseline and digit-height grid.",
+      "pattern": "Eastern Arabic Digits on the header strip: Printing receipt strip.",
+      "steal": [
+       "The palette of Eastern Arabic Digits: lift panel black, enamel plate white, lit button saffron, brushed slate, engraved grey.",
+       "The surface: One focus card only: 4 percent fine ash speckle and a soft ember glow rising from its bottom edge. The rest of the surface stays flat charcoal.",
+       "The imagery: Tight photos of digits in real use: house number plates, lift buttons, clock faces and price boards, straight on and evenly lit."
+      ],
+      "avoid": [
+       "Persian forms of four, five and six (۴ ۵ ۶) mixed in with the Arabic set.",
+       "Reversing digit order in right-to-left text; numbers still read left to right.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode",
+       "big typography"
+      ],
+      "whyItFits": "Huge digit shows the discount."
+     },
+     "lanes": {
+      "idea": "eastern arabic digits",
+      "taste": "dark ramadan offers ui ios app",
+      "tasteSite": "pinterest",
+      "tasteAlt": "big typography ramadan offers ui ios app",
+      "fidelity": "ramadan offers app ui",
+      "lightTwin": "ramadan offers ui ios app",
+      "fidelityCore": "offers app ui",
+      "component": [
+       "ramadan offers header app ui"
+      ],
+      "bridge": "eastern arabic digits ui design",
+      "platform": "mobile",
+      "avoid": [
+       "web",
+       "website",
+       "web app",
+       "webapp",
+       "dashboard",
+       "landing",
+       "landing page",
+       "desktop",
+       "saas",
+       "admin"
+      ],
+      "topic": "ramadan offers",
+      "art": [
+       "Arabic house number plate",
+       "Arabic numerals sign",
+       "Arabic clock face"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "saas-pricing",
+   "brief": "pricing page for a B2B analytics SaaS",
+   "engine": "atlas",
+   "market": "global",
+   "platform": "website",
+   "wildness": 2,
+   "wildnessLabel": "Bold",
+   "mustKeep": [
+    "clear price"
+   ],
+   "subject": "B2B analytics pricing",
+   "lens": null,
+   "suggestedLenses": [],
+   "directions": [
+    {
+     "id": "bd-fluldst5",
+     "title": "Numerals analytics pricing",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "numerals",
+     "mechanic": {
+      "element": "plan",
+      "how": "Plan shows its price as a big condensed number, with small terms below",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Plan shows its price as a big condensed number, with small terms below"
+       },
+       {
+        "element": "hero",
+        "label": "pricing headline",
+        "how": "One oversized condensed figure on paper grain with ledger rules behind it"
+       },
+       {
+        "element": "list-row",
+        "label": "billing questions",
+        "how": "Each row opens with one big condensed number like a race bib, such as rank, price or total, and name and details sit small beside it"
+       }
+      ],
+      "task": "The main task, comparing and picking a plan, now runs through the plan cards: plan shows its price as a big condensed number, with small terms below."
+     },
+     "ingredients": {
+      "mood": "glyphs and punctuation",
+      "element": "Numerals"
+     },
+     "artQueries": [
+      "stadium scoreboard",
+      "race bib number",
+      "vintage price numerals"
+     ],
+     "spec": {
+      "typography": "Big Shoulders for display at clamp(48px, 8vw, 120px), Inter Tight for body at 18px.",
+      "typeVoice": "condensed",
+      "color": "Palette from Numerals: surface #F2EFE8, ink #16171A, accent #E0431F, support #8A8F96; ship pairs #16171A on #F2EFE8, #16171A on #8A8F96; text at 4.5 to 1 or more.",
+      "layout": "Numerals runs the pricing page across the plan cards, the pricing headline and the billing questions on a 12 column grid with fluid type. The main task, comparing and picking a plan, now runs through the plan cards: plan shows its price as a big condensed number, with small terms below. Pricing headline: one oversized condensed figure on paper grain with ledger rules behind it. Billing questions: each row opens with one big condensed number like a race bib, such as rank, price or total, and name and details sit small beside it. Must keep: clear price.",
+      "imagery": "No photos needed. Use crisp typographic crops where a giant numeral bleeds off the card edge, plus small monochrome tally and ruler details as spot accents.",
+      "motion": "Rolls in 420ms; with reduced motion on, The new number swaps in instantly with no rolling digits.",
+      "texture": "A 2 percent paper grain on the single hero stat card only, with hairline ledger rules every 8 px behind the big figure.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Dense; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Plan shows its price as a big condensed number, with small terms below.",
+      "pattern": "Numerals on the plan cards: Price unit switcher.",
+      "steal": [
+       "The palette of Numerals: scorecard paper, lead black, bib red, pencil graphite, ledger rule beige.",
+       "The surface: A 2 percent paper grain on the single hero stat card only, with hairline ledger rules every 8 px behind the big figure.",
+       "The imagery: No photos needed. Use crisp typographic crops where a giant numeral bleeds off the card edge, plus small monochrome tally and ruler details as spot accents."
+      ],
+      "avoid": [
+       "Several giant numbers competing on one screen.",
+       "Proportional figures in tables, which make columns jitter; use tabular figures.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "grainy",
+       "big typography"
+      ],
+      "whyItFits": "Oversized price leads each plan."
+     },
+     "lanes": {
+      "idea": "numerals",
+      "taste": "grainy analytics saas pricing page ui design",
+      "fidelity": "analytics saas pricing page website ui",
+      "component": [
+       "analytics saas plan cards website ui"
+      ],
+      "bridge": "numerals ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "analytics saas",
+      "galleries": [
+       "httpster",
+       "unsection"
+      ],
+      "art": [
+       "stadium scoreboard",
+       "race bib number",
+       "vintage price numerals"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-f4cw102c",
+     "title": "Dark Mode SaaS 2021",
+     "twist": "",
+     "move": "era",
+     "searchQuery": "dark mode saas 2021",
+     "mechanic": {
+      "element": "plan",
+      "how": "Graphite plan cards; the recommended one has a violet border and a changelog pill",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Graphite plan cards; the recommended one has a violet border and a changelog pill"
+       },
+       {
+        "element": "hero",
+        "label": "pricing headline",
+        "how": "A hairline changelog pill, large headline, and a screenshot with a fading top edge"
+       },
+       {
+        "element": "cta",
+        "label": "closing call to action",
+        "how": "A violet button with white text and a small arrow, no glow"
+       }
+      ],
+      "task": "The main task, comparing and picking a plan, now runs through the plan cards: graphite plan cards; the recommended one has a violet border and a changelog pill."
+     },
+     "ingredients": {
+      "mood": "digital and internet",
+      "era": "Dark Mode SaaS 2021"
+     },
+     "artQueries": [
+      "dark mode saas 2021"
+     ],
+     "spec": {
+      "typography": "Geist for display at clamp(48px, 8vw, 120px), Hanken Grotesk for body at 18px.",
+      "typeVoice": "neo-grotesk",
+      "color": "Palette from Dark Mode SaaS 2021: surface #0C0D12, ink #E6E8EF, accent #8B7BFF, support #5FD4A8; ship pairs #E6E8EF on #0C0D12, #8B7BFF on #0C0D12; text at 4.5 to 1 or more.",
+      "layout": "Dark Mode SaaS 2021 runs the pricing page across the plan cards, the pricing headline and the closing call to action on a 12 column grid with fluid type. The main task, comparing and picking a plan, now runs through the plan cards: graphite plan cards; the recommended one has a violet border and a changelog pill. Pricing headline: A hairline changelog pill, large headline, and a screenshot with a fading top edge. Closing call to action: A violet button with white text and a small arrow, no glow. Must keep: clear price.",
+      "imagery": "Real app screenshots shown flat and never tilted, cropped to one useful panel at true pixel scale. Icons are monoline at 1.5 px in version number gray.",
+      "motion": "Catches the light in 600ms; with reduced motion on, The top edge highlight appears at full strength instantly, with no sweep.",
+      "texture": "Only the hero screenshot frame gets a 1 px top border at 14 percent white that fades out toward both corners. The changelog pill above the headline is a 1 px hairline at 10 percent white with a 6 px mint dot. Nothing else glows.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Balanced; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Graphite plan cards; the recommended one has a violet border and a changelog pill.",
+      "pattern": "Dark Mode SaaS 2021 on the plan cards: Differences only switch.",
+      "steal": [
+       "The palette of Dark Mode SaaS 2021: blue hour black, release note white, launch day violet, shipped dot mint, version number gray, frame graphite.",
+       "The surface: Only the hero screenshot frame gets a 1 px top border at 14 percent white that fades out toward both corners. The changelog pill above the headline is a 1 px hairline at 10 percent white with a 6 px mint dot. Nothing else glows.",
+       "The imagery: Real app screenshots shown flat and never tilted, cropped to one useful panel at true pixel scale. Icons are monoline at 1.5 px in version number gray."
+      ],
+      "avoid": [
+       "Violet radial glows behind every section until the page looks like any other launch page.",
+       "Pure black with pure white text that glares.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "dark mode"
+      ],
+      "whyItFits": "Dark stage around highlighted plan."
+     },
+     "lanes": {
+      "idea": "dark mode saas 2021",
+      "taste": "dark analytics saas pricing page ui design",
+      "fidelity": "analytics saas pricing page website ui",
+      "component": [
+       "analytics saas plan cards website ui"
+      ],
+      "bridge": "dark mode saas 2021 ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "analytics saas",
+      "galleries": [
+       "unsection",
+       "darkdesign"
+      ],
+      "art": [
+       "dark mode saas 2021"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-n8nkglwe",
+     "title": "Swiss Style 1960s analytics",
+     "twist": "",
+     "move": "era",
+     "searchQuery": "swiss style 1960s",
+     "mechanic": {
+      "element": "plan",
+      "how": "Plans as aligned columns with hairline rules and one red recommended label",
+      "parts": [
+       {
+        "element": "paywall-plan",
+        "label": "plan cards",
+        "how": "Plans as aligned columns with hairline rules and one red recommended label"
+       },
+       {
+        "element": "hero",
+        "label": "pricing headline",
+        "how": "Large flush-left headline over faint column guides, one red figure"
+       },
+       {
+        "element": "list-row",
+        "label": "billing questions",
+        "how": "Each row sits on the visible column grid with fixed columns for name, detail and figure, flush left, and a single red numeral marks the selected row"
+       }
+      ],
+      "task": "The main task, comparing and picking a plan, now runs through the plan cards: plans as aligned columns with hairline rules and one red recommended label."
+     },
+     "ingredients": {
+      "mood": "early modernism and avant-garde",
+      "era": "Swiss Style 1960s"
+     },
+     "artQueries": [
+      "Josef Muller-Brockmann poster",
+      "Neue Grafik magazine",
+      "Swiss concert poster"
+     ],
+     "spec": {
+      "typography": "Inter Tight for display at clamp(48px, 8vw, 120px), Inter for body at 18px.",
+      "typeVoice": "neo-grotesk",
+      "color": "Palette from Swiss Style 1960s: surface #F7F6F2, ink #111111, accent #E1251B, support #8A8A86; ship pairs #111111 on #F7F6F2, #111111 on #8A8A86; text at 4.5 to 1 or more.",
+      "layout": "Swiss Style 1960s runs the pricing page across the plan cards, the pricing headline and the billing questions on a 12 column grid with fluid type. The main task, comparing and picking a plan, now runs through the plan cards: plans as aligned columns with hairline rules and one red recommended label. Pricing headline: large flush-left headline over faint column guides, one red figure. Billing questions: each row sits on the visible column grid with fixed columns for name, detail and figure, flush left, and a single red numeral marks the selected row. Must keep: clear price.",
+      "imagery": "High contrast black and white photography, cropped to fill whole grid columns, with captions flush left beneath. Diagrams over illustrations.",
+      "motion": "Snaps in 160ms; with reduced motion on, Content swaps instantly with no movement.",
+      "texture": "Hairline column guides at 8 percent opacity on the hero section only. Every other surface stays flat.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke.",
+      "density": "Airy; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Plans as aligned columns with hairline rules and one red recommended label.",
+      "pattern": "Swiss Style 1960s on the plan cards: Yearly savings meter.",
+      "steal": [
+       "The palette of Swiss Style 1960s: offset white, process black, signal red, grid gray.",
+       "The surface: Hairline column guides at 8 percent opacity on the hero section only. Every other surface stays flat.",
+       "The imagery: High contrast black and white photography, cropped to fill whole grid columns, with captions flush left beneath. Diagrams over illustrations."
+      ],
+      "avoid": [
+       "Adding a second typeface or decorative weights.",
+       "Centered text, which breaks the flush-left logic.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Visible grid orders plan table."
+     },
+     "lanes": {
+      "idea": "Swiss style 1960s",
+      "taste": "minimal analytics saas pricing page ui design",
+      "fidelity": "analytics saas pricing page website ui",
+      "component": [
+       "analytics saas plan cards website ui"
+      ],
+      "bridge": "Swiss style 1960s ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "analytics saas",
+      "galleries": [
+       "siteinspire",
+       "unsection"
+      ],
+      "artGalleries": [
+       "typoposters"
+      ],
+      "art": [
+       "Josef Muller-Brockmann poster",
+       "Neue Grafik magazine",
+       "Swiss concert poster"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "dubai-real-estate",
+   "brief": "luxury real estate listing page for Dubai apartments",
+   "engine": "atlas",
+   "market": "gcc",
+   "platform": "website",
+   "wildness": 4,
+   "wildnessLabel": "Wild",
+   "mustKeep": [],
+   "subject": "real estate listing",
+   "lens": null,
+   "suggestedLenses": [
+    "talli",
+    "sadu",
+    "mashrabiya"
+   ],
+   "directions": [
+    {
+     "id": "bd-ip2pl343",
+     "title": "Abu Dhabi Cultural Foundation",
+     "twist": "With the texture of Scale Bars",
+     "move": "era + transplant",
+     "searchQuery": "abu dhabi cultural foundation 1981",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero is a vertical diptych: flat white panel beside a coral-grain panel",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "photo gallery",
+        "how": "Hero is a vertical diptych: flat white panel beside a coral-grain panel"
+       },
+       {
+        "element": "map",
+        "label": "location map and nearby places",
+        "how": "The page splits into a flat white map half and a coral grain list half; pins stay readable and the chosen one is inked solid"
+       },
+       {
+        "element": "chart",
+        "label": "price history and payment estimate",
+        "how": "Bars are flat ink with the highlighted bar filled in grained coral stone"
+       }
+      ],
+      "task": "The main task, choosing a place, now runs through the location map and nearby places: the page splits into a flat white map half and a coral grain list half; pins stay readable and the chosen one is inked solid."
+     },
+     "ingredients": {
+      "mood": "regional modernism",
+      "era": "Abu Dhabi Cultural Foundation 1981",
+      "element": "Scale Bars"
+     },
+     "artQueries": [
+      "Cultural Foundation Abu Dhabi",
+      "Qasr Al Hosn",
+      "Qasr Al Hosn coral stone"
+     ],
+     "spec": {
+      "typography": "Instrument Serif for display at clamp(48px, 8vw, 120px), Newsreader for body at 18px; Arabic in Markazi Text and Noto Naskh Arabic at the same sizes, right to left.",
+      "typeVoice": "serif-editorial",
+      "color": "Palette from Abu Dhabi Cultural Foundation 1981: surface #F3EFE6, ink #221F1B, accent #B98A64, support #8B8679; ship pairs #221F1B on #F3EFE6, #34444C on #F3EFE6; text at 4.5 to 1 or more.",
+      "layout": "Abu Dhabi Cultural Foundation 1981 runs the real estate listing page across the photo gallery, the location map and nearby places and the price history and payment estimate on a 12 column grid with fluid type. The main task, choosing a place, now runs through the location map and nearby places: the page splits into a flat white map half and a coral grain list half; pins stay readable and the chosen one is inked solid. Price history and payment estimate: bars are flat ink with the highlighted bar filled in grained coral stone.",
+      "imagery": "Paired photographs set as a diptych: the Foundation on the left and Qasr Al Hosn on the right, both shot straight on at eye level and cropped to the same horizon line. Archival 1980s shots of readers, exhibitions and audiences come in muted color with people at human scale.",
+      "motion": "Pans in 360ms; with reduced motion on, The new panel replaces the old one with a 120 ms fade and no movement.",
+      "texture": "A full-width segmented bar with ticks and 0, 1, 2 km labels runs as a header band on the stats card only. Everything else stays flat. (from Scale Bars); text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke.",
+      "density": "Balanced; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Hero is a vertical diptych: flat white panel beside a coral-grain panel.",
+      "pattern": "Abu Dhabi Cultural Foundation 1981 on the header strip: Before after wipe.",
+      "steal": [
+       "The palette of Abu Dhabi Cultural Foundation 1981: foundation white, library ink, coral stone, sea stone grey, courtyard shade.",
+       "The surface: A full-width segmented bar with ticks and 0, 1, 2 km labels runs as a header band on the stats card only. Everything else stays flat.",
+       "The imagery: Paired photographs set as a diptych: the Foundation on the left and Qasr Al Hosn on the right, both shot straight on at eye level and cropped to the same horizon line. Archival 1980s shots of readers, exhibitions and audiences come in muted color with people at human scale."
+      ],
+      "avoid": [
+       "Generic white-modernist bay grids that could be any building.",
+       "Treating the fort as a sepia ruin or tourist backdrop.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "grainy",
+       "editorial"
+      ],
+      "whyItFits": "New and old split for renovated homes."
+     },
+     "lanes": {
+      "idea": "abu dhabi cultural foundation 1981",
+      "taste": "grainy estate listing hero section ui design",
+      "fidelity": "estate listing website ui",
+      "fidelityCore": "listing website ui",
+      "component": [
+       "estate listing header website ui"
+      ],
+      "bridge": "abu dhabi cultural foundation 1981 ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "estate listing",
+      "galleries": [
+       "httpster",
+       "siteinspire"
+      ],
+      "art": [
+       "Cultural Foundation Abu Dhabi",
+       "Qasr Al Hosn",
+       "Qasr Al Hosn coral stone"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-hdahauwy",
+     "title": "Ruler Ticks estate listing",
+     "twist": "With the motion of Gulf Sabkha Salt Crust",
+     "move": "transplant + material",
+     "searchQuery": "ruler ticks",
+     "mechanic": {
+      "element": "map",
+      "how": "Real map with ruler tick scales on the top and left edges as coordinates; pins show prices and the chosen pin gets a red metric mark line",
+      "parts": [
+       {
+        "element": "map",
+        "label": "location map and nearby places",
+        "how": "Real map with ruler tick scales on the top and left edges as coordinates; pins show prices and the chosen pin gets a red metric mark line"
+       },
+       {
+        "element": "hero",
+        "label": "photo gallery",
+        "how": "Main panel top band with a tick scale and a wood grain yellow"
+       },
+       {
+        "element": "card",
+        "label": "agent contact card",
+        "how": "The card has a ruler scale along its top edge; a red marker at the value position shows the main number, other text stays plain"
+       }
+      ],
+      "task": "The main task, choosing a place, now runs through the location map and nearby places: real map with ruler tick scales on the top and left edges as coordinates; pins show prices and the chosen pin gets a red metric mark line."
+     },
+     "ingredients": {
+      "mood": "data marks",
+      "element": "Ruler Ticks",
+      "material": "Gulf Sabkha Salt Crust"
+     },
+     "artQueries": [
+      "boxwood folding ruler",
+      "steel ruler",
+      "measuring ruler"
+     ],
+     "spec": {
+      "typography": "IBM Plex Mono for display at clamp(48px, 8vw, 120px), IBM Plex Sans for body at 18px; Arabic in Kufam and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "mono",
+      "color": "Palette from Ruler Ticks: surface #F1D462, ink #1A1A18, accent #C8361F, support #E8E4D8; ship pairs #1A1A18 on #F1D462, #1A1A18 on #E8E4D8; text at 4.5 to 1 or more.",
+      "layout": "Ruler Ticks runs the real estate listing page across the location map and nearby places, the photo gallery and the agent contact card on a 12 column grid with fluid type. The main task, choosing a place, now runs through the location map and nearby places: real map with ruler tick scales on the top and left edges as coordinates; pins show prices and the chosen pin gets a red metric mark line. Photo gallery: main panel top band with a tick scale and a wood grain yellow. Agent contact card: the card has a ruler scale along its top edge; a red marker at the value position shows the main number, other text stays plain.",
+      "imagery": "Objects photographed flat against a ruler for scale, cropped square, neutral light. Diagrams are thin black line drawings with dimension arrows.",
+      "motion": "Crystallizes in 520ms (from Gulf Sabkha Salt Crust); with reduced motion on, Cells appear complete with a 150 ms fade.",
+      "texture": "The tick scale is printed only on the top band of the main panel, with a 2 percent wood grain under the yellow.; text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke.",
+      "density": "Dense; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Real map with ruler tick scales on the top and left edges as coordinates; pins show prices and the chosen pin gets a red metric mark line.",
+      "pattern": "Ruler Ticks on the map: Row to pin sync.",
+      "steal": [
+       "The palette of Ruler Ticks: folding rule yellow, etched black, metric red mark, drafting paper, brass hinge grey.",
+       "The surface: The tick scale is printed only on the top band of the main panel, with a 2 percent wood grain under the yellow.",
+       "The imagery: Objects photographed flat against a ruler for scale, cropped square, neutral light. Diagrams are thin black line drawings with dimension arrows."
+      ],
+      "avoid": [
+       "Ticks on every edge so the screen looks like a tape measure.",
+       "School supply cartoon kitsch.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "grainy",
+       "big typography"
+      ],
+      "whyItFits": "Ruler edge shows area in meters."
+     },
+     "lanes": {
+      "idea": "ruler ticks",
+      "taste": "grainy estate listing hero section ui design",
+      "fidelity": "estate listing website ui",
+      "fidelityCore": "listing website ui",
+      "component": [
+       "estate listing map website ui"
+      ],
+      "bridge": "ruler ticks ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "estate listing",
+      "galleries": [
+       "httpster",
+       "supahero"
+      ],
+      "art": [
+       "boxwood folding ruler",
+       "steel ruler",
+       "measuring ruler"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-bpqtvl7s",
+     "title": "Topographic Map estate listing",
+     "twist": "With the texture of Terrazzo",
+     "move": "transplant + material",
+     "searchQuery": "topographic map",
+     "mechanic": {
+      "element": "total",
+      "how": "Large condensed figure at the center of three concentric contour rings",
+      "parts": [
+       {
+        "element": "total",
+        "label": "price, address and key facts",
+        "how": "Large condensed figure at the center of three concentric contour rings"
+       },
+       {
+        "element": "list-row",
+        "label": "features and amenities",
+        "how": "Each row has a thin contour line pattern at its right edge that tightens around the selected row, while name, price and details stay plain"
+       },
+       {
+        "element": "map",
+        "label": "location map and nearby places",
+        "how": "The map is a true topographic chart with north up, and pins are small summit triangles holding the price, with the chosen one ringed by tight contours"
+       }
+      ],
+      "task": "The main task, choosing a place, now runs through the location map and nearby places: the map is a true topographic chart with north up, and pins are small summit triangles holding the price, with the chosen one ringed by tight contours."
+     },
+     "ingredients": {
+      "mood": "map or chart",
+      "object": "Topographic Map",
+      "material": "Terrazzo"
+     },
+     "artQueries": [
+      "topographic map",
+      "contour lines",
+      "survey map sheet"
+     ],
+     "spec": {
+      "typography": "Barlow Condensed for display at clamp(48px, 8vw, 120px), Work Sans for body at 18px; Arabic in Reem Kufi and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "condensed",
+      "color": "Palette from Topographic Map: surface #F3EEDF, ink #2B2620, accent #A0522D, support #B9C99A; ship pairs #2B2620 on #F3EEDF, #A0522D on #F3EEDF; text at 4.5 to 1 or more.",
+      "layout": "Topographic Map runs the real estate listing page across the price, address and key facts, the features and amenities and the location map and nearby places on a 12 column grid with fluid type. The main task, choosing a place, now runs through the location map and nearby places: the map is a true topographic chart with north up, and pins are small summit triangles holding the price, with the chosen one ringed by tight contours. Features and amenities: each row has a thin contour line pattern at its right edge that tightens around the selected row, while name, price and details stay plain.",
+      "imagery": "Tight crops of survey sheets around a single peak or valley, with elevation labels set along the curves. Flat color, no 3D relief renders.",
+      "motion": "Tightens in 500ms; with reduced motion on, The contours appear in their final spacing with no animation.",
+      "texture": "Irregular flat chips from 4 to 12 px at 15 percent coverage on the hero card only, with no bevels. Sections are split by 1 px brass strip lines, like the metal divider strips set into a poured floor. (from Terrazzo); text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke.",
+      "density": "Balanced; airy sections, one message per screen height, body text under 75 characters wide.",
+      "signature": "Large condensed figure at the center of three concentric contour rings.",
+      "pattern": "Topographic Map on the total block: Swinging price tag.",
+      "steal": [
+       "The palette of Topographic Map: survey paper, summit black, contour brown, woodland green, stream blue.",
+       "The surface: Irregular flat chips from 4 to 12 px at 15 percent coverage on the hero card only, with no bevels. Sections are split by 1 px brass strip lines, like the metal divider strips set into a poured floor.",
+       "The imagery: Tight crops of survey sheets around a single peak or valley, with elevation labels set along the curves. Flat color, no 3D relief renders."
+      ],
+      "avoid": [
+       "Contour wallpaper behind every screen.",
+       "Outdoor brand clichés like mountain badges and pine trees.",
+       "A hero with no clear first action."
+      ],
+      "styleWords": [
+       "big typography"
+      ],
+      "whyItFits": "Contours tighten around price."
+     },
+     "lanes": {
+      "idea": "topographic map",
+      "taste": "big typography listing hero section ui design",
+      "fidelity": "estate listing website ui",
+      "fidelityCore": "listing website ui",
+      "component": [
+       "estate listing price summary website ui"
+      ],
+      "bridge": "topographic map ui design",
+      "platform": "website",
+      "avoid": [
+       "mobile",
+       "mobile app",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone"
+      ],
+      "topic": "estate listing",
+      "galleries": [
+       "httpster",
+       "lapa"
+      ],
+      "art": [
+       "topographic map",
+       "contour lines",
+       "survey map sheet"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "kids-reading-home",
+   "brief": "kids reading app home screen",
+   "engine": "atlas",
+   "market": "global",
+   "platform": "tablet",
+   "wildness": 5,
+   "wildnessLabel": "Bananas",
+   "mustKeep": [],
+   "subject": "kids reading",
+   "lens": null,
+   "suggestedLenses": [],
+   "directions": [
+    {
+     "id": "bd-oocqzat2",
+     "title": "Wool Felt kids reading",
+     "twist": "With the texture of Stickers",
+     "move": "material + transplant",
+     "searchQuery": "wool felt",
+     "mechanic": {
+      "element": "card",
+      "how": "Each card is a cut felt piece in persimmon, mustard or sky with uneven soft edges; choosing it presses it down onto the board with a small bounce",
+      "parts": [
+       {
+        "element": "card",
+        "label": "big activity tiles",
+        "how": "Each card is a cut felt piece in persimmon, mustard or sky with uneven soft edges; choosing it presses it down onto the board with a small bounce"
+       },
+       {
+        "element": "hero",
+        "label": "mascot greeting and continue card",
+        "how": "A big cream felt shape cut in a friendly outline holds the headline"
+       },
+       {
+        "element": "progress",
+        "label": "daily goal and sticker path",
+        "how": "A row of felt dots on the board; finished ones are pressed on in mustard"
+       }
+      ],
+      "task": "The main task, making progress, now runs through the daily goal and sticker path: A row of felt dots on the board; finished ones are pressed on in mustard."
+     },
+     "ingredients": {
+      "mood": "textile and fiber",
+      "material": "Wool Felt",
+      "element": "Stickers"
+     },
+     "artQueries": [
+      "felt board shapes",
+      "wool felt sheets",
+      "felt cutouts"
+     ],
+     "spec": {
+      "typography": "Fredoka for display at 40px, DM Sans for body at 17px.",
+      "typeVoice": "rounded",
+      "color": "Palette from Wool Felt: surface #2E3B33, ink #F3EAD9, accent #E0663A, support #E9B84A; ship pairs #F3EAD9 on #2E3B33, #E9B84A on #2E3B33; text at 4.5 to 1 or more.",
+      "layout": "Wool Felt runs the kids app home screen across the big activity tiles, the mascot greeting and continue card and the daily goal and sticker path on an 8 column grid with 24px margins. The main task, making progress, now runs through the daily goal and sticker path: A row of felt dots on the board; finished ones are pressed on in mustard. Mascot greeting and continue card: A big cream felt shape cut in a friendly outline holds the headline.",
+      "imagery": "Overhead photos of real hand-cut felt shapes on a felt board, slightly wobbly scissor edges, no faces drawn on them.",
+      "motion": "Presses on in 220ms; with reduced motion on, Instant placement with no scale change.",
+      "texture": "A 4 px die-cut white border with a 2 px soft drop shadow on sticker elements only, and a thin holographic gradient sheen on the rare top badge. (from Stickers); text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke.",
+      "density": "Balanced; two panes at most, 44pt tap targets, room for touch and keyboard.",
+      "signature": "Each card is a cut felt piece in persimmon, mustard or sky with uneven soft edges; choosing it presses it down onto the board with a small bounce.",
+      "pattern": "Wool Felt on the cards: Stamp collection grid.",
+      "steal": [
+       "The palette of Wool Felt: pine felt board, undyed wool cream, persimmon felt, mustard felt, sky felt.",
+       "The surface: A 4 px die-cut white border with a 2 px soft drop shadow on sticker elements only, and a thin holographic gradient sheen on the rare top badge.",
+       "The imagery: Overhead photos of real hand-cut felt shapes on a felt board, slightly wobbly scissor edges, no faces drawn on them."
+      ],
+      "avoid": [
+       "Cute faces on every shape.",
+       "Felt texture on text blocks, which blurs letters.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "dark mode"
+      ],
+      "whyItFits": "Felt pieces as home cards."
+     },
+     "lanes": {
+      "idea": "wool felt",
+      "taste": "dark mode kids reading card ui design",
+      "fidelity": "kids reading ipad app ui",
+      "fidelityCore": "reading ipad app ui",
+      "component": [
+       "kids reading cards ipad app ui"
+      ],
+      "bridge": "wool felt ui design",
+      "platform": "tablet",
+      "avoid": [
+       "website",
+       "landing",
+       "landing page",
+       "desktop"
+      ],
+      "topic": "kids reading",
+      "galleries": [
+       "screensdesign"
+      ],
+      "art": [
+       "felt board shapes",
+       "wool felt sheets",
+       "felt cutouts"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-8k1e8gzn",
+     "title": "Badges kids reading",
+     "twist": "With the motion of Stars",
+     "move": "transplant",
+     "searchQuery": "badges",
+     "mechanic": {
+      "element": "header",
+      "how": "Hero shows one large merit patch with satin fill and raised edge",
+      "parts": [
+       {
+        "element": "hero",
+        "label": "mascot greeting and continue card",
+        "how": "Hero shows one large merit patch with satin fill and raised edge"
+       },
+       {
+        "element": "card",
+        "label": "big activity tiles",
+        "how": "Cards are stitched merit patches with a raised border, in a fixed set of shapes; the title and price stay plain and a pin marks the saved card"
+       },
+       {
+        "element": "progress",
+        "label": "daily goal and sticker path",
+        "how": "Progress track is a row of empty patch outlines filling with green"
+       }
+      ],
+      "task": "The main task, making progress, now runs through the daily goal and sticker path: progress track is a row of empty patch outlines filling with green."
+     },
+     "ingredients": {
+      "mood": "marks and stamps",
+      "element": "Badges"
+     },
+     "artQueries": [
+      "scout merit badges",
+      "embroidered patch",
+      "patch sash"
+     ],
+     "spec": {
+      "typography": "Zilla Slab for display at 40px, Work Sans for body at 17px.",
+      "typeVoice": "slab",
+      "color": "Palette from Badges: surface #ECE6D6, ink #1F2A24, accent #E8A317, support #C2412D; ship pairs #1F2A24 on #ECE6D6, #2F5D8A on #ECE6D6; text at 4.5 to 1 or more.",
+      "layout": "Badges runs the kids app home screen across the mascot greeting and continue card, the big activity tiles and the daily goal and sticker path on an 8 column grid with 24px margins. The main task, making progress, now runs through the daily goal and sticker path: progress track is a row of empty patch outlines filling with green. Big activity tiles: cards are stitched merit patches with a raised border, in a fixed set of shapes; the title and price stay plain and a pin marks the saved card.",
+      "imagery": "Flat-lay photos of real stitched patches shot straight down, or simple two-color patch illustrations of a single tool or object each.",
+      "motion": "Presses in 220ms (from Stars); with reduced motion on, The star appears at full size and final angle with an instant swap, no scale or tilt.",
+      "texture": "A satin stitch fill and a raised edge border on the patches only, sitting on a fine twill weave on the sash card.; text sits on solid panels, never on the texture.",
+      "iconography": "Soft rounded line icons, 1.5px stroke.",
+      "density": "Balanced; two panes at most, 44pt tap targets, room for touch and keyboard.",
+      "signature": "Hero shows one large merit patch with satin fill and raised edge.",
+      "pattern": "Badges on the header strip: Tap mascot greeting.",
+      "steal": [
+       "The palette of Badges: khaki twill, troop green, merit gold, patch red, scout blue.",
+       "The surface: A satin stitch fill and a raised edge border on the patches only, sitting on a fine twill weave on the sash card.",
+       "The imagery: Flat-lay photos of real stitched patches shot straight down, or simple two-color patch illustrations of a single tool or object each."
+      ],
+      "avoid": [
+       "Military rank insignia or police shields.",
+       "National flags, emblems or religious symbols as patch art.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Merit patches on home sash."
+     },
+     "lanes": {
+      "idea": "badges",
+      "taste": "minimal kids reading card ui design",
+      "fidelity": "kids reading ipad app ui",
+      "fidelityCore": "reading ipad app ui",
+      "component": [
+       "kids reading header ipad app ui"
+      ],
+      "bridge": "badges ui design",
+      "platform": "tablet",
+      "avoid": [
+       "website",
+       "landing",
+       "landing page",
+       "desktop"
+      ],
+      "topic": "kids reading",
+      "galleries": [
+       "screensdesign"
+      ],
+      "art": [
+       "scout merit badges",
+       "embroidered patch",
+       "patch sash"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-ssqiilzc",
+     "title": "Tally Marks kids reading",
+     "twist": "With the texture of Egg Carton",
+     "move": "transplant",
+     "searchQuery": "tally marks",
+     "mechanic": {
+      "element": "progress",
+      "how": "The track is a row of tally gates that adds a stroke per step",
+      "parts": [
+       {
+        "element": "progress",
+        "label": "daily goal and sticker path",
+        "how": "The track is a row of tally gates that adds a stroke per step"
+       },
+       {
+        "element": "card",
+        "label": "big activity tiles",
+        "how": "Cards carry a tally strip along the bottom showing ratings or saves as gates; the title and facts stay in plain condensed type"
+       },
+       {
+        "element": "modal",
+        "label": "grown-ups gate",
+        "how": "Centered cream panel with a graphite border and condensed heading"
+       }
+      ],
+      "task": "The main task, making progress, now runs through the daily goal and sticker path: the track is a row of tally gates that adds a stroke per step."
+     },
+     "ingredients": {
+      "mood": "data marks",
+      "element": "Tally Marks",
+      "object": "Egg Carton"
+     },
+     "artQueries": [
+      "tally marks",
+      "pencil tally sheet",
+      "score tally notebook"
+     ],
+     "spec": {
+      "typography": "Big Shoulders for display at 40px, Work Sans for body at 17px.",
+      "typeVoice": "condensed",
+      "color": "Palette from Tally Marks: surface #F4EFE3, ink #2B2A28, accent #D2462E, support #9A958A; ship pairs #2B2A28 on #F4EFE3, #2B2A28 on #9A958A; text at 4.5 to 1 or more.",
+      "layout": "Tally Marks runs the kids app home screen across the daily goal and sticker path, the big activity tiles and the grown-ups gate on an 8 column grid with 24px margins. The main task, making progress, now runs through the daily goal and sticker path: the track is a row of tally gates that adds a stroke per step. Big activity tiles: cards carry a tally strip along the bottom showing ratings or saves as gates; the title and facts stay in plain condensed type. Grown-ups gate: centered cream panel with a graphite border and condensed heading.",
+      "imagery": "Hand-drawn tally strokes with slight pressure variation, rendered as clean SVG paths. Product photos are cropped tight and flat on cream, with no props.",
+      "motion": "Strikes in 180ms; with reduced motion on, The new stroke or slash appears instantly with no draw-on.",
+      "texture": "Recycled pulp fiber grain at 6 percent on the carton card only, with a soft inner shadow inside each cell. The page around it stays clean. (from Egg Carton); text sits on solid panels, never on the texture.",
+      "iconography": "Square line icons with sharp corners, 2px stroke.",
+      "density": "Balanced; two panes at most, 44pt tap targets, room for touch and keyboard.",
+      "signature": "The track is a row of tally gates that adds a stroke per step.",
+      "pattern": "Tally Marks on the progress bar: Punch card holes.",
+      "steal": [
+       "The palette of Tally Marks: ledger cream, graphite lead, red pencil slash, erased smudge, ruled line green.",
+       "The surface: Recycled pulp fiber grain at 6 percent on the carton card only, with a soft inner shadow inside each cell. The page around it stays clean.",
+       "The imagery: Hand-drawn tally strokes with slight pressure variation, rendered as clean SVG paths. Product photos are cropped tight and flat on cream, with no props."
+      ],
+      "avoid": [
+       "Prison wall or jail cell scratch clichés.",
+       "Chalkboard school kitsch with doodles everywhere.",
+       "Tap targets under 44pt."
+      ],
+      "styleWords": [
+       "grainy",
+       "big typography"
+      ],
+      "whyItFits": "Tally streak card on home."
+     },
+     "lanes": {
+      "idea": "tally marks",
+      "taste": "big typography kids reading card ui design",
+      "fidelity": "kids reading ipad app ui",
+      "fidelityCore": "reading ipad app ui",
+      "component": [
+       "kids reading progress bar ipad app ui"
+      ],
+      "bridge": "tally marks ui design",
+      "platform": "tablet",
+      "avoid": [
+       "website",
+       "landing",
+       "landing page",
+       "desktop"
+      ],
+      "topic": "kids reading",
+      "galleries": [
+       "screensdesign"
+      ],
+      "art": [
+       "tally marks",
+       "pencil tally sheet",
+       "score tally notebook"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  },
+  {
+   "id": "qatar-gov-services",
+   "brief": "government services dashboard for Qatar residents: renew ID, pay fines",
+   "engine": "atlas",
+   "market": "gcc",
+   "platform": "webapp",
+   "wildness": 1,
+   "wildnessLabel": "Fresh",
+   "mustKeep": [
+    "clear status"
+   ],
+   "subject": "qatar government services dashboard",
+   "lens": null,
+   "suggestedLenses": [
+    "sadu",
+    "talli",
+    "qatt-asiri"
+   ],
+   "directions": [
+    {
+     "id": "bd-w2tkqxef",
+     "title": "Banknote services dashboard",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "banknote",
+     "mechanic": {
+      "element": "card",
+      "how": "Each card has a banknote border of fine line rosettes at the corners; the key price sits in the center panel in plain serif",
+      "parts": [
+       {
+        "element": "card",
+        "label": "greeting and digital ID card",
+        "how": "Each card has a banknote border of fine line rosettes at the corners; the key price sits in the center panel in plain serif"
+       },
+       {
+        "element": "list-row",
+        "label": "my requests and their status",
+        "how": "Each row reads like a note register line: payee left, amount right in tabular figures, a fine rule with microtext beneath"
+       },
+       {
+        "element": "progress",
+        "label": "progress bar",
+        "how": "Progress track is a thin sage rule that fills with green ink"
+       }
+      ],
+      "task": "The main task, renew ID, pay fines, now runs through the progress bar: progress track is a thin sage rule that fills with green ink."
+     },
+     "ingredients": {
+      "mood": "printed card, cover or ticket",
+      "object": "Banknote"
+     },
+     "artQueries": [
+      "guilloche pattern",
+      "banknote engraving",
+      "security printing"
+     ],
+     "spec": {
+      "typography": "DM Serif Display for display at 28px, Source Serif 4 for body at 14px; Arabic in Amiri and Noto Naskh Arabic at the same sizes, right to left.",
+      "typeVoice": "serif-classic",
+      "color": "Palette from Banknote: surface #E9EADF, ink #1E3B34, accent #8C3B5A, support #B7C4B4; ship pairs #1E3B34 on #E9EADF, #8C3B5A on #E9EADF; text at 4.5 to 1 or more.",
+      "layout": "Banknote runs the government services dashboard across the greeting and digital ID card, the my requests and their status and the progress bar on a sidebar shell with a 12 column content area. The main task, renew ID, pay fines, now runs through the progress bar: progress track is a thin sage rule that fills with green ink. My requests and their status: each row reads like a note register line: payee left, amount right in tabular figures, a fine rule with microtext beneath. Must keep: clear status.",
+      "imagery": "No pictures of real notes, only abstract guilloche and close macro photos of cotton paper fibers and line engraving.",
+      "motion": "Counts in 500ms; with reduced motion on, Instant swap to the final value with no counting.",
+      "texture": "Generated SVG guilloche rosettes at 0.5 px stroke and 25 percent opacity, only around the hero value panel, plus a thin microtext rule under it.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Dense; dense, 8px rhythm, compact tables and filters, every action reachable by keyboard.",
+      "signature": "Each card has a banknote border of fine line rosettes at the corners; the key price sits in the center panel in plain serif.",
+      "pattern": "Banknote on the cards: Contour level cards.",
+      "steal": [
+       "The palette of Banknote: cotton note paper, intaglio green, security plum, underprint sage, foil strip gold.",
+       "The surface: Generated SVG guilloche rosettes at 0.5 px stroke and 25 percent opacity, only around the hero value panel, plus a thin microtext rule under it.",
+       "The imagery: No pictures of real notes, only abstract guilloche and close macro photos of cotton paper fibers and line engraving."
+      ],
+      "avoid": [
+       "Reproducing real currency, portraits or national emblems.",
+       "Guilloche behind body text, which kills legibility.",
+       "Decoration inside data tables."
+      ],
+      "styleWords": [
+       "editorial"
+      ],
+      "whyItFits": "Digital ID card with guilloche security."
+     },
+     "lanes": {
+      "idea": "banknote",
+      "taste": "dark mode minimal government services dashboard ui",
+      "tasteSite": "dribbble",
+      "tasteFallback": "dark dashboard web app ui",
+      "tasteAlt": "editorial government services dashboard ui",
+      "fidelity": "government services dashboard ui",
+      "fidelityCore": "government dashboard ui",
+      "component": [
+       "government services cards dashboard ui"
+      ],
+      "bridge": "banknote ui design",
+      "platform": "webapp",
+      "avoid": [
+       "mobile",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone",
+       "mobile app"
+      ],
+      "topic": "government services",
+      "galleries": [
+       "21st"
+      ],
+      "baselineGalleries": [
+       "nicelydone",
+       "refero"
+      ],
+      "art": [
+       "guilloche pattern",
+       "banknote engraving",
+       "security printing"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-m5md8vcw",
+     "title": "Gulf Modernism 1970s services",
+     "twist": "",
+     "move": "era",
+     "searchQuery": "gulf modernism 1970s",
+     "mechanic": {
+      "element": "card",
+      "how": "Cards are deep concrete recesses with a thick frame so content sits in shade; one turquoise tile panel holds the card's main action",
+      "parts": [
+       {
+        "element": "card",
+        "label": "greeting and digital ID card",
+        "how": "Cards are deep concrete recesses with a thick frame so content sits in shade; one turquoise tile panel holds the card's main action"
+       },
+       {
+        "element": "sidebar",
+        "label": "service categories menu",
+        "how": "Sidebar is a deep concrete column with slot-shaped recesses framing each link"
+       },
+       {
+        "element": "list-row",
+        "label": "my requests and their status",
+        "how": "Each row sits behind a repeating screen-block cutout at its left edge, like a brise-soleil wall; a turquoise tile marks the selected row and text stays plain"
+       }
+      ],
+      "task": "The main task, renew ID, pay fines, now runs through the greeting and digital ID card: cards are deep concrete recesses with a thick frame so content sits in shade; one turquoise tile panel holds the card's main action."
+     },
+     "ingredients": {
+      "mood": "regional modernism",
+      "era": "Gulf Modernism 1970s"
+     },
+     "artQueries": [
+      "Kuwait 1970s architecture",
+      "brise soleil facade",
+      "Riyadh modernist building"
+     ],
+     "spec": {
+      "typography": "Space Grotesk for display at 28px, Work Sans for body at 14px; Arabic in Reem Kufi and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "grotesk",
+      "color": "Palette from Gulf Modernism 1970s: surface #E8DCC6, ink #2B2722, accent #1F8A8A, support #A89A86; ship pairs #2B2722 on #E8DCC6, #2B2722 on #A89A86; text at 4.5 to 1 or more.",
+      "layout": "Gulf Modernism 1970s runs the government services dashboard across the greeting and digital ID card, the service categories menu and the my requests and their status on a sidebar shell with a 12 column content area. The main task, renew ID, pay fines, now runs through the greeting and digital ID card: cards are deep concrete recesses with a thick frame so content sits in shade; one turquoise tile panel holds the card's main action. Service categories menu: sidebar is a deep concrete column with slot-shaped recesses framing each link. My requests and their status: each row sits behind a repeating screen-block cutout at its left edge, like a brise-soleil wall; a turquoise tile marks the selected row and text stays plain. Must keep: clear status.",
+      "imagery": "Straight-on architectural photos of screen walls, deep window recesses and shaded courtyards in hard midday light, cropped tight to the facade with no sky haze.",
+      "motion": "Slides into shade in 320ms; with reduced motion on, An instant swap with the panel already in its final position.",
+      "texture": "Board-formed concrete grain at 6 percent on the header band only, with a thin repeating screen-block cutout pattern along its lower edge.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Balanced; dense, 8px rhythm, compact tables and filters, every action reachable by keyboard.",
+      "signature": "Cards are deep concrete recesses with a thick frame so content sits in shade; one turquoise tile panel holds the card's main action.",
+      "pattern": "Gulf Modernism 1970s on the cards: File folder tabs.",
+      "steal": [
+       "The palette of Gulf Modernism 1970s: sun-bleached plaster, shadowed concrete, glazed tile turquoise, board-formed concrete, baked brick ochre.",
+       "The surface: Board-formed concrete grain at 6 percent on the header band only, with a thin repeating screen-block cutout pattern along its lower edge.",
+       "The imagery: Straight-on architectural photos of screen walls, deep window recesses and shaded courtyards in hard midday light, cropped tight to the facade with no sky haze."
+      ],
+      "avoid": [
+       "Camels, dunes, oil derricks or palm silhouettes as decoration.",
+       "Gold-on-black luxury styling that belongs to recent towers, not 1970s civic modernism.",
+       "Decoration inside data tables."
+      ],
+      "styleWords": [
+       "grainy"
+      ],
+      "whyItFits": "Service cards set in screen grid."
+     },
+     "lanes": {
+      "idea": "gulf modernism 1970s",
+      "taste": "dark mode minimal government services dashboard ui",
+      "tasteSite": "dribbble",
+      "tasteFallback": "dark dashboard web app ui",
+      "tasteAlt": "grainy government services dashboard ui",
+      "fidelity": "government services dashboard ui",
+      "fidelityCore": "government dashboard ui",
+      "component": [
+       "government services cards dashboard ui"
+      ],
+      "bridge": "gulf modernism 1970s ui design",
+      "platform": "webapp",
+      "avoid": [
+       "mobile",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone",
+       "mobile app"
+      ],
+      "topic": "government services",
+      "galleries": [
+       "21st"
+      ],
+      "baselineGalleries": [
+       "nicelydone",
+       "refero"
+      ],
+      "art": [
+       "Kuwait 1970s architecture",
+       "brise soleil facade",
+       "Riyadh modernist building"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    },
+    {
+     "id": "bd-2plms8uc",
+     "title": "Rubber Stamps services dashboard",
+     "twist": "",
+     "move": "transplant",
+     "searchQuery": "rubber stamps",
+     "mechanic": {
+      "element": "progress",
+      "how": "Row of boxes on paper that get stamped in green one by one",
+      "parts": [
+       {
+        "element": "progress",
+        "label": "progress bar",
+        "how": "Row of boxes on paper that get stamped in green one by one"
+       },
+       {
+        "element": "header",
+        "label": "top bar with logo, language toggle and account",
+        "how": "Form paper bar with slab title in black and a violet date line"
+       },
+       {
+        "element": "card",
+        "label": "greeting and digital ID card",
+        "how": "The card is a quiet paper form with a status stamp pressed slightly crooked at a corner, in a fixed ink per state"
+       }
+      ],
+      "task": "The main task, renew ID, pay fines, now runs through the progress bar: row of boxes on paper that get stamped in green one by one."
+     },
+     "ingredients": {
+      "mood": "marks and stamps",
+      "element": "Rubber Stamps"
+     },
+     "artQueries": [
+      "rubber stamp impression",
+      "office date stamp",
+      "approved stamp"
+     ],
+     "spec": {
+      "typography": "Zilla Slab for display at 28px, IBM Plex Sans for body at 14px; Arabic in Kufam and IBM Plex Sans Arabic at the same sizes, right to left.",
+      "typeVoice": "slab",
+      "color": "Palette from Rubber Stamps: surface #F3EEE2, ink #1F2430, accent #2F6B45, support #4B3F8C; ship pairs #1F2430 on #F3EEE2, #2F6B45 on #F3EEE2; text at 4.5 to 1 or more.",
+      "layout": "Rubber Stamps runs the government services dashboard across the progress bar, the top bar with logo, language toggle and account and the greeting and digital ID card on a sidebar shell with a 12 column content area. The main task, renew ID, pay fines, now runs through the progress bar: row of boxes on paper that get stamped in green one by one. Top bar with logo, language toggle and account: form paper bar with slab title in black and a violet date line. Greeting and digital ID card: the card is a quiet paper form with a status stamp pressed slightly crooked at a corner, in a fixed ink per state. Must keep: clear status.",
+      "imagery": "Flat, top-down scans of single stamp impressions with a double border and one short word inside, rotated 2 to 4 degrees. Each scan uses the ink of its state: green APPROVED and PAID, violet RECEIVED with a date, red VOID only on failed items.",
+      "motion": "Stamps in 180ms; with reduced motion on, The stamp mark appears instantly at full opacity, with no scale or press.",
+      "texture": "Uneven ink fill with 15 percent speckle dropout, only on the stamp mark itself. Ink map: ledger green for approved and paid, date stamp violet for received and every date line, stamp pad red only for rejected, overdue and void.; text sits on solid panels, never on the texture.",
+      "iconography": "Line icons with small corner radius, 1.5px stroke.",
+      "density": "Dense; dense, 8px rhythm, compact tables and filters, every action reachable by keyboard.",
+      "signature": "Row of boxes on paper that get stamped in green one by one.",
+      "pattern": "Rubber Stamps on the progress bar: Punch card holes.",
+      "steal": [
+       "The palette of Rubber Stamps: form paper, office black, ledger green, date stamp violet, stamp pad red.",
+       "The surface: Uneven ink fill with 15 percent speckle dropout, only on the stamp mark itself. Ink map: ledger green for approved and paid, date stamp violet for received and every date line, stamp pad red only for rejected, overdue and void.",
+       "The imagery: Flat, top-down scans of single stamp impressions with a double border and one short word inside, rotated 2 to 4 degrees. Each scan uses the ink of its state: green APPROVED and PAID, violet RECEIVED with a date, red VOID only on failed items."
+      ],
+      "avoid": [
+       "Stamping every element so the mark stops meaning anything.",
+       "Grunge distress so heavy the stamp word cannot be read.",
+       "Decoration inside data tables."
+      ],
+      "styleWords": [
+       "minimal"
+      ],
+      "whyItFits": "Request status as stamped inks."
+     },
+     "lanes": {
+      "idea": "rubber stamps",
+      "taste": "dark mode minimal government services dashboard ui",
+      "tasteSite": "dribbble",
+      "tasteFallback": "dark dashboard web app ui",
+      "tasteAlt": "minimal government services dashboard ui",
+      "fidelity": "government services dashboard ui",
+      "fidelityCore": "government dashboard ui",
+      "component": [
+       "government services progress bar dashboard ui"
+      ],
+      "bridge": "rubber stamps ui design",
+      "platform": "webapp",
+      "avoid": [
+       "mobile",
+       "ios",
+       "android",
+       "iphone",
+       "smartphone",
+       "mobile app"
+      ],
+      "topic": "government services",
+      "galleries": [
+       "21st"
+      ],
+      "baselineGalleries": [
+       "nicelydone",
+       "refero"
+      ],
+      "art": [
+       "rubber stamp impression",
+       "office date stamp",
+       "approved stamp"
+      ]
+     },
+     "coherence": [],
+     "search": null
+    }
+   ]
+  }
+ ],
+ "skippedSearches": 0
+}
