@@ -34,6 +34,8 @@
  *
  *   npx tsx run.ts r10-worlds --from-raw        (card-worlds: each card's material or object world, for the twist)
  *   npx tsx run.ts r10-cliche --from-raw        (domain-cliches: the looks each domain already ships, and the cards that are them)
+ *   npx tsx run.ts r10-cliche2 --from-raw       (domain-cliches: R11's second pass, Opus with the slop check's reads as evidence,
+ *                                                merged into r10-cliche's records by domain and look; always after r10-cliche)
  *
  * r6-weak-pages was left out in R6 (the bend had no mechanic for list rows, cards, maps or forms, so
  * the judge scored it 2 directions lower); with the R8 work part mechanics it adds 2 (BASELINE R8).

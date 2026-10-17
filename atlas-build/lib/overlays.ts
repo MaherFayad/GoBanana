@@ -35,6 +35,9 @@ export type DomainCliche = { domainId: string; look: string; cardIds: string[] }
 /** R10 (r10-worlds): the material or object worlds a designer sees in a card, main first. */
 export type CardWorlds = { id: string; worlds: string[] };
 
+/** R11: the look a card marked in a third of the domains or more carries in the other domains. */
+export const WIDE_CLICHE = "a look apps of many domains already ship";
+
 /** Job kinds that only hold overlays (the server layout skips them). */
 export const OVERLAY_KINDS = ["style-tags", "taste-verdicts", "rewrite-verdicts", ...TAGGED_KINDS.map((k) => `${k}-rewrites`), "domain-cliches", "card-worlds"];
 
@@ -66,6 +69,12 @@ export function overlaysFrom(recordsByJobKind: ReadonlyMap<string, readonly unkn
     const m = by(ov.cliches, c.domainId);
     for (const id of c.cardIds) if (!m.has(id)) m.set(id, c.look);
   }
+  // R11: a card marked in at least a third of the domains (Flat Design 2013 in 24 of 60) is a look
+  // apps everywhere ship, so it is a cliche in every domain (SaaS pricing took it once telecom's left).
+  const spread = new Map<string, number>();
+  for (const m of ov.cliches.values()) for (const id of m.keys()) spread.set(id, (spread.get(id) ?? 0) + 1);
+  const wide = [...spread].filter(([, n]) => n * 3 >= ov.cliches.size && ov.cliches.size >= 3).map(([id]) => id);
+  for (const m of ov.cliches.values()) for (const id of wide) if (!m.has(id)) m.set(id, WIDE_CLICHE);
   for (const w of (recordsByJobKind.get("card-worlds") ?? []) as CardWorlds[]) if (w.worlds.length > 0) ov.worlds.set(w.id, w.worlds.slice(0, 2));
   return ov;
 }
