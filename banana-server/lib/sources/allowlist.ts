@@ -29,12 +29,19 @@ export const NO_MODEL_IMAGE_HOSTS: readonly string[] = [
   "curated-images.b-cdn.net",
   "curated-video.b-cdn.net",
   "cfw6.b-cdn.net",
+  "bestdesignsonx.com",
+  "x.com",
+  "twitter.com",
+  "twimg.com",
 ];
 
-/** The allowlist without the hosts in `drop` (exact entries): for model inputs. */
+/**
+ * The allowlist without the hosts in `drop`: for model inputs. A dropped host and its subdomains are
+ * refused even when a wildcard entry ("*.b-cdn.net" in IMAGE_HOST_ALLOWLIST) would cover them.
+ */
 export function withoutHosts(allowlist: ImageHostAllowlist, drop: readonly string[] = NO_MODEL_IMAGE_HOSTS): ImageHostAllowlist {
   const out = new Set(drop.map((h) => h.toLowerCase()));
-  return parseAllowlist(allowlist.entries.filter((e) => !out.has(e)));
+  return { ...parseAllowlist(allowlist.entries.filter((e) => !out.has(e))), deny: [...out] };
 }
 
 /**
@@ -64,6 +71,8 @@ export type ImageHostAllowlist = {
   suffixes: readonly string[];
   /** Normalized entries in their original form, for CSP `resourceDomains`. */
   entries: readonly string[];
+  /** Hosts refused with their subdomains whatever the entries say (model inputs, see withoutHosts). */
+  deny?: readonly string[];
 };
 
 const HOST_RE = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
@@ -118,6 +127,7 @@ export function allowlistFromEnv(envValue: string | undefined = readEnv()): Imag
 export function isAllowedHost(host: string, allowlist: ImageHostAllowlist): boolean {
   const h = normalizeHost(host);
   if (!h) return false;
+  if (allowlist.deny?.some((d) => h === d || h.endsWith(`.${d}`))) return false;
   if (allowlist.hosts.has(h)) return true;
   return allowlist.suffixes.some((s) => h.endsWith(s) && h.length > s.length);
 }

@@ -93,6 +93,12 @@ describe("R9 colors come from the palette", () => {
     expect(paletteColors("Accent #00FF00 glow", APRICOT)).not.toContain("#00FF00");
   });
 
+  it("keeps the verb and subject before a color word, and leaves white space alone", () => {
+    expect(paletteColors("The bar glows red", SOUQ)).toBe("The bar glows shopfront red");
+    expect(paletteColors("Buttons fill yellow on tap", SOUQ)).toBe("Buttons fill mustard trim yellow on tap");
+    expect(paletteColors("Plenty of white space between rows", APRICOT)).toBe("Plenty of white space between rows");
+  });
+
   it("never touches card names that hold a color word", () => {
     expect(paletteColors("One rule from White Text on Color: pink panels", APRICOT, ["White Text on Color"])).toBe("One rule from White Text on Color: apricot amber panels");
   });
@@ -127,6 +133,14 @@ describe("R9 Bend it lines give the build order and the brief's uncovered steps"
     expect(lines[0]).toBe("- Build first: the plan column headers, where the main task runs; then the other bent parts; the plain slots last.");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toMatch(/^- book installation: no bent part carries this step yet; give it its own slot right after the plan column headers/);
+  });
+
+  it("counts a one-word first step as the carried one, not the next step", () => {
+    const parts = [{ element: "search", label: "search field", how: "A long plot" }];
+    const lines = taskSteps({ element: "search", how: "x", parts, task: "The main task, search, compare speeds and prices, book installation, now runs through the search field: x." }, parts, "");
+    expect(lines).toHaveLength(3);
+    expect(lines[1]).toMatch(/^- compare speeds and prices: no bent part carries/);
+    expect(lines[2]).toMatch(/^- book installation: no bent part carries/);
   });
 
   it("adds nothing for a task phrase the brief does not list", () => {

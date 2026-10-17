@@ -231,11 +231,15 @@ export const COLOR_WORDS: Record<string, string> = {
 };
 /** A palette color this close (OKLab) to a word's typical color counts as that color. */
 export const SAME_COLOR = 0.09;
-const COLOR_RE = new RegExp(`(?:\\b[a-z]+-)?\\b(${Object.keys(COLOR_WORDS).join("|")})\\b`, "gi");
+/** "white space" is spacing, not a color. */
+const NOT_SPACE = "(?!\\s*-?space)";
+const COLOR_RE = new RegExp(`(?:\\b[a-z]+-)?\\b(${Object.keys(COLOR_WORDS).join("|")})\\b${NOT_SPACE}`, "gi");
 const HEX_RE = /#[0-9a-f]{6}\b/gi;
+/** Verbs that end a modifier run: "the bar glows amber" keeps "the bar glows". */
+const VERBS = "fills?|filled|glows?|glowing|turns?|turned|becomes?|goes|shows?|shown|lights?|lit|flash(?:es)?|pulses?|sets?|stays?|sits?|changes?|shifts?|fades?|blinks?|flips?|uses?|gets?|gives?|paints?|painted|tints?|tinted|wash(?:es)?|washed|inks?|inked|marks?|marked|drawn|printed|rendered|colou?red|runs?|reads?|holds?|stamps?|stamped";
 /** A color word with up to two plain modifiers before it ("low sun amber"), never a function word or a number. */
 const NAMED_RE = new RegExp(
-  `\\b((?:(?!(?:with|in|a|an|the|and|of|on|to|at|as|by|from|its|or|into|for|one|two|three|only|is|are|then|while|when|over|under|behind)\\b)[a-z]+\\s+){0,2})(?:[a-z]+-)?(${Object.keys(COLOR_WORDS).join("|")})\\b`,
+  `\\b((?:(?!(?:with|in|a|an|the|and|of|on|to|at|as|by|from|its|or|into|for|one|two|three|only|is|are|then|while|when|over|under|behind|${VERBS})\\b)[a-z]+\\s+){0,2})(?:[a-z]+-)?(${Object.keys(COLOR_WORDS).join("|")})\\b${NOT_SPACE}`,
   "gi",
 );
 

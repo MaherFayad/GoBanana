@@ -1,0 +1,32 @@
+[
+ {
+  "tag": "w1",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-bill-payment",
+  "directionId": "bd-ychfswbq",
+  "title": "Fingerprints bill payment",
+  "relevance": 3,
+  "reason": "Ruled record fields and red stamps suit a bill payment form, but at wildness 2 the fingerprint world reads like an ID or police record, not a phone bill, and the bill lines and total get little of the idea."
+ },
+ {
+  "tag": "w1",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "food-delivery-home",
+  "directionId": "bd-tgmdvzpt",
+  "title": "Stars food delivery",
+  "relevance": 4,
+  "reason": "Star ratings belong on a delivery home, and the gold stars that run the filter, the restaurant cards and the order bar feel native at wildness 2, even if the classroom sticker framing is a weak link and the idea is familiar."
+ },
+ {
+  "tag": "w1",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "apartment-detail",
+  "directionId": "bd-66pdfu18",
+  "title": "Polished Marble apartment detail",
+  "relevance": 4,
+  "reason": "Nero marble slabs and brass inlay suit an Abu Dhabi apartment listing and run across the gallery, description cards and viewing button with a vein leading to the action, so the idea is more than a button skin; the missing graph paper twist is a coherence problem."
+ }
+]

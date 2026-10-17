@@ -138,7 +138,7 @@ const REASONS: Record<string, string> = {
   network_error: "the image did not load from its source",
   too_many_redirects: "the image link redirects too many times",
   format: "its format is not one agents can read (JPEG, PNG, GIF or WebP)",
-  no_model: "its source is never shown to a model (Craftwork, Best Designs on X); it is on the board for people, rate it from its title or leave it unrated",
+  no_model: "its source is never shown to a model (Craftwork, Best Designs on X, X); it is on the board for people, rate it from its title or leave it unrated",
   over_cap: "over the 12 thumbnails per call",
   over_budget: "over the size budget for one call",
 };
@@ -147,7 +147,8 @@ const REASONS: Record<string, string> = {
 function noModelImage(t: Pick<ThumbTarget, "imageUrl" | "thumbUrl">): boolean {
   return [t.imageUrl, t.thumbUrl].some((u) => {
     const p = parseHttpUrl(u ?? "");
-    return Boolean(p && NO_MODEL_IMAGE_HOSTS.includes(p.hostname.toLowerCase()));
+    const h = p?.hostname.toLowerCase();
+    return Boolean(h && NO_MODEL_IMAGE_HOSTS.some((d) => h === d || h.endsWith(`.${d}`)));
   });
 }
 

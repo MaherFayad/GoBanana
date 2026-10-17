@@ -1016,3 +1016,20 @@ This is a new question with no gold examples, so read it only as before and afte
 - Several lines and twists still read as familiar (Flat Design 2013 tiles, star filters, Frutiger Aero). The judge's
   wow is still median 3 to 4; no direction reached 5.
 - Specs only, no references; 2 votes over 45 and 30 directions spread by about 1 to 2 directions.
+
+## Verify round: R7, R8 and R9 judged together (2026-10-17)
+
+Branch `next/verify` (from `next/phase-1`, 15737d3). R8's local Atlas (manifest `3e60961d0581`), not uploaded.
+Job `atlas-build/jobs/r9-judge-merged.ts` (the R8 judge with fresh `r9m` ids, budget r9): $2.34. No Serper.
+
+| Run | Bench on brief | Bench wow (mean; 4+) | Weak on brief | Weak wow (mean; 4+) |
+| --- | --- | --- | --- | --- |
+| R8 alone (r8-b2, r8-w3) | 30 of 30 | 3.67; 21 | 43 of 45 | 3.53; 25 |
+| R9 alone (r9-1) | 30 of 30 | 3.70; 22 | | |
+| Merged (r9-vb1, r9-vw1) | 30 of 30 | 3.77; 23 | 42 of 45 | 3.58; 28 |
+| Merged plus verify fixes (r9-vb2, r9-vw2) | 30 of 30 | 3.80; 24 | 42 of 45 | 3.58; 28 |
+
+The merged bend changes 7 of 30 Bench leads against r8-b2: R7's expected-lead penalty reached phase-1 after R8
+branched (R9 changes no lead). The weak drop of one is within the 1 to 2 direction spread: 1970s Airline Branding
+now leads telecom sign-up and fiber plans and is judged off brief (a travel metaphor), plus Fingerprints on bill
+payment; R8's two misses (Frutiger Aero, Nubian House Painting) are gone.
