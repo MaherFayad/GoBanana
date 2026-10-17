@@ -60,7 +60,7 @@ export const BUDGETS: Record<string, number> = {
   r5: 26,
   r6: 16,
   /** Unlocked only if R5 and R6 show good results (owner 2026-10-17). */
-  r7: 0,
+  r7: 20,
 };
 /** Section 6.4 block caps: the guard also refuses when a block's total would pass its cap. */
 export const BLOCKS: Array<{ name: string; jobs: string[]; cap: number }> = [
