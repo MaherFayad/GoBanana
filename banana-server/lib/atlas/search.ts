@@ -48,6 +48,11 @@ export type AtlasPlan = {
 
 export { PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
 
+/** A component query worded for a whole surface: an element on "... dashboard ui" (R5 Bench: 2 of 23 kept). */
+export function surfaceComponent(query: string): boolean {
+  return /\bdashboards?\b/i.test(query);
+}
+
 /** Atlas elements that map to a direction's saved mechanic part ("header" is header or hero). */
 export function elementsFor(mechanic: string | undefined): UiElement[] {
   if (!mechanic) return [];
@@ -203,10 +208,20 @@ export async function atlasSearchPlan(
     lanes.bridgeTitleFilter = false;
     record("bridge", concept, true);
   }
+  // R5: with no concept recipe the bridge is the Phase 0 "{idea} ui design" lane, which kept 14 of 38
+  // top 8 results on the Atlas-era Bench runs (g2g to r5a; 6 of 23 on later directions). Its places go
+  // to the page lanes.
+  if (!concept) delete lanes.bridge;
   const component = best(ofLane("component"), chosen, beats("component"), learning, seed("component"));
-  if (component) {
+  if (component && !surfaceComponent(component.query)) {
     lanes.component = [component.query, ...(base.component ?? []).filter((q) => q !== component.query)].slice(0, 2);
     record("component", component, true);
+  }
+  // R5: a component lane worded for a whole surface ("government services progress bar dashboard ui")
+  // brings back generic dashboards (2 of 23 kept on the Atlas-era runs), so it is not searched.
+  if (lanes.component) {
+    lanes.component = lanes.component.filter((q) => !surfaceComponent(q));
+    if (lanes.component.length === 0) delete lanes.component;
   }
   const artScore = (r: QueryRecipe) => r.precision * idWeight(learning, atlasTermKey("recipe", recipeId(r)));
   const art = ofLane("art")
