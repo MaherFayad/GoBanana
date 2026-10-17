@@ -579,3 +579,58 @@ screen and its edges first, never cross into another screen). Held-out images (1
 
 Naming the screen is worth 0.03 on held-out (the fairer J11 number is 0.73), still under the 0.8 gate. The screen
 rule loses to plain, so **no cut_parts change ships**: the look text stays as it is. Spend $0.27 (r3-crops).
+
+## Refinement R5: the merged bend, live (2026-10-17)
+
+Branch `next/refine-r5` (from `next/phase-1`, 3223c77). Atlas rebuilt locally from every committed raw file (the J
+jobs, then R1 and R2 in the order of `atlas-build/lib/refine.ts` and the README; 290 shards, manifest `77a33509b67a`,
+not uploaded). Judge job `atlas-build/jobs/r5-judge.ts` (budget r5): the R3 v2 judge on every direction with its 4 UI
+and 2 art thumbnails (the g2l rescore setup; unsearched directions on the spec), two votes and the R3 second pass on
+splits (none were needed), and J10's unchanged reference prompt on the top 8 UI. Request ids carry a hash of what the
+model sees, so an unchanged direction reuses its reply. Agent reference ratings reuse earlier agent verdicts of the
+same brief and image (133 of 148 in r5a, 96 of 108 in r5b); the rest were rated by eye from contact sheets. Craftwork,
+Best Designs on X and x.com items were never model inputs (none were in either run).
+
+The merged bend differs from R4's: R1's card edits changed 21 of 30 directions in the dry bend against r4-2. Swiss
+Style 1960s (SaaS pricing) and Tally Marks (kids reading) are leads again; round 3 had removed both.
+
+| Metric | g2l (R3 rescore) | **r5a** (merged bend, live) | r5b (search fix) | Target |
+| --- | --- | --- | --- | --- |
+| On brief, R3 judge with thumbnails | 73.3% (22 of 30) | **96.7% (29 of 30)** | 96.7% (29 of 30) | 80% or more |
+| Wow (R3 judge), 4 or more | 11 of 30, median 3 | 19 of 30, median 4 | 19 of 30, median 4 | median 4 |
+| Coherence failures; judge median | 0; 3 | 0; 4 | 0; 4 | 0 |
+| Shared UI queries | 0 | 0 | 0 | 0 |
+| Reference precision, agent (top 8 UI) | 70.7% (104 of 147) | 68.2% (101 of 148) | 71.3% (77 of 108) | g2l or more |
+| Great share, agent | 12.9% | 14.9% | 14.8% | rising |
+| Reference precision; great, J10 | 47.6%; 7.5% | 46.6%; 6.1% | 45.4%; 5.6% | |
+| Directions searched; Serper credits | 21; 143 | 21; 145 | 14; 98 | |
+
+On the same 14 directions (the ones r5b searched, budget 104): agent precision g2l 73.6%, r5a 71.3%, r5b 71.3%; great
+share 11.3%, 12.0%, 14.8%; J10 precision 49.1%, 49.1%, 45.4%; credits 103, 104, 98.
+
+What the live run shows:
+
+- **The bend holds up with search and thumbnails.** R4's specs-only 100% was an upper bound; with the references the
+  trusted judge gives 96.7%. The one direction off brief is Ruler Ticks on Dubai listings (relevance 3: the ticks only
+  decorate a band and card edges, and a carpenter's ruler reads workshop, not Dubai luxury).
+- **References are flat.** Agent precision 68.2% against g2l's 70.7% (4 references). Qatar services (5 of 16) and SaaS
+  pricing (8 of 16) stay the weakest boards. Over every rated run two patterns lose: the Phase 0 bridge lane ("{idea} ui
+  design") kept 16 of 81 and was never rated great (14 of 38 in the Atlas era, 6 of 23 on later directions), and
+  component lanes worded for a whole dashboard ("government services progress bar dashboard ui") kept 3 of 43.
+
+Fix (`lib/atlas/search.ts`, Atlas directions only, so `genre-unchanged.test.ts` and the web, deck and brand lanes are
+untouched): an Atlas direction with no concept recipe drops the Phase 0 bridge lane, and component lanes that name a
+dashboard are not searched; their places go to the page lanes. r5b measured it live: on the same 14 directions agent
+precision is unchanged (71.3%), the great share rises (12.0% to 14.8%), J10 precision falls by 4 references (49.1% to
+45.4%) and credits fall 6%. Read it as neutral on precision and cheaper. r5b's 71.3% is over g2l's 70.7% headline only
+because its 14 directions are the stronger subset (g2l scores 73.6% on them). Precision stays under the 75% target.
+
+Creativity (the owner's standing goal): the R3 judge rates 19 of 30 directions wow 4 (g2l 11 of 30), none 5. No R5
+change touches the bend, so nothing was made safer here. The dropped bridge lane was the only UI lane worded from the
+idea, but none of its 81 rated results was great, so it cost no standout references; the art zone, where the surprising
+references come from, is unchanged. Two concerns for the owner: 116 of the 148 top 8 UI results in r5a are Dribbble
+shots, mostly the usual polished Dribbble look (great share 12 to 15%); and the R1 merge brought back two expected
+leads (Swiss Style 1960s on pricing, Tally Marks on kids reading; the judge calls them "expected" and "tame for
+wildness 5").
+
+Spend: Serper 243 credits (r5a 145, r5b 98), under the 250 cap. Claude $1.50 of the r5 budget ($26).

@@ -63,7 +63,10 @@ describe("search plan v2 (P1-I3)", () => {
     const none: AtlasSource = { ...loaderSource(loaderFor()), recipes: async () => [] };
     const plan = (await atlasSearchPlan(base(), { ...IDS, cardIds: ["limestone"], pageId: "landing" }, none, OPTS))!;
     const b = base();
-    for (const lane of ["fidelity", "bridge", "taste", "component", "art"] as const) expect(plan.lanes[lane]).toEqual(b[lane]);
+    for (const lane of ["fidelity", "taste", "component", "art"] as const) expect(plan.lanes[lane]).toEqual(b[lane]);
+    // R5: with no concept recipe the Phase 0 bridge ("{idea} ui design") is not searched.
+    expect(b.bridge).toBeDefined();
+    expect(plan.lanes.bridge).toBeUndefined();
     expect(plan.provenance).toEqual([]);
     const unreadable: AtlasSource = { ...loaderSource(loaderFor()), recipes: async () => null };
     expect(await atlasSearchPlan(base(), IDS, unreadable, OPTS)).toBeNull();
@@ -183,5 +186,15 @@ describe("search_references with an Atlas direction (P1-I3)", () => {
     const out = res.structuredContent as { lanes: { bridge?: string } };
     expect(out.lanes.bridge).not.toBe(recipe("concept", "luggage-tag").query);
     expect(saved.every((r) => r.recipeId === undefined && r.cardId === undefined)).toBe(true);
+  });
+
+  it("R5: a component lane worded for a whole dashboard is not searched", async () => {
+    const none: AtlasSource = { ...loaderSource(loaderFor()), recipes: async () => [] };
+    const dash = { ...base(), component: ["government services progress bar dashboard ui", "government services status card web app ui"] };
+    const plan = (await atlasSearchPlan(dash, { ...IDS, cardIds: ["limestone"], pageId: "landing" }, none, OPTS))!;
+    expect(plan.lanes.component).toEqual(["government services status card web app ui"]);
+    const only = (await atlasSearchPlan({ ...base(), component: ["services empty state dashboard ui"] }, { ...IDS, cardIds: ["limestone"], pageId: "landing" }, none, OPTS))!;
+    expect(only.lanes.component).toBeUndefined();
+    expect(planRequests(only.lanes, undefined, { zone: "ui" }).some((r) => r.lane === "component")).toBe(false);
   });
 });
