@@ -1,0 +1,248 @@
+{
+ "directions": {
+  "esim-plan-picker/bd-7le7dwhz": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-7le7dwhz",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Lit price sign tiles make plan prices and GB easy to compare in a dark, big number look the taste bar likes, but the Qatari rock carving cup marks sit on one card and pull slightly away from the sign idea."
+  },
+  "esim-plan-picker/bd-varl85u5": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-varl85u5",
+   "relevance": 5,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Huge Eastern Arabic price numerals on dark plan plates with one saffron accent fit a GCC eSIM picker and the taste bar, but the Eidiya envelope motion never shows and the whyItFits switches from price to data."
+  },
+  "esim-plan-picker/bd-jlzttiy2": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-jlzttiy2",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Caliper steel plates with a needle tick change how plan cards are compared and Kuwait Towers ties to the Gulf, but the amber face is missing from the palette, Cascadia Mono has no Arabic, and the sliding jaw never reaches the mechanic."
+  },
+  "flight-checkout-gcc-ota/bd-4ol6ei7i": {
+   "briefId": "flight-checkout-gcc-ota",
+   "directionId": "bd-4ol6ei7i",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "A transit line diagram as the booking stepper acts on the real checkout steps and suits travel, though a metro line progress bar is a familiar move."
+  },
+  "flight-checkout-gcc-ota/bd-ns524bym": {
+   "briefId": "flight-checkout-gcc-ota",
+   "directionId": "bd-ns524bym",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Air traffic flight strips turn the checkout steps into strips in a bay, an aviation world native to a flight checkout, though the header signature and the one line rationale are thin."
+  },
+  "flight-checkout-gcc-ota/bd-423nya2k": {
+   "briefId": "flight-checkout-gcc-ota",
+   "directionId": "bd-423nya2k",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Ticket stub steps and boarding pass cards put a 1970s airline world on the real booking steps of a flight checkout, though the stripe texture and the thin whyItFits keep it from feeling fully worked out."
+  },
+  "coffee-shop-landing/bd-70kpzsc3": {
+   "briefId": "coffee-shop-landing",
+   "directionId": "bd-70kpzsc3",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "A bookmatched walnut hero suits a coffee shop landing page and its warm cafe world, but the soda can aluminum panel pulls slightly against the wood and the look stays fairly expected for wildness 4."
+  },
+  "coffee-shop-landing/bd-cm7zfgnd": {
+   "briefId": "coffee-shop-landing",
+   "directionId": "bd-cm7zfgnd",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "A jebena hero and burnt clay palette suit a coffee shop landing page, but the woven rattan twist never shows and the step header does not exist on this page."
+  },
+  "coffee-shop-landing/bd-utoiuezy": {
+   "briefId": "coffee-shop-landing",
+   "directionId": "bd-utoiuezy",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "A Googie coffee shop sign as the hero suits a coffee landing page, but the grocer marker sign rule and the Yellowtail script pull against each other, and the plan preview is an odd part for a coffee shop page."
+  },
+  "banking-onboarding/bd-79q2txs2": {
+   "briefId": "banking-onboarding",
+   "directionId": "bd-79q2txs2",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 3,
+   "note": "A fingerprint ridge line as the step progress and a stamped whorl at account ready ties identity checks to a banking onboarding, though the Nafath note is a GCC detail on a global brief."
+  },
+  "banking-onboarding/bd-9hwrs7gn": {
+   "briefId": "banking-onboarding",
+   "directionId": "bd-9hwrs7gn",
+   "relevance": 4,
+   "coherence": 5,
+   "wow": 4,
+   "note": "Punched holes as step progress act on the onboarding's real steps, the punch card world ties to banking's data heritage, and the buff palette, mono type and clipped corner all read as one card."
+  },
+  "banking-onboarding/bd-f016xv0s": {
+   "briefId": "banking-onboarding",
+   "directionId": "bd-f016xv0s",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A wax dot marking each step and a poured seal that closes the account fit a calm banking onboarding, though the gilt hero card signature is vague next to the seal idea."
+  },
+  "fitness-empty-state/bd-83s0dbbw": {
+   "briefId": "fitness-empty-state",
+   "directionId": "bd-83s0dbbw",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "An empty merit sash with blank patch outlines turns the fitness empty state into an invitation to earn a first badge, though the foosball felt adds little to the patch idea."
+  },
+  "fitness-empty-state/bd-h3nhd8qu": {
+   "briefId": "fitness-empty-state",
+   "directionId": "bd-h3nhd8qu",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "An arcade attract screen with a blinking insert coin prompt and one start button turns the fitness empty state into a playful first step, though the bars rule has few numbers to act on here."
+  },
+  "fitness-empty-state/bd-p52mflfv": {
+   "briefId": "fitness-empty-state",
+   "directionId": "bd-p52mflfv",
+   "relevance": 5,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Aicher style Munich 1972 sport pictograms as the empty state figure are a sharp, specific fit for a fitness app, but the chrome dashboard gauge card and the search bar and cards feel bolted onto an empty screen."
+  },
+  "ramadan-food-delivery/bd-9bm2vxvb": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-9bm2vxvb",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A backlit qamar al-din sheet unrolling as the hero is a Ramadan staple that suits a Saudi offers page, though the juniper wood grain on one card is a second material that pulls slightly apart."
+  },
+  "ramadan-food-delivery/bd-pkglkiio": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-pkglkiio",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "A painted souq sign hero with enamel deal boards suits a Saudi Ramadan offers page, but the Asiri honey motion never shows in the build."
+  },
+  "ramadan-food-delivery/bd-58cmx58y": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-58cmx58y",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A huge Eastern Arabic discount digit with a Najdi ghada ember glow on one deal card suits a Saudi Ramadan offers page and matches the dark, one accent taste bar, though the enamel plate cards drift slightly from the ember story."
+  },
+  "saas-pricing/bd-fluldst5": {
+   "briefId": "saas-pricing",
+   "directionId": "bd-fluldst5",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Big condensed prices on the plan cards with ledger rules suit a B2B pricing page and the taste bar's hero figures, though the idea is expected rather than surprising."
+  },
+  "saas-pricing/bd-f4cw102c": {
+   "briefId": "saas-pricing",
+   "directionId": "bd-f4cw102c",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Graphite plan cards with one violet recommended card are native to a B2B SaaS pricing page and match the dark, one-accent taste bar, but the 2021 dark mode SaaS look is familiar rather than surprising."
+  },
+  "saas-pricing/bd-n8nkglwe": {
+   "briefId": "saas-pricing",
+   "directionId": "bd-n8nkglwe",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Swiss grid plan columns with one red recommended label suit a B2B analytics pricing table and keep the price clear, but the look is a familiar choice for SaaS."
+  },
+  "dubai-real-estate/bd-ip2pl343": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-ip2pl343",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Gulf modernism from the Cultural Foundation suits Dubai luxury listings, and the coral grain highlight on the map district and price bar, plus the scale bar band, work on parts this page really has, though the renovated homes rationale is an odd fit for new apartments."
+  },
+  "dubai-real-estate/bd-hdahauwy": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-hdahauwy",
+   "relevance": 3,
+   "coherence": 2,
+   "wow": 2,
+   "note": "Ruler ticks measuring area suit a listing, but the yellow wood rule feels like a tool shop, not Dubai luxury, the ticks mostly decorate edges, and the sabkha salt crust never shows."
+  },
+  "dubai-real-estate/bd-bpqtvl7s": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-bpqtvl7s",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Contour rings tightening around the price and a contour location map suit a Dubai listing, and terrazzo nods to luxury floors, but the two materials and contours on the gallery pull slightly apart."
+  },
+  "kids-reading-home/bd-oocqzat2": {
+   "briefId": "kids-reading-home",
+   "directionId": "bd-oocqzat2",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A felt board with a sticker path for the daily goal belongs to the world of kids and reading rewards and changes how progress reads on this home screen, though the holographic sheen and thin whyItFits pull slightly."
+  },
+  "kids-reading-home/bd-8k1e8gzn": {
+   "briefId": "kids-reading-home",
+   "directionId": "bd-8k1e8gzn",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "A merit patch sash as the daily goal path suits a kids reading home and reads as one idea, but the Stars motion twist never shows, the green fill is missing from the palette, and badges are an expected choice at wildness 5."
+  },
+  "kids-reading-home/bd-ssqiilzc": {
+   "briefId": "kids-reading-home",
+   "directionId": "bd-ssqiilzc",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Tally gates that add a stroke per step suit a kids reading streak on the home path, but the egg carton texture only loosely ties in and the graphite palette feels sober for kids."
+  },
+  "qatar-gov-services/bd-w2tkqxef": {
+   "briefId": "qatar-gov-services",
+   "directionId": "bd-w2tkqxef",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Banknote guilloche on a digital ID card suits a Qatar government services dashboard and reads as official and trustworthy, though putting the mechanic on the empty state keeps it quiet."
+  },
+  "qatar-gov-services/bd-m5md8vcw": {
+   "briefId": "qatar-gov-services",
+   "directionId": "bd-m5md8vcw",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Gulf Modernism concrete and turquoise tile is a civic world native to Qatar, and blocks filling with tile give request status a clear, specific read, though the whyItFits line is thin."
+  },
+  "qatar-gov-services/bd-2plms8uc": {
+   "briefId": "qatar-gov-services",
+   "directionId": "bd-2plms8uc",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Rubber stamps are native to government paperwork, and stamping each renewal step in green with an ink map for paid, received and overdue makes status clear on a Qatar services dashboard."
+  }
+ },
+ "references": {},
+ "run": "r7-0",
+ "exportedAt": "2026-10-17T01:46:44.669Z",
+ "ratedBy": "R3 judge (r3-judge.ts prompt) via atlas-build/jobs/r7-judge-dirs.ts, specs only"
+}

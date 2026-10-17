@@ -672,7 +672,15 @@ export type MergeOptions = {
   groupCap?: number;
   /** Lanes that never pass their quota, even when places are left (TAIL_LANES). */
   capped?: ReadonlySet<LaneName>;
+  /**
+   * R7: a source domain ("dribbble.com") that fills at most `share` of the UI zone's places (at least
+   * one) while UI results from other sources are left; past that it fills only places nothing else
+   * can. Atlas direction searches only (lib/atlas/search.ts spreadSources).
+   */
+  siteCap?: SiteCap;
 };
+
+export type SiteCap = { domain: string; share: number };
 
 /**
  * Merge lane lists: round robin across lanes (in the map's order), each lane up to its quota;
@@ -680,7 +688,9 @@ export type MergeOptions = {
  * to the other UI lanes, not to art, and the other way round); then whatever is left, round robin,
  * until `count`. `keyOf` gives the dedupe keys of a reference; a reference that shares any key
  * with one already placed is skipped. With `groupsOf`, a reference whose creator or studio already
- * has `groupCap` places is skipped too (the studio cap).
+ * has `groupCap` places is skipped too (the studio cap). With `siteCap`, UI results from that
+ * domain wait (keeping their lane order) once the domain has its share of the UI places, and fill
+ * UI places only after every other UI result.
  */
 export function mergeLanes(
   lists: ReadonlyMap<LaneName, readonly Reference[]>,
@@ -699,21 +709,35 @@ export function mergeLanes(
   const zoneBudget = new Map<Zone, number>();
   for (const lane of lanes) zoneBudget.set(laneZone(lane), (zoneBudget.get(laneZone(lane)) ?? 0) + (quotas.get(lane) ?? 0));
   const zonePlaced = new Map<Zone, number>();
+  // R7 site cap: the most UI places the capped domain fills while other UI results are left.
+  const siteMax = opts.siteCap ? Math.max(1, Math.floor((zoneBudget.get("ui") ?? 0) * opts.siteCap.share)) : Infinity;
+  let sitePlaced = 0;
+  let siteOpen = !opts.siteCap;
+  const capHit = (lane: LaneName, ref: Reference) => !siteOpen && laneZone(lane) === "ui" && ref.sourceSite === opts.siteCap!.domain && sitePlaced >= siteMax;
   const nextFrom = (lane: LaneName): Reference | undefined => {
     const list = lists.get(lane) ?? [];
     let i = cursor.get(lane) ?? 0;
+    // A result held back by the site cap keeps the cursor before it, so it can fill a place later.
+    let advance = true;
     while (i < list.length) {
       const ref = list[i++]!;
       const keys = keyOf(ref);
-      if (keys.some((k) => seen.has(k))) continue;
       const g = opts.groupsOf?.(ref) ?? [];
-      if (g.some((k) => (groups.get(k) ?? 0) >= cap)) continue;
-      cursor.set(lane, i);
+      if (keys.some((k) => seen.has(k)) || g.some((k) => (groups.get(k) ?? 0) >= cap)) {
+        if (advance) cursor.set(lane, i);
+        continue;
+      }
+      if (capHit(lane, ref)) {
+        advance = false;
+        continue;
+      }
+      if (advance) cursor.set(lane, i);
       for (const k of keys) seen.add(k);
       for (const k of g) groups.set(k, (groups.get(k) ?? 0) + 1);
+      if (opts.siteCap && laneZone(lane) === "ui" && ref.sourceSite === opts.siteCap.domain) sitePlaced++;
       return ref;
     }
-    cursor.set(lane, i);
+    if (advance) cursor.set(lane, i);
     return undefined;
   };
   const roundRobin = (limit: "lane" | "zone" | "none") => {
@@ -736,6 +760,11 @@ export function mergeLanes(
   };
   roundRobin("lane");
   roundRobin("zone");
+  if (!siteOpen) {
+    // Nothing else is left for the UI places: the capped domain fills them before art does.
+    siteOpen = true;
+    roundRobin("zone");
+  }
   roundRobin("none");
   return out;
 }
