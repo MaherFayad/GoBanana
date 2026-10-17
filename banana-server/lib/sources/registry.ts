@@ -607,6 +607,10 @@ const NO_MODEL_INPUT_HOSTS: readonly string[] = [
   "cdn.bestdesignsonx.com",
   "x.com",
   "www.x.com",
+  "twitter.com",
+  "twimg.com",
+  "pbs.twimg.com",
+  "video.twimg.com",
 ];
 
 export function noModelInputHosts(): string[] {

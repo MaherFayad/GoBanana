@@ -160,7 +160,8 @@ type Fetched = { ok: true; data: string; mimeType: string; bytes: number } | { o
  * the reason. Bytes are base64 encoded into the result and dropped; nothing else keeps them.
  */
 export async function thumbBlocks(targets: readonly ThumbTarget[], opts: ThumbOptions = {}): Promise<{ blocks: McpContent[]; shown: number }> {
-  const allowlist = opts.allowlist ?? thumbAllowlist();
+  // An injected allowlist (tests, callers) still never lets a no-model host through.
+  const allowlist = withoutHosts(opts.allowlist ?? thumbAllowlist());
   const max = opts.max ?? MAX_THUMBS;
   const urls = targets.map((t) => pickThumbUrl(t, allowlist));
 

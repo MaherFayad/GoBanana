@@ -1,4 +1,4 @@
-import { registryImageHosts } from "./registry";
+import { noModelInputHosts, registryImageHosts } from "./registry";
 import { normalizeHost, parseHttpUrl } from "./url";
 
 /** Google image thumbnails Serper returns as thumbnailUrl (the fallback image for any source). */
@@ -33,7 +33,9 @@ export const NO_MODEL_IMAGE_HOSTS: readonly string[] = [
   "x.com",
   "twitter.com",
   "twimg.com",
-];
+  // One guard: everything the registry marks as never a model input (lib/sources/registry.ts).
+  ...noModelInputHosts(),
+].filter((h, i, a) => a.indexOf(h) === i);
 
 /**
  * The allowlist without the hosts in `drop`: for model inputs. A dropped host and its subdomains are

@@ -490,3 +490,15 @@ describe("attach_screenshot", () => {
     expect(text(res)).toContain(`from x.com ${POST}`);
   });
 });
+
+describe("no-model guard (verify follow-up)", () => {
+  it("covers every registry no-model host and refuses them even from an injected allowlist", async () => {
+    const { NO_MODEL_IMAGE_HOSTS, parseAllowlist, withoutHosts, isAllowedImageUrl } = await import("@/lib/sources/allowlist");
+    const { noModelInputHosts } = await import("@/lib/sources/registry");
+    for (const h of noModelInputHosts()) expect(NO_MODEL_IMAGE_HOSTS).toContain(h);
+    const injected = withoutHosts(parseAllowlist(["*.b-cdn.net", "pbs.twimg.com", "cdn.dribbble.com"]));
+    expect(isAllowedImageUrl("https://pbs.twimg.com/media/a.jpg", injected)).toBe(false);
+    expect(isAllowedImageUrl("https://curated-images.b-cdn.net/a.jpg", injected)).toBe(false);
+    expect(isAllowedImageUrl("https://cdn.dribbble.com/a.jpg", injected)).toBe(true);
+  });
+});
