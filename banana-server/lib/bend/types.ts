@@ -1,7 +1,15 @@
-import type { Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
+import type { DesignLanguage, DirectionSource, Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { Mechanic } from "./mechanic";
 
-export type { Platform, VisualSpec } from "@/lib/direction-detail";
+export type { DesignLanguage, DirectionSource, Platform, VisualSpec } from "@/lib/direction-detail";
+
+/** A grounded idea the agent wrote from the audience's world (Impeccable: the model proposes, the dice pick). */
+export interface Candidate {
+  name: string;
+  why: string;
+  looks: string;
+  family: string;
+}
 
 /** The six bend moves (spec section 7). */
 export const MOVES = ["transplant", "material", "era", "constraint", "scale", "lens"] as const;
@@ -33,6 +41,11 @@ export interface BendInput {
    * Never changes ids: a direction that breaks one is dropped, and mechanics avoid them.
    */
   mustKeep?: string[];
+  /**
+   * 5 to 10 grounded ideas from the agent. When given, they are part of the seed: the server rolls
+   * which lead directions (at most 2 per family, spread first) and adds 1 or 2 challengers from the word lists.
+   */
+  candidates?: Candidate[];
 }
 
 /** Tones a list entry can carry; subjects map to compatible tones (lib/bend/tone.ts). */
@@ -124,6 +137,18 @@ export interface Direction {
   artQueries: string[];
   /** The working UI part the wild idea becomes (lib/bend/mechanic.ts): build the direction around it. */
   mechanic: Mechanic;
+  /** "candidate" (led by an agent candidate), "challenger" (word lists, next to candidates) or "lists" (no candidates given). */
+  source: DirectionSource;
+  /** The direction's visual language on 7 axes, spread so directions look different (lib/bend/language.ts). */
+  language: DesignLanguage;
+}
+
+/** How far apart the returned directions are, counted in language axes (of 7). */
+export interface Diversity {
+  /** The fewest axes any pair differs on (7 when there is one direction or none). */
+  minAxesApart: number;
+  /** Pairs that differ on fewer than 4 axes: [id, id, axes apart]. Empty when the set passes. */
+  pairsBelow4: Array<[string, string, number]>;
 }
 
 /** A place where weirdness pays off on a platform (lib/bend/wild-spots.json). */
@@ -163,4 +188,5 @@ export interface BendResult {
   /** Top places for one wild page on this platform. Empty when pages were given. */
   wildSpots: WildSpot[];
   directions: Direction[];
+  diversity: Diversity;
 }

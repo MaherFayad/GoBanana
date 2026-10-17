@@ -31,6 +31,67 @@ export function isTypeVoice(value: unknown): value is TypeVoice {
   return typeof value === "string" && (TYPE_VOICES as readonly string[]).includes(value);
 }
 
+/** The 7 language axes a direction declares (docs/gobanana-v4-plan.md section 5). */
+export const COLOR_STRATEGIES = ["restrained", "committed", "full", "drenched"] as const;
+export type ColorStrategy = (typeof COLOR_STRATEGIES)[number];
+export const GROUNDS = ["light", "dark", "colored", "photographic"] as const;
+export type Ground = (typeof GROUNDS)[number];
+export const DENSITIES = ["airy", "balanced", "dense"] as const;
+export type Density = (typeof DENSITIES)[number];
+export const COMPOSITIONS = ["grid", "editorial", "poster", "layered", "list-first", "card-first"] as const;
+export type Composition = (typeof COMPOSITIONS)[number];
+export const MATERIALS = ["flat", "print", "glass", "object", "photographic", "textile"] as const;
+export type Material = (typeof MATERIALS)[number];
+export const MOTIONS = ["still", "snap", "glide", "spring", "cinematic"] as const;
+export type Motion = (typeof MOTIONS)[number];
+
+/** A direction's visual language: one value per axis. bend_brief spreads these so no two directions look alike. */
+export interface DesignLanguage {
+  typeVoice: TypeVoice;
+  colorStrategy: ColorStrategy;
+  ground: Ground;
+  density: Density;
+  composition: Composition;
+  material: Material;
+  motion: Motion;
+}
+
+/** Axis names in display order. */
+export const LANGUAGE_AXES = ["typeVoice", "colorStrategy", "ground", "density", "composition", "material", "motion"] as const;
+export type LanguageAxis = (typeof LANGUAGE_AXES)[number];
+
+/** Allowed values per axis. */
+export const LANGUAGE_VALUES: { readonly [A in LanguageAxis]: readonly DesignLanguage[A][] } = {
+  typeVoice: TYPE_VOICES,
+  colorStrategy: COLOR_STRATEGIES,
+  ground: GROUNDS,
+  density: DENSITIES,
+  composition: COMPOSITIONS,
+  material: MATERIALS,
+  motion: MOTIONS,
+};
+
+/** Where a direction's lead idea came from: an agent candidate, a server challenger next to candidates, or the word lists alone. */
+export const DIRECTION_SOURCES = ["candidate", "challenger", "lists"] as const;
+export type DirectionSource = (typeof DIRECTION_SOURCES)[number];
+
+export function isDirectionSource(value: unknown): value is DirectionSource {
+  return typeof value === "string" && (DIRECTION_SOURCES as readonly string[]).includes(value);
+}
+
+/** A stored language, or undefined when any axis is missing or unknown (old rows have none). */
+export function parseLanguage(value: unknown): DesignLanguage | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  const v = value as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const axis of LANGUAGE_AXES) {
+    const x = v[axis];
+    if (typeof x !== "string" || !(LANGUAGE_VALUES[axis] as readonly string[]).includes(x)) return undefined;
+    out[axis] = x;
+  }
+  return out as unknown as DesignLanguage;
+}
+
 /**
  * The visual spec of one direction: every axis a designer needs to build it, as short plain lines
  * (template output, no AI). Every string is one sentence, at most about 20 words.
@@ -82,6 +143,10 @@ export interface DirectionDetail {
   wildness?: number;
   /** The working UI part the wild idea becomes ("progress", "Sadu weaving as the progress bar ..."). */
   mechanic?: { element: string; how: string };
+  /** The direction's visual language (7 axes). Missing on rows saved before V4.1. */
+  language?: DesignLanguage;
+  /** Where the lead idea came from. Missing on rows saved before V4.1. */
+  source?: DirectionSource;
   /** "keep" or "drop" from rate_directions; missing means not rated yet. */
   verdict?: "keep" | "drop";
   /** What reconcile_direction measured on the board for this direction. Missing until it runs. */

@@ -15,11 +15,10 @@ import { lenient, toolMessage, type RegisterTool, type ToolResult } from "./type
 
 export const BEND_BRIEF_DESCRIPTION =
   "Turn a design brief into wild directions for one wild page or two, not the product's main design. " +
-  "Each has a short title, a mechanic (the UI part the idea becomes), a twist, a visual spec, art queries and a prompt. " +
-  "Wildness runs from 1 (Fresh) to 5 (Bananas). " +
-  "Without pages it returns wildSpots: where weirdness pays off. " +
-  "Pass canvasId to save them, then call search_references with a direction id. " +
-  "Optional: taste (style words), mustKeep.";
+  "Each has a title, a mechanic, a visual spec, a 7 axis language and a source; diversity says how far apart they are. " +
+  "Wildness 1 to 5. No pages: you get wildSpots. " +
+  "Pass 5 to 10 candidates from the audience's world (3+ families, never their own tools); the server picks which lead. " +
+  "Pass canvasId to save, then search_references with a direction id.";
 
 /** Advertised input: the bend schema plus an optional canvas to save the directions to. */
 export const inputSchema = bendInputSchema.extend({
@@ -99,6 +98,8 @@ export function directionDetail(d: BendResult["directions"][number], wildness: n
     prompt: d.prompt,
     wildness,
     mechanic: d.mechanic,
+    language: d.language,
+    source: d.source,
   };
 }
 

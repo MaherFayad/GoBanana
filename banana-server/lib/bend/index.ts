@@ -7,7 +7,8 @@ import { allowedOn, PLATFORM_PROFILES, resolvePlatform, type Platform } from "@/
 import { weightedOrder } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
 import { briefComponents, inspirationQuery, laneTexts } from "./queries";
-import { artQueries, buildSpec, fixCase } from "./spec";
+import { applyLanguage, artQueries, buildSpec, fixCase, sentence, type SpecInput } from "./spec";
+import { assignLanguages, diversityOf, isOperatePage, languageLine, languagePlan, type LanguagePlan } from "./language";
 import { CLASH_FROM_WILDNESS, detectDomain, MAX_WEIRD, moodClashes, moodFits, noClash, type Domain } from "./tone";
 import wildSpotsJson from "./wild-spots.json";
 import { extractSubject } from "./subject";
@@ -27,6 +28,7 @@ import {
   MOVES,
   type BendInput,
   type BendResult,
+  type Candidate,
   type Direction,
   type Ingredients,
   type ListEntry,
@@ -64,7 +66,8 @@ export {
   tasteVariants,
   directionTasteVariants,
 } from "./queries";
-export type { BendInput, BendResult, Direction, MoveId, Wildness, WildSpot } from "./types";
+export type { BendInput, BendResult, Candidate, Direction, Diversity, MoveId, Wildness, WildSpot } from "./types";
+export { axesApart, assignLanguages, diversityOf, isOperatePage, languageLine, MIN_AXES_APART } from "./language";
 export { detectPlatform, PLATFORM_PROFILES } from "@/lib/platform";
 export { fixCase, VERIFIED_STYLE_WORDS } from "./spec";
 export { detectDomain } from "./tone";
@@ -252,7 +255,34 @@ class TemplatePicker {
 function seedKey(input: BendInput): string {
   const brief = input.brief.trim().toLowerCase().replace(/\s+/g, " ");
   const moves = input.moves ? [...new Set(input.moves)].sort() : null;
-  return JSON.stringify([ENGINE_VERSION, brief, input.wildness, moves, input.lens ?? null]);
+  const base = [ENGINE_VERSION, brief, input.wildness, moves, input.lens ?? null];
+  // Candidates join the seed only when given, so bends without them keep their ids.
+  if (input.candidates && input.candidates.length > 0) {
+    base.push(input.candidates.map((c) => [norm(c.name), norm(c.why), norm(c.looks), familyKey(c.family)]) as unknown as string);
+  }
+  return JSON.stringify(base);
+}
+
+const norm = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
+
+/** A candidate family compared loosely: "Textiles " and "textile" are one family. */
+function familyKey(family: string): string {
+  const f = norm(family);
+  return f.length > 3 && f.endsWith("s") ? f.slice(0, -1) : f;
+}
+
+/** At most this many candidates of one family lead directions in one result. */
+export const MAX_PER_FAMILY = 2;
+
+/** How many challengers (word list directions) sit next to candidate-led ones. */
+export function challengerCount(count: number): number {
+  return count >= 6 ? 2 : count >= 3 ? 1 : 0;
+}
+
+/** A candidate as a list entry, so it flows through titles, queries, spec and mechanic like an object. */
+function candidateEntry(c: Candidate): ListEntry {
+  const name = c.name.trim().replace(/\s+/g, " ");
+  return { label: name, query: name.toLowerCase(), key: name, leads: true, hints: { tone: [], weird: 1, notOn: [], style: [] } };
 }
 
 /** Moves per direction for each slot, before capping by how many moves are allowed. */
@@ -339,6 +369,16 @@ interface Plan {
   mood: ListEntry;
   /** True when the mood clashes with the subject on purpose (wildness 4 and 5). */
   clash: boolean;
+  /** Set when an agent candidate leads this direction. */
+  candidate?: Candidate;
+}
+
+/** A built direction before its language is assigned, with what the language reads. */
+interface Built {
+  direction: Omit<Direction, "source" | "language">;
+  specInput: SpecInput;
+  plan: LanguagePlan;
+  palette?: string;
 }
 
 /** List names whose entries are filtered by platform, wildness and tone. */
@@ -433,6 +473,10 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   // briefs with none keep their bend-v1 picks and ids.
   const entries = new EntryPicker(rng, subject.words, ingredientOrder(options.ingredientWeights), buildPool, platform === "any" ? undefined : familyOf);
   const locale: Locale = { market: briefMarket(input.brief), arabic: needsArabic(input.brief) };
+  const candidates = input.candidates ?? [];
+  const candidateEntries = candidates.map(candidateEntry);
+  // Challengers never repeat a candidate's words.
+  for (const e of candidateEntries) entries.exclude(e);
 
   // Allowed moves, in canonical order. A lens preset forces the lens move into every direction.
   const allowed: MoveId[] = MOVES.filter((m) => !input.moves || input.moves.includes(m));
@@ -518,11 +562,44 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     plans.push({ moves, picked, mood: LISTS.moods[0]!, clash: false });
   }
 
+  // Must-keeps (the agent's, plus a clear total and one primary action for a brief that pays):
+  // a direction whose ingredients break one is dropped; a mechanic never reskins a protected total
+  // or main button. Never part of the seed, so ids never move.
+  const protect = protectedElements(input.brief, input.mustKeep ?? []);
+
+  // Candidates, on their own stream: the dice pick which lead, at most 2 per family. Rated-down ideas
+  // come up less often (same weights as list entries). Leftover slots go to challengers.
+  const challengers = candidates.length > 0 ? challengerCount(input.count) : 0;
+  const candidatePlans: Plan[] = [];
+  if (candidates.length > 0) {
+    const slots = input.count - challengers;
+    let order = shuffle(
+      candidates.map((c, n) => ({ c, e: candidateEntries[n]! })),
+      mulberry32(cyrb53(`${key}|candidates`)),
+    );
+    const weights = options.ingredientWeights;
+    if (weights && weights.size > 0) order = weightedOrder(order, (x) => weights.get(directionTermKey(inspirationQuery("transplant", x.e.query))) ?? 1);
+    // Spread first: one per family in rolled order, then a second from a family, never a third.
+    const perFamily = new Map<string, number>();
+    const taken = new Set<number>();
+    for (let round = 1; round <= MAX_PER_FAMILY; round++) {
+      order.forEach(({ c, e }, n) => {
+        if (candidatePlans.length >= slots || taken.has(n)) return;
+        const family = familyKey(c.family);
+        if ((perFamily.get(family) ?? 0) >= round || brokenMustKeep({ mood: "", object: e.label }, protect)) return;
+        perFamily.set(family, (perFamily.get(family) ?? 0) + 1);
+        taken.add(n);
+        candidatePlans.push({ moves: ["transplant"], picked: [e], mood: LISTS.moods[0]!, clash: false, candidate: c });
+      });
+    }
+  }
+  const allPlans = [...candidatePlans, ...plans];
+
   // Moods, on their own stream: matched to the subject's tone. At wildness 4 and 5 the third
   // direction clashes on purpose. Moods are not part of ids.
   const moodPicker = new EntryPicker(mulberry32(cyrb53(`${key}|mood`)), subject.words);
-  for (const p of plans) for (const e of p.picked) moodPicker.exclude(e);
-  plans.forEach((p, i) => {
+  for (const p of allPlans) for (const e of p.picked) moodPicker.exclude(e);
+  allPlans.forEach((p, i) => {
     const clashSlot = wildness >= CLASH_FROM_WILDNESS && domain !== null && i === 2;
     p.mood = moodPicker.pick("moods", LISTS.moods, true, (e) => (clashSlot ? moodClashes(e, domain) : moodFits(e, domain)));
     p.clash = moodClashes(p.mood, domain);
@@ -531,15 +608,13 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   // Pass 2, on its own stream: headline, twist, query and prompt. Changing words here never moves an id.
   const style = mulberry32(cyrb53(`${key}|style`));
   const garnish = new EntryPicker(style, subject.words);
-  for (const p of plans) for (const e of [...p.picked, p.mood]) garnish.exclude(e);
+  for (const p of allPlans) for (const e of [...p.picked, p.mood]) garnish.exclude(e);
   const templates = new TemplatePicker(style);
   const garnishUse = new Map<MoveId, number>();
   const titles = new Set<string>();
-  const directions: Direction[] = [];
-  // Must-keeps (the agent's, plus a clear total and one primary action for a brief that pays):
-  // a direction whose ingredients break one is dropped; a mechanic never reskins a protected total
-  // or main button. Never part of the seed, so ids never move.
-  const protect = protectedElements(input.brief, input.mustKeep ?? []);
+  const built: Built[] = [];
+  const builtChallengers: Built[] = [];
+  const operate = isOperatePage(input.brief, pages);
   const transaction = isTransaction(input.brief, pages);
   const mechanicUse = new Map<MechanicElement, number>();
 
@@ -566,8 +641,9 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
   const shortest = (list: readonly string[], vars: TemplateVars): string =>
     list.filter((t) => canRender(t, vars)).map((t) => render(t, vars)).sort((x, y) => wordCount(x) - wordCount(y) || x.localeCompare(y))[0] ?? "";
 
-  plans.forEach((plan, i) => {
-    const { moves, picked, mood, clash } = plan;
+  allPlans.forEach((plan, n) => {
+    const i = n - candidatePlans.length;
+    const { moves, picked, mood, clash, candidate } = plan;
     const ingredients: Ingredients = { mood: mood.label };
     const vars: TemplateVars = { subj: subject.title, head: subject.head, m: mood.label };
     moves.forEach((m, j) => {
@@ -649,7 +725,9 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     // UI only); it feeds the bridge lane and the notes.
     const lead = headline[0] ?? moves[0]!;
     const searchQuery = inspirationQuery(lead, picked[moves.indexOf(lead)]!.query);
-    const id = stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
+    const id = candidate
+      ? stableId(`${key}|candidate|${norm(candidate.name)}|${familyKey(candidate.family)}`)
+      : stableId(`${key}|${i}|${moves.join("+")}|${picked.map((e) => e.key).join("|")}`);
     if (brokenMustKeep(ingredients, protect)) return;
     const leadEntry = picked[moves.indexOf(lead)]!;
     const mechanic = pickMechanic({
@@ -666,7 +744,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       if (picked[j]) byMove[m] = picked[j];
     });
     if (garnishMove && twistEntry) byMove[garnishMove] = twistEntry;
-    const spec = buildSpec({
+    const specInput: SpecInput = {
       profile,
       moves: promptMoves,
       entries: byMove,
@@ -677,7 +755,13 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       subject: subject.title,
       component: signatureComponent(input.brief, platform),
       arabic: locale.arabic,
-    });
+    };
+    const spec = buildSpec(specInput);
+    // A candidate's own lines: why it suits the audience, and how it looks as the imagery.
+    if (candidate) {
+      spec.whyItFits = sentence(candidate.why);
+      spec.imagery = sentence(candidate.looks);
+    }
     const lanes = laneTexts(input.brief, searchQuery, taste, id, { platform, styleWords: spec.styleWords, pages });
     const searchQueries = [
       ...new Set(
@@ -687,7 +771,12 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       ),
     ];
 
-    directions.push({
+    const target = candidate || candidates.length === 0 ? built : builtChallengers;
+    target.push({
+      specInput,
+      plan: languagePlan({ spec, entries: byMove, lead, mood, operate, ...(candidate ? { candidate } : {}) }),
+      ...(candidate ? { palette: candidate.name } : {}),
+      direction: {
       id,
       move: moves.join(" + "),
       moves,
@@ -702,7 +791,22 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       spec,
       artQueries: artQueries(promptMoves, byMove, lead, mood),
       mechanic,
+      },
     });
+  });
+
+  // Candidate-led first, then challengers; without candidates, the list directions as before.
+  const kept = candidates.length > 0 ? [...built, ...builtChallengers].slice(0, input.count) : built.slice(0, input.count);
+  const languages = assignLanguages(kept.map((b) => b.plan));
+  const directions: Direction[] = kept.map((b, n) => {
+    const language = languages[n]!;
+    const source = candidates.length === 0 ? "lists" : n < built.length ? "candidate" : "challenger";
+    return {
+      ...b.direction,
+      spec: applyLanguage(b.direction.spec, b.specInput, language, b.plan.from, b.palette),
+      source,
+      language,
+    };
   });
 
   return {
@@ -715,7 +819,8 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
     platform,
     pages,
     wildSpots,
-    directions: directions.slice(0, input.count),
+    directions,
+    diversity: diversityOf(directions),
   };
 }
 
@@ -759,7 +864,17 @@ export function formatDirections(result: BendResult): string {
       `   Signature: ${bare(sp.signature)}. Pattern: ${bare(sp.pattern)}. Steal: ${sp.steal.map(bare).join("; ")}. Avoid: ${sp.avoid.map(bare).join("; ")}. Style words: ${sp.styleWords.join(", ")}. Why: ${bare(sp.whyItFits)}.`,
     );
     lines.push(`   Art queries: ${d.artQueries.join("; ")}`);
+    lines.push(`   Source: ${d.source}. Language: ${languageLine(d.language)}.`);
   });
+  if (result.directions.length > 1) {
+    const div = result.diversity;
+    lines.push(
+      "",
+      div.pairsBelow4.length === 0
+        ? `Diversity: every pair differs on at least ${div.minAxesApart} of 7 language axes.`
+        : `Diversity: ${div.pairsBelow4.length} pairs differ on fewer than 4 of 7 axes: ${div.pairsBelow4.map(([a, b, n]) => `${a} and ${b} (${n})`).join(", ")}.`,
+    );
+  }
   lines.push(
     "",
     "Build each direction around its mechanic: that element is where the wild idea works as a real part of the page; keep everything else familiar. When you search, look for UI that has this element (for example 'flight checkout progress bar app ui').",

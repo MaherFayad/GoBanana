@@ -15,8 +15,10 @@ import type {
 } from "../canvas/types";
 import { isReference } from "../canvas/types";
 import {
+  isDirectionSource,
   isPlatform,
   isTypeVoice,
+  parseLanguage,
   zoneOf,
   type DirectionDetail,
   type Platform,
@@ -459,6 +461,9 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   if (typeof r.prompt === "string" && oneLine(r.prompt)) d.prompt = oneLine(r.prompt, 600);
   if (typeof r.wildness === "number" && Number.isFinite(r.wildness)) d.wildness = Math.min(5, Math.max(1, Math.round(r.wildness)));
   if (r.verdict === "keep" || r.verdict === "drop") d.verdict = r.verdict;
+  const language = parseLanguage(r.language);
+  if (language) d.language = language;
+  if (isDirectionSource(r.source)) d.source = r.source;
   const rec = parseReconciled(r.reconciled);
   if (rec) d.reconciled = rec;
   return d;

@@ -12,11 +12,24 @@ Rules:
 - Pages: the input `pages` joined with ", ". If no pages were given, write "none" and add the Wild spots block at the end. If pages were given, leave the Wild spots block out entirely.
 - Layout lines: for mobile write "one column, 16px margins, 44pt targets, sticky action in thumb reach"; for tablet "two panes, 24px margins, large targets"; for website "12 columns, fluid type with clamp, generous whitespace"; for webapp "sidebar shell, 12 columns, dense 8px rhythm"; for any "single column that grows to 12 columns".
 - Subject: the template is worded for a checkout. In directions 1, 2, 3, 5 and 6, rewrite only the words that name parts of the screen (summary, total, fare, price, confirm, receipt lines) so each Pattern, Signature and Steal names a real part of the brief's page ("the episode card slides out of a sleeve" for a podcast player). Titles name the idea in at most 4 words and never the brief; keep them as written. Keep ids, moves, types, colors, textures, art queries and everything else as written.
-- Lens: if a lens is given, direction 4 becomes a full direction with move material + lens, titled with the lens craft in at most 4 words (for sadu: "Sadu weaving"; for talli: "Talli gold braid"), with mechanic "divider = <craft> as the band between sections, never behind text", with every spec line like direction 1, built from that craft's motifs, colors and texture, and art queries naming the craft close up. Never use sacred text or religious verses. Without a lens, direction 4 stays as written.
+- Lens: if a lens is given, direction 4 becomes a full direction with move material + lens, titled with the lens craft in at most 4 words (for sadu: "Sadu weaving"; for talli: "Talli gold braid"), with mechanic "divider = <craft> as the band between sections, never behind text", with every spec line like direction 1 (Type serif-editorial), built from that craft's motifs, colors and texture, and art queries naming the craft close up. Never use sacred text or religious verses. Without a lens, direction 4 stays as written.
 - Directions 7 and 8 always stay as written: weak ideas with no clear pattern.
+- Candidates: if the input has `candidates`, directions 1 to 6 are led by them. Pick candidates in input order, first one per family (compare families ignoring case and a final s), then a second from a family only once every family has one, never a third from one family. Each candidate-led direction keeps its id, mechanic element, Type, Color, Layout, Motion, Texture, Icons, Density and Style words as written, and changes only: the title becomes the candidate name cut to at most 4 words; the move becomes "transplant"; Search becomes the name in lower case; Imagery becomes the candidate's looks; Why it fits becomes the candidate's why; Art queries become "<name in lower case> design close-up"; and the idea named in Mechanic, Pattern, Signature and Steal becomes the name. If fewer than 6 candidates can lead under the family rule, the slots left over (counting back from 6) stay as written and are challengers. With candidates, skip the Lens rule for direction 4. Directions 7 and 8 stay as written: they are the challengers.
+- Source and Language: every direction ends with one line "   Source: <source>. Language: <language line>." Source is "candidate" for a candidate-led direction, "challenger" for every other direction when candidates were given, and "lists" for every direction when no candidates were given. Use the language line for its number from the Language table below; its density is "airy" on mobile and website, "dense" on webapp, "balanced" on tablet and any.
+- Diversity: after direction 8, write an empty line, then exactly "Diversity: every pair differs on at least 4 of 7 language axes."
 - Lens suggestion: if no lens is given and the brief names a Gulf or Arab market or Arabic (GCC, Saudi, UAE, Dubai, Kuwait, Arabic, RTL), add this line right after the first line: 'This brief names an Arab or Gulf market and no lens is set. Try bend_brief again with lens "sadu", "talli", "qatt-asiri" to pull a real local craft into every direction.'
 - If a canvasId was given, end with "Saved to canvas <canvasId>." Otherwise "Not saved: no canvasId."
 - Plain text only, no commentary, no em dashes.
+
+Language table (type always matches the direction's Type):
+1: type condensed, color restrained, ground light, density <density>, composition card-first, material glass, motion glide
+2: type mono, color committed, ground light, density <density>, composition list-first, material print, motion snap
+3: type display-retro, color full, ground colored, density <density>, composition grid, material print, motion still
+4: type serif-editorial, color full, ground dark, density <density>, composition list-first, material textile, motion still
+5: type neo-grotesk, color restrained, ground photographic, density <density>, composition grid, material flat, motion snap
+6: type serif-classic, color committed, ground photographic, density <density>, composition card-first, material print, motion glide
+7: type rounded, color drenched, ground dark, density <density>, composition card-first, material print, motion still
+8: type grotesk, color drenched, ground colored, density <density>, composition grid, material textile, motion glide
 
 Template:
 
@@ -31,6 +44,7 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
    Steal: the frosted window that shows the total; the record label as a badge. Avoid: text on frosted areas below 4.5:1.
    Style words: glassmorphism, minimal. Why it fits: tickets and records are objects people keep.
    Art queries: clear vinyl record sleeve; frosted glass packaging
+   Source: <source>. Language: <language 1>.
 2. id d2, move era + constraint: "Brutalist thermal receipt". Search: thermal receipt
    Mechanic: build this direction around divider = Thermal receipt tear lines as the band between sections, never behind text. Search for UI that has this element.
    Pattern: the summary as a printed receipt with a tear line. Signature: receipt card with dotted leaders and a stamped total.
@@ -40,6 +54,7 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
    Steal: dotted leaders between label and price; the stamped PAID mark. Avoid: grey thermal text below 4.5:1.
    Style words: monochrome, big typography. Why it fits: a receipt is the most honest summary of money.
    Art queries: thermal receipt close up; vintage paid stamp
+   Source: <source>. Language: <language 2>.
 3. id d3, move era: "Risograph print revival". Search: risograph print
    Mechanic: build this direction around header = Risograph print carries the header strip and the page title. Search for UI that has this element.
    Pattern: two-ink cards with the second ink offset on purpose. Signature: the price in the second ink, slightly off.
@@ -49,8 +64,10 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
    Steal: the misregistered second ink as the highlight; halftone fills. Avoid: pink body text on cream.
    Style words: grainy, editorial. Why it fits: feels made by hand, not by a bank.
    Art queries: risograph two ink print; riso zine cover
+   Source: <source>. Language: <language 3>.
 4. id d4, move material: "Sadu weaving". Search: Sadu weaving
    Pattern: none clear yet. Signature: woven border. Art queries: sadu weaving close up
+   Source: <source>. Language: <language 4>.
 5. id d5, move scale: "Giant numerals". Search: oversized numerals
    Mechanic: build this direction around progress = Giant numerals as the progress bar: one segment fills per step, step names stay readable. Search for UI that has this element.
    Pattern: one huge figure per view, tiny labels. Signature: the total as a giant numeral that fills the width.
@@ -60,6 +77,7 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
    Steal: the giant numeral as the hero. Avoid: tiny labels below 12px.
    Style words: big typography, minimal. Why it fits: the number is what people check.
    Art queries: oversized numerals graphic print close-up; swiss typography poster
+   Source: <source>. Language: <language 5>.
 6. id d6, move transplant: "Museum ticket stub". Search: museum ticket stub
    Mechanic: build this direction around section-nav = Museum ticket stub as the tabs that switch between sections. Search for UI that has this element.
    Pattern: the confirmation as a ticket stub with a perforated edge. Signature: tear-off stub with the date stamped.
@@ -69,10 +87,15 @@ Bent the brief "<brief>" at wildness <wildness>. Platform: <platform>. Pages: <p
    Steal: the stamped date as a section divider; the perforated edge. Avoid: gold text on cream.
    Style words: editorial, luxury. Why it fits: the moment deserves a keepsake.
    Art queries: vintage museum ticket stub; letterpress admission ticket
+   Source: <source>. Language: <language 6>.
 7. id d7, move transplant + lens: "Suzani seed packet". Search: seed packet
    Pattern: none clear yet. Art queries: vintage seed packet
+   Source: <source>. Language: <language 7>.
 8. id d8, move material + scale: "Giant silk tassels". Search: tassels
    Pattern: none clear yet. Art queries: silk tassels
+   Source: <source>. Language: <language 8>.
+
+Diversity: every pair differs on at least 4 of 7 language axes.
 
 Wild spots (only when no pages were given; pick 5 for the platform, one line each with why):
 mobile: onboarding, paywall, empty states, success moment, year in review, settings easter egg.

@@ -3,7 +3,7 @@
  * entries (their hints) and the platform profile. Rule based, no AI. Plain words, no em dashes,
  * one short sentence per axis.
  */
-import type { TypeVoice, VisualSpec } from "@/lib/direction-detail";
+import type { ColorStrategy, DesignLanguage, Density, Ground, Material, Motion, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { PlatformProfile } from "@/lib/platform";
 import { article, capitalize } from "./templates";
 import type { Domain } from "./tone";
@@ -309,13 +309,31 @@ function whyItFits(input: SpecInput): string {
   return `${capitalize(article(input.mood.label))} ${input.mood.label} mood and ${lead} give the ${input.subject} a look no competitor has`;
 }
 
+function typographyLine(input: SpecInput, voice: TypeVoice): string {
+  const { profile, entries } = input;
+  const caseNote = entries.constraint ? (CASE_NOTE[entries.constraint.key] ?? "") : "";
+  return `${VOICE_LINE[voice]} for display at ${profile.display}, ${bodyLine(voice)} at ${profile.body}${caseNote}${
+    input.arabic ? `; Arabic in ${ARABIC_FACE[voice]} at the same sizes, right to left` : ""
+  }.`;
+}
+
+function iconLine(input: SpecInput, voice: TypeVoice): string {
+  const { entries, profile } = input;
+  const iconBase = first(entries.constraint?.hints.icons, entries.era?.hints.icons) ?? VOICE_ICONS[voice];
+  return profile.platform === "mobile" ? `${iconBase}, 24pt in the tab bar` : iconBase;
+}
+
+function baseColorOf(input: SpecInput): string {
+  const { entries, mood } = input;
+  return entries.constraint?.hints.color ?? mood.hints.color ?? `${capitalize(article(mood.label))} ${mood.label} palette with one accent`;
+}
+
 /** The full visual spec for one direction. */
 export function buildSpec(input: SpecInput): VisualSpec {
   const { profile, entries, mood } = input;
   const voice = typeVoice(input);
-  const caseNote = entries.constraint ? (CASE_NOTE[entries.constraint.key] ?? "") : "";
   const accent = first(entries.lens, entries.era);
-  const baseColor = entries.constraint?.hints.color ?? mood.hints.color ?? `${capitalize(article(mood.label))} ${mood.label} palette with one accent`;
+  const baseColor = baseColorOf(input);
   const color =
     entries.constraint?.hints.color || !accent
       ? `${baseColor}; text at 4.5 to 1 contrast or more`
@@ -334,16 +352,13 @@ export function buildSpec(input: SpecInput): VisualSpec {
         mood.hints.tex,
         [entries.era, mood].some((e) => e?.hints.style.includes("grainy")) && "Fine print grain over flat color",
       ) ?? TONE_TEXTURE[moodTone(mood)]);
-  const iconBase = first(entries.constraint?.hints.icons, entries.era?.hints.icons) ?? VOICE_ICONS[voice];
-  const iconography = profile.platform === "mobile" ? `${iconBase}, 24pt in the tab bar` : iconBase;
+  const iconography = iconLine(input, voice);
   const density = entries.constraint?.hints.density
     ? `${entries.constraint.hints.density}; ${profile.density.charAt(0).toLowerCase()}${profile.density.slice(1)}`
     : profile.density;
 
   const spec: VisualSpec = {
-    typography: `${VOICE_LINE[voice]} for display at ${profile.display}, ${bodyLine(voice)} at ${profile.body}${caseNote}${
-      input.arabic ? `; Arabic in ${ARABIC_FACE[voice]} at the same sizes, right to left` : ""
-    }.`,
+    typography: typographyLine(input, voice),
     typeVoice: voice,
     color: sentence(color),
     layout: sentence(layout),
@@ -362,8 +377,92 @@ export function buildSpec(input: SpecInput): VisualSpec {
   return spec;
 }
 
+// ---------------------------------------------------------------------------
+// Language: rewrite only the spec lines that would contradict the chosen language
+
+const GROUND_LEAD: Record<Ground, string> = {
+  light: "A light ground",
+  dark: "A dark ground",
+  colored: "A solid colored ground",
+  photographic: "A full photo ground under a solid scrim",
+};
+
+const STRATEGY_LEAD: Record<ColorStrategy, string> = {
+  restrained: "mostly neutral with color in small doses",
+  committed: "one color leads and carries the screen",
+  full: "a full palette where every color has a job",
+  drenched: "one color drenches every surface",
+};
+
+const STRATEGY_TAG: Record<ColorStrategy, string> = {
+  restrained: "Restrained, mostly neutral",
+  committed: "Committed, one color leads",
+  full: "Full palette",
+  drenched: "Drenched in one color",
+};
+
+const DENSITY_TAG: Record<Density, string> = {
+  airy: "Airy, generous spacing",
+  balanced: "Balanced spacing",
+  dense: "Dense, compact rows",
+};
+
+/** Texture lines by material; anything but flat keeps text on solid panels. */
+const MATERIAL_TEXTURE: Record<Material, string> = {
+  flat: "Flat fills with crisp edges, no texture",
+  print: "A fine print grain and slight ink spread on flat color",
+  glass: "Frosted glass panels with a thin bright edge",
+  object: "Solid 3D objects with real light and soft shadows",
+  photographic: "Full photos as surfaces, cropped close",
+  textile: "A woven or stitched pattern as bands and borders",
+};
+
+const MOTION_LINE: Record<Motion, string> = {
+  still: "Nothing moves except state changes, which swap instantly",
+  snap: "Quick 150ms snaps on a straight path, no bounce",
+  glide: "Smooth 250ms glides and fades between states",
+  spring: "Springy presses with one small overshoot",
+  cinematic: "Slow 500ms reveals and one scroll-driven scene on entry",
+};
+
+const wordCount = (s: string) => words(s).length;
+
+/**
+ * The spec with lines rewritten where the language differs from what the spec already says
+ * (`from`, the values read off the spec). Lines that agree are left exactly as they are.
+ */
+export function applyLanguage(spec: VisualSpec, input: SpecInput, lang: DesignLanguage, from: Partial<DesignLanguage>, palette?: string): VisualSpec {
+  const out: VisualSpec = { ...spec };
+  if (from.typeVoice !== undefined && lang.typeVoice !== from.typeVoice) {
+    out.typeVoice = lang.typeVoice;
+    out.typography = sentence(typographyLine(input, lang.typeVoice));
+    out.iconography = sentence(iconLine(input, lang.typeVoice));
+  }
+  const groundChanged = from.ground !== undefined && lang.ground !== from.ground;
+  const strategyChanged = from.colorStrategy !== undefined && lang.colorStrategy !== from.colorStrategy;
+  if (groundChanged || strategyChanged) {
+    const source = palette ?? first(input.entries.lens, input.entries.era)?.label ?? input.mood.label;
+    const full = `${GROUND_LEAD[lang.ground]}, ${STRATEGY_LEAD[lang.colorStrategy]}, from the ${source} palette; text at 4.5 to 1 contrast or more`;
+    const base = baseColorOf(input).replace(/[.\s]+$/, "");
+    const tagged = `${STRATEGY_TAG[lang.colorStrategy]}: ${base.charAt(0).toLowerCase()}${base.slice(1)}; text at 4.5 to 1 contrast or more`;
+    out.color = sentence(!groundChanged && wordCount(tagged) <= 28 ? tagged : full);
+  }
+  if (from.density !== undefined && lang.density !== from.density && lang.density !== "balanced") {
+    const line = `${DENSITY_TAG[lang.density]}; ${spec.density.charAt(0).toLowerCase()}${spec.density.slice(1)}`;
+    out.density = sentence(wordCount(line) <= 28 ? line : DENSITY_TAG[lang.density]);
+  }
+  if (from.material !== undefined && lang.material !== from.material) {
+    const keepOff = lang.material !== "flat" || input.entries.material ? "; text sits on solid panels, never on the texture" : "";
+    out.texture = sentence(`${MATERIAL_TEXTURE[lang.material]}${keepOff}`);
+  }
+  if (from.motion !== undefined && lang.motion !== from.motion) {
+    out.motion = sentence(`${MOTION_LINE[lang.motion]}, and none with reduced motion on`);
+  }
+  return out;
+}
+
 /** One clean sentence: acronyms fixed, first letter up, one closing period, no em dashes. */
-function sentence(text: string): string {
+export function sentence(text: string): string {
   const t = fixCase(text.replaceAll(String.fromCharCode(0x2014), ",").trim()).replace(/[.\s]+$/, "");
   return `${t.charAt(0).toUpperCase()}${t.slice(1)}.`;
 }

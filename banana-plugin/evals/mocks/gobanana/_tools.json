@@ -3,7 +3,7 @@
     {
       "name": "bend_brief",
       "title": "Bend a brief",
-      "description": "Turn a brief into unexpected directions for one page or two, each with a short title (at most 4 words, naming the idea), a mechanic (the working UI part the idea becomes: progress, total, cta, divider, section-nav, header or empty-state), a visual spec (type, color, layout, motion and more) and art direction queries. Rule-based, free and unlimited. Pass platform and pages; without pages it also returns wildSpots, places on that platform where weirdness pays off. A Gulf or Arabic brief with no lens gets lens suggestions.",
+      "description": "Turn a design brief into wild directions for one wild page or two, not the product's main design. Each has a title, a mechanic, a visual spec, a 7 axis language and a source; diversity says how far apart they are. Wildness 1 to 5. No pages: you get wildSpots. Pass 5 to 10 candidates from the audience's world (3+ families, never their own tools); the server picks which lead. Pass canvasId to save, then search_references with a direction id.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -87,6 +87,47 @@
             "minItems": 1,
             "maxItems": 6,
             "description": "Patterns users rely on that no direction may break, like clear total or one primary action. Checkout briefs keep both by default."
+          },
+          "candidates": {
+            "description": "5 to 10 grounded ideas from the audience's world (objects, places, rituals, graphic traditions), at least 3 families, never the audience's own tools. The server rolls which lead (at most 2 per family) and adds 1 or 2 challengers.",
+            "minItems": 5,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60,
+                  "description": "The thing itself, like \"Riyadh metro map\" or \"falconry hood\"."
+                },
+                "why": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "description": "Why this audience knows it by heart."
+                },
+                "looks": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "description": "How it looks: type, color, material, layout."
+                },
+                "family": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "description": "Its material family, like \"textile\", \"signage\" or \"print\"."
+                }
+              },
+              "required": [
+                "name",
+                "why",
+                "looks",
+                "family"
+              ]
+            }
           }
         }
       }

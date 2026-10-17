@@ -3,7 +3,7 @@
  * Unknown keys are dropped, wrong types are dropped field by field, and anything that is not an
  * object reads as null. Strings are trimmed and capped so a bad caller cannot bloat the row.
  */
-import { isPlatform, isTypeVoice, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
+import { isDirectionSource, isPlatform, isTypeVoice, parseLanguage, type DirectionDetail, type Reconciled, type VisualSpec } from "@/lib/direction-detail";
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -84,6 +84,14 @@ export function parseReconciled(v: unknown): Reconciled | undefined {
   return out;
 }
 
+/** The mechanic as bend_brief saves it: an element name and one line on how. Missing on old rows. */
+export function parseMechanic(v: unknown): { element: string; how: string } | undefined {
+  if (!isObj(v)) return undefined;
+  const element = str(v.element, 40);
+  const how = str(v.how, 400);
+  return element && how ? { element, how } : undefined;
+}
+
 /** Clean detail, or null when `raw` is not an object or has nothing usable. */
 export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (!isObj(raw)) return null;
@@ -103,6 +111,11 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (prompt) out.prompt = prompt;
   if (typeof raw.wildness === "number" && Number.isFinite(raw.wildness)) out.wildness = raw.wildness;
   if (raw.verdict === "keep" || raw.verdict === "drop") out.verdict = raw.verdict;
+  const mechanic = parseMechanic(raw.mechanic);
+  if (mechanic) out.mechanic = mechanic;
+  const language = parseLanguage(raw.language);
+  if (language) out.language = language;
+  if (isDirectionSource(raw.source)) out.source = raw.source;
   const rec = parseReconciled(raw.reconciled);
   if (rec) out.reconciled = rec;
   return Object.keys(out).length > 0 ? out : null;
