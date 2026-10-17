@@ -29,6 +29,12 @@
  *   npx tsx run.ts r8-mechanics --from-raw      (mechanics: page mechanics for list rows, result cards, map, form fields, filters, search)
  *   npx tsx run.ts r8-lines --from-raw          (card-elements: every card's lines for those six parts, rewritten to act on the part)
  *
+ * R10, any time after the cards, fit and page-fit kinds (both are overlays, lib/overlays.ts, laid
+ * over in the server layout, so the order of the J and R jobs above never changes):
+ *
+ *   npx tsx run.ts r10-worlds --from-raw        (card-worlds: each card's material or object world, for the twist)
+ *   npx tsx run.ts r10-cliche --from-raw        (domain-cliches: the looks each domain already ships, and the cards that are them)
+ *
  * r6-weak-pages was left out in R6 (the bend had no mechanic for list rows, cards, maps or forms, so
  * the judge scored it 2 directions lower); with the R8 work part mechanics it adds 2 (BASELINE R8).
  */

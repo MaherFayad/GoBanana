@@ -36,7 +36,11 @@ const SYSTEM = `You know what shipped apps and websites look like, domain by dom
 
 For one domain:
 1. List 8 to 15 looks that shipped apps and sites of this domain already use again and again: chart and gauge forms, metaphors, illustration styles, materials, color habits, motifs, era styles, reward and game systems. Each look is a short plain phrase. Example for weather apps: "a sky gradient behind one big temperature", "sun, cloud and rain glyph icons", "a ring or arc gauge for UV or air quality", "a radar map with colored rain bands", "frosted glass cards over a photo".
-2. From the card list, mark the cards that ARE one of those looks: a direction led by the card in this domain would look like what the domain's apps already ship. Be strict and literal. Mark a card only when a designer who knows the domain would say "that is what these apps already look like". A card from another world that only shares a theme word is not a cliche: in weather, a Sky Gradient card or a Weather Symbols card is the look, a Barometer Dial card is (the dial gauge), a Cyanotype Print card is not (blue, but no weather app looks like a cyanotype).
+2. From the card list, mark the cards that ARE one of those looks: a direction led by the card in this domain would give a screen that looks like what the domain's apps already ship. Judge what the user would see, not the structure of the task:
+   - Mark an era, style or material card when it is the domain's default visual style (soft pastel blobs and gradients on a wellness app, black and gold foil on a luxury fashion site, a dark neon dashboard on a crypto app), including the flat, glossy, luxury or retro look its apps already share.
+   - Mark a chart, glyph or reward card when it is the domain's usual way to show its data or rewards (a candlestick chart on a trading app, a streak counter on a habit app).
+   - Do not mark a card because the domain has a task with a similar shape: an instruction manual is not a cliche because sign-up has numbered steps, a wax seal is not a cliche because a lease is signed. The card's own world must already be what the domain's screens look like.
+   In weather, a Sky Gradient card or a Weather Symbols card is the look and a Barometer Dial card is (the dial gauge); a Cyanotype Print card is not (blue, but no weather app looks like a cyanotype), and a Ship's Logbook card is not (forecasts are logged, but no weather app looks like a logbook).
 
 The same card can be a cliche in one domain and wild in another: only judge this domain.
 
@@ -77,7 +81,7 @@ export default defineJob<Input, DomainCliche>({
   effort: "medium",
 
   loadInputs: inputs,
-  requestId: (input) => `r10c-${input.domain.id}`,
+  requestId: (input) => `r10c2-${input.domain.id}`,
   buildPrompt: (input) =>
     `Domain: ${input.domain.names.en.join(", ")} (${input.domain.id})
 Products: ${input.domain.productNouns.join(", ")}
