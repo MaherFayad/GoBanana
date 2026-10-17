@@ -18,7 +18,7 @@ import { isRuleCard } from "../../banana-server/lib/atlas/bend.ts";
 import { ROOT } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob } from "../lib/job.ts";
-import { mergeByKey } from "../lib/refine.ts";
+import { j3CardIds, mergeByKey } from "../lib/refine.ts";
 import type { DomainEntry, FitScore, IngredientCard, PageAnatomy, PageFitScore } from "../schema.ts";
 import j4b, { domainPages, type Input } from "./j4b-page-fit.ts";
 import { newCards } from "./r1-gulf-fit.ts";
@@ -55,6 +55,32 @@ export function fitShardBudget(records: PageFitScore[], fresh: ReadonlySet<strin
   return out;
 }
 
+/**
+ * Calibration (second run, 2026-10-17): the first run scored the new cards alone and gave 2 or 3 to
+ * 27% of pairs against 18% for J4b's own top cards, so a thin Gulf card (rock carvings on an eSIM
+ * plan picker) could outrank the cards J4b chose. Each request now shows how J4b already scored the
+ * domain's J3 cards on these pages, and the new cards are scored on that scale.
+ */
+const CALIBRATE = `
+
+Calibration requests: the cards in the request are new. The same pages were already scored for this domain's other cards; the request lists, per page, the cards that got 3 and 2 there with their reasons. Score the new cards on exactly that scale: a new card gets 3 only when it serves the page as clearly as the listed 3s, and 2 only when it is as good as the listed 2s. A card that is only a place, a heritage scene or a mood on this page is 1. Most new cards are 1 on most pages.`;
+
+let anchorCache: PageFitScore[] | null = null;
+/** How J4b scored the J3 cards on each page of the request: the 3s and up to 6 of the 2s, with reasons. */
+export function anchorLines(input: Input): string {
+  const j3 = j3CardIds();
+  anchorCache ??= readKindRecords<PageFitScore>("page-fit").filter((r) => j3.has(r.cardId));
+  const lines = input.pages.map((pageId, i) => {
+    const rows = anchorCache!.filter((r) => r.domainId === input.domain.id && r.pageId === pageId);
+    const fmt = (r: PageFitScore) => `${r.cardId} (${r.reason ?? ""})`;
+    const threes = rows.filter((r) => r.score === 3).map(fmt);
+    const twos = rows.filter((r) => r.score === 2).slice(0, 6).map(fmt);
+    const low = rows.filter((r) => r.score <= 1).length;
+    return `${i + 1}. ${pageId}: 3: ${threes.join("; ") || "none"}. 2: ${twos.join("; ") || "none"}. ${low} of ${rows.length} scored 1 or 0.`;
+  });
+  return ["How the domain's other cards already scored on these pages (the scale to match):", ...lines].join("\n");
+}
+
 export function pageFitKey(r: PageFitScore): string {
   return `${r.domainId}|${r.pageId}|${r.cardId}`;
 }
@@ -66,7 +92,7 @@ export default defineJob<Input, PageFitScore>({
   mode: j4b.mode,
   schema: j4b.schema,
   get system() {
-    return j4b.system;
+    return j4b.system + CALIBRATE;
   },
   maxTokens: j4b.maxTokens,
   expectedOutputTokens: 4000,
@@ -88,7 +114,7 @@ export default defineJob<Input, PageFitScore>({
     return out;
   },
   requestId: (input) => `gpf-${input.domain.id}`,
-  buildPrompt: (input, ctx) => j4b.buildPrompt(input, ctx),
+  buildPrompt: async (input, ctx) => `${await j4b.buildPrompt(input, ctx)}\n\n${anchorLines(input)}`,
   parse: (text, input) => j4b.parse!(text, input),
   check: (r, ctx) => j4b.check!(r, ctx),
   finalize: (records, ctx) => {
