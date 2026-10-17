@@ -6,7 +6,13 @@ import type { Ingredients, ListEntry, MoveId } from "./types";
  * bar"). Agents in the field built from these mappings (braid = progress bar, tabs = sections,
  * woven band = section divider; field report, 2026-10-12). Rule-based, no AI, no random draws.
  */
-export const MECHANIC_ELEMENTS = ["progress", "total", "cta", "divider", "section-nav", "header", "empty-state", "plan"] as const;
+export const MECHANIC_ELEMENTS = ["progress", "total", "cta", "divider", "section-nav", "header", "empty-state", "plan", "list-row", "card", "map", "form-field", "chip-filter"] as const;
+/**
+ * R8: the parts where a page's work happens (list rows, result cards, the map, form fields, filter
+ * and sort). Only the Atlas engine lands a mechanic on them (lib/atlas/bend.ts ELEMENT_TO_MECHANIC);
+ * the lists engine's AFFINITY, MOVE_DEFAULT and LAST_RESORT never name them.
+ */
+export const WORK_ELEMENTS: ReadonlySet<MechanicElement> = new Set<MechanicElement>(["list-row", "card", "map", "form-field", "chip-filter"]);
 export type MechanicElement = (typeof MECHANIC_ELEMENTS)[number];
 
 export interface Mechanic {
@@ -56,6 +62,11 @@ const HOW: Record<MechanicElement, string> = {
   header: "{Idea} carries the header strip and the page title",
   "empty-state": "{Idea} fills the empty state art, with one clear next step",
   plan: "{Idea} shapes the plan cards; each plan keeps its name, price and a plain selected state",
+  "list-row": "{Idea} builds the list rows; each row keeps its name and key number plain, in order",
+  card: "{Idea} builds the result cards; each card keeps its title, price and one way in",
+  map: "{Idea} redraws the map; real geography stays under it and every pin stays readable",
+  "form-field": "{Idea} builds the form fields; real labels, typed text and errors stay plain",
+  "chip-filter": "{Idea} builds the filters and sort; the selected state shows and clears in one tap",
 };
 
 /** The rule version, for a direction led by a constraint. */
@@ -68,6 +79,11 @@ const RULE_HOW: Record<MechanicElement, string> = {
   header: "The header follows one rule: {rule}",
   "empty-state": "The empty state follows one rule: {rule}",
   plan: "The plan cards follow one rule: {rule}, every price stays readable",
+  "list-row": "The list rows follow one rule: {rule}, the order stays easy to scan",
+  card: "The result cards follow one rule: {rule}, every title and price stays readable",
+  map: "The map follows one rule: {rule}, real geography stays under it",
+  "form-field": "The form fields follow one rule: {rule}, labels and errors stay plain",
+  "chip-filter": "The filters follow one rule: {rule}, the selected state stays visible",
 };
 
 // ---------------------------------------------------------------------------

@@ -729,6 +729,11 @@ export const ELEMENT_NOUN: Readonly<Record<string, string>> = {
   header: "header",
   "empty-state": "empty state",
   plan: "plan cards",
+  "list-row": "list",
+  card: "cards",
+  map: "map",
+  "form-field": "form",
+  "chip-filter": "filters",
 };
 
 /**
