@@ -683,7 +683,8 @@ export function cardSpec(input: SpecInput): VisualSpec {
     motion: sentence(`${motionCard.motion.verb} in ${motionCard.motion.ms}ms${motionCard !== lead ? ` (from ${motionCard.name})` : ""}; with reduced motion on, ${motionCard.motion.reduced}`),
     texture: sentence(`${textureCard.texture}${textureCard !== lead ? ` (from ${textureCard.name})` : ""}; text sits on solid panels, never on the texture`),
     iconography: sentence(input.platform === "mobile" ? `${ICONS[lead.radius]}, 24pt in the tab bar` : ICONS[lead.radius]),
-    density: sentence(`${lead.density.charAt(0).toUpperCase()}${lead.density.slice(1)}; ${profile.density.charAt(0).toLowerCase()}${profile.density.slice(1)}`),
+    // R7: a dense card no longer reads "Dense; ... generous spacing" (the draft judge's most named contradiction).
+    density: sentence(`${lead.density.charAt(0).toUpperCase()}${lead.density.slice(1)}; ${(lead.density === "dense" ? profile.density.replace(/generous spacing/i, "tight spacing") : profile.density).replace(/^./, (c) => c.toLowerCase())}`),
     signature: sentence(input.how),
     pattern: sentence(`${lead.name} on the ${part}${input.mechanic ? `: ${input.mechanic.name}` : ""}`),
     steal: [
@@ -889,7 +890,6 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const demote = (c: IngredientCard) => wildness >= EXPECTED_DEMOTE_FROM && isExpectedCard(c);
   const leads = asked.length === 0 && !lens ? spreadByStyle(drawn, input.count, demote) : drawn;
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
-  if (process.env.R7_DEBUG) console.error('DBG', input.brief.slice(0, 30), drawn.map((c) => `${c.name}[${mainStyleOf(c)}] ${relevance(c).toFixed(2)}`).join(' | '));
 
   // 4. The second card (texture or motion) and the clash check.
   const usedSecond = new Set<string>();

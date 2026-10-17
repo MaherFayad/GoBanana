@@ -99,8 +99,11 @@ export function createRemixStitchTool(deps: CanvasToolDeps) {
         notes,
         webUrl: canvasWebUrl(deps.appUrl(), input.canvasId),
       };
+      // R7: a page made for a direction keeps its "Bend it" lines in every variant.
+      const directionId = datas[0]?.directionId;
+      const mechanic = directionId ? (await repos.directions.listForCanvas(input.canvasId).catch(() => [])).find((d) => d.id === directionId || d.bendId === directionId)?.detail?.mechanic : undefined;
       const lines = [`Made ${placed.length} variant${placed.length === 1 ? "" : "s"} of Frankenstein page ${input.stitchId}:`];
-      placed.forEach((p, i) => lines.push(...stitchText(p.id, datas[i]!, parts)));
+      placed.forEach((p, i) => lines.push(...stitchText(p.id, datas[i]!, parts, mechanic)));
       lines.push(...notes, SOURCE_REMINDER, `Web link: ${out.webUrl}`);
       return toolResult(lines.join("\n"), out);
     } catch {
