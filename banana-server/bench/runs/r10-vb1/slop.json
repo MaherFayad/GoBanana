@@ -1,0 +1,362 @@
+{
+ "esim-plan-picker/bd-7le7dwhz": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-7le7dwhz",
+  "title": "Gas Station Price Sign",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "eSIM pickers ship white cards with flags, GB/day pills and blue gradients, whereas this lit forecourt price sign with carved cup-mark dots is new to the domain; only the highlighted best-value plan card is the familiar move, kept in a supporting role."
+ },
+ "esim-plan-picker/bd-varl85u5": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-varl85u5",
+  "title": "Eastern Arabic Digits plan",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "eSIM and telecom plan cards: a stack of GB/days/price cards with the selected one highlighted, plus local/regional/global tabs",
+  "reason": "Eastern Arabic display numerals and the Eidiya envelope slide-out are fresh for GCC eSIM apps, but the page is still the standard big-number plan card list with an accent-highlighted pick and filter tabs."
+ },
+ "esim-plan-picker/bd-jlzttiy2": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-jlzttiy2",
+  "title": "Dial Caliper plan picker",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "telecom data gauge/dial readout",
+  "reason": "Brushed-steel caliper plates and Kuwait Towers disc tiling look nothing like the flat flag-and-card lists eSIM apps ship, though the amber dial-and-needle readout echoes the usage gauges telecom apps already use, and the caliper-jaw filter is still a range slider underneath."
+ },
+ "flight-checkout-gcc-ota/bd-l9w3evxe": {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-l9w3evxe",
+  "title": "Air Traffic Flight Strip",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "boarding-pass ticket cards common in airline and OTA apps",
+  "reason": "Air traffic control strips with colored holders and grease-pencil marks are not something OTA checkouts ship, though the stacked printed-card idea still sits close to the familiar boarding-pass ticket metaphor."
+ },
+ "flight-checkout-gcc-ota/bd-q819wzjz": {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-q819wzjz",
+  "title": "1970s Airline Branding flight",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "boarding-pass and ticket-stub cards common in airline and OTA apps",
+  "reason": "The ticket-stub stepper and boarding-pass rows are the domain's usual metaphor, given a fresh skin of 1970s livery stripes and a warm retro palette."
+ },
+ "flight-checkout-gcc-ota/bd-8rjw1wdj": {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-8rjw1wdj",
+  "title": "Al Ahsa Jabal Al",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "GCC OTA checkouts like Almosafer and Wego ship bright white cards with blue or teal accents and horizontal steppers, so dark cave rock with amber light-cleft steps is unseen here; only the earthy heritage-site palette echoes Saudi tourism branding, and it plays a supporting role."
+ },
+ "coffee-shop-landing/bd-5dxkklki": {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-5dxkklki",
+  "title": "Jebena Coffee Pot coffee",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "dark, earthy specialty-coffee site with a Fraunces serif, terracotta accents and an origin-story hero",
+  "reason": "The jebena silhouette and pot-shaped cards are a small twist on the usual coffee-origin look of brown and clay tones, a serif headline and wood grain, so the page still reads as a standard artisanal coffee site."
+ },
+ "coffee-shop-landing/bd-x27x5t8u": {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-x27x5t8u",
+  "title": "Googie 1958 coffee shop",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "retro mid-century diner coffee branding: script logo, cream, red and turquoise, starbursts",
+  "reason": "Googie diner signage with Yellowtail script and a cream, red and turquoise palette is a well-worn retro coffee shop look, and the chocolate-snap motion is only a small twist on top."
+ },
+ "coffee-shop-landing/bd-j070d137": {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-j070d137",
+  "title": "Turkish Iznik Tiles coffee",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "artisanal cafe site with cream paper texture and big serif display, plus the Turkish coffee brand tile motif",
+  "reason": "Iznik tile cards and grease-bloom parchment are a fresh pairing, but the cream paper, oversized serif and ornamental heritage pattern still read as a typical craft coffee landing page."
+ },
+ "banking-onboarding/bd-rnan5qej": {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-rnan5qej",
+  "title": "Punch Card banking onboarding",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "A manila punch card with mono type and punched-hole progress looks nothing like the clean white stepper-and-illustration look of banking onboarding, though underneath it is still a numbered step indicator with thumb-zone buttons."
+ },
+ "banking-onboarding/bd-sw6u4pvm": {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-sw6u4pvm",
+  "title": "Fingerprint banking onboarding",
+  "slop": 3.5,
+  "votes": [
+   3,
+   4
+  ],
+  "look": "standard fintech onboarding: thin progress bar with blue fill, OTP bottom sheet, biometric fingerprint motif",
+  "reason": "The record-card paper, ink-pad palette and whorl that fills as fields complete are a new skin, but the layout and the fingerprint motif are what bank onboarding already ships."
+ },
+ "banking-onboarding/bd-f016xv0s": {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-f016xv0s",
+  "title": "Wax Seals banking onboarding",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Laid paper, sepia serif type and a pressed wax seal at the account-ready moment are far from the clean neobank screens, progress bars and checkmark or confetti finishes this domain ships, though the thin progress track and the cream-and-gilt heritage-bank feel stay familiar."
+ },
+ "fitness-empty-state/bd-fwatvzwz": {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-fwatvzwz",
+  "title": "Arcade Cabinet fitness empty",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "An arcade attract screen with Press Start 2P and flat-pack assembly steps is not how fitness empty states look; only the score-line stats and neon-on-black echo familiar fitness gamification."
+ },
+ "fitness-empty-state/bd-1mkg8xye": {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-1mkg8xye",
+  "title": "Inflatable Plastic fitness empty",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "playful rounded-pill empty state with a friendly illustration and bouncy CTA (Duolingo-style fitness and habit apps)",
+  "reason": "The deflated pool-float and vinyl title bar are new for fitness, but the Fredoka and Nunito type, candy palette, squishy pill button and single-illustration empty state are the domain's usual playful look."
+ },
+ "fitness-empty-state/bd-cesk1q3h": {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-cesk1q3h",
+  "title": "Surfboard fitness empty",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "standard fitness empty state: a single line illustration above a text line and a capsule CTA, with activity-ring style dial ticks",
+  "reason": "The surfboard outline is just the usual empty-state spot illustration with a new object, and the minute-tick ring around the button echoes the activity rings fitness apps already ship."
+ },
+ "ramadan-food-delivery/bd-9bm2vxvb": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-9bm2vxvb",
+  "title": "Qamar al-Din Apricot Sheet",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard GCC delivery Ramadan offers page: countdown banner, deal-card grid with struck-through prices, warm orange palette, rounded Arabic display type",
+  "reason": "The backlit, unrolling Qamar al-Din sheet is a fresh Ramadan-native material in place of the usual lanterns and crescents, but the page's structure, warm orange palette and rounded type still read as a typical Talabat or HungerStation promo page."
+ },
+ "ramadan-food-delivery/bd-pkglkiio": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-pkglkiio",
+  "title": "Hand-Painted Souq Shop Sign",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none; it avoids the usual Ramadan delivery look of crescents, lanterns, purple-and-gold and flat illustration",
+  "reason": "Souq sign-painter enamel boards with slab type and cobalt offset shadows are new for GCC Ramadan offer pages; only the standard countdown banner, chips and old/new price cards are familiar."
+ },
+ "ramadan-food-delivery/bd-58cmx58y": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-58cmx58y",
+  "title": "Eastern Arabic Digits ramadan",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Ramadan promo pages in GCC delivery apps: dark night-and-gold palette, iftar countdown banner and oversized discount numbers on deal cards",
+  "reason": "The lantern-free typographic plate look and ember texture feel new, but the core move of one huge discount number over dark-and-gold with a countdown is what Ramadan deal pages already ship, just in a new skin."
+ },
+ "saas-pricing/bd-8scqso2q": {
+  "briefId": "saas-pricing",
+  "directionId": "bd-8scqso2q",
+  "title": "Pocket Calculator analytics pricing",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Keycap plans, an LCD price readout and paper-tape billing rows are far from the usual tier cards, toggle and FAQ accordion, though the dark-charcoal-with-orange palette and the plan grid itself still echo standard SaaS pricing pages."
+ },
+ "saas-pricing/bd-iewgauew": {
+  "briefId": "saas-pricing",
+  "directionId": "bd-iewgauew",
+  "title": "Eastern Arabic Digits analytics",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard SaaS pricing tiers: three plan cards with big price numerals and a highlighted recommended plan, on a dark-mode page with one accent color",
+  "reason": "The Eastern Arabic digits and the lit lift-button skin are new for SaaS pricing, but the core move (plan cards with huge prices and one highlighted pick) is exactly what these pages already ship."
+ },
+ "saas-pricing/bd-ztewj3s3": {
+  "briefId": "saas-pricing",
+  "directionId": "bd-ztewj3s3",
+  "title": "Vienna Secession 1900 analytics",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard SaaS pricing page: row of plan cards with a highlighted 'most popular' tier and an FAQ list",
+  "reason": "The Vienna Secession checker border, leaf gold and Josefin type are rare in B2B SaaS, but the core mechanic is still the usual highlighted recommended plan card plus FAQ rows, just in a new skin."
+ },
+ "dubai-real-estate/bd-ip2pl343": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-ip2pl343",
+  "title": "Abu Dhabi Cultural Foundation",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "cream-and-serif luxury property listing with split map/list view and price bar chart",
+  "reason": "The scale-bar data band and 1981 Cultural Foundation modernism are fresh, but beige stone tones, big serif display and a map-pin/list split still read as a typical upscale Dubai listing page."
+ },
+ "dubai-real-estate/bd-e920sm5o": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-e920sm5o",
+  "title": "Topographic Map estate listing",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Dubai luxury listings usually ship full-bleed photo heroes with dark, gold, marble and serif type, so a survey-paper topo map with contour rings and salt-crust motion is new here; only the oversized price figure is a familiar listing move."
+ },
+ "dubai-real-estate/bd-798ta2yj": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-798ta2yj",
+  "title": "Polished Marble estate listing",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "dark marble-and-gold luxury property site with large serif prices and a dark map with gold pins, typical of Dubai developer and broker pages",
+  "reason": "Nero marble, brass inlay and a serif price are the stock Dubai luxury listing look; the faint graph-paper grid on two panels and the vein-style route line are only small changes to it."
+ },
+ "kids-reading-home/bd-t1bc079g": {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-t1bc079g",
+  "title": "Game Cartridge kids reading",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Duolingo-style kids learning home with mascot greeting, big activity tiles and a sticker/daily-goal path",
+  "reason": "The dark retro cartridge shell and cereal-box halftone are new for kids reading apps, but the page keeps the domain's standard mascot, tile and sticker-path reward layout with gold pins filling as steps complete."
+ },
+ "kids-reading-home/bd-kd08bhca": {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-kd08bhca",
+  "title": "Finger Puppet kids reading",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "kids learning app home with a mascot greeting, continue card, daily goal and sticker path (Khan Academy Kids, Duolingo ABC, Epic)",
+  "reason": "The felt-puppet craft skin and mirror-by-language rule only re-dress the standard mascot, sticker-path progress and big rounded tiles that kids reading apps already ship."
+ },
+ "kids-reading-home/bd-kr2b7aoj": {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-kr2b7aoj",
+  "title": "Drop Caps kids reading",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "standard kids reading app skeleton (daily goal bar, sticker path, big activity tiles, grown-ups gate) reskinned in a classic storybook drop-cap style",
+  "reason": "The cream letterpress, oxblood drop caps and field-guide stipple are far from the bright cartoon-mascot look kids apps usually ship, but the layout is the usual one and the signature is still a filling progress bar."
+ },
+ "qatar-gov-services/bd-w2tkqxef": {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-w2tkqxef",
+  "title": "Banknote services dashboard",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "GCC e-government app (Metrash2 / UAE Pass style) with a guilloche-patterned digital ID card above a status list",
+  "reason": "The banknote paper, serif type and register-line rows are a fresh skin, but the guilloche sits only on the digital ID card, where these apps already put it, over a standard sidebar dashboard with a progress bar and request list."
+ },
+ "qatar-gov-services/bd-m5md8vcw": {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-m5md8vcw",
+  "title": "Gulf Modernism 1970s services",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "GCC e-government portals (Metrash2, Hukoomi style) with digital ID card, service grid and geometric lattice borders",
+  "reason": "Shaded concrete recesses and turquoise tile panels are new for Gulf government apps, though the screen-block border reads like the familiar mashrabiya pattern strip and the sidebar, ID card and request list follow the standard portal layout."
+ },
+ "qatar-gov-services/bd-q8t8vu1l": {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-q8t8vu1l",
+  "title": "Arrows services dashboard",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "standard GCC e-government portal (Metrash2/Hukoomi style: sidebar shell, greeting with digital ID card, step-progress tracker)",
+  "reason": "The highway-signage skin of asphalt, gantry panels and wayfinding yellow is new for government apps, but underneath it the layout is the usual portal shell and the arrow-segment progress is a familiar chevron stepper in new colours."
+ }
+}

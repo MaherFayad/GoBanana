@@ -1,0 +1,368 @@
+{
+ "directions": {
+  "esim-plan-picker/bd-7le7dwhz": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-7le7dwhz",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Plan cards as lit fuel price tiles make comparing GB, days and price instant, and Gulf rock cup marks as a quiet dot system root it in the market, though the ancient carving and the night forecourt pull slightly apart."
+  },
+  "esim-plan-picker/bd-varl85u5": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-varl85u5",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Huge Eastern Arabic price numerals on lit plan plates suit a GCC plan picker and its clear price, but the Eidiya envelope twist never shows and the lift panel palette pulls toward an elevator."
+  },
+  "esim-plan-picker/bd-jlzttiy2": {
+   "briefId": "esim-plan-picker",
+   "directionId": "bd-jlzttiy2",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Caliper jaws as a GB and price range filter and steel plan plates change how plans get compared, and Kuwait Towers disc cladding ties the look to the GCC market, though Cascadia Mono for Arabic and the clumsy signature wording are off notes."
+  },
+  "telecom-usage-home/bd-nbkzbzny": {
+   "briefId": "telecom-usage-home",
+   "directionId": "bd-nbkzbzny",
+   "relevance": 5,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Huge Eastern Arabic digits suit a GCC home screen that is all about data, minutes and balance left, but the cards show a price rather than what is left, the lift panel metaphor is a second idea, and no Arabic display face is named."
+  },
+  "telecom-usage-home/bd-ooaahwwh": {
+   "briefId": "telecom-usage-home",
+   "directionId": "bd-ooaahwwh",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Punched steel cards whose holes fill in safety orange to show data and minutes left give the home screen a specific, buildable meter, though the Arabic type is missing for a GCC brief and the reasoning behind it is thin."
+  },
+  "telecom-usage-home/bd-pf1s5dcw": {
+   "briefId": "telecom-usage-home",
+   "directionId": "bd-pf1s5dcw",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 2,
+   "note": "Flat 2013 tiles with long shadows suit the quick actions on a calm telecom home and the palette holds together, but the look feels dated rather than fresh and has no Arabic setting for a GCC brief."
+  },
+  "telecom-sign-up/bd-o7g2zp2q": {
+   "briefId": "telecom-sign-up",
+   "directionId": "bd-o7g2zp2q",
+   "relevance": 3,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A livery stripe progress band suits a stepped sign-up, but 1970s Western airline branding is loosely tied to a GCC telecom at wildness 2, has no Arabic, and adds seat and date boxes the page does not have."
+  },
+  "telecom-sign-up/bd-d633bs4w": {
+   "briefId": "telecom-sign-up",
+   "directionId": "bd-d633bs4w",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A flat-pack manual turns SIM sign-up into numbered assembly steps that fit a step-based page, though it names fields the brief lacks and skips Arabic for a GCC brief."
+  },
+  "telecom-sign-up/bd-k60awsib": {
+   "briefId": "telecom-sign-up",
+   "directionId": "bd-k60awsib",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "An envelope you fill in and seal, with an airmail band for progress, suits a telecom sign-up form, but it uses name, email and password fields instead of the OTP, plan and SIM steps, and the why line is thin."
+  },
+  "telecom-bill-payment/bd-0ct85hbm": {
+   "briefId": "telecom-bill-payment",
+   "directionId": "bd-0ct85hbm",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A bilingual baqala receipt suits a Saudi bill paid line by line with a printed total, though the offer tag red has no clear job on a bill."
+  },
+  "telecom-bill-payment/bd-9tb2e13b": {
+   "briefId": "telecom-bill-payment",
+   "directionId": "bd-9tb2e13b",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "A Najdi wooden lock suits a Saudi bill screen, and lift then slide fits confirming a payment, but locked peg rows on each bill line are a muddled fit and the layout notes wander."
+  },
+  "telecom-bill-payment/bd-ychfswbq": {
+   "briefId": "telecom-bill-payment",
+   "directionId": "bd-ychfswbq",
+   "relevance": 3,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Ruled record boxes and red stamped rows suit a bill payment form and its receipt feel, but the fingerprint motif reads more like an ID record than a paid bill, which blurs the idea."
+  },
+  "telecom-fiber-plans/bd-zh7kuknm": {
+   "briefId": "telecom-fiber-plans",
+   "directionId": "bd-zh7kuknm",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Huge Eastern Arabic price numerals on plan plates fit a Kuwait fiber comparison and its clear price, but the Flat Design 2013 long shadows only decorate icon tiles and sit apart from the enamel plate look."
+  },
+  "telecom-fiber-plans/bd-70p2b1fu": {
+   "briefId": "telecom-fiber-plans",
+   "directionId": "bd-70p2b1fu",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "A fight night face-off between plan columns fits comparing speeds and prices, and Lalezar poster type suits Kuwait, but the Kuwait Towers 1979 twist never shows in the build."
+  },
+  "telecom-fiber-plans/bd-a0eg0mcx": {
+   "briefId": "telecom-fiber-plans",
+   "directionId": "bd-a0eg0mcx",
+   "relevance": 3,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Ticket cards with livery stripes can carry a plan comparison and the karak glass nods to Kuwait, but boarding pass destination and time lines do not map to home fiber plans, the rationale talks about roaming, and the glass texture sits only on the quotes."
+  },
+  "ramadan-food-delivery/bd-9bm2vxvb": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-9bm2vxvb",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Qamar al-Din is the apricot sheet of the Ramadan table, so a backlit sheet that unrolls the season hero and the deal cards fits this Saudi offers page, and the Asiri juniper rings stay a light, local second voice."
+  },
+  "ramadan-food-delivery/bd-pkglkiio": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-pkglkiio",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Painted souq sign boards as deal cards and enamel plate chips suit a Saudi offers page well, but the Asiri honey motion twist never shows in the build."
+  },
+  "ramadan-food-delivery/bd-58cmx58y": {
+   "briefId": "ramadan-food-delivery",
+   "directionId": "bd-58cmx58y",
+   "relevance": 5,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Huge Eastern Arabic price digits on the deal cards and Najdi ghada embers give a Saudi Ramadan offers page a native, dark, big number voice, though the lift panel palette and the ember glow kept to the terms rows pull it apart a little."
+  },
+  "food-delivery-home/bd-k8mvn7m7": {
+   "briefId": "food-delivery-home",
+   "directionId": "bd-k8mvn7m7",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Restaurant matchbooks tie to food, and struck matches as cuisine filters change how the real filter row reads, carried through the promo cards, order bar and palette."
+  },
+  "food-delivery-home/bd-ip3lkqpk": {
+   "briefId": "food-delivery-home",
+   "directionId": "bd-ip3lkqpk",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Cardboard box flaps as cuisine filters and folding restaurant rows suit a food delivery home and act on parts it really has, though the world is delivery generic rather than tied to Riyadh."
+  },
+  "food-delivery-home/bd-k32eg80a": {
+   "briefId": "food-delivery-home",
+   "directionId": "bd-k32eg80a",
+   "relevance": 3,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Bento compartments for cuisine filters and the order track suit a food home, but a Japanese lacquer world is a region miss for a Riyadh app at wildness 2."
+  },
+  "food-order-tracking/bd-gltr1q3q": {
+   "briefId": "food-order-tracking",
+   "directionId": "bd-gltr1q3q",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "A karak glass that fills amber as the order moves, with tea glass pins on the courier map and kraft bag texture, is a Kuwaiti food delivery world placed on the real progress and map of a tracking screen, though the mood word reads as a placeholder."
+  },
+  "food-order-tracking/bd-7gly93qd": {
+   "briefId": "food-order-tracking",
+   "directionId": "bd-7gly93qd",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Eastern Arabic digits on lift-style plates suit a Kuwait tracking screen and its steps, but map pins showing price or count make little sense when tracking one courier, and the line diagram motion never shows."
+  },
+  "food-order-tracking/bd-1tk1vjie": {
+   "briefId": "food-order-tracking",
+   "directionId": "bd-1tk1vjie",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Cardboard box flaps, shipping label pins and a once per second ETA fit a delivery tracking screen, though the fold mechanic sits on the order rows rather than the map and status that matter most."
+  },
+  "food-restaurant-menu/bd-6j5bgwf3": {
+   "briefId": "food-restaurant-menu",
+   "directionId": "bd-6j5bgwf3",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Awning stripe bands as dish rows suit a restaurant menu and the soda can strip fits food delivery, but routing the main task through the promo strip and the aluminum patch on the rating split the idea."
+  },
+  "food-restaurant-menu/bd-l6s7771y": {
+   "briefId": "food-restaurant-menu",
+   "directionId": "bd-l6s7771y",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "A hot sauce label header with chili heat pips on dish rows suits a food menu, but the pips mix up rating and heat and the dotted leaders never show up in the layout."
+  },
+  "food-restaurant-menu/bd-wakkqm4t": {
+   "briefId": "food-restaurant-menu",
+   "directionId": "bd-wakkqm4t",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Dish rows packed like sardines in a tin suit a food menu, but the jukebox strip twist and moving the main task into the promo strip muddle the idea."
+  },
+  "food-delivery-checkout/bd-rjjndi2y": {
+   "briefId": "food-delivery-checkout",
+   "directionId": "bd-rjjndi2y",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Tiffin tiers clipped together are a food delivery object turned into real checkout steps, with the open tier as the current step, though the mood ingredient is a vague placeholder."
+  },
+  "food-delivery-checkout/bd-ssuqz6c2": {
+   "briefId": "food-delivery-checkout",
+   "directionId": "bd-ssuqz6c2",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Restaurant matchbooks suit food delivery, and match rows, match steps and a striker strip as the order bar make one buildable idea for this checkout."
+  },
+  "food-delivery-checkout/bd-atza35ph": {
+   "briefId": "food-delivery-checkout",
+   "directionId": "bd-atza35ph",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Kraft paper and stamp marks on finished steps suit a food delivery checkout and its bags, but routing the whole task through the payment rows muddles the layout."
+  },
+  "dubai-real-estate/bd-ip2pl343": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-ip2pl343",
+   "relevance": 5,
+   "coherence": 3,
+   "wow": 4,
+   "note": "The 1981 Abu Dhabi Cultural Foundation modernism and an architect's scale bar give a Dubai listing a specific Gulf voice and real changes to the map, but scale bars on price history and the renovated homes rationale do not fit luxury apartments."
+  },
+  "dubai-real-estate/bd-e920sm5o": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-e920sm5o",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Contour rings tightening around the listing price fit a property page about land and place, but the sabkha salt crust never shows and contour lines over the photo gallery fight the apartment photos."
+  },
+  "dubai-real-estate/bd-798ta2yj": {
+   "briefId": "dubai-real-estate",
+   "directionId": "bd-798ta2yj",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Polished marble and brass suit a Dubai luxury listing, and the serif price and vein route on the map change how the page reads, though marble is the expected choice and the graph paper grid sits a little apart."
+  },
+  "villa-developer-home/bd-n6oxghpr": {
+   "briefId": "villa-developer-home",
+   "directionId": "bd-n6oxghpr",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Najdi painted doors that swing open to reveal each compound suit a Saudi villa developer home page, though hiding price behind a tap slows browsing and the why line is thin."
+  },
+  "villa-developer-home/bd-p679ee3x": {
+   "briefId": "villa-developer-home",
+   "directionId": "bd-p679ee3x",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "The Qatif hadra weir is a craft from right beside Dammam, and its stake lines funnel each compound card toward the booking button, though the mood word is vague and the plan row half confuses floor plans with price plans."
+  },
+  "villa-developer-home/bd-nwe6w705": {
+   "briefId": "villa-developer-home",
+   "directionId": "bd-nwe6w705",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "The Dhahran Air Terminal's pointed arch bays frame the hero and the compound cards, a modernist landmark next door to Dammam that suits a villa developer, though floor plans get no part of the idea and rating is an odd field for compounds."
+  },
+  "rental-search-results/bd-ubw4fnw7": {
+   "briefId": "rental-search-results",
+   "directionId": "bd-ubw4fnw7",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Al Ahsa plots seen from above suit a Saudi rental search with districts and a map, and they reshape the filters and result rows, though the cosmic mood does not show."
+  },
+  "rental-search-results/bd-q4arryw3": {
+   "briefId": "rental-search-results",
+   "directionId": "bd-q4arryw3",
+   "relevance": 4,
+   "coherence": 4,
+   "wow": 3,
+   "note": "Pinning homes to a corkboard shortlist acts on the real result rows and filters and suits house hunting, but the map is left out and the skeuomorph feels familiar."
+  },
+  "rental-search-results/bd-uqrxbjyt": {
+   "briefId": "rental-search-results",
+   "directionId": "bd-uqrxbjyt",
+   "relevance": 5,
+   "coherence": 4,
+   "wow": 4,
+   "note": "Asiri slate-banded towers are Saudi homes, so slate slab filters and mud course result rows suit Riyadh rental search, though the map is left out and the why line is vague."
+  },
+  "apartment-detail/bd-mybcvbk9": {
+   "briefId": "apartment-detail",
+   "directionId": "bd-mybcvbk9",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "The Abu Dhabi Cultural Foundation palette and diptych hero suit an Abu Dhabi listing, but km scale bars on the price history and the renovation rationale pull away from the clear rent price."
+  },
+  "apartment-detail/bd-66pdfu18": {
+   "briefId": "apartment-detail",
+   "directionId": "bd-66pdfu18",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Nero marble with brass inlay fits an Abu Dhabi apartment listing and a single vein guides the eye to the viewing action, but the graph paper twist never shows and the installments are left untouched."
+  },
+  "apartment-detail/bd-inexqpox": {
+   "briefId": "apartment-detail",
+   "directionId": "bd-inexqpox",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Slide mounts on a light table suit an apartment page built around photos, but the outlines-only vellum rule fights the filled yellow mounts, and the rent installments get no clear home."
+  },
+  "property-portal-home/bd-tn2dhukp": {
+   "briefId": "property-portal-home",
+   "directionId": "bd-tn2dhukp",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Painted doorway frames around listings and earthen strata suit a home buying portal, but the plan preview is a part this page does not have and the London link is loose."
+  },
+  "property-portal-home/bd-sxbr94k9": {
+   "briefId": "property-portal-home",
+   "directionId": "bd-sxbr94k9",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 3,
+   "note": "Black marble cards with one brass-lit vein guiding the eye suit a London property home page, but the Scandinavian 1955 motion never shows."
+  },
+  "property-portal-home/bd-o4w9f1zx": {
+   "briefId": "property-portal-home",
+   "directionId": "bd-o4w9f1zx",
+   "relevance": 4,
+   "coherence": 3,
+   "wow": 4,
+   "note": "Metabolism capsules docked to a concrete core suit a property portal's listing cards, but the every-block-a-different-texture rule clashes with the single blueprint grid and the title is garbled."
+  }
+ },
+ "references": {},
+ "run": "r10-vw1",
+ "exportedAt": "2026-10-17T04:57:52.891Z",
+ "ratedBy": "R3 judge (r3-judge.ts prompt) via atlas-build/jobs/r10-judge.ts, specs only"
+}
