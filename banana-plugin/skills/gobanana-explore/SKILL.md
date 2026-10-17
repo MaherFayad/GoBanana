@@ -57,7 +57,7 @@ When unsure, ask. Never skip it to go further. When you skip it, say the mode in
 
 - **Explore:** steps 0 to 14, with the wide sweep (step 6c) before the bend. No project files, no code. It ends at the board and the directions with the question "Draft any of these?".
 - **Drafts:** the Explore flow first. Draft only after the user picks, and only the picks, as quick screens.
-- **Finished:** the full build pipeline is not built yet. Say in one line that it is coming, run Explore now, and offer drafting the picks next. In the Claude app, say Finished needs Claude Code and offer drafts plus a build pack (gobanana-handoff).
+- **Finished:** hand the run to the gobanana-finish skill and follow it from its Stage 0; it reuses this skill's steps for references and directions. In the Claude app, say Finished needs Claude Code and offer drafts plus a build pack (gobanana-handoff).
 - **Just references:** steps 0 to 2 and 6, then one `search_references` with the brief as `query`, no `directionId` and `count: 24`; rate it (step 10), place the usable ones and call `arrange_canvas` with `masonry`. No `bend_brief`, no directions.
 
 Every mode can move up a step later without redoing the work ("draft these", "build it"): the board and the directions carry over.
@@ -347,7 +347,7 @@ Then:
 
 One short line of other next steps: hand off (gobanana-handoff), Frankenstein it (gobanana-frankenstein: stitch new pages from parts of the UI references, each part linked to its source), palette with WCAG checks (gobanana-palette), or turn it up or down (wildness, a lens, other taste words, another page).
 
-In Explore (and in Finished, which runs Explore for now), the last line of the reply is always the question **"Draft any of these?"**, with the card numbers to pick from. Write no files and no code until the user answers. In Drafts mode, ask the same question, then draft only the picks.
+In Explore, the last line of the reply is always the question **"Draft any of these?"**, with the card numbers to pick from. Write no files and no code until the user answers. In Drafts mode, ask the same question, then draft only the picks.
 
 ## When things go wrong
 
