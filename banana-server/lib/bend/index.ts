@@ -125,7 +125,7 @@ function wordCount(text: string): number {
 }
 
 /** Words a clipped title never ends on ("One typeface only, no" becomes "One typeface only"). */
-const TITLE_TAIL_STOP = new Set(["a", "an", "the", "and", "or", "of", "for", "to", "with", "in", "on", "at", "by", "no", "per", "one", "every", "all", "only"]);
+const TITLE_TAIL_STOP = new Set(["a", "an", "the", "and", "or", "of", "for", "to", "with", "in", "on", "at", "by", "no", "per", "one", "every", "all", "only", "from", "into", "over", "under", "as", "like", "without", "about", "near", "across", "through", "between", "after", "before"]);
 
 /** A title cut to MAX_TITLE_WORDS: the part before the first comma, then trailing filler words dropped. */
 export function clipTitle(text: string): string {

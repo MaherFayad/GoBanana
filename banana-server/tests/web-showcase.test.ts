@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { laneTexts } from "@/lib/bend/queries";
-import { DEFAULT_IMAGE_HOSTS, NO_MODEL_IMAGE_HOSTS } from "@/lib/sources/allowlist";
+import { DEFAULT_IMAGE_HOSTS, NO_MODEL_IMAGE_HOSTS, isAllowedImageUrl, parseAllowlist, withoutHosts } from "@/lib/sources/allowlist";
 import { galleryWords, planRequests, showcaseWords } from "@/lib/sources/plan";
 import { SOURCE_REGISTRY, noModelInputHosts, sourceEntry } from "@/lib/sources/registry";
 import { SHOWCASE_TAGS, showcaseLane, showcaseStyles } from "@/lib/sources/showcase";
@@ -32,6 +32,16 @@ describe("allowlist", () => {
   it("no Craftwork or Best Designs on X host is an image host the canvas may load", () => {
     for (const h of NO_MODEL_IMAGE_HOSTS) expect(DEFAULT_IMAGE_HOSTS).not.toContain(h);
     expect(DEFAULT_IMAGE_HOSTS.some((h) => h.includes("*"))).toBe(false);
+  });
+
+  it("model inputs refuse no-model hosts even under a wildcard env entry", () => {
+    const model = withoutHosts(parseAllowlist(["*.b-cdn.net", "*.twimg.com", "*.bestdesignsonx.com", "i.pinimg.com"]));
+    expect(isAllowedImageUrl("https://craftwork-products.b-cdn.net/a.jpg", model)).toBe(false);
+    expect(isAllowedImageUrl("https://pbs.twimg.com/media/a.jpg", model)).toBe(false);
+    expect(isAllowedImageUrl("https://cdn.bestdesignsonx.com/a.png", model)).toBe(false);
+    expect(isAllowedImageUrl("https://i.pinimg.com/a.jpg", model)).toBe(true);
+    // The canvas list itself is unchanged: a wildcard still loads for people.
+    expect(isAllowedImageUrl("https://pbs.twimg.com/media/a.jpg", parseAllowlist(["*.twimg.com"]))).toBe(true);
   });
 });
 
