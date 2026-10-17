@@ -57,17 +57,19 @@ export const BUDGETS: Record<string, number> = {
   r2: 22,
   r3: 14,
   /** Owner 2026-10-17: spend the rest of the quota refining. R1 to R3 left about $46 unspent; R5 checks the merged bend live, R6 crops and weak domains. */
-  r5: 26,
-  r6: 16,
+  r5: 4,
+  r6: 3,
   /** Unlocked only if R5 and R6 show good results (owner 2026-10-17). */
   r7: 20,
+  /** R8: page mechanics for list rows, result cards, maps and forms (R6 finding); R5 and R6 left about $36 unspent. */
+  r8: 30,
 };
 /** Section 6.4 block caps: the guard also refuses when a block's total would pass its cap. */
 export const BLOCKS: Array<{ name: string; jobs: string[]; cap: number }> = [
   { name: "Atlas v1 and search fix", jobs: ["j1", "j2", "j3", "j4", "j4b", "j5", "j6", "j7"], cap: 79 },
   { name: "Measure", jobs: ["j8", "j9", "j10", "j11", "j12"], cap: 54 },
   { name: "Stunning layer", jobs: ["j13"], cap: 45 },
-  { name: "Refine", jobs: ["r1", "r2", "r3", "r5", "r6", "r7"], cap: 113 },
+  { name: "Refine", jobs: ["r1", "r2", "r3", "r5", "r6", "r7", "r8"], cap: 113 },
 ];
 /** Hard ceiling on all Claude spend in atlas-build (D7: about $180, keep about $20 for reruns). */
 /** Owner 2026-10-17: the cap may go to $200 when the refinement results are good; R7 gets the extra $20 only then. */
