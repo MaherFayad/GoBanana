@@ -56,6 +56,7 @@ import { isStyleId } from "@/lib/styles/ids";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
 import { searchHints } from "./search-hints";
 import { isStructural, platformSections, spanLayout, spanPage } from "./page-span";
+import { coherentMechanic, coherentSpec, colorLine, densityLine } from "./spec-coherence";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
 import { beatsPhase0, fillRecipes, MAX_RECIPE_WORDS, type PHASE0_PRECISION, recipeHoldsTopic } from "./recipe-fit";
@@ -661,12 +662,6 @@ export function cardSpec(input: SpecInput): VisualSpec {
   const { lead, second, adds } = input.pick;
   const profile = PLATFORM_PROFILES[input.platform];
   const voice: TypeVoice = isTypeVoice(lead.type.voice) ? lead.type.voice : "grotesk";
-  const role = (r: IngredientCard["palette"][number]["role"]) => lead.palette.find((p) => p.role === r);
-  const colors = (["surface", "ink", "accent", "support"] as const)
-    .map((r) => role(r))
-    .filter((p): p is NonNullable<typeof p> => Boolean(p))
-    .map((p) => `${p.role} ${p.hex.toUpperCase()}`);
-  const pairs = lead.shipPairs.slice(0, 2).map(([fg, bg]) => `${fg.toUpperCase()} on ${bg.toUpperCase()}`);
   const motionCard = adds === "motion" && second ? second : lead;
   const textureCard = adds === "texture" && second ? second : lead;
   const part = PART[input.element];
@@ -677,14 +672,14 @@ export function cardSpec(input: SpecInput): VisualSpec {
         (input.arabic ? `; Arabic in ${lead.type.arabic.display} and ${lead.type.arabic.body} at the same sizes, right to left` : ""),
     ),
     typeVoice: voice,
-    color: sentence(`Palette from ${lead.name}: ${colors.join(", ")}${pairs.length ? `; ship pairs ${pairs.join(", ")}` : ""}; text at 4.5 to 1 or more`),
+    color: sentence(colorLine(lead)),
     layout: sentence(`${lead.name} carries the ${part}, the ${input.pageLabel} keeps its usual order around it${grid}${adds === "rule" && second ? `; one rule from ${second.name}: ${second.idea.replace(/[.\s]+$/, "")}` : ""}`),
     imagery: sentence(lead.imagery),
     motion: sentence(`${motionCard.motion.verb} in ${motionCard.motion.ms}ms${motionCard !== lead ? ` (from ${motionCard.name})` : ""}; with reduced motion on, ${motionCard.motion.reduced}`),
     texture: sentence(`${textureCard.texture}${textureCard !== lead ? ` (from ${textureCard.name})` : ""}; text sits on solid panels, never on the texture`),
     iconography: sentence(input.platform === "mobile" ? `${ICONS[lead.radius]}, 24pt in the tab bar` : ICONS[lead.radius]),
-    // R7: a dense card no longer reads "Dense; ... generous spacing" (the draft judge's most named contradiction).
-    density: sentence(`${lead.density.charAt(0).toUpperCase()}${lead.density.slice(1)}; ${(lead.density === "dense" ? profile.density.replace(/generous spacing/i, "tight spacing") : profile.density).replace(/^./, (c) => c.toLowerCase())}`),
+    // R7, R9: the spacing words agree with the card's density ("Dense; ... tight spacing", lib/atlas/spec-coherence.ts).
+    density: densityLine(lead.density, input.platform),
     signature: sentence(input.how),
     pattern: sentence(`${lead.name} on the ${part}${input.mechanic ? `: ${input.mechanic.name}` : ""}`),
     steal: [
@@ -1033,6 +1028,12 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
       for (const p of span.parts.slice(1)) partUse.set(p.element, (partUse.get(p.element) ?? 0) + 1);
       drawn.dm = { ...drawn.dm, parts: span.parts.map(({ element, label, how }) => ({ element, label, how })), task: span.task };
       drawn.spec = { ...drawn.spec, layout: spanLayout(lead.name, pageLabel, span, profile.gridShort ? ` on ${profile.gridShort}` : "") + (pick.adds === "rule" && second ? ` One rule from ${second.name}: ${sentence(second.idea)}` : "") };
+    }
+    // R9: texture and motion act on this page's parts, colors come from the palette, spacing agrees with the card.
+    {
+      const sctx = { lead, second, adds: pick.adds, platform, parts: drawn.dm.parts ?? [], task: drawn.dm.task, pageLabel };
+      drawn.spec = coherentSpec(drawn.spec, sctx);
+      drawn.dm = coherentMechanic(drawn.dm, sctx);
     }
 
     // A long card name is the title on its own ("Layout Mirrors by Language", not "The Layout Mirrors").
