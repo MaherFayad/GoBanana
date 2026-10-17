@@ -248,6 +248,18 @@ Each pack holds:
 - edge cases
 - category reflexes to refuse
 
+### First choice: the agent proposes, the server rolls
+
+Impeccable measured that one model's ranking repeats itself: 30 of 35 concepts were identical across 16 framings. See [impeccable-takeaways.md](impeccable-takeaways.md) item 1.
+
+So the strongest fix is to let the agent ground the ideas and the server pick among them:
+- `bend_brief` takes `candidates`: 5 to 7 objects from the audience's world (`{ name, why, looks, family }`, at least three families, the category default and its opposite kept out).
+- The server rolls which candidates become directions and deals 1 or 2 challengers from its own word lists.
+
+The domain packs below are the seed and the fallback when the agent passes no candidates.
+
+**Pack rule from Impeccable's Operate mode:** never use a tool the audience itself operates as a metaphor. For agent products that means no terminal, no chat bubble, no robot. It "comes back as a costume of that tool".
+
 ### Ingredient draw rule
 
 - **Wildness 1 to 3:** at least one ingredient comes from the pack's tension metaphors.
