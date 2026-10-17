@@ -17,7 +17,7 @@ The GoBanana server does no thinking. It bends the brief with word lists and tem
 - **Never download, save or copy reference images.** Not into the repo, not into a temp folder, not as base64. Link to them. This holds for Mobbin screens too: the board hotlinks the connector's `image_url` and links each one to its `mobbin_url`, even when the Mobbin tool says to download.
 - **Do not describe images you have not seen.** Talk about the direction and the titles, not pixels you cannot see.
 - **Plain words.** Short sentences. No em dashes.
-- **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never show a dropped idea.
+- **Usable beats wild.** Reject any idea that cannot become UI for the named page. Never name an idea dropped for no UI path, weak references or as a duplicate. Declined challengers are the one exception: they show on one compact line with what a kept direction took from them (step 7b).
 - **Two zones, never mixed.** Each direction has art direction references (zone `art`: the idea as raw images, for mood, texture, color and form) and UI references (zone `ui`: screens and components for the platform). Art items go in the "Art direction" row of the section; UI items go in the "UI references" grid. Never put an art item in the UI grid, never count art toward the UI total, never present art as a screen to build.
 - **Mode first.** Ask which mode before any other work (see "First: ask the mode"). Never skip it to go further.
 - **Explore writes nothing.** Explore never writes project files or code. It ends at the board and the directions with the question "Draft any of these?".
@@ -161,26 +161,25 @@ Use both in the next steps: put the default to escape into the brief you pass to
 
 ### 7. Bend the brief, wide
 
-Call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` (the most it takes) and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from steps 1, 1b and 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits) and `artQueries`. It is free and unlimited.
+Write the grounded `candidates` first (step 7b.1). Then call `bend_brief` with `brief`, `wildness`, `platform`, `pages`, `count: 8` (the most it takes), `candidates` and the `canvasId`, plus `lens`, `moves` and `taste` if chosen, and `mustKeep` with the must keeps from steps 1, 1b and 6b ("clear total", "one primary action", "step indicator"). Each direction comes back with a short `title` (the idea, at most 4 words), a `mechanic`, a `spec` (typography, typeVoice, color, layout, imagery, motion, texture, iconography, density, signature, pattern, steal, avoid, styleWords, whyItFits), `artQueries`, a `source` (`candidate`, `challenger` or `lists`) and a `language` (7 axes, step 7b.2). The result also carries `diversity`: `{ minAxesApart, pairsBelow4 }`. It is free and unlimited.
 
 **Build every direction around its mechanic.** `mechanic` is `{ element, how }`: the working part of the page the wild idea becomes (`progress`, `total`, `cta`, `divider`, `section-nav`, `header` or `empty-state`; for example a braid as the progress bar, tabs as sections, a woven band as the section divider). It never breaks a must keep: the server drops a direction whose ingredients would. Use it in the pattern you describe, in the card, and in searches: look for UI that has that element ("flight checkout progress bar app ui").
 
 ### 7b. Directions: six to eight, each its own language
 
-The server does not take candidates or a language yet. Your grounded list is your own thinking: use it to judge, rename and pick the 8 directions `bend_brief` returns. Never pass it as a tool input.
+You propose, the server rolls. You write the grounded candidates; the server picks which lead directions, adds challengers from its own lists and gives every direction a language.
 
-1. **Ground first, before the step 7 call.** From the problem summary, the Worth questioning list and the brief, think of 7 to 10 candidates from the audience's world: objects, places, rituals, graphic traditions, publications, signage, data graphics. Each gets a line on why it resonates, how it looks, and its material family. Span at least 4 families. First name the category default and its predictable opposite; neither may appear. Never use a tool the audience itself operates (for AI products: no terminal, no chat bubble, no robot).
-2. **Match the bend to them.** Keep the rolled directions that hit a candidate or beat one. You may give a direction a sharper title in your cards and idea notes when a candidate names it better; keep its `directionId`.
-3. **Write its language,** one line per direction, a value on each of 7 axes, from its `spec`:
-   - type voice (grotesk, neo-grotesk, editorial serif, classic serif, mono, condensed, rounded, display retro, script, slab)
-   - color strategy (restrained, committed, full palette, drenched)
-   - ground (light, dark, colored, photographic)
-   - density (airy, balanced, dense)
-   - composition (grid, editorial, poster, spatial or layered, list-first, card-first)
-   - material (flat, paper and print, glass and light, 3D and object, photographic, textile and pattern)
-   - motion (still, snap, glide, spring, cinematic)
+1. **Ground first, then pass them as `candidates`.** Before listing, name the rut in your head: the category default and its predictable opposite. Neither may appear. Then, from the problem summary, the Worth questioning list and the brief, write 7 to 10 candidates from the audience's world: objects, places, rituals, graphic traditions, publications, signage, data graphics. Each is one object:
+   - `name` (up to 60 characters): the thing itself ("Railway departure board").
+   - `why` (up to 160): why it resonates with this audience and how it can carry the mechanic.
+   - `looks` (up to 160): ground, main colors, type voice and the one signature ("black ground, amber split flap letters, condensed caps, rows that flip in place").
+   - `family` (up to 40): its material family ("signage", "print", "textile", "data graphics").
+
+   Span at least 3 families. Never use a tool the audience itself operates (for AI products: no terminal, no chat bubble, no robot). When the brief paints its own picture ("a launch page like a night market"), at most one candidate may be that picture taken literally; the rest come from around it.
+2. **Read the server's language.** Each direction's `language` is `{ typeVoice, colorStrategy, ground, density, composition, material, motion }` (color strategy: restrained, committed, full or drenched; ground: light, dark, colored or photographic; density: airy, balanced or dense; composition: grid, editorial, poster, layered, list-first or card-first; material: flat, print, glass, object, photographic or textile; motion: still, snap, glide, spring or cinematic). Use it as given in the idea notes and cards; do not write your own axes. You may give a direction a sharper title when its candidate names it better; keep its `directionId`.
+3. **Judge the challengers.** At `count: 8` about 6 directions are candidate led (`source: "candidate"`) and about 2 are challengers (`source: "challenger"`). Judge each challenger against the candidate led directions on two axes only: audience identification (would this audience know it by heart?) and product clarity (does the page still read at a glance?). Decide its verdict before you borrow anything from it: **wins**, **competitive** or **declined**. Wins and competitive challengers join the shortlist like any direction. A declined challenger is not shown as a card and not searched. It is not wasted either: name the one discipline of its system the kept directions lack, and write it into the closest kept direction as its own line, `RAISE from <challenger title>: <the discipline, applied>` ("RAISE from Kitchen ticket rail: one strip per agent, nothing else on the row"). A raise nobody can read did not happen.
 4. **Check before you show anything:**
-   - **Difference:** every pair of kept directions differs on at least 4 of the 7 axes. No two share both type voice and color strategy. No two share a tension or a material family. When a pair fails, drop the weaker as `duplicate_idea`.
+   - **Difference:** `diversity.pairsBelow4` is empty. If it lists pairs, drop the weaker of each pair as `duplicate_idea`, or bend once more with that direction's candidate replaced (at most one re-bend; it counts as the second bend in step 8).
    - **Memory test:** what would someone describe an hour after seeing the first screen? If the answer is a mood, it fails.
    - **Category test:** if someone could guess the look from the category name alone, it fails.
    - **Saturated looks:** cream plus serif plus terracotta; near black plus one neon; broadsheet hairlines plus italic serif plus mono labels; flat ink plus hard offset shadows. Landing on one the brief did not ask for fails.
@@ -196,9 +195,9 @@ Keep an idea only if all of these hold:
 - **(c) Its own language.** It passes the checks in step 7b.
 - **With Mobbin (step 6b):** also drop an idea that lands on the baseline (it only restyles what shipped apps already do), and prefer ideas whose `spec.pattern` keeps the must keeps. Name the Mobbin pattern a kept idea builds on.
 
-1. **First pass, free:** apply (a) and (c) to all 8. Shortlist 6 to 8, or the number the user asked for. Each shortlisted direction costs one search (step 9). Fewer than 6 pass when the user asked for no smaller number: call `bend_brief` once more (other `moves`, a `lens`, or an unused candidate's words in the brief), shortlist from both rolls, and if still under 6, go on with what you have and say why in one line. Never bend a third time.
+1. **First pass, free:** apply (a) and (c) to all 8, after the challenger verdicts (step 7b.3). Shortlist 6 to 8, or the number the user asked for. Each shortlisted direction costs one search (step 9). Fewer than 6 pass when the user asked for no smaller number: call `bend_brief` once more (new candidates in place of the failed ones, other `moves` or a `lens`), shortlist from both rolls, and if still under 6, go on with what you have and say why in one line. Never bend a third time.
 2. **Second pass, after searching:** apply (b). Retry the weakest UI lane first (step 10.3). Still under 4: drop it.
-3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every idea from every bend (8, or 16 after a second bend): `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
+3. **Rate, required:** after the searches and before you place anything, call `rate_directions` once with a rating for every idea from every bend (8, or 16 after a second bend): `drop` with `reasons` (`no_ui_path`, `no_usable_refs`, `off_brief`, `duplicate_idea`, `too_literal`) and `keep` with `strong_salvage` or `great_refs` for the ones you show. A declined challenger is a `drop` with `off_brief`. Do this every run, even when searches went badly or you keep only one idea. Keeps are recorded too, so later bends learn what works. Dropped directions leave the canvas.
 
 ### 9. Search both zones for the shortlist
 
@@ -243,7 +242,7 @@ Counts depend on how many directions you keep. With 4 to 8: 1 to 3 art and 4 to 
 
 - **Art direction row**, best first, from the art zone only. Each gets a `note` (up to 280 characters) that starts with `steal:` and names what to take for the page, drawn from `spec.steal`: `steal: the misregistered second ink as the price highlight`.
 - **UI references grid**, best first, from the UI zone only, including the Mobbin screens from step 11 when Mobbin ran. Each gets a `steal:` note too: `steal: the bottom sheet that holds the fare breakdown`.
-- **One idea note** per section: `<TRACK>: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>. LANGUAGE: <the 7 axes from step 7b>.` TRACK is SHIP, STRETCH or WILD; the subtract direction starts `SUBTRACT:` and names what it removes.
+- **One idea note** per section: `<TRACK>: <twist>. PATTERN: <spec.pattern>. SIGNATURE: <spec.signature>. LANGUAGE: <the 7 values of its language>. RISK: <its honest risk>.` TRACK is SHIP, STRETCH or WILD; the subtract direction starts `SUBTRACT:` and names what it removes. A direction that took a raise from a declined challenger ends its note with the `RAISE from <challenger title>: ...` line (step 7b.3).
 - If Mobbin ran: the direction's Mobbin screens from step 11 (in the UI grid), the "Shipped today" note once per board, and the `BUILD ON:` line in each idea note.
 
 Spread the items evenly across directions. When the board's item limit (Free: 40) cannot hold it all, place fewer per direction, at least 3 UI and 1 art each, and say so in one line. Never place a result you rated `bad`. Notes are short and plain; links in notes are clickable on the board. Then call `arrange_canvas` once with `by_direction`: the art row stays above the UI grid in each section. Do not read the board back between these calls.
@@ -256,11 +255,19 @@ Call `open_canvas` with the `canvasId`. If the client shows it inline, say it is
 
 Keep the reply short and in this order: the board link, one line with mode, platform, page and wildness, the Worth questioning list (step 1b, up to 5 one-line items), the direction cards, the one-liners below, then next steps and the closing question (step 14). No prose paragraphs.
 
-Present each kept direction as a compact card, four lines at most, with equal weight, Ship first, then Stretch, then Wild. End each with its highlights: 2 UI references and 1 art reference, each written exactly as `[title](sourceUrl) (site)`:
+Present each kept direction as a compact card, five lines (six with a raise), with equal weight and the same anatomy on every card, Ship first, then Stretch, then Wild. A winning or competitive challenger is a card like any other; mark it "(Stretch, challenger)". Lines, in order:
+
+- **Title** and track.
+- **Mechanic:** the working part of the page and how the idea becomes it.
+- **Feel:** its `language` in one short line, in plain words: type voice, color strategy, ground, density with composition, material, motion. Never name a shadcn style (Vega, Nova, Maia, Lyra, Mira) or any other preset name.
+- **Risk:** one honest line on how it could fail with real users.
+- **RAISE from <challenger title>:** only on the card that took a raise (step 7b.3).
+- **Refs:** 2 UI references and 1 art reference, each written exactly as `[title](sourceUrl) (site)`.
 
 > **1. Frosted vinyl sleeve** (Stretch)
 > Mechanic: total = the sleeve frames the total; the amount stays plain and large.
-> Language: condensed, restrained, light, airy, card-first, glass and light, glide.
+> Feel: condensed type, restrained color, light ground, airy cards, glass, glide.
+> Risk: the frosted layer can wash out the total on low brightness screens.
 > Refs: [Glass payment sheet](sourceUrl) (dribbble.com), [Fare breakdown card](sourceUrl) (dribbble.com); art: [Frosted record sleeve](sourceUrl) (pinterest.com)
 
 The subtract card says what it removes in its Mechanic line. The full spec is on the board and in the hand-off files; do not repeat every field here.
@@ -269,7 +276,8 @@ If the user asked for raw inspiration, add one line: "The raw stuff (textures, o
 
 Then:
 
-- **One line** on dropped ideas, counts and reasons only: "Dropped 2 of 8 ideas: 1 had no clear screen idea, 1 shared a language with another." Never name the dropped ideas or list them one by one, not even in brackets.
+- **One line** on declined challengers, if any, each with what it lent: "Declined challengers: Kitchen ticket rail (raised into 3: one strip per agent), Airport gate sign (raised into 5: one status word per row)."
+- **One line** on other dropped ideas, counts and reasons only: "Dropped 2 of 8 ideas: 1 had no clear screen idea, 1 shared a language with another." Never name these or list them one by one, not even in brackets.
 - **One line** on removed results, and any lane you retried: "Removed 6 results (2 shop listings, 1 web dashboard, 3 off idea); retried the bridge lane once as 'film strip seat picker ui'."
 - **One line** on shipped screens, if Mobbin ran: "Shipped today: [Airbnb, checkout](link), [Revolut, payment](link)."
 
