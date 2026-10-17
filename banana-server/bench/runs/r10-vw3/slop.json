@@ -1,0 +1,542 @@
+{
+ "esim-plan-picker/bd-7le7dwhz": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-7le7dwhz",
+  "title": "Gas Station Price Sign",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "eSIM pickers ship white cards with flags, GB/day pills and blue gradients, whereas this lit forecourt price sign with carved cup-mark dots is new to the domain; only the highlighted best-value plan card is the familiar move, kept in a supporting role."
+ },
+ "esim-plan-picker/bd-boxlp9x6": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-boxlp9x6",
+  "title": "Omani Jabal Akhdar Terraces",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Airalo/Holafly-style eSIM picker: stacked plan cards with a highlighted 'recommended' tier and local/regional/global tabs",
+  "reason": "The core mechanic is the standard eSIM plan list with a highlighted recommended plan, but the terrace-stone palette, dry-stone edge and envelope-slide motion give it an unfamiliar skin."
+ },
+ "esim-plan-picker/bd-jlzttiy2": {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-jlzttiy2",
+  "title": "Dial Caliper plan picker",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "telecom data gauge/dial readout",
+  "reason": "Brushed-steel caliper plates and Kuwait Towers disc tiling look nothing like the flat flag-and-card lists eSIM apps ship, though the amber dial-and-needle readout echoes the usage gauges telecom apps already use, and the caliper-jaw filter is still a range slider underneath."
+ },
+ "telecom-usage-home/bd-04l0fd6z": {
+  "briefId": "telecom-usage-home",
+  "directionId": "bd-04l0fd6z",
+  "title": "Perforated Metal home screen",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "telecom usage meter cards (segmented fill-to-value gauges for data/minutes/balance)",
+  "reason": "The perforated steel and safety orange look is unseen in GCC telecom, but the hole-grid fill is just the domain's usual remaining-allowance meter in a new skin, on a standard quick-actions and activity layout."
+ },
+ "telecom-usage-home/bd-d8who7gj": {
+  "briefId": "telecom-usage-home",
+  "directionId": "bd-d8who7gj",
+  "title": "Treemap Tiles home screen",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "GCC prepaid apps usually show ring gauges and promo carousels, so a hatched, data-weighted treemap is fresh, though it still lands near the familiar bento grid of quick-action tiles."
+ },
+ "telecom-usage-home/bd-vv6e5epn": {
+  "briefId": "telecom-usage-home",
+  "directionId": "bd-vv6e5epn",
+  "title": "Punch Card home screen",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Buff punch cards with mono print and hole-row progress look nothing like the ring gauges and brand-gradient balance cards of GCC telecom apps; only the standard greeting, quick actions and tab bar skeleton is familiar."
+ },
+ "telecom-sign-up/bd-o7g2zp2q": {
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-o7g2zp2q",
+  "title": "1970s Airline Branding telecom",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Telecom sign-ups ship flat brand-color steppers and plan cards, so a 1970s airline livery and boarding-pass check-in reads fresh; only the standard stacked form and progress bar underneath are familiar."
+ },
+ "telecom-sign-up/bd-d633bs4w": {
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-d633bs4w",
+  "title": "Flat-Pack Instruction Manual telecom",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard telecom onboarding stepper wizard with numbered progress steps",
+  "reason": "The flat-pack manual skin (newsprint, line drawings, parts count) is new for telecom, but the core mechanic is the usual numbered step-by-step progress wizard these sign-ups already ship, just recolored allen-key yellow."
+ },
+ "telecom-sign-up/bd-k60awsib": {
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-k60awsib",
+  "title": "Envelopes telecom sign-up",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Telecom sign-ups usually use brand gradients, OTP boxes, plan cards and SIM illustrations, so a cream airmail envelope and letter-style form is fresh; only the standard stepped form layout with a progress bar is familiar."
+ },
+ "telecom-bill-payment/bd-0ct85hbm": {
+  "briefId": "telecom-bill-payment",
+  "directionId": "bd-0ct85hbm",
+  "title": "Bilingual Baqala Receipt bill",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "zigzag-edged digital receipt used on payment and bill confirmation screens",
+  "reason": "The baqala thermal-slip bilingual styling is a fresh local skin, but a torn-edge receipt is a stock move for bill and payment apps, so this reads as a familiar idea dressed up."
+ },
+ "telecom-bill-payment/bd-9tb2e13b": {
+  "briefId": "telecom-bill-payment",
+  "directionId": "bd-9tb2e13b",
+  "title": "Najdi Dabba Wooden Lock",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Saudi telecom bill screens ship white cards with brand purple or green and usage ring gauges. A Najdi wooden peg-lock with sun-bleached wood tones is new to the category. The familiar parts are supporting ones: the payment-padlock idea and a standard bottom sheet."
+ },
+ "telecom-bill-payment/bd-ychfswbq": {
+  "briefId": "telecom-bill-payment",
+  "directionId": "bd-ychfswbq",
+  "title": "Fingerprints bill payment",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "A cream forensic fingerprint record card with mono type and stamp-pad red is nothing like the flat branded cards of STC, Mobily or Zain, though the stamped-receipt feel and the standard line-by-line bill structure stay familiar from payment apps."
+ },
+ "telecom-fiber-plans/bd-0efjau3y": {
+  "briefId": "telecom-fiber-plans",
+  "directionId": "bd-0efjau3y",
+  "title": "Boxing Poster fiber plans",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Fiber plan pages usually ship gradient plan cards, speed gauges and 'most popular' badges, so a boxing-poster red-versus-blue face-off with Kuwait Towers disc tiling is new; only the underlying plan comparison table is the familiar telecom move."
+ },
+ "telecom-fiber-plans/bd-s0mhrqtd": {
+  "briefId": "telecom-fiber-plans",
+  "directionId": "bd-s0mhrqtd",
+  "title": "1970s Airline Branding fiber",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "telecom pricing cards with a highlighted recommended plan and monthly/yearly toggle",
+  "reason": "The 70s airline livery and ticket styling are fresh for a Kuwaiti telecom, but underneath it's the standard plan-card grid where the chosen plan gets a colored header and border, plus the usual billing toggle."
+ },
+ "telecom-fiber-plans/bd-rjxr3z0a": {
+  "briefId": "telecom-fiber-plans",
+  "directionId": "bd-rjxr3z0a",
+  "title": "Gas Station Price Sign",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "telecom plan-card pricing grid with a highlighted 'best value' column",
+  "reason": "The gas-pylon lightbox and baqala receipt texture are fresh for telecom, but underneath it is still the standard plan columns with big prices and one red-highlighted recommended plan."
+ },
+ "ramadan-food-delivery/bd-9bm2vxvb": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-9bm2vxvb",
+  "title": "Qamar al-Din Apricot Sheet",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard GCC delivery Ramadan offers page: countdown banner, deal-card grid with struck-through prices, warm orange palette, rounded Arabic display type",
+  "reason": "The backlit, unrolling Qamar al-Din sheet is a fresh Ramadan-native material in place of the usual lanterns and crescents, but the page's structure, warm orange palette and rounded type still read as a typical Talabat or HungerStation promo page."
+ },
+ "ramadan-food-delivery/bd-pkglkiio": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-pkglkiio",
+  "title": "Hand-Painted Souq Shop Sign",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none; it avoids the usual Ramadan delivery look of crescents, lanterns, purple-and-gold and flat illustration",
+  "reason": "Souq sign-painter enamel boards with slab type and cobalt offset shadows are new for GCC Ramadan offer pages; only the standard countdown banner, chips and old/new price cards are familiar."
+ },
+ "ramadan-food-delivery/bd-58cmx58y": {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-58cmx58y",
+  "title": "Eastern Arabic Digits ramadan",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Ramadan promo pages in GCC delivery apps: dark night-and-gold palette, iftar countdown banner and oversized discount numbers on deal cards",
+  "reason": "The lantern-free typographic plate look and ember texture feel new, but the core move of one huge discount number over dark-and-gold with a countdown is what Ramadan deal pages already ship, just in a new skin."
+ },
+ "food-delivery-home/bd-k8mvn7m7": {
+  "briefId": "food-delivery-home",
+  "directionId": "bd-k8mvn7m7",
+  "title": "Matchbook food delivery",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Struck-match filters, fold-open matchbook promos and burnt-stem order progress are a look delivery apps have not shipped, though the red food palette and standard chip-banner-order-bar layout stay familiar."
+ },
+ "food-delivery-home/bd-ip3lkqpk": {
+  "briefId": "food-delivery-home",
+  "directionId": "bd-ip3lkqpk",
+  "title": "Corrugated Cardboard food delivery",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "kraft takeout-box packaging branding on a standard delivery home (cuisine chips, restaurant list, live order bar)",
+  "reason": "Cardboard flaps and stamp-red tabs are unusual for GCC delivery apps, but the takeout-box metaphor is the domain's most obvious one, and it sits on the usual delivery home structure."
+ },
+ "food-delivery-home/bd-mjpue4od": {
+  "briefId": "food-delivery-home",
+  "directionId": "bd-mjpue4od",
+  "title": "Tempered Chocolate food delivery",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "standard delivery home: cuisine chip row plus stepped live-order tracker",
+  "reason": "The tempered-chocolate surface, gloss band and serif type look nothing like the bright, photo-led delivery apps, but the scored squares are just the usual cuisine chips and step tracker in a chocolate skin."
+ },
+ "food-order-tracking/bd-gltr1q3q": {
+  "briefId": "food-order-tracking",
+  "directionId": "bd-gltr1q3q",
+  "title": "Karak Tea Glass order",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard delivery tracker: live map with custom courier pin, cream bottom sheet with ETA and call button, filling progress bar, kraft-paper food packaging styling",
+  "reason": "The karak glass fill and tea-glass pins are a local skin on the usual map, bottom sheet and progress bar layout, and the kraft texture with its stamp is already common food-packaging styling."
+ },
+ "food-order-tracking/bd-ura2th0c": {
+  "briefId": "food-order-tracking",
+  "directionId": "bd-ura2th0c",
+  "title": "Eastern Arabic Digits order",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard Talabat/Deliveroo tracking screen: live map with courier pin, bottom sheet with ETA and status, numbered progress steps, call button",
+  "reason": "The enamel lift-plate pins with Eastern Arabic digits, black-and-saffron palette and receipt-feed motion are a fresh skin, but the screen is still the usual delivery-tracking map, ETA sheet and step tracker."
+ },
+ "food-order-tracking/bd-1tk1vjie": {
+  "briefId": "food-order-tracking",
+  "directionId": "bd-1tk1vjie",
+  "title": "Corrugated Cardboard order tracking",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "standard delivery tracker (map with courier pin, stepped progress, ETA and call button) in kraft takeaway-packaging styling",
+  "reason": "The once-per-second tick and the fold-open flap rows are fresh, but the layout is the usual tracking screen, and kraft-bag cardboard is already a common food-takeaway branding look."
+ },
+ "food-restaurant-menu/bd-sy9cmmh6": {
+  "briefId": "food-restaurant-menu",
+  "directionId": "bd-sy9cmmh6",
+  "title": "Stripes restaurant menu",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "standard delivery-app menu: cover photo hero, rating/time/fee row, promo strip, dish list rows",
+  "reason": "The awning-stripe rows and sardine-tin lithograph skin are uncommon for delivery apps, but they sit on the usual menu structure and still read as a typical delivery menu."
+ },
+ "food-restaurant-menu/bd-5f0gtlnf": {
+  "briefId": "food-restaurant-menu",
+  "directionId": "bd-5f0gtlnf",
+  "title": "Hot Sauce Label restaurant",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "standard delivery-app restaurant page (cover photo, rating/time/fee row, dish list, add-on bottom sheet) with chili spice pips and retro craft-label branding",
+  "reason": "The hot-sauce label is a retro restaurant-branding skin over the usual delivery menu layout, chili pips are the domain's stock spice marker, and the 200ms slide-in is generic."
+ },
+ "food-restaurant-menu/bd-ypfeqwoq": {
+  "briefId": "food-restaurant-menu",
+  "directionId": "bd-ypfeqwoq",
+  "title": "Tempered Chocolate restaurant menu",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Delivery apps ship white photo cards with flat illustration, so a dark tempered-chocolate surface with scored-bar segments and a jukebox ticket texture is new to the domain, though the underlying layout of hero cover, rating/time/fee row and image-facts-add card is the standard delivery menu."
+ },
+ "food-delivery-checkout/bd-aufawm3b": {
+  "briefId": "food-delivery-checkout",
+  "directionId": "bd-aufawm3b",
+  "title": "Matchbook delivery checkout",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "A matchbook-object checkout with match-stick step progress, a striker-strip pay bar and cover-red cardstock is a long way from the flat white card-and-illustration checkout that food delivery apps ship, though the stepper, thumb-zone CTA and saved-payment rows stay conventional underneath."
+ },
+ "food-delivery-checkout/bd-c25983in": {
+  "briefId": "food-delivery-checkout",
+  "directionId": "bd-c25983in",
+  "title": "Kraft Paper delivery checkout",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "standard delivery-app checkout stepper with kraft-bag artisanal food packaging styling",
+  "reason": "Kraft stock and docket stamps are not what delivery apps ship, but they echo the familiar takeaway paper-bag cliché, and the page underneath is still the usual stepper, rows, tip and pay checkout."
+ },
+ "food-delivery-checkout/bd-ihd397he": {
+  "briefId": "food-delivery-checkout",
+  "directionId": "bd-ihd397he",
+  "title": "Tea Tin delivery checkout",
+  "slop": 2.5,
+  "votes": [
+   2,
+   3
+  ],
+  "look": "none",
+  "reason": "Parchment labels, gilt frames, serif type and lacquer seal dots break sharply from the white, bold-sans, brand-colored look of delivery checkouts, though the structure underneath is still the familiar stepper and cart list with prices on the right."
+ },
+ "dubai-real-estate/bd-ip2pl343": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-ip2pl343",
+  "title": "Abu Dhabi Cultural Foundation",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "cream-and-serif luxury property listing with split map/list view and price bar chart",
+  "reason": "The scale-bar data band and 1981 Cultural Foundation modernism are fresh, but beige stone tones, big serif display and a map-pin/list split still read as a typical upscale Dubai listing page."
+ },
+ "dubai-real-estate/bd-e920sm5o": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-e920sm5o",
+  "title": "Topographic Map estate listing",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Dubai luxury listings usually ship full-bleed photo heroes with dark, gold, marble and serif type, so a survey-paper topo map with contour rings and salt-crust motion is new here; only the oversized price figure is a familiar listing move."
+ },
+ "dubai-real-estate/bd-fdg143ug": {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-fdg143ug",
+  "title": "35mm Slide Mount estate",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Slide mounts on a light table with a terrazzo texture and a warm yellow-brown palette are far from the gold, marble and full-bleed photography of Dubai luxury listings, though the map of price-tagged pins is still the standard property-portal move."
+ },
+ "villa-developer-home/bd-n6oxghpr": {
+  "briefId": "villa-developer-home",
+  "directionId": "bd-n6oxghpr",
+  "title": "Najdi Painted Doors villa",
+  "slop": 2.5,
+  "votes": [
+   3,
+   2
+  ],
+  "look": "GCC developer sites dressed in Saudi heritage motifs (Diriyah-style Najdi patterns, arches and doors as a 'welcome home' metaphor)",
+  "reason": "The red, indigo and ochre painted-door palette and swing-open cards are unusual next to the beige-and-gold renders typical here, but 'a door opening onto your home' over a standard hero, nav and compound-card layout is a familiar real estate and Saudi heritage move."
+ },
+ "villa-developer-home/bd-p679ee3x": {
+  "briefId": "villa-developer-home",
+  "directionId": "bd-p679ee3x",
+  "title": "Qatif Hadra Fish Weir",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Gulf villa developer sites usually ship gold, marble, sand beige and full-bleed renders, so funnel stake lines from the Qatif fish weir in aqua and orange are a new look; only the standard card grid and highlighted plan row stay familiar."
+ },
+ "villa-developer-home/bd-gtu9huvy": {
+  "briefId": "villa-developer-home",
+  "directionId": "bd-gtu9huvy",
+  "title": "Cyanotype Print villa developer",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "GCC villa developers usually ship glossy renders with sand, marble and gold, so a full Prussian-blue cyanotype sun-print page is fresh; only the blueprint-for-floor-plans link and the standard hero-plus-cards layout feel familiar."
+ },
+ "rental-search-results/bd-ubw4fnw7": {
+  "briefId": "rental-search-results",
+  "directionId": "bd-ubw4fnw7",
+  "title": "Al Ahsa Oasis",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Rentals apps ship photo cards and price pins on a map, so rendering filters and result rows as oasis plots with irrigation channels and dot counts is new to the domain, though it still sits on the usual chip-filter and result-list layout."
+ },
+ "rental-search-results/bd-q4arryw3": {
+  "briefId": "rental-search-results",
+  "directionId": "bd-q4arryw3",
+  "title": "Push Pins search results",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Rentals apps like Bayut and Property Finder ship clean white photo cards with heart saves and filter chips; a cork-and-index-card pinboard is foreign to the domain, though pinning to the top is just the familiar favorite or shortlist reskinned."
+ },
+ "rental-search-results/bd-uqrxbjyt": {
+  "briefId": "rental-search-results",
+  "directionId": "bd-uqrxbjyt",
+  "title": "Asiri Slate-Banded Mud Towers",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Standard GCC rental search (chip filter row, stacked result list, map) dressed in the earthy Saudi heritage tones common in Riyadh branding",
+  "reason": "The Asiri slate-ledge banding gives the list a fresh skin, but the signature is ordinary filter-chip behaviour (fill, check, x to clear) reskinned as slabs, and the page still reads as a typical property list."
+ },
+ "apartment-detail/bd-mybcvbk9": {
+  "briefId": "apartment-detail",
+  "directionId": "bd-mybcvbk9",
+  "title": "Abu Dhabi Cultural Foundation",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Bayut / Property Finder listing page: photo gallery, map with pins and nearby list, price history bars and mortgage estimate, here in warm-beige editorial serif",
+  "reason": "The 1981 Cultural Foundation palette, the scale-bar band and the diptych hero are fresh for Gulf rentals, but the page still runs the standard listing structure of map pins, nearby list and highlighted price bars."
+ },
+ "apartment-detail/bd-o5v6iuio": {
+  "briefId": "apartment-detail",
+  "directionId": "bd-o5v6iuio",
+  "title": "35mm Slide Mount apartment",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "Slide mounts on a light table with outline-only vellum styling is far from the full-bleed carousels and white cards of Bayut or Property Finder, though the gallery, amenities list and thumb-zone booking flow keep the usual listing structure."
+ },
+ "apartment-detail/bd-j03i87u3": {
+  "briefId": "apartment-detail",
+  "directionId": "bd-j03i87u3",
+  "title": "Cyanotype Print apartment detail",
+  "slop": 3,
+  "votes": [
+   3,
+   3
+  ],
+  "look": "Bayut/Property Finder listing page: gallery, map with price pins, payment estimate, plus blueprint styling for floor plans",
+  "reason": "The cyanotype skin and tick-scale scroll marker are fresh for GCC rentals, but the signature is still the standard price-pin map, the layout is the usual listing stack, and blue blueprint tone is a familiar real-estate cue."
+ },
+ "property-portal-home/bd-pjbi5zty": {
+  "briefId": "property-portal-home",
+  "directionId": "bd-pjbi5zty",
+  "title": "Solarpunk 2050 buyers property",
+  "slop": 2,
+  "votes": [
+   2,
+   2
+  ],
+  "look": "none",
+  "reason": "London portals ship a photo hero with a big search bar and plain listing cards; a solarpunk rooftop-garden hero, rammed-earth strata bands and planter-box cards are new here, though the green eco-sprout motif and the plan cards echo familiar green-homes and SaaS moves in a supporting role."
+ },
+ "property-portal-home/bd-2wdzdy1b": {
+  "briefId": "property-portal-home",
+  "directionId": "bd-2wdzdy1b",
+  "title": "Lime Plaster buyers property",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "boutique London estate agent look (The Modern House, Aucoot style): warm stone neutrals, terracotta accent, big editorial serif, soft card panels",
+  "reason": "The lime plaster palette and serif treatment are the warm-earthy editorial look upmarket property sites already use; only the Girih interlock motion is new, and it plays a supporting role."
+ },
+ "property-portal-home/bd-z7v8pu55": {
+  "briefId": "property-portal-home",
+  "directionId": "bd-z7v8pu55",
+  "title": "Walnut Veneer buyers property",
+  "slop": 4,
+  "votes": [
+   4,
+   4
+  ],
+  "look": "premium London estate agent site (Savills, Knight Frank, The Modern House): dark warm surfaces, serif display, brass/gold accents, wood-and-plants interiors mood",
+  "reason": "Walnut, brass and Fraunces serif repeat the luxury property brand look, and the hero, search and feature-card structure is a standard portal; the Nubian limewash twist sits at 4 percent opacity on one panel, too faint to change what the page reads as."
+ }
+}

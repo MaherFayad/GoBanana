@@ -182,6 +182,49 @@ export const STYLE_ONLY_DROP = 1.5;
 
 export type BriefFit = { drop: boolean; delta: number; why: string[] };
 
+/**
+ * R11: words that put a brief in a card region or name its culture ("for buyers in London", "a
+ * Japanese restaurant"). Keys are the Atlas card regions; "gulf" and "mena" also follow the market.
+ */
+const REGION_WORDS: Readonly<Record<string, RegExp>> = {
+  gulf: /\b(gulf|gcc|khaleeji|saudi|ksa|riyadh|jeddah|dammam|uae|emirati|dubai|abu dhabi|sharjah|qatar|qatari|doha|kuwait|kuwaiti|bahrain|manama|oman|omani|muscat)\b/i,
+  mena: /\b(arab|arabic|arabian|middle east|mena|levant|levantine|egypt|egyptian|cairo|lebanon|lebanese|beirut|jordan|jordanian|amman|syria|syrian|damascus|iraq|iraqi|baghdad|turkey|turkish|istanbul|morocco|moroccan|marrakech|tunisia|algeria|persian|iran|iranian)\b/i,
+  europe: /\b(europe|european|uk|british|britain|england|english|london|manchester|scotland|ireland|irish|dublin|france|french|paris|germany|german|berlin|munich|italy|italian|rome|milan|spain|spanish|madrid|barcelona|portugal|lisbon|netherlands|dutch|amsterdam|belgium|brussels|swiss|switzerland|zurich|austria|vienna|nordic|scandinavian|sweden|swedish|stockholm|norway|oslo|denmark|danish|copenhagen|finland|finnish|helsinki|greece|greek|athens|poland|polish|prague|czech)\b/i,
+  "north-america": /\b(america|american|usa|us market|united states|new york|nyc|brooklyn|los angeles|san francisco|chicago|texas|california|canada|canadian|toronto|vancouver)\b/i,
+  "latin-america": /\b(latin|latino|latam|mexico|mexican|brazil|brazilian|argentina|argentine|colombia|colombian|peru|peruvian|chile|chilean|cuba|cuban|caribbean)\b/i,
+  "east-asia": /\b(japan|japanese|tokyo|osaka|kyoto|korea|korean|seoul|china|chinese|beijing|shanghai|hong kong|taiwan|taiwanese)\b/i,
+  "south-asia": /\b(india|indian|mumbai|delhi|bangalore|pakistan|pakistani|karachi|lahore|bangladesh|sri lanka|nepal)\b/i,
+  "southeast-asia": /\b(thai|thailand|bangkok|vietnam|vietnamese|indonesia|indonesian|jakarta|bali|malaysia|malaysian|singapore|philippines|filipino|manila)\b/i,
+  "central-asia": /\b(central asia|uzbek|uzbekistan|kazakh|kazakhstan|samarkand|silk road)\b/i,
+  "east-africa": /\b(east africa|ethiopia|ethiopian|eritrea|kenya|kenyan|nairobi|tanzania|uganda|somalia|somali)\b/i,
+  "west-africa": /\b(west africa|nigeria|nigerian|lagos|ghana|ghanaian|accra|senegal|dakar|mali|ivory coast)\b/i,
+  "central-africa": /\b(central africa|congo|congolese|cameroon|kinshasa)\b/i,
+  "southern-africa": /\b(south africa|south african|cape town|johannesburg|zimbabwe|namibia|botswana)\b/i,
+  oceania: /\b(australia|australian|sydney|melbourne|new zealand|maori|pacific islands)\b/i,
+  arctic: /\b(arctic|inuit|greenland|sami|lapland)\b/i,
+};
+
+/** The card regions a brief is in or names the culture of (market regions included). */
+export function briefRegions(brief: string, market: Market | null): Set<string> {
+  const out = new Set(Object.entries(REGION_WORDS).filter(([, re]) => re.test(brief)).map(([r]) => r));
+  if (market === "gulf") out.add("gulf").add("mena");
+  if (market === "mena") out.add("mena");
+  // The Gulf is part of the Arab world: a Gulf brief takes Arab region cards (Eastern Arabic digits).
+  if (out.has("gulf")) out.add("mena");
+  return out;
+}
+
+/**
+ * R11 region rule for leads: a regional card leads only a brief in its region or one that names its
+ * culture. A Gulf numeral card does not lead a global SaaS page; a Japanese bento does not lead a
+ * Riyadh food home. Global cards lead anywhere, and any card may still be the second card (the twist).
+ */
+export function regionLeadOk(card: Pick<IngredientCard, "region">, regions: ReadonlySet<string>): boolean {
+  const r = card.region;
+  if (!r || r === "global") return true;
+  return regions.has(r);
+}
+
 /** The card's own words, never its fit reasons (they always name the domain). */
 function cardText(card: IngredientCard): string {
   return [card.name, card.idea, card.surprise, card.culturalNotes ?? "", card.imagery, ...card.artQueries].join(" ");

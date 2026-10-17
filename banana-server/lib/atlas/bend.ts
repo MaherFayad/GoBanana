@@ -53,7 +53,7 @@ import { briefTopic as phase0Topic } from "@/lib/bend/queries";
 import { askedStyles, briefStyleGenre } from "@/lib/styles/directions";
 import { neighbourOf, type StyleId } from "@/lib/styles/index";
 import { isStyleId } from "@/lib/styles/ids";
-import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
+import { briefFit, briefRegions, briefWorld, occasionsIn, regionLeadOk } from "./brief-fit";
 import { searchHints } from "./search-hints";
 import { isStructural, placeMap, platformSections, spanLayout, spanPage } from "./page-span";
 import { coherentMechanic, coherentSpec, colorLine, densityLine } from "./spec-coherence";
@@ -933,7 +933,13 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // with the plan cards protected) gives way to the next card (Gate 2 round 3), unless too few are left.
   const nonLensAll = cards.filter((c) => !lensCards.includes(c) && !isRuleCard(c));
   const free = nonLensAll.filter((c) => !aimsAtProtected(pageFitOf.get(c.id)?.reason ?? "", protect));
-  const nonLens = free.length >= Math.max(input.count, MIN_LEADS) ? free : nonLensAll;
+  const nonLensFit = free.length >= Math.max(input.count, MIN_LEADS) ? free : nonLensAll;
+  // R11 region rule: a regional card leads only a brief in its region or one that names its culture
+  // (no Gulf digits on a global SaaS page, no Japanese bento on a Riyadh food home); it can still be
+  // the second card. Kept only when enough leads are left.
+  const regions = briefRegions(input.brief, market);
+  const homeLeads = nonLensFit.filter((c) => regionLeadOk(c, regions));
+  const nonLens = homeLeads.length >= Math.max(input.count, MIN_LEADS) ? homeLeads : nonLensFit;
   const leadsLens = mmr(lensCards, GENERATED);
   const drawn = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   // No style asked and no lens: the first directions take different main styles (R2).

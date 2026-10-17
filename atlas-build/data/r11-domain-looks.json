@@ -1,0 +1,1066 @@
+{
+ "agency-portfolio": [
+  {
+   "look": "outlined stroke display type in giant headlines",
+   "cards": [
+    "outlined-type-never-filled"
+   ]
+  },
+  {
+   "look": "custom cursor that follows and marks hover targets",
+   "cards": [
+    "mouse-cursors"
+   ]
+  },
+  {
+   "look": "grainy risograph and duotone print aesthetics",
+   "cards": [
+    "risograph-zine",
+    "two-spot-inks-only"
+   ]
+  },
+  {
+   "look": "visible Swiss grid with modular columns and small captions",
+   "cards": [
+    "crop-marks-everywhere"
+   ]
+  },
+  {
+   "look": "asterisk, arrow and sticker marks as playful agency motifs",
+   "cards": [
+    "scribbles"
+   ]
+  }
+ ],
+ "ai-assistant": [
+  {
+   "look": "gradient or glowing orb sparkle as the AI mark",
+   "cards": [
+    "asterisks",
+    "blobs"
+   ]
+  }
+ ],
+ "airline": [
+  {
+   "look": "a dotted flight path arc between two airport codes with a small plane icon",
+   "cards": [
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a departure board listing flights, gates and times",
+   "cards": [
+    "bus-stop-timetable"
+   ]
+  },
+  {
+   "look": "a sky blue gradient with clouds and plane silhouettes",
+   "cards": [
+    "cloud-streets",
+    "frutiger-aero-2007"
+   ]
+  },
+  {
+   "look": "a boarding pass with a big barcode or QR code and a perforated stub",
+   "cards": [
+    "carnival-ticket-roll"
+   ]
+  }
+ ],
+ "analytics-saas": [
+  {
+   "look": "gauge or radial progress for goals",
+   "cards": [
+    "barometer-dial",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "dark mode SaaS dashboard with a sidebar and hairline borders",
+   "cards": [
+    "anodized-aluminum"
+   ]
+  }
+ ],
+ "automotive": [
+  {
+   "look": "brushed metal and chrome trim on buttons and badges",
+   "cards": [
+    "y2k-chrome"
+   ]
+  }
+ ],
+ "beauty": [
+  {
+   "look": "apothecary-style skincare labels with clinical numbered names",
+   "cards": [
+    "apothecary-label"
+   ]
+  },
+  {
+   "look": "satin and silk fabric folds behind luxury cosmetics",
+   "cards": [
+    "silk-satin"
+   ]
+  }
+ ],
+ "charity": [
+  {
+   "look": "a horizontal goal progress bar showing amount raised",
+   "cards": [
+    "bars-instead-of-numbers"
+   ]
+  },
+  {
+   "look": "Islamic geometric star patterns and crescent motifs for zakat and sadaqah apps",
+   "cards": [
+    "moons"
+   ]
+  }
+ ],
+ "coffee": [
+  {
+   "look": "coffee pots, brewers and grinding tools as the hero object",
+   "cards": [
+    "arabic-coffee-and-the-dallah",
+    "dallah-coffee-pot",
+    "ethiopian-jebena-coffee-pot",
+    "najdi-mihbash-coffee-mortar"
+   ]
+  },
+  {
+   "look": "retro diner or vintage cafe signage and enamel mug styling",
+   "cards": [
+    "googie-1958"
+   ]
+  },
+  {
+   "look": "warm wood with brass accents of the artisanal roaster site",
+   "cards": [
+    "brushed-brass"
+   ]
+  }
+ ],
+ "crm-sales": [
+  {
+   "look": "horizontal funnel or pipeline stage bars",
+   "cards": [
+    "chevrons",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "kanban board with draggable deal cards in stage columns",
+   "cards": [
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "ring or gauge for quota attainment",
+   "cards": [
+    "vintage-car-dashboard"
+   ]
+  }
+ ],
+ "crypto": [
+  {
+   "look": "gradient purple-blue Web3 hero with holographic 3D shapes",
+   "cards": [
+    "molten-chrome"
+   ]
+  },
+  {
+   "look": "hexagon blockchain network motif",
+   "cards": [
+    "hexagons"
+   ]
+  },
+  {
+   "look": "fear and greed index half-circle gauge",
+   "cards": [
+    "gauge-dials"
+   ]
+  }
+ ],
+ "design-tools": [
+  {
+   "look": "a dot-grid or graph-paper canvas with rulers, guides and snapping",
+   "cards": [
+    "plus-signs",
+    "self-healing-cutting-mat"
+   ]
+  },
+  {
+   "look": "painterly brush strokes as the brand mark of drawing and painting apps",
+   "cards": [
+    "brush-strokes"
+   ]
+  }
+ ],
+ "dev-tools": [
+  {
+   "look": "frosted glass and soft gradient glow on dark landing pages",
+   "cards": [
+    "frosted-glass"
+   ]
+  },
+  {
+   "look": "dark mode with blue-black background and a single bright accent",
+   "cards": [
+    "anodized-aluminum"
+   ]
+  },
+  {
+   "look": "minimal grayscale with thin outlines",
+   "cards": [
+    "black-and-white-only"
+   ]
+  },
+  {
+   "look": "visible hairline layout grid with plus-sign crosses at intersections",
+   "cards": [
+    "plus-signs",
+    "the-grid-lines-stay-visible"
+   ]
+  }
+ ],
+ "ecommerce": [
+  {
+   "look": "cardboard box and parcel imagery for delivery",
+   "cards": [
+    "sneaker-box"
+   ]
+  }
+ ],
+ "education": [
+  {
+   "look": "a horizontal progress bar on each course card",
+   "cards": [
+    "bars-instead-of-numbers"
+   ]
+  },
+  {
+   "look": "ring or gauge showing percent complete",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "chalkboard and classroom motifs",
+   "cards": [
+    "chalkboard"
+   ]
+  },
+  {
+   "look": "dot-and-line learning path stepper through modules",
+   "cards": [
+    "line-diagrams"
+   ]
+  }
+ ],
+ "ev-charging": [
+  {
+   "look": "a battery fill bar or percent ring showing state of charge",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a big charging percent or kW number as the hero with a ring animation",
+   "cards": [
+    "loading-spinners"
+   ]
+  }
+ ],
+ "events": [
+  {
+   "look": "a dark neon nightlife interface with glowing accents",
+   "cards": [
+    "hong-kong-neon-signs",
+    "italo-disco-1983"
+   ]
+  },
+  {
+   "look": "a theater playbill or concert program with dates and lineup",
+   "cards": [
+    "every-word-a-different-size",
+    "weimar-cabaret-1928"
+   ]
+  }
+ ],
+ "faith-lifestyle": [
+  {
+   "look": "geometric Islamic star patterns and arabesque borders as ornament",
+   "cards": [
+    "hejazi-rawashin-windows",
+    "turkish-iznik-tiles"
+   ]
+  },
+  {
+   "look": "Arabic calligraphy for headings and greetings",
+   "cards": [
+    "qalam-reed-pen"
+   ]
+  },
+  {
+   "look": "a prayer rug with its patterned border as the frame",
+   "cards": [
+    "persian-rug-borders"
+   ]
+  }
+ ],
+ "fashion": [
+  {
+   "look": "clean white minimal grid of model photos on seamless backdrop",
+   "cards": [
+    "black-and-white-only",
+    "black-white-and-one-gray"
+   ]
+  },
+  {
+   "look": "denim brand indigo with contrast stitching",
+   "cards": [
+    "raw-denim"
+   ]
+  },
+  {
+   "look": "luxury house monogram pattern",
+   "cards": [
+    "monograms"
+   ]
+  }
+ ],
+ "fintech": [
+  {
+   "look": "stepper flow for transfers with step dots",
+   "cards": [
+    "subway-map"
+   ]
+  },
+  {
+   "look": "biometric fingerprint motif for secure login and onboarding",
+   "cards": [
+    "fingerprint"
+   ]
+  },
+  {
+   "look": "half-circle gauge for credit score and spending limits",
+   "cards": [
+    "gauge-dials"
+   ]
+  },
+  {
+   "look": "coin icons for savings and cashback",
+   "cards": [
+    "coins"
+   ]
+  }
+ ],
+ "fitness": [
+  {
+   "look": "activity rings and ring gauges for daily goals",
+   "cards": [
+    "loading-spinners"
+   ]
+  },
+  {
+   "look": "progress line charts and bar charts of weight and lifts over time",
+   "cards": [
+    "ecg-strip",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "rest timer countdown ring or big countdown clock",
+   "cards": [
+    "clock-faces"
+   ]
+  },
+  {
+   "look": "badges, trophies and achievement medals",
+   "cards": [
+    "glossy-enamel",
+    "sticker-sheet"
+   ]
+  }
+ ],
+ "food-delivery": [
+  {
+   "look": "a paper bag or takeout box brand motif",
+   "cards": [
+    "bento-box",
+    "tiffin-carrier"
+   ]
+  },
+  {
+   "look": "heart favorite icon on restaurant and dish cards",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "circular cuisine category images and round restaurant logo thumbnails",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  }
+ ],
+ "gaming": [
+  {
+   "look": "dark neon dashboard with glowing accent colors",
+   "cards": [
+    "hong-kong-neon-1980s",
+    "hong-kong-neon-signs",
+    "italo-disco-1983"
+   ]
+  },
+  {
+   "look": "angular esports aesthetic with condensed caps headlines and aggressive diagonals",
+   "cards": [
+    "constructivism-1920s"
+   ]
+  },
+  {
+   "look": "rank emblems, shields, badges and tier medals",
+   "cards": [
+    "chevrons"
+   ]
+  },
+  {
+   "look": "collectible skin and character cards with rarity glow",
+   "cards": [
+    "stickers"
+   ]
+  },
+  {
+   "look": "leaderboard tables with ranked rows and big rank numbers",
+   "cards": [
+    "every-change-shown-as-a-delta"
+   ]
+  }
+ ],
+ "government": [
+  {
+   "look": "geometric lattice or mashrabiya pattern borders on Gulf e-government portals",
+   "cards": [
+    "mashrabiya-screens"
+   ]
+  },
+  {
+   "look": "Hijri and Gregorian dates shown together on IDs and requests",
+   "cards": [
+    "hijri-and-gregorian-dates-side-by-side"
+   ]
+  },
+  {
+   "look": "biometric fingerprint motif for identity verification and login",
+   "cards": [
+    "fingerprint",
+    "fingerprints"
+   ]
+  }
+ ],
+ "grocery": [
+  {
+   "look": "lightning bolt speed mark for minutes-fast delivery",
+   "cards": [
+    "lightning-bolts"
+   ]
+  }
+ ],
+ "healthcare": [
+  {
+   "look": "ring or gauge charts for vitals and goals",
+   "cards": [
+    "saturn-rings",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "step-by-step progress for booking and check-in flows",
+   "cards": [
+    "subway-map"
+   ]
+  },
+  {
+   "look": "medication reminder checklist with ticks and pill icons",
+   "cards": [
+    "pill-blister-pack"
+   ]
+  }
+ ],
+ "home-services": [
+  {
+   "look": "handyman tools and toolbox imagery",
+   "cards": [
+    "pegboard-tool-wall"
+   ]
+  }
+ ],
+ "hotels": [
+  {
+   "look": "luxury boutique hotel look: dark, gold accents, serif type",
+   "cards": [
+    "crushed-velvet",
+    "polished-marble"
+   ]
+  },
+  {
+   "look": "key card or room number door tag for check-in",
+   "cards": [
+    "do-not-disturb-sign",
+    "keys"
+   ]
+  },
+  {
+   "look": "photo grid or carousel gallery of rooms",
+   "cards": [
+    "film-frames"
+   ]
+  }
+ ],
+ "hr-recruiting": [
+  {
+   "look": "leave balance rings or progress bars showing days remaining",
+   "cards": [
+    "saturn-rings"
+   ]
+  }
+ ],
+ "investing": [
+  {
+   "look": "bento grid cards on a fintech dashboard",
+   "cards": [
+    "bento-box"
+   ]
+  },
+  {
+   "look": "a line area chart with 1D 1W 1M 1Y range tabs",
+   "cards": [
+    "ecg-strip"
+   ]
+  }
+ ],
+ "kids-learning": [
+  {
+   "look": "bright primary-color chunky rounded buttons and cards",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "paper cut-out and felt craft shapes",
+   "cards": [
+    "finger-puppet"
+   ]
+  }
+ ],
+ "language-learning": [
+  {
+   "look": "a winding path of lesson nodes on a skill map",
+   "cards": [
+    "asiri-escarpment-switchbacks",
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "a weekly calendar with ticked days and a daily goal ring",
+   "cards": [
+    "saturn-rings"
+   ]
+  }
+ ],
+ "logistics": [
+  {
+   "look": "cardboard box and kraft parcel imagery",
+   "cards": [
+    "archive-storage-box"
+   ]
+  },
+  {
+   "look": "a big delivery date or ETA hero with a time window",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "scan and QR code screens for lockers and returns",
+   "cards": [
+    "corner-brackets"
+   ]
+  }
+ ],
+ "luxury": [
+  {
+   "look": "black and gold foil on a dark luxe page",
+   "cards": [
+    "bisht-zari-edging",
+    "damascus-brocade",
+    "vietnamese-lacquer-painting"
+   ]
+  },
+  {
+   "look": "stark black and white monochrome fashion house site",
+   "cards": [
+    "black-and-white-only",
+    "black-white-and-one-gray"
+   ]
+  },
+  {
+   "look": "mother-of-pearl dials and inlays on fine jewelry and watches",
+   "cards": [
+    "mother-of-pearl"
+   ]
+  },
+  {
+   "look": "certificate and provenance as a printed card with seal or letterpress",
+   "cards": [
+    "gulf-wedding-invitation-card"
+   ]
+  }
+ ],
+ "maps-mobility": [
+  {
+   "look": "a map scale bar measuring distance in the map corner",
+   "cards": [
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "a map compass with a north pointer for orientation",
+   "cards": [
+    "compass-roses"
+   ]
+  }
+ ],
+ "mental-health": [
+  {
+   "look": "nature motifs such as clouds, waves, moons and raindrops for calm",
+   "cards": [
+    "cloud-streets"
+   ]
+  }
+ ],
+ "music": [
+  {
+   "look": "square album cover art grid as the main visual",
+   "cards": [
+    "1960s-jazz-album-covers"
+   ]
+  },
+  {
+   "look": "music playback hardware skeuomorphism (cassette J-card, tape reels)",
+   "cards": [
+    "cassette-tape-insert",
+    "reel-to-reel-tape-recorder"
+   ]
+  }
+ ],
+ "news": [
+  {
+   "look": "a ruled masthead over a big serif headline in dense newspaper columns",
+   "cards": [
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "black, white and a single red accent editorial palette",
+   "cards": [
+    "black-and-white-only"
+   ]
+  },
+  {
+   "look": "the newspaper crossword grid from the paper's own games section",
+   "cards": [
+    "crossword-puzzle"
+   ]
+  }
+ ],
+ "parenting": [
+  {
+   "look": "polaroid-style baby photo memories with handwritten captions",
+   "cards": [
+    "instant-photo"
+   ]
+  }
+ ],
+ "payments-wallet": [
+  {
+   "look": "flat saturated quick-action icon tiles",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "biometric fingerprint motif for confirming payments",
+   "cards": [
+    "fingerprint"
+   ]
+  },
+  {
+   "look": "digital gift money envelope for sending cash gifts",
+   "cards": [
+    "eidiya-money-envelope"
+   ]
+  },
+  {
+   "look": "a scannable pay code barcode beside the QR",
+   "cards": [
+    "barcodes"
+   ]
+  }
+ ],
+ "pets": [
+  {
+   "look": "weight line chart with a trend curve",
+   "cards": [
+    "ecg-strip"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of pets in bright colors",
+   "cards": [
+    "tingatinga-painting"
+   ]
+  },
+  {
+   "look": "soft pastel rounded cards with friendly pill buttons",
+   "cards": [
+    "gummy-candy"
+   ]
+  },
+  {
+   "look": "streak, badge and reward systems for care routines",
+   "cards": [
+    "ribbons"
+   ]
+  }
+ ],
+ "podcasts": [
+  {
+   "look": "big square cover art grid of shows",
+   "cards": [
+    "1960s-jazz-album-covers",
+    "highlife-record-sleeves-1970s"
+   ]
+  },
+  {
+   "look": "audiobook cover with progress ring or bar",
+   "cards": [
+    "paperback-cover"
+   ]
+  },
+  {
+   "look": "skeuomorphic tape reel player (Apple Podcasts 2012 style)",
+   "cards": [
+    "reel-to-reel-tape-recorder"
+   ]
+  }
+ ],
+ "productivity": [
+  {
+   "look": "a ruled or lined notebook page, legal pad or yellow paper note",
+   "cards": [
+    "graph-paper",
+    "skeuomorphic-apps-2009"
+   ]
+  },
+  {
+   "look": "a streak counter, stars or badges as completion rewards",
+   "cards": [
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "a progress bar or ring showing percent of tasks done",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "clean white minimal pages with lots of whitespace and a single sans-serif type",
+   "cards": [
+    "black-white-and-one-gray"
+   ]
+  }
+ ],
+ "real-estate": [
+  {
+   "look": "Gulf luxury property look: black marble, brass and gold accents, elegant serif",
+   "cards": [
+    "brushed-brass",
+    "gold-leaf",
+    "polished-marble"
+   ]
+  },
+  {
+   "look": "GCC modern heritage developer look: arch-framed cards on sand and cream",
+   "cards": [
+    "dhahran-air-terminal-1961"
+   ]
+  },
+  {
+   "look": "developer masterplan scale model of the building or compound",
+   "cards": [
+    "architectural-model"
+   ]
+  }
+ ],
+ "restaurants": [
+  {
+   "look": "coffee pot and coffee-serving ritual branding of Gulf and specialty cafes",
+   "cards": [
+    "arabic-coffee-and-the-dallah",
+    "dallah-coffee-pot",
+    "ethiopian-jebena-coffee-pot",
+    "karak-tea-glass"
+   ]
+  },
+  {
+   "look": "burlap coffee sack with an inked origin stamp",
+   "cards": [
+    "jute-burlap"
+   ]
+  },
+  {
+   "look": "retro diner signage with neon script and chrome",
+   "cards": [
+    "hong-kong-neon-signs",
+    "neon-tubing"
+   ]
+  },
+  {
+   "look": "chili-pip spice level icons and retro craft-label restaurant branding",
+   "cards": [
+    "hot-sauce-label"
+   ]
+  },
+  {
+   "look": "flat saturated food tiles with rounded type of ordering apps",
+   "cards": [
+    "flat-design-2013"
+   ]
+  }
+ ],
+ "retail-banking": [
+  {
+   "look": "colourful gradient hero or glass cards on fintech neobank apps",
+   "cards": [
+    "frosted-glass"
+   ]
+  },
+  {
+   "look": "one brand-colour header or accent on white, fintech minimal look",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "donut or pie chart of spending by category",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "biometric fingerprint motif for login and verification",
+   "cards": [
+    "fingerprint"
+   ]
+  }
+ ],
+ "ride-hailing": [
+  {
+   "look": "a clean white minimal UI with flat icons and one brand color",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "a step flow dot line from pickup to drop-off",
+   "cards": [
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a dark mode map with a black and white minimal palette",
+   "cards": [
+    "city-lights-at-night"
+   ]
+  }
+ ],
+ "social": [
+  {
+   "look": "Gumroad-style neo-brutalist creator storefronts with thick outlines and hard offset shadows",
+   "cards": [
+    "neo-brutalism-2022"
+   ]
+  }
+ ],
+ "sports": [
+  {
+   "look": "live score ticker band crawling across the top",
+   "cards": [
+    "a-single-scrolling-ticker"
+   ]
+  },
+  {
+   "look": "fixture cards listing crests, opponent and kickoff time",
+   "cards": [
+    "boxing-poster"
+   ]
+  },
+  {
+   "look": "slanted diagonal section cuts and angled photo crops",
+   "cards": [
+    "diagonal-layout-only"
+   ]
+  }
+ ],
+ "streaming": [
+  {
+   "look": "film clapperboard and cinema icon motifs",
+   "cards": [
+    "film-clapperboard"
+   ]
+  },
+  {
+   "look": "background color pulled from the title's poster artwork",
+   "cards": [
+    "colors-come-from-one-photo"
+   ]
+  }
+ ],
+ "telecom": [
+  {
+   "look": "bold brand-color blocks with white text",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "a ring or arc gauge showing data left",
+   "cards": [
+    "barometer-dial",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "one huge data balance number on the home screen",
+   "cards": [
+    "eastern-arabic-digits"
+   ]
+  },
+  {
+   "look": "a QR code activation screen with numbered steps",
+   "cards": [
+    "subway-map"
+   ]
+  }
+ ],
+ "tourism-culture": [
+  {
+   "look": "timed-entry ticket card or stub with date, slot and QR code",
+   "cards": [
+    "carnival-ticket-roll"
+   ]
+  },
+  {
+   "look": "vintage travel poster or postcard illustration style",
+   "cards": [
+    "wpa-posters-1938"
+   ]
+  },
+  {
+   "look": "dark immersive object spotlight with gold accent for premium exhibitions",
+   "cards": [
+    "gold-leaf"
+   ]
+  },
+  {
+   "look": "heritage-flavored ornament like regional patterns, arches and earthy sand tones",
+   "cards": [
+    "alula-sandstone-strata",
+    "dhahran-air-terminal-1961",
+    "mashrabiya-screens"
+   ]
+  },
+  {
+   "look": "wayfinding signage and pictograms for facilities and directions",
+   "cards": [
+    "munich-1972-olympics"
+   ]
+  }
+ ],
+ "travel": [
+  {
+   "look": "boarding pass or ticket-style cards with a perforated stub",
+   "cards": [
+    "1970s-airline-branding",
+    "parking-ticket"
+   ]
+  },
+  {
+   "look": "wayfinding airport pictogram icons for amenities and baggage",
+   "cards": [
+    "arrows"
+   ]
+  }
+ ],
+ "utilities": [
+  {
+   "look": "a ring or half-circle gauge for usage versus budget",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "blue and green eco palette with white cards",
+   "cards": [
+    "frutiger-aero-2007"
+   ]
+  },
+  {
+   "look": "solar panels and power plant imagery of the energy supply itself",
+   "cards": [
+    "solar-farm"
+   ]
+  }
+ ],
+ "weather": [
+  {
+   "look": "a ring or arc gauge for UV or air quality",
+   "cards": [
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a topographic contour trail map",
+   "cards": [
+    "topographic-map"
+   ]
+  }
+ ],
+ "wellness": [
+  {
+   "look": "earthy zen calm: stones, sand, natural paper and wood textures",
+   "cards": [
+    "bamboo-slats",
+    "stepping-stones"
+   ]
+  },
+  {
+   "look": "soft rounded pill cards and buttons with generous whitespace",
+   "cards": [
+    "only-space-separates-groups"
+   ]
+  },
+  {
+   "look": "one calming sentence centered per screen",
+   "cards": [
+    "one-sentence-per-screen"
+   ]
+  }
+ ]
+}

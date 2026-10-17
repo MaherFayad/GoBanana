@@ -1102,3 +1102,56 @@ reach them; no per-brief fix was made.
   check's looks) is the next step; owner call.
 - Coffee: Jebena and Googie now read as the specialty-coffee look (slop 4 each); coffee's list did not mark them.
 - Eastern Arabic Digits leading a global page is a brief-fit gap (region), not R10's.
+
+## Refinement R11: second cliche pass and the region rule for leads (2026-10-17)
+
+Branch `next/refine-r11` (from `next/phase-1`, bb3c792). Local Atlas from R10's build, rebuilt with the second cliche
+pass and the wide cliche rule (manifest `fb5d3d8a3f8f`), not uploaded. Budget r10: $4.53 this round (r10-cliche2
+$3.46, r10-slop and r10-judge $1.07), $9.29 of $30 in all. No Serper. Craftwork, Best Designs on X and x.com items were
+never model inputs.
+
+### What changed
+
+- **Second cliche pass** (`atlas-build/jobs/r10-cliche2.ts`, Opus, one request per domain, request ids `r11c-`). The
+  model sees R10's looks for the domain, the candidate cards R10 left unmarked, and the slop check's reads from every
+  R10 run as evidence (20 directions rated 4 or more and 20 rated 2 or less, from all domains, not only the target
+  one), and marks more cards the same way: 194 more card and domain pairs in 55 domains (`data/r11-domain-looks.json`).
+  Real estate: Polished Marble, Gold Leaf and Brushed Brass ("Gulf luxury property look"); telecom: Flat Design 2013,
+  Barometer Dial; coffee: Jebena, Dallah, Mihbash and Googie 1958; food delivery: Bento Box, Tiffin Carrier; fitness:
+  Clock Faces, Glossy Enamel, Sticker Sheet. Its records merge into R10's by domain and look (`mergeCliches`, through
+  `mergeByKey` in `lib/refine.ts`); rebuild runs it after r10-cliche. Never hand-edited.
+- **Wide cliches** (`lib/overlays.ts`): a card marked in a third of the domains or more (Flat Design 2013 in 24 of 60,
+  Progress Bars, Glassmorphism 2021) is a cliche in every domain. Flat Design 2013 had moved to the SaaS pricing lead.
+- **Region rule for leads** (`banana-server/lib/atlas/brief-fit.ts` `briefRegions`, `regionLeadOk`; used in
+  `lib/atlas/bend.ts`): a regional card leads only a brief in its region (a Gulf or MENA market, or words that place it:
+  "London", "Tokyo") or one that names its culture ("a Japanese restaurant"). A Gulf brief takes Gulf and Arab cards.
+  Global cards lead anywhere, and any card can still be the second card (the twist). The rule gives way only when fewer
+  than three leads would be left. Tests: `banana-server/tests/atlas-r11.test.ts`, `atlas-build/tests/r11.test.ts`.
+
+### Results (R3 judge on specs, `jobs/r10-judge.ts`; slop check, `jobs/r10-slop.ts`; runs r10-vb3 and r10-vw3)
+
+| Run | On brief | Wow mean | Wow 4+ | Slop mean | Slop 4+ | Slop 3+ |
+| --- | --- | --- | --- | --- | --- | --- |
+| Bench before (r10-vb1) | 29 of 30 | 3.77 | 23 | 2.77 | 5 | 16 |
+| **Bench after (r10-vb3)** | **29 of 30** | **3.80** | **24** | **2.62** | **3** | 14 |
+| Weak before (r10-vw1) | 41 of 45 | 3.69 | 32 | 2.71 | 6 | 24 |
+| **Weak after (r10-vw3)** | **43 of 45** | 3.67 | 30 | **2.54** | **3** | 19 |
+
+All 75: slop directions 11 to 6, on brief 70 to 72, wow mean the same (3.72), wow 4+ 55 to 54. r10-vb2 and r10-vw2
+are the round before the wide cliche rule (Bench SaaS had Flat Design 2013, wow 3, slop 4).
+
+Examples (relevance, wow, slop): SaaS pricing Eastern Arabic Digits (3, 3, 3) gives way to Accounting Ledger (5, 4,
+2); flight checkout 1970s Airline Branding (5, 4, 3.5) becomes Jeddah Corniche Sculptures 1980s (5, 4, 2); Dubai real
+estate Polished Marble (4, 3, 4) becomes 35mm Slide Mount (4, 4, 2); Riyadh food home Bento Box (3, 3, 3) becomes
+Tempered Chocolate (4, 4); kids reading Finger Puppet (4, 4, 4) becomes Library Checkout Card (4, 4, 3).
+
+Off brief after: coffee landing Woven Rattan (3, 3, 4; "decorates more than it changes the page"), the new Bench miss,
+once Jebena, Googie and Iznik left the leads (Jebena and Googie as coffee cliches, Iznik by the region rule); telecom
+sign-up 1970s Airline Branding and bill payment Fingerprints (unchanged verify misses).
+
+### What is left
+
+- The region rule costs the London property brief: Japanese Metabolism and Nubian House Painting (wow 4, slop 2 each)
+  no longer lead, and Lime Plaster and Walnut Veneer read as the London agent look (slop 4). The weak wow drop (3.69 to
+  3.67) is that brief. Owner call: keep the rule strict, or let a regional card lead a global brief at wildness 4 or 5.
+- Bench is 29 of 30, not 30: Woven Rattan on coffee. Woven Rattan is not a cliche mark; the judge reads it as decoration.
