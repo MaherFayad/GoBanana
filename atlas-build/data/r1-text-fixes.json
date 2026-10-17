@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "anatomy",
+    "id": "prayer-times",
+    "path": "wildSpots.1.why",
+    "from": "can borrow geometric pattern work from the Islamic art tradition, credited to the artisans who made it, while every time stays plainly readable.",
+    "to": "can borrow the construction grammar of Hejazi mangour, the joined wooden lattice of the rawashin windows of old Jeddah made by Hejazi carpenters, as a thin lattice band at the row edge, never text or a sacred symbol, while every time stays plainly readable.",
+    "why": "R1 review item: J1 prayer-times named only \"the Islamic art tradition\"; the culture skill asks for the tradition, region, people and medium by name."
+  },
+  {
+    "kind": "domains",
+    "id": "faith-lifestyle",
+    "path": "regionNotes",
+    "from": "so night reading and countdowns matter most.",
+    "to": "so night reading and countdowns matter most. Lettering and calligraphy cards here carry only real words the user chooses (an app name, a section title), set in a named style such as square Kufic or Thuluth; never Quran verses, the shahada, names of God or a dua as decoration, texture or pattern.",
+    "why": "R1 review item: J2 faith-lifestyle lists lettering and calligraphy as a fit family; calligraphy must only carry real words chosen with the user."
+  }
+]

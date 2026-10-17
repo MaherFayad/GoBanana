@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { OPUS, PATHS, ROOT } from "../config.ts";
 import { defineJob } from "../lib/job.ts";
+import { applyTextFixes } from "../lib/refine.ts";
 import { PROMPT_RULES, typeText } from "../lib/prompt.ts";
 import { escapeHtml } from "../lib/review.ts";
 import { readKind } from "../lib/shards.ts";
@@ -64,6 +65,8 @@ export default defineJob<Input, DomainEntry>({
   expectedOutputTokens: 2500,
 
   loadInputs: () => DOMAINS,
+  // Owner review items fixed in refinement round 1 (data/r1-text-fixes.json).
+  finalize: (records) => applyTextFixes("domains", records),
   requestId: (input) => `j2-${input.id}`,
   buildPrompt: (input) => `Write the DomainEntry for the domain "${input.name}". Its id is "${input.id}".`,
 

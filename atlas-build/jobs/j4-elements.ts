@@ -12,6 +12,7 @@
 import { SONNET } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob } from "../lib/job.ts";
+import { j3CardIds } from "../lib/refine.ts";
 import { PROMPT_RULES } from "../lib/prompt.ts";
 import { extractJson } from "../lib/validate.ts";
 import { CardElementLineSchema, UI_ELEMENTS, type CardElementLine, type IngredientCard } from "../schema.ts";
@@ -22,7 +23,8 @@ export const CARDS_PER_REQUEST = 8;
 type Input = { n: number; cards: IngredientCard[] };
 
 let cardsCache: IngredientCard[] | null = null;
-const cards = () => (cardsCache ??= readKindRecords<IngredientCard>("cards").sort((a, b) => a.id.localeCompare(b.id)));
+/** The J3 cards only: cards added later get their lines from r1-lines, so these request chunks never shift. */
+const cards = () => (cardsCache ??= readKindRecords<IngredientCard>("cards").filter((c) => j3CardIds().has(c.id)).sort((a, b) => a.id.localeCompare(b.id)));
 
 const SYSTEM = `You write how a GoBanana ingredient card shows up in each UI element. GoBanana bends one app or web page into a wild but buildable design direction; a card (a surprising word with its own palette, type, texture and motion) leads the look, and the engine picks the line for the page's wild spot element.
 

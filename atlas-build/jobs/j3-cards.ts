@@ -31,7 +31,7 @@ const BEND = join(import.meta.dirname, "..", "..", "banana-server", "lib", "bend
 
 type Kind = IngredientCard["kind"];
 type RawEntry = string | ({ label: string } & Record<string, unknown>);
-type LensJson = {
+export type LensJson = {
   id: string;
   name: { en: string; ar: string };
   region: string;
@@ -107,7 +107,7 @@ function marketSets(): { gulf: Set<string>; mena: Set<string> } {
 }
 const MARKET = marketSets();
 
-const LENSES = JSON.parse(readFileSync(join(BEND, "lenses.json"), "utf8")) as LensJson[];
+export const LENSES = JSON.parse(readFileSync(join(BEND, "lenses.json"), "utf8")) as LensJson[];
 const lens = (id: string) => LENSES.find((l) => l.id === id);
 /** Card word (list label or gap word) to the lens that carries its meaning and care lines. */
 const LENS_FOR: Record<string, string> = {
@@ -206,7 +206,7 @@ const RESTORE: Array<[Kind, string[]]> = [
 const RESTORE_THEME =
   "words restored after a first pass dropped both words of a near-duplicate pair (rawashin vs Hejazi coral stone houses, Delft vs gzhel, woven rattan vs cane webbing, glazed ceramic vs ceramic tile glaze, only space separates groups vs no cards no boxes, each view one solid color vs one color field per section); keep each one and make it clearly distinct from its partner";
 
-const slug = (s: string) =>
+export const slug = (s: string) =>
   s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 function chunk<T>(xs: readonly T[], n: number): T[][] {
@@ -262,7 +262,7 @@ function catalog(kind: Kind): string {
   return words.length ? `Catalog of existing ${kind} words: ${words.join("; ")}.` : `The catalog has no ${kind} words yet.`;
 }
 
-const SYSTEM = `You write ingredient cards for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. A card turns one surprising word into a complete visual system a designer can build from with no other card: palette, type, texture, imagery and motion that clearly belong to the same thing. A developer reads the card and ships it.
+export const SYSTEM = `You write ingredient cards for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. A card turns one surprising word into a complete visual system a designer can build from with no other card: palette, type, texture, imagery and motion that clearly belong to the same thing. A developer reads the card and ships it.
 
 ${PROMPT_RULES}
 
@@ -313,7 +313,7 @@ ${typeText("IngredientCard")}`;
 // ---------------------------------------------------------------------------------------------
 // Prompts.
 
-function lensBlock(l: LensJson): string {
+export function lensBlock(l: LensJson): string {
   return [
     `  Lens notes (GoBanana's ${l.name.en} lens, ${l.name.ar}; tier ${l.tier}):`,
     `  meaning: ${l.meaning}`,
@@ -351,7 +351,7 @@ function promptBody(input: Input): string {
 const FONT_ALIASES: Record<string, string> = { "Big Shoulders Display": "Big Shoulders", "Big Shoulders Text": "Big Shoulders" };
 
 /** Fixes the case of a Google Fonts family name ("ibm plex mono" to "IBM Plex Mono"); unknown names stay as they are for the check to reject. */
-function canonicalFont(name: unknown, fonts: FontIndex): unknown {
+export function canonicalFont(name: unknown, fonts: FontIndex): unknown {
   if (typeof name !== "string") return name;
   const hit = fonts.byName.get(name.trim().toLowerCase());
   if (hit) return hit.family;
@@ -389,7 +389,7 @@ function prepare(raw: unknown, input: Input, ctx: { fonts: () => FontIndex }): u
   return withShipPairs(r);
 }
 
-function check(card: IngredientCard, ctx: Parameters<typeof checkCardFonts>[1]): string[] {
+export function check(card: IngredientCard, ctx: Parameters<typeof checkCardFonts>[1]): string[] {
   const out = [...checkCardFonts(card, ctx)];
   if (card.shipPairs.length === 0) out.push("no palette pair passes 4.5:1, so nothing can ship");
   if (!card.palette.some((p) => p.role === "surface")) out.push("palette has no surface");

@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { OPUS, ROOT } from "../config.ts";
 import { defineJob } from "../lib/job.ts";
+import { applyTextFixes } from "../lib/refine.ts";
 import { PROMPT_RULES, typeText } from "../lib/prompt.ts";
 import { escapeHtml } from "../lib/review.ts";
 import { PART_ROLES } from "../../banana-server/lib/stitch/types.ts";
@@ -60,6 +61,8 @@ export default defineJob<Input, PageAnatomy>({
   expectedOutputTokens: 4500,
 
   loadInputs: () => PAGES,
+  // Owner review items fixed in refinement round 1 (data/r1-text-fixes.json).
+  finalize: (records) => applyTextFixes("anatomy", records),
   requestId: (input) => `j1-${input.id}`,
   buildPrompt: (input) =>
     `Write the PageAnatomy for the page "${input.name}". Its id is "${input.id}". Platforms: ${input.platforms.join(", ")}.`,

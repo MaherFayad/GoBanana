@@ -803,9 +803,14 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // profile only reorders cards of equal fit (the tie breaker stays under one fit step).
   const learning = options.learning ?? null;
   const tie = tieBreaks(cards, (c) => fitOf.get(c.id)?.score ?? 0, key, options.taste);
-  const relevance = (c: IngredientCard) => {
+  const relevance = (c: IngredientCard, asLead = true) => {
     const base = briefScore(c) / 3 + 0.3 * (tie.get(c.id) ?? jitter(key, c.id));
-    const gulf = market === "gulf" && c.region === "gulf" ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
+    // Gulf-first lifts a lead only where the page fit judged it 2 or more (or no page fit exists):
+    // with 88 Gulf cards (Atlas refine round 1) a page 1 tradition otherwise led on its bonus alone
+    // (a Hejazi stick dance on a flight checkout). A second card adds a texture or motion, not the
+    // page's idea, so it keeps the bonus.
+    const pageOk = !asLead || pageFitOf.size === 0 || (pageFitOf.get(c.id)?.score ?? 0) >= 2;
+    const gulf = market === "gulf" && c.region === "gulf" && pageOk ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
     return (base + gulf + styleFit(c.styles, asked)) * weight;
   };
@@ -853,7 +858,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     // family, never a region the brief does not allow. A lens card added to a non-lens lead keeps the
     // lens rule (the lens is the ask), so only the family and the ranking apply to it.
     const lensSecond = Boolean(lens && !isLensCard(lead));
-    const ranked = rankSeconds(lead, pool2, { brief: input.brief, market: lensSecond ? null : market, score: relevance, used: usedSecond, seed: `${key}|second|${i}`, others: leads.slice(0, input.count).filter((l) => l !== lead) });
+    const ranked = rankSeconds(lead, pool2, { brief: input.brief, market: lensSecond ? null : market, score: (c) => relevance(c, false), used: usedSecond, seed: `${key}|second|${i}`, others: leads.slice(0, input.count).filter((l) => l !== lead) });
     const second = ranked[0] ?? null;
     if (second) usedSecond.add(second.id);
     // A rule or layout card as the second card adds its rule, not its texture or motion.

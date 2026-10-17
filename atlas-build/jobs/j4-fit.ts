@@ -13,6 +13,7 @@
 import { SONNET } from "../config.ts";
 import { readKindRecords } from "../lib/atlas-read.ts";
 import { defineJob } from "../lib/job.ts";
+import { j3CardIds } from "../lib/refine.ts";
 import { PROMPT_RULES } from "../lib/prompt.ts";
 import { extractJson } from "../lib/validate.ts";
 import { FitScoreSchema, type DomainEntry, type FitScore, type IngredientCard } from "../schema.ts";
@@ -24,7 +25,8 @@ type Input = { n: number; cards: IngredientCard[] };
 let domainsCache: DomainEntry[] | null = null;
 const domains = () => (domainsCache ??= readKindRecords<DomainEntry>("domains").sort((a, b) => a.id.localeCompare(b.id)));
 let cardsCache: IngredientCard[] | null = null;
-const cards = () => (cardsCache ??= readKindRecords<IngredientCard>("cards").sort((a, b) => a.id.localeCompare(b.id)));
+/** The J3 cards only: cards added later (r1-gulf-cards) get their fit from r1-gulf-fit, so these request chunks never shift. */
+const cards = () => (cardsCache ??= readKindRecords<IngredientCard>("cards").filter((c) => j3CardIds().has(c.id)).sort((a, b) => a.id.localeCompare(b.id)));
 
 /** One card in a few lines: what the fit judgement needs, nothing more. */
 export function cardBrief(c: IngredientCard): string {

@@ -91,6 +91,17 @@ describe("page fit (J4b) picks the lead card", () => {
     expect(r.directions[0]!.cardIds![0]).not.toBe("luggage-tag");
   });
 
+  it("Gulf-first lifts a lead only where the page fit is 2 or more (Atlas refine round 1)", async () => {
+    // A Gulf tradition judged 1 on the page no longer leads a Gulf brief on its bonus alone.
+    const low = await atlasWith({ "page-fit": new Map([["telecom-travel", [pf("sadu-weaving", 1), pf("boarding-pass", 2, "boarding pass rows list each plan")]]]) });
+    const r = (await bendBriefAtlas({ brief: "eSIM plan picker for a GCC travel app", wildness: 2, count: 3 }, low))!;
+    expect(r.directions[0]!.cardIds![0]).toBe("boarding-pass");
+    // Judged 2 on the page, it keeps Gulf-first.
+    const fair = await atlasWith({ "page-fit": new Map([["telecom-travel", [pf("sadu-weaving", 2, "sadu bands divide the plan rows"), pf("boarding-pass", 2, "boarding pass rows list each plan")]]]) });
+    const g = (await bendBriefAtlas({ brief: "eSIM plan picker for a GCC travel app", wildness: 2, count: 3 }, fair))!;
+    expect(g.directions[0]!.cardIds![0]).toBe("sadu-weaving");
+  });
+
   it("reasonElements: the UI elements a page reason names", () => {
     expect(reasonElements("Each finished step lands as stamp").slice(0, 2)).toEqual(["progress", "stepper"]);
     expect(reasonElements("Ramadan offer banner glows apricot")).toEqual(["header", "hero"]);

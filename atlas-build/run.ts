@@ -1,7 +1,7 @@
 /**
  * Job runner CLI.
  *
- *   npx tsx run.ts <job> [--dry] [--limit N] [--offset N] [--from-raw] [--fresh] [--poll SECONDS]
+ *   npx tsx run.ts <job> [--dry] [--limit N] [--offset N] [--from-raw] [--fresh] [--missing] [--poll SECONDS]
  *
  * <job> is a file in jobs/ (with or without .ts), for example `example` or `j3-cards`.
  * --dry       build every prompt and print the estimate and the budget check; no API calls.
@@ -9,6 +9,8 @@
  * --offset N  skip the first N inputs.
  * --from-raw  rebuild shards, review and rejects from raw/<job>.jsonl; no API calls.
  * --fresh     forget an unfinished batch in state/<job>.json and submit again (pays again).
+ * --missing   send only inputs with no finished reply in raw/<job>.jsonl (new inputs of a job that
+ *             grew, such as new flags for r1-rewrite); then --from-raw builds the whole output.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -22,10 +24,10 @@ import { reviewHtml, sample, writeReview } from "./lib/review.ts";
 import { writeKind } from "./lib/shards.ts";
 import { extractJson, toRecords, validateRecords, writeRejects, type Reject } from "./lib/validate.ts";
 
-type Args = { job: string; dry: boolean; fromRaw: boolean; fresh: boolean; limit?: number; offset: number; pollMs: number };
+type Args = { job: string; dry: boolean; fromRaw: boolean; fresh: boolean; missing: boolean; limit?: number; offset: number; pollMs: number };
 
 export function parseArgs(argv: readonly string[]): Args {
-  const a: Args = { job: "", dry: false, fromRaw: false, fresh: false, offset: 0, pollMs: 30_000 };
+  const a: Args = { job: "", dry: false, fromRaw: false, fresh: false, missing: false, offset: 0, pollMs: 30_000 };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i]!;
     const num = () => {
@@ -36,6 +38,7 @@ export function parseArgs(argv: readonly string[]): Args {
     if (v === "--dry") a.dry = true;
     else if (v === "--from-raw") a.fromRaw = true;
     else if (v === "--fresh") a.fresh = true;
+    else if (v === "--missing") a.missing = true;
     else if (v === "--limit") a.limit = num();
     else if (v === "--offset") a.offset = num();
     else if (v === "--poll") a.pollMs = num() * 1000;
@@ -257,6 +260,10 @@ export async function main(argv: readonly string[]): Promise<number> {
     if (inputs.has(id)) throw new Error(`request id "${id}" is not unique`);
     inputs.set(id, input);
   });
+  if (args.missing && !args.fromRaw && existsSync(rawPath)) {
+    const done = readRaw(rawPath);
+    for (const id of [...inputs.keys()]) if (done.get(id)?.status === "succeeded" && done.get(id)?.stop_reason === "end_turn") inputs.delete(id);
+  }
   ctx.log(`Job ${job.id}: ${inputs.size} request(s), ${job.model}, ${job.mode}.`);
 
   if (args.fromRaw) {
