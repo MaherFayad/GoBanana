@@ -16,10 +16,12 @@ import { CARDS } from "./fixtures/atlas";
 import { buildFixtureAtlas, countingFetcher, FIXTURE_BUCKETS, memoryCache } from "./fixtures/atlas-shards";
 
 describe("Atlas loader (P1-I1)", () => {
-  it("ships an empty manifest: no Atlas, callers fall back", () => {
+  it("ships the uploaded Atlas manifest (2026-10-17 deploy): a hash and every shard with its sha256", () => {
     const m = manifestJson as AtlasManifest;
-    expect(m.shards).toEqual([]);
-    expect(atlasReady(m)).toBe(false);
+    expect(atlasReady(m)).toBe(true);
+    expect(m.version).toBe("v1");
+    for (const s of m.shards) expect(s.sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(new Set(m.shards.map((s) => s.kind))).toEqual(new Set(["cards", "cc0", "domains", "fit", "lenses", "lines", "mechanics", "motion", "page-fit", "pages", "recipes", "shaders", "type-pairs"]));
   });
 
   it("an empty manifest loads nothing and never fetches", async () => {

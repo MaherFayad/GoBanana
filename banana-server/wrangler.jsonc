@@ -57,6 +57,6 @@
     // Most Serper credits all users together may spend per UTC month (owner decision D2). Empty: no cap.
     "SERPER_MONTHLY_CREDIT_CAP": "2500",
     // Bend engine: "lists" (word lists, today) or "atlas" (Banana Atlas, after Gate 2). Atlas falls back to lists when it has no data.
-    "BEND_ENGINE": "lists"
+    "BEND_ENGINE": "atlas"
   }
 }
