@@ -128,11 +128,16 @@ export function writeOutputs(log: (s: string) => void): void {
 let goldCache: GoldFile | null = null;
 const gold = () => (goldCache ??= JSON.parse(readFileSync(GOLD_FILE, "utf8")) as GoldFile);
 
-export function makeJob(pass: Pass): AtlasJob<Input, R5Record> {
+/**
+ * `prefix` is the job id prefix and so the budget key (R7 reuses the R5 judge under its own budget);
+ * `art` also sends every art reference of a direction to the reference pass (J10's prompt judges art
+ * on the direction's idea), for the R7 source probe.
+ */
+export function makeJob(pass: Pass, prefix: "r5" | "r7" = "r5", opts: { art?: boolean } = {}): AtlasJob<Input, R5Record> {
   const outFile = pass === "votes" ? "judge-r5-votes.json" : pass === "adj" ? "judge-r5-adj.json" : "judge-r5-refs.json";
   return defineJob<Input, R5Record>({
-    id: pass === "votes" ? "r5-judge" : `r5-judge-${pass}`,
-    kind: `work-judge-r5-${pass}`,
+    id: pass === "votes" ? `${prefix}-judge` : `${prefix}-judge-${pass}`,
+    kind: `work-judge-${prefix}-${pass}`,
     model: JUDGE,
     mode: "batch",
     schema: R5RecordSchema,
@@ -154,7 +159,7 @@ export function makeJob(pass: Pass): AtlasJob<Input, R5Record> {
       } else if (pass === "refs") {
         for (const brief of run.briefs)
           for (const direction of brief.directions) {
-            const refs = topUi(direction);
+            const refs = opts.art ? [...topUi(direction), ...(direction.search?.references ?? []).filter((r) => r.zone === "art" && modelInputOk(r))] : topUi(direction);
             if (refs.length) out.push({ pass, vote: "ref", brief, direction, shots: [], refs });
           }
       } else {
@@ -175,7 +180,7 @@ export function makeJob(pass: Pass): AtlasJob<Input, R5Record> {
     },
     requestId: (input) => {
       const hash = input.refs ? refsHash(input.brief, input.direction, input.refs) : dirHash(input.brief, input.direction);
-      return `r5${input.vote}-${input.brief.id.slice(0, 20)}-${input.direction.id}-${hash}`.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 64);
+      return `${prefix}${input.vote}-${input.brief.id.slice(0, 20)}-${input.direction.id}-${hash}`.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 64);
     },
     async buildPrompt(input, ctx) {
       if (input.pass === "refs") {

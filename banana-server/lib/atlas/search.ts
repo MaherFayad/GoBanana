@@ -17,7 +17,7 @@
 import type { Market } from "@/lib/bend/market";
 import type { DirectionDetail } from "@/lib/direction-detail";
 import { queryWords } from "@/lib/learning/terms";
-import { artWords, type LaneTexts } from "@/lib/sources/plan";
+import { artRequests, artWords, type LaneTexts, type PlannedRequest } from "@/lib/sources/plan";
 import { SOURCE_SITES, type LaneName, type Reference, type SourceSite } from "@/lib/sources/types";
 import { referenceId } from "@/lib/sources/web-search";
 import { ELEMENT_TO_MECHANIC } from "./bend";
@@ -255,4 +255,58 @@ export function provenanceFor(ref: Pick<Reference, "lane" | "query">, plan: Atla
   if (hit) return { recipeId: hit.recipeId, ...(hit.cardId ? { cardId: hit.cardId } : {}) };
   if (ref.lane && ref.lane !== "fidelity" && cardId) return { cardId };
   return {};
+}
+
+/** R7: most share of a direction search's UI requests that stay on Dribbble (Atlas directions). */
+export const DRIBBBLE_MAX_SHARE = 0.4;
+/** R7: and of its UI places, while other sources have UI results left (mergeLanes siteCap). */
+export const DRIBBBLE_CAP = { domain: "dribbble.com", share: DRIBBBLE_MAX_SHARE } as const;
+/** R7: the order UI requests leave Dribbble in, after deep pages; the concept recipe (judged on its source) last. */
+const MOVE_ORDER: readonly LaneName[] = ["component", "hero", "fidelity", "taste", "bridge"];
+
+/**
+ * R7 source spread for an Atlas direction's plan (deterministic, never more requests). Over every
+ * rated Bench run Dribbble held 76% of the top 8 UI results at 7% great, Pinterest 15% at 27% great
+ * with about the same precision (agent ratings); Pinterest art kept 93% (33% great), Behance art 45%
+ * (none great). Behance UI, Cosmos and Are.na returned almost nothing in the R7 probe. So:
+ * - UI: at most DRIBBBLE_MAX_SHARE of the UI requests stay on Dribbble (at least one). The others
+ *   move to Pinterest pins with the same words (a Dribbble page 2 becomes a Pinterest page 1): deep
+ *   pages first, then component, hero, fidelity and taste, the concept lane last. A request Pinterest
+ *   already has in the plan is left out instead. Galleries never move.
+ * - Art: the art requests keep their places, filled Pinterest first (every art query on Pinterest,
+ *   then Behance, then the art galleries), so a second art idea is searched before Behance.
+ * Plans with a genre lane (deck, brand) or sources the caller picked are never passed here.
+ */
+export function spreadSources<T extends PlannedRequest>(plan: readonly T[], lanes: Pick<LaneTexts, "art" | "artGalleries">): T[] {
+  const out = plan.map((r) => ({ ...r }));
+  const key = (r: Pick<PlannedRequest, "query" | "site" | "page">) => `${r.site}|${r.page ?? 1}|${r.query}`;
+  const uiCount = out.filter((r) => r.lane !== "art").length;
+  const cap = Math.max(1, Math.floor(uiCount * DRIBBBLE_MAX_SHARE));
+  const drib = out.filter((r) => r.lane !== "art" && r.site === "dribbble");
+  const rank = (r: PlannedRequest) => ((r.page ?? 1) > 1 ? -1 : MOVE_ORDER.indexOf(r.lane));
+  const movable = [...drib].sort((a, b) => rank(a) - rank(b) || out.indexOf(b) - out.indexOf(a));
+  const drop = new Set<T>();
+  let over = drib.length - cap;
+  for (const r of movable) {
+    if (over <= 0) break;
+    over--;
+    const target = key({ query: r.query, site: "pinterest" });
+    if (out.some((o) => o !== r && !drop.has(o) && key(o) === target)) {
+      drop.add(r);
+      continue;
+    }
+    r.site = "pinterest";
+    delete r.page;
+  }
+  const kept = out.filter((r) => !drop.has(r));
+  // Art: the same places, Pinterest first.
+  const artAt = kept.flatMap((r, i) => (r.lane === "art" ? [i] : []));
+  if (artAt.length > 0) {
+    const all = artRequests(lanes.art, lanes.artGalleries ?? []);
+    const order = [...all.filter((r) => r.site === "pinterest"), ...all.filter((r) => r.site === "behance"), ...all.filter((r) => r.site !== "pinterest" && r.site !== "behance")];
+    artAt.forEach((at, i) => {
+      if (order[i]) kept[at] = order[i] as T;
+    });
+  }
+  return kept;
 }

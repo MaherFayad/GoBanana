@@ -59,7 +59,7 @@ import {
   type WebSearchResult,
 } from "@/lib/sources/web-search";
 import { compileTakedowns, type TakedownMatcher } from "@/lib/takedown";
-import { atlasSearchPlan, provenanceFor, SEARCH_SHARD_BUDGET, type AtlasIds, type AtlasPlan } from "@/lib/atlas/search";
+import { atlasSearchPlan, DRIBBBLE_CAP, provenanceFor, SEARCH_SHARD_BUDGET, spreadSources, type AtlasIds, type AtlasPlan } from "@/lib/atlas/search";
 import { liveAtlasLoader } from "@/lib/atlas/live";
 import { loaderSource, type AtlasSource } from "@/lib/atlas/source";
 import { readAtlasLearning, type AtlasLearning } from "@/lib/atlas/learning";
@@ -669,6 +669,10 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           learned = Object.entries(arms).some(([lane, arm]) => arm !== defaultArm(lane as LaneName));
           plan = learned ? planWithArms(lanes, arms, picked, variants, zone) : planRequests(lanes, picked, { zone });
         }
+        // R7: an Atlas direction spreads its requests over sources (lib/atlas/search.ts spreadSources),
+        // unless the caller picked the sources or the brief is a deck or a brand.
+        const spread = Boolean(atlasPlan && !input.lane && !input.sources && !lanes.genre);
+        if (spread) plan = spreadSources(plan, lanes);
         // One path-scoped request per lane and source, at most SERPER_MAX_REQUESTS in all (fallbacks included).
         plan = plan.slice(0, SERPER_MAX_REQUESTS);
         // The baseline (fidelity) lane runs once per canvas: skip it when it ran for this key lately.
@@ -702,6 +706,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
             // brief-level lanes find but this direction does not place is pooled for the later ones.
             if (directionKey) {
               plan = deepenBaseline(plan, SERPER_MAX_REQUESTS);
+              if (spread) plan = spreadSources(plan, lanes);
               poolLanes = POOL_LANES;
             }
           }
@@ -718,7 +723,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
           ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
         };
-        const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude, ...(poolLanes ? { poolLanes } : {}) });
+        const result = await deps.adapter.runPlan(plan, { ...runOpts, exclude, ...(poolLanes ? { poolLanes } : {}), ...(spread ? { siteCap: DRIBBBLE_CAP } : {}) });
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes, arms, learned, termKeys };
         const next = input.lane ? undefined : nextUiRequest(lanes, plan, picked, new Set(baseline?.reused?.sent ?? []));

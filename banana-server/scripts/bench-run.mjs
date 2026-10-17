@@ -11,6 +11,7 @@
  *   node scripts/bench-run.mjs --atlas ../atlas-build/out/server/v1   # the Atlas engine over local shards
  *   node scripts/bench-run.mjs --no-baseline    # every direction reruns the canvas baseline lane (runs before g2)
  *   node scripts/bench-run.mjs --briefs bench/r6-weak-briefs.json --dry --atlas <dir>   # another briefs file (R6)
+ *   node scripts/bench-run.mjs --fake-serper    # plan simulation: synthetic results per site, 0 credits (R7)
  *
  * --atlas <dir> reads a local Atlas in the server layout (atlas-build lib/layout.ts: <dir>/manifest.json
  * and <dir>/<kind>/<shard>.json) through the real loader, bends with the Atlas engine first and the
@@ -225,8 +226,9 @@ const wireBaseline = !flag("no-baseline");
 if (dry) {
   console.log("Dry run: search skipped (--dry). The report shows each direction's planned lanes, no results.");
 } else {
-  const apiKey = devVar("SERPER_API_KEY", devVarsFile);
-  const dbUrl = devVar("DATABASE_URL", devVarsFile);
+  const fake = flag("fake-serper");
+  const apiKey = fake ? "fake" : devVar("SERPER_API_KEY", devVarsFile);
+  const dbUrl = fake ? "fake" : devVar("DATABASE_URL", devVarsFile);
   if (!apiKey) {
     console.error(`No SERPER_API_KEY in the environment or ${devVarsFile}. Pass --dry to bend only.`);
     process.exit(2);
@@ -236,7 +238,7 @@ if (dry) {
     process.exit(2);
   }
   const { neon } = await import("@neondatabase/serverless");
-  const rows = await neon(dbUrl)`select url_or_domain from takedowns`;
+  const rows = fake ? [] : await neon(dbUrl)`select url_or_domain from takedowns`;
   const matcher = compileTakedowns(rows.map((r) => r.url_or_domain));
 
   let sent = 0;
@@ -249,7 +251,7 @@ if (dry) {
     } catch {
       requests.push({});
     }
-    return fetch(input, init);
+    return fake ? fakeSerper(init) : fetch(input, init);
   };
   const adapter = createWebSearchAdapter({ apiKey, fetch: countingFetch, loadTakedowns: async () => matcher });
 
@@ -322,6 +324,31 @@ if (dry) {
 }
 run.skippedSearches = skipped;
 for (const b of run.briefs) delete b._bend;
+
+/**
+ * --fake-serper (R7): a plan simulation with no Serper request and no database. Every request answers
+ * 10 synthetic item pages of the site it names (Dribbble, Pinterest, Behance; other sites answer
+ * nothing), titled with the query words so the UI gate keeps them. It shows which sources a run's
+ * plans reach, as an upper bound (every request full), never what they find. 0 credits.
+ */
+function fakeSerper(init) {
+  const body = JSON.parse(String(init?.body ?? "{}"));
+  const q = String(body.q ?? "");
+  const site = /site:(\S+)/.exec(q)?.[1] ?? "";
+  const words = q.replace(/(^|\s)-\S+/g, " ").replace(/site:\S+/g, "").replace(/\s+/g, " ").trim();
+  const seed = [...`${q}|${body.page ?? 1}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const make = (i) => {
+    const n = (seed + i * 7919) % 100000000;
+    if (site.startsWith("dribbble.com")) return { link: `https://dribbble.com/shots/${n}-sim`, imageUrl: `https://cdn.dribbble.com/userupload/${n}/file/original-sim.png` };
+    if (site.startsWith("pinterest.com")) return { link: `https://www.pinterest.com/pin/${n}/`, imageUrl: `https://i.pinimg.com/originals/${n}.jpg` };
+    if (site.startsWith("behance.net")) return { link: `https://www.behance.net/gallery/${n}/sim`, imageUrl: `https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/${n}.png` };
+    return null;
+  };
+  const images = Array.from({ length: 10 }, (_, i) => make(i))
+    .filter(Boolean)
+    .map((x, i) => ({ ...x, title: `${words} ui design ${i + 1}`, thumbnailUrl: x.imageUrl, imageWidth: 1600, imageHeight: 1200, position: i + 1 }));
+  return Promise.resolve(new Response(JSON.stringify({ images }), { status: 200, headers: { "Content-Type": "application/json" } }));
+}
 
 // ---------------------------------------------------------------------------- write
 

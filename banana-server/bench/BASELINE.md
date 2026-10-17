@@ -716,3 +716,106 @@ Request ids hash the text the judge reads, so an unchanged direction reuses its 
   2 directions, so 29 to 32 is a small gain and it comes from one brief. Some off-brief notes remain: telecom home
   and rental search put the mechanic on an empty state, and several twists never show. Both belong to the bend, which
   R5 is live checking.
+## Refinement R7: wilder leads, more sources, drafts that say where the idea goes (2026-10-17)
+
+Branch `next/refine-r7` (from `next/phase-1`, cf4ed77). Atlas rebuilt locally from the committed raw files (290
+shards, manifest `77a33509b67a`, the same as R5; the dry bend reproduced all 30 r5a directions). Not uploaded.
+Budget r7: $3.24 of $20 (spec judge `r7-dirs`, live judge `r7-judge`, `r7-judge-adj`, `r7-judge-refs`, drafts
+`r7-drafts`). Serper: 88 credits (probe 16, live run 72). Craftwork, Best Designs on X and x.com items were never
+model inputs.
+
+### 1. Why the expected leads came back, and the fix
+
+The lead score is brief fit plus page fit, so the cards that fit a screen best are the ones a designer reaches for
+anyway. R1's card rewrites raised page fits and brought back Swiss Style 1960s and Tally Marks. In r5a the judge
+rated 9 of 14 leads from screen-native families (glyphs, data marks, stamps and badges, UI bits, the digital and
+internet eras) or with a screen-default main style (minimal mono light, dark luminous, data dense, frosted glass)
+wow 3 or less, against 3 of 16 other leads. And with no style asked, the style spread (R2 rule 5) picked an expected
+card just because its style was new to the board (Dark Mode SaaS 2021 on pricing, Badges on fitness).
+
+Fix (`lib/atlas/bend.ts`, leads only; second cards, the web, deck and brand lanes untouched): an expected card
+(`isExpectedCard`) loses lead relevance, 0.2 at wildness 1 rising 0.06 a step (0.44 at wildness 5; a fit step is
+0.33). A card from a region outside the screen design canon (Gulf, MENA, Asia, Africa, Latin America) is never
+expected: Eastern Arabic Digits stays (wow 4 twice). From wildness 3 an expected card never takes a front place in
+the style spread. Dropping Munich 1972 (wow 4) is the one loss.
+
+Spec-only judge (`atlas-build/jobs/r7-judge-dirs.ts`, the R4 setup with request ids hashed on the spec, so the 13
+directions the two bends share keep identical replies): r7-0 (R5 bend) against r7-5 (R7 bend).
+
+| Bend | On brief | Wow 4+ (vote a) | Wow mean | Leads that changed |
+| --- | --- | --- | --- | --- |
+| r7-0 (R5) | 29 of 30 | 19 | 3.60 | |
+| r7-5 (R7) | **30 of 30** | 19 | 3.60 | 7 |
+
+Before and after leads: Ruler Ticks on Dubai listings (relevance 3, wow 2, off brief) became Polished Marble (4, 3);
+Numerals on SaaS pricing (wow 3) became Pocket Calculator (relevance 5, coherence 5, wow 4); Tally Marks on kids
+reading (wow 3, "tame for wildness 5") became Game Cartridge (wow 4); Swiss Style 1960s became Vienna Secession 1900
+(wow 3); Badges and Munich 1972 on fitness became Inflatable Plastic (4) and Surfboard (3); Badges on kids reading
+became Stickers (3). The 7 changed leads went from wow mean 3.14 to 3.43; the rest moved with their changed second
+cards and mechanics, so the board mean is flat on specs.
+
+No direction gets a 5, before or after: the gold set the judge learns from (12 examples per vote) has no wow 5 at all
+(2 at 1, 11 at 2, 10 at 3, 7 at 4), so a 5 is close to out of reach for this judge. Owner gold with a few 5s would
+fix the ceiling.
+
+### 2. Sources: Pinterest lifted, Dribbble capped
+
+Over every rated Bench run (2,241 top 8 UI results), Dribbble held 76.5% at 64.2% agent precision and 7.2% great;
+Pinterest 15.0% at 66.7% and 27.4% great. Art: Pinterest 92.6% precision and 33.3% great (81 rated), Behance 44.7%
+and none great (47). Why Dribbble led: the fidelity lane (shared by the whole board), the deep page 2 of it, the
+concept lane and both component lanes all went to Dribbble, and the board's pool shares the fidelity leftovers.
+
+Probe (`scripts/r7-probe.ts`, 16 credits, 8 r5a directions): Behance UI with the page words kept 9 results from 8
+requests (5 of them on banking), Cosmos 0 from 4, Are.na 2 from 4 (a PDF and a game cover). They do not hold up
+through Serper's `site:` search, so they are not lifted.
+
+Fix (Atlas directions only, never with picked sources or a genre lane; `genre-unchanged.test.ts` untouched):
+`spreadSources` (`lib/atlas/search.ts`) keeps at most 40% of a plan's UI requests on Dribbble and moves the rest to
+Pinterest with the same words (deep pages first, then component, hero, fidelity, taste, the concept recipe last),
+and fills the art places Pinterest first (both art ideas on Pinterest before Behance). `mergeLanes` gains a
+`siteCap` (`lib/sources/plan.ts`): Dribbble fills at most 40% of the UI places while other UI results are left, and
+the rest only when nothing else can. A `--fake-serper` bench mode simulates plans at 0 credits (63% Dribbble without
+the spread, 42% with it).
+
+Live run `2026-10-17r7` (72 credits, the first direction of 9 briefs; Qatar was left out by the budget), against the
+same 9 slots of r5a, R5 judge setup (R3 judge with thumbnails, J10 reference prompt):
+
+| Metric (9 slots) | r5a | **r7** |
+| --- | --- | --- |
+| On brief | 9 of 9 | 9 of 9 |
+| Wow 4+; mean | 5 of 9; 3.56 | **8 of 9; 3.89** |
+| UI from Dribbble | 77.8% | **40.3%** |
+| Directions with 3+ UI sources | 0 of 9 | 5 of 9 |
+| J10 UI precision; great | 48.6%; 6.9% | 52.8%; 5.6% |
+| J10 art precision; great | not judged | 66.7%; 30.6% |
+
+Whole r7 board (30 directions, 21 rated on their specs): on brief 29 of 30 (96.7%, the same as r5a), wow 4+ 21 of
+30 (r5a 19), mean 3.70 (3.60). The one off brief is Jebena on coffee (unchanged lead, unsearched here, searched in
+r5a): judge noise on an unchanged spec.
+
+Per source in r7 (J10, top 8 UI): Pinterest 31 at 51.6% precision, 3.2% great; Dribbble 29 at 55.2%, 0% great;
+60fps 3 at 66.7%; httpster 3 at 66.7% (2 great); unsection 3 at 33.3%; screensdesign 2 at 0%; siteinspire 1 great.
+Art: Pinterest 33 at 72.7%, 33.3% great; the Met 3 at 0%. J10 is stingy with great on UI (the agent rated Pinterest
+UI great 4 times as often as Dribbble over earlier runs); no agent ratings were made for r7, so an owner spot check of
+the Pinterest UI results is the open item.
+
+### 3. Drafts: the Frankenstein page says where the idea goes
+
+`frankenstein_page` gave a stack of shipped parts and their sources and nothing about the direction, so an agent
+builds the collage. Opus (`atlas-build/jobs/r7-drafts.ts`) rated 20 drafts (the spec plus the page text, stacked from
+each r5a direction's top UI results, `scripts/r7-drafts.ts`) on "could a designer take this and expand it into
+something original?". Before, the weakest part was the parts (9) and the spec (7).
+
+Fix (`lib/stitch/bend-lines.ts`): a page made for a direction (and its remixes) ends with "Bend it" lines: each page
+part of the mechanic (R4 `mechanic.parts`) points at the slot that holds it, with the line that rebuilds it, a part
+with no slot is named as the slot to add, then the main task. Deterministic.
+
+| Drafts (20) | Expand mean | Expand 4+ | Original mean |
+| --- | --- | --- | --- |
+| before | 3.10 | 3 | 3.45 |
+| **after** | **3.50** | **10** | 3.45 |
+
+After the fix the spec is the weakest part (12 of 20): the second card's texture and motion lines name objects from
+their own world ("a honey fill level", "a high score card"), colors named in the text are missing from the palette,
+and a dense card read "Dense; ... generous spacing". The last one is fixed (`cardSpec` says "tight spacing" for a
+dense card); the borrowed lines are the next fix (a text rewrite, so a J job or card edits, not a ranking change).

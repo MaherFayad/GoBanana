@@ -1,0 +1,362 @@
+[
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-7le7dwhz",
+  "version": "before",
+  "expand": 4,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The layout clearly maps the price sign onto plan tiles, the lightbox hero and lit detail rows, but three of the four parts are generic eSIM Dribbble shots, no part covers the networks and speed rows, and the rock carving texture pulls against the pylon idea."
+ },
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-7le7dwhz",
+  "version": "after",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The price-sign idea maps cleanly onto the plan tiles, hero and detail rows, but the spec bolts on an unrelated rock-carving texture and leaves the price unit switcher and the white-on-red best-plan contrast unresolved, so a designer must clean it up before building."
+ },
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-varl85u5",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The saffron-lit plate with a huge Eastern Arabic price numeral is a fresh, buildable idea, but the spec contradicts itself (dense yet generous, price numeral yet data amount, a leftover envelope motion) and the plan type tabs it describes have no row in the page."
+ },
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-varl85u5",
+  "version": "after",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The slots and bends are mapped clearly, but the spec contradicts itself: the signature puts the price as the huge numeral while whyItFits says the data amount, density is called dense yet generous, the motion is borrowed from an unrelated envelope, and a center snap carousel works against comparing GB and days side by side."
+ },
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-jlzttiy2",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The caliper idea is distinctive, but the spec contradicts itself in ways a designer would have to settle before building: it asks for an amber face with no amber in the palette, blue and green Kuwait Towers discs and haze white surfaces against a gray steel palette, steel plates against accordion ledger rows, and a sliding jaw that the layout never describes."
+ },
+ {
+  "briefId": "esim-plan-picker",
+  "directionId": "bd-jlzttiy2",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The caliper idea and the slot mapping are clear and fresh for an eSIM picker, but the spec contradicts itself: it asks for an amber face with no amber in the palette, says plates in one place and accordion rows or a sliding jaw in others, adds a Kuwait Towers disc texture on a sphere card that has nothing to do with a caliper, and calls the layout both dense and generously spaced."
+ },
+ {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-4ol6ei7i",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The transit line idea is specific and the spec says where it lands on the stepper, summary and bag rows, but the parts (a construction hero, a wallet sort animation, a sportsbook CTA) don't line up with those components, and nothing covers seat selection, so the designer has to work out the mapping alone."
+ },
+ {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-4ol6ei7i",
+  "version": "after",
+  "expand": 3,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The transit-line stepper and bag rows tell a designer where the idea lands, but the parts come from a construction app, a wallet animation and a sportsbook, and none of them covers bags or seats, so the designer has to invent most of the checkout and work out how the stop line connects to the seat chair grid."
+ },
+ {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-ns524bym",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The flight strip bay and radar seat map are a fresh, specific idea, but the four generic Dribbble booking parts include no step bay, seat map, bag add-on or payment, so the designer must invent how the strips connect to them."
+ },
+ {
+  "briefId": "flight-checkout-gcc-ota",
+  "directionId": "bd-ns524bym",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The strip-bay idea for booking steps is distinctive and well specified, but the four cut parts are generic flight booking shots that hold neither the booking steps nor the seat map, so the designer must invent the core screens with no structural reference."
+ },
+ {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-70kpzsc3",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The bookmatched walnut hero gives a clear first move, but the spec pulls in brushed aluminum and a crimped rim from a soda can direction that fights the oiled wood idea, and the parts are all stock coffee shop shots that drift toward a familiar Dribbble layout."
+ },
+ {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-70kpzsc3",
+  "version": "after",
+  "expand": 4,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The bookmatched walnut hero and the slot mapping give a clear place to start, but the spec carries brushed aluminum and a crimped rim line left over from a soda can direction, the feature cards are only plain brown panels, and every part comes from a near-identical coffee shop Dribbble shot, so the page leans back toward the usual genre template."
+ },
+ {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-cm7zfgnd",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The jebena ceremony idea is clear in the hero and feature cards, but the spec borrows motion from an unrelated Woven Rattan direction, pairs a full bleed word pattern with a pill button, and never says how pricing or the footer change, so the generic coffee shop parts will likely win."
+ },
+ {
+  "briefId": "coffee-shop-landing",
+  "directionId": "bd-cm7zfgnd",
+  "version": "after",
+  "expand": 3,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The hero, feature cards and closing button each have a clear jebena treatment, but the spec carries a wrap line motion borrowed from Woven Rattan, an unexplained full bleed word pattern and a step header card with no steps defined, so the ceremony story never shapes the page and the generic Dribbble coffee parts show through."
+ },
+ {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-79q2txs2",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The spec gives a clear ridge-line progress bar and stamp-press moment, but the cut parts are a generic header, hero, cards and CTA with no slot for the step progress, and the hero comes from a fingerprint scanner shot that pulls toward the glowing cliché the spec rules out."
+ },
+ {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-79q2txs2",
+  "version": "after",
+  "expand": 3,
+  "original": 2,
+  "weakest": "where the idea goes",
+  "reason": "The main task is routed through a thin gray line with a blue segment, which is just a standard progress bar. The real ridge-print stamp idea is split between a hero card that the texture rule says should hold no whorl and an account ready moment with no slot, so the page would drift back toward the Dribbble fingerprint verification shots."
+ },
+ {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-9hwrs7gn",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "where the idea goes",
+  "reason": "The punched hole progress grid is a fresh signature, but none of the four slots is clearly the step progress where it should live, and the spec adds a draining button countdown and calls the layout dense while asking for generous spacing, so the designer has to guess where the idea lands."
+ },
+ {
+  "briefId": "banking-onboarding",
+  "directionId": "bd-9hwrs7gn",
+  "version": "after",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The punched hole progress grid gives a clear first build and a fresh take on onboarding, but the spec contradicts itself by calling the layout dense while asking for generous spacing, and it adds an unrelated draining button countdown pattern that muddies where the idea lives."
+ },
+ {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-83s0dbbw",
+  "version": "before",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The empty sash with blank patch outlines is a fresh, clear idea that shows where the page changes, but the spec borrows a felt field texture from a foosball table, adds a drop zone pattern that makes no sense for a first step, and pairs a blue that is not in the palette."
+ },
+ {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-83s0dbbw",
+  "version": "after",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The merit badge sash idea clearly reshapes the illustration, button and cards, but the spec carries stray borrowings like foosball felt with white markings, a drop zone pattern that does not suit an empty state, and a blue pair not in the palette, and it leaves unclear whether the sash replaces the hero slot."
+ },
+ {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-h3nhd8qu",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The arcade attract screen is a fresh take on an empty class list, but the spec borrows high score initials and a scanline card that never appear on this page, names a yellow counter missing from the palette, and leaves the fanned type deck and the cards row unexplained."
+ },
+ {
+  "briefId": "fitness-empty-state",
+  "directionId": "bd-h3nhd8qu",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The attract-screen idea clearly reshapes the empty state, but the spec contradicts itself: it calls for a yellow credit counter with no yellow in the palette, motion and texture rules written for a high score card and initials that don't exist here, and a dense layout that also asks for generous spacing, so the designer must untangle it before building."
+ },
+ {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-9bm2vxvb",
+  "version": "before",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The apricot sheet idea clearly shapes the unrolling hero, backlit featured card and price-tag header, but the spec borrows a juniper growth-ring texture with a heartwood-red core that fights the apricot material and leaves the designer guessing which surface to trust."
+ },
+ {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-9bm2vxvb",
+  "version": "after",
+  "expand": 4,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The unrolling apricot sheet hero is a fresh, fitting Ramadan idea and the slot mapping is clear, but the spec borrows a juniper growth-ring texture from another direction, puts a hanging price tag on a header it also calls a flat bar, and never says where the countdown goes."
+ },
+ {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-pkglkiio",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The souq sign idea and spec give the hero, cards and chips a clear look, but the parts are four generic food delivery Dribbble shots with no countdown banner or chip row, and the spec carries stray errors like honey jar motion, a mustard color missing from the palette and a dense yet generous layout, so the designer must rebuild the structure largely alone."
+ },
+ {
+  "briefId": "ramadan-food-delivery",
+  "directionId": "bd-pkglkiio",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "spec",
+  "reason": "The souq sign idea and its placement on the hero, chips and cards are clear, but the spec contradicts itself and drifts in key places: density is called dense yet generously spaced, the motion rule describes a honey fill level that does not exist on this page, mustard is used without being in the palette, and the countdown is never designed."
+ },
+ {
+  "briefId": "saas-pricing",
+  "directionId": "bd-fluldst5",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The numeral-led spec is distinctive, but the parts are a generic landing page stack of nav, hero, features, pricing and footer with no plan comparison or closing call to action row. The designer has to work out where the oversized prices, ledger rules and red button actually land."
+ },
+ {
+  "briefId": "saas-pricing",
+  "directionId": "bd-fluldst5",
+  "version": "after",
+  "expand": 4,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The idea is clearly placed on the plan cards, headline and closing button, but the parts are cut from generic analytics landing pages with a features row and no plan comparison table, so the page drifts toward a stock SaaS landing layout instead of a pricing page built around the numbers."
+ },
+ {
+  "briefId": "saas-pricing",
+  "directionId": "bd-f4cw102c",
+  "version": "before",
+  "expand": 3,
+  "original": 2,
+  "weakest": "idea",
+  "reason": "The direction is just a 2021 dark SaaS trend label, so even though the spec adds a fresh changelog motif to the plan cards and comparison table, the Dribbble landing page parts it rests on pull the page back toward the generic dark pricing screens it was cut from."
+ },
+ {
+  "briefId": "saas-pricing",
+  "directionId": "bd-f4cw102c",
+  "version": "after",
+  "expand": 4,
+  "original": 2,
+  "weakest": "idea",
+  "reason": "The slot mapping and spec tell a designer exactly what to rebuild first, but the idea is just a 2021 dark SaaS trend label pulled from five lookalike Dribbble shots, so the result will land back on the familiar violet-on-graphite pricing page everyone has already shipped."
+ },
+ {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-ip2pl343",
+  "version": "before",
+  "expand": 2,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The spec says the idea lives in the location map, gallery and price history, but the stacked parts are only a generic nav, hero, features, pricing and footer cut from dribbble listings with no map slot at all, and the coral grain the spec relies on is not even in the palette."
+ },
+ {
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-ip2pl343",
+  "version": "after",
+  "expand": 3,
+  "original": 3,
+  "weakest": "parts",
+  "reason": "The spec and the placement of the idea are specific, but the parts are generic real estate dashboard shots that hold neither the location map, which carries the main task, nor the price chart, so the designer must invent the most important sections without a reference while the rest pulls back toward stock listing layouts."
+ },
+ {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-oocqzat2",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "where the idea goes",
+  "reason": "The spec says the main task now runs through the daily goal and sticker path, but the four rows (header, hero, cards, tabbar) have no slot for that path, so the designer must work out where the felt idea actually changes the page."
+ },
+ {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-oocqzat2",
+  "version": "after",
+  "expand": 4,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The slot mapping clearly tells a designer to rebuild the hero, tiles and header in felt, but the spec borrows die-cut white borders and holographic sheen from a Stickers direction and puts the mascot greeting on the header strip the sticker path already occupies, which muddies the felt idea over a fairly standard header, hero, cards and tabbar layout."
+ },
+ {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-8k1e8gzn",
+  "version": "before",
+  "expand": 3,
+  "original": 3,
+  "weakest": "where the idea goes",
+  "reason": "The merit patch sash idea is distinctive, but the signature patch progress track has no row of its own among the four borrowed parts, and the spec muddies it with a green fill missing from the palette, plant growth stages, and star motion."
+ },
+ {
+  "briefId": "kids-reading-home",
+  "directionId": "bd-8k1e8gzn",
+  "version": "after",
+  "expand": 4,
+  "original": 3,
+  "weakest": "spec",
+  "reason": "The merit patch sash gives a clear first build in the status header and hero, but the spec contradicts itself by borrowing star motion, naming a plant growth pattern, and filling the track with green that is not in the palette, while the hero bend stays close to its badges and streak source."
+ },
+ {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-w2tkqxef",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The banknote spec is specific and fresh, but the four cut parts are generic dashboard pieces, two of them from dark mode shots, and none of them is the digital ID card hero panel or the empty state where the guilloche idea is meant to live."
+ },
+ {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-w2tkqxef",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "where the idea goes",
+  "reason": "The banknote and guilloche idea suits a digital ID dashboard and the spec is rich, but the bends mostly restate surface styling (paper tiles, serif rows) without saying how renew ID and pay fines actually work inside the ID card or which panel is the guilloche hero, so the designer must work out the core interaction alone."
+ },
+ {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-m5md8vcw",
+  "version": "before",
+  "expand": 3,
+  "original": 4,
+  "weakest": "parts",
+  "reason": "The spec gives a vivid concrete-and-turquoise idea, but the stacked parts are a generic sidebar, toolbar, cards and table with no slot for the progress bar that carries the signature, so the designer must invent where the main renew and pay flow lives."
+ },
+ {
+  "briefId": "qatar-gov-services",
+  "directionId": "bd-m5md8vcw",
+  "version": "after",
+  "expand": 3,
+  "original": 4,
+  "weakest": "where the idea goes",
+  "reason": "The concrete block progress track is a strong, ownable signature, but it has no slot in the page, it bends three slots at once instead of letting one read clearly, and it never explains how two separate tasks like renewing an ID and paying a fine share a single progress bar, so the designer has to invent the core structure."
+ }
+]

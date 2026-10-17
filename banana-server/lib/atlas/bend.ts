@@ -156,14 +156,16 @@ export function mechanicStyleScore(styles: readonly string[] | undefined, target
  * Diversity rule 5 for leads (R2, docs/styles/INDEX.md): when no style is asked, the first `count`
  * leads take different main styles where the pool allows. A lead whose main style is already taken
  * moves after the others (never dropped); untagged leads keep their place. Stable otherwise.
+ * R7: a lead `demote` marks (an expected card on a wild brief) never takes a front place for its
+ * style; it only fills the front when too few others are left.
  */
-export function spreadByStyle<T extends { styles?: readonly string[] }>(leads: readonly T[], count: number): T[] {
+export function spreadByStyle<T extends { styles?: readonly string[] }>(leads: readonly T[], count: number, demote?: (lead: T) => boolean): T[] {
   const front: T[] = [];
   const later: T[] = [];
   const used = new Set<string>();
   for (const l of leads) {
     const main = mainStyleOf(l);
-    if (front.length < count && (!main || !used.has(main))) {
+    if (front.length < count && (!main || !used.has(main)) && !demote?.(l)) {
       front.push(l);
       if (main) used.add(main);
     } else later.push(l);
@@ -377,6 +379,44 @@ const LAYOUT_FAMILIES = new Set(["controls and UI bits"]);
  */
 export function isRuleCard(c: { kind: IngredientCard["kind"]; family: string }): boolean {
   return c.kind === "constraint" || (c.kind === "element" && LAYOUT_FAMILIES.has(c.family));
+}
+
+/**
+ * R7: card families native to screen design (glyphs, data marks, stamps and badges, UI bits, the
+ * digital and internet eras). On a UI page they are the move a designer makes anyway: in run r5a the
+ * judge rated 9 of 14 such leads wow 3 or less ("expected", "tame for wildness 5"), against 3 of 16
+ * other leads.
+ */
+export const UI_NATIVE_FAMILIES: ReadonlySet<string> = new Set(["controls and UI bits", "data marks", "glyphs and punctuation", "marks and stamps", "digital and internet"]);
+/** R7: main styles that are the screen default (the polished Dribbble look): a lead with one is expected too. */
+export const UI_DEFAULT_STYLES: ReadonlySet<string> = new Set(["minimal-mono-light", "dark-luminous", "data-dense-dashboard", "glass-frosted"]);
+/** R7: regions whose cards can be the expected move (the screen design canon); cards without a region count as global. */
+const CANON_REGIONS: ReadonlySet<string> = new Set(["global", "europe", "north-america"]);
+/** R7: lead relevance an expected card loses at wildness 1, and the extra it loses per wildness step. */
+export const EXPECTED_BASE = 0.2;
+export const EXPECTED_STEP = 0.06;
+/** R7: from this wildness an expected lead is never picked to spread the styles (spreadByStyle). */
+export const EXPECTED_DEMOTE_FROM = 3;
+
+/**
+ * True when a card is the expected move on a screen (UI_NATIVE_FAMILIES or a UI_DEFAULT_STYLES main
+ * style). A card from a region outside the screen design canon is never expected: Eastern Arabic
+ * Digits carry a place and a culture (rated wow 4 twice in r5a), the plain Numerals do not. Europe and
+ * North America are that canon (Swiss Style 1960s is the web default), so their cards are judged by
+ * family and style like global ones.
+ */
+export function isExpectedCard(c: Pick<IngredientCard, "family" | "styles" | "region">): boolean {
+  if (c.region && !CANON_REGIONS.has(c.region)) return false;
+  return UI_NATIVE_FAMILIES.has(c.family) || UI_DEFAULT_STYLES.has(c.styles?.[0] ?? "");
+}
+
+/**
+ * Lead relevance an expected card loses: 0.1 at wildness 1 up to 0.42 at wildness 5 (one fit step is
+ * 0.33), so a wilder brief needs a clearly better fit before it leads with a glyph, a stamp or the
+ * minimal default. Never for a lens card (the user asked for it).
+ */
+export function expectedPenalty(c: Pick<IngredientCard, "family" | "styles" | "region">, wildness: number): number {
+  return isExpectedCard(c) ? EXPECTED_BASE + EXPECTED_STEP * (Math.max(1, Math.min(5, wildness)) - 1) : 0;
 }
 
 /**
@@ -643,7 +683,8 @@ export function cardSpec(input: SpecInput): VisualSpec {
     motion: sentence(`${motionCard.motion.verb} in ${motionCard.motion.ms}ms${motionCard !== lead ? ` (from ${motionCard.name})` : ""}; with reduced motion on, ${motionCard.motion.reduced}`),
     texture: sentence(`${textureCard.texture}${textureCard !== lead ? ` (from ${textureCard.name})` : ""}; text sits on solid panels, never on the texture`),
     iconography: sentence(input.platform === "mobile" ? `${ICONS[lead.radius]}, 24pt in the tab bar` : ICONS[lead.radius]),
-    density: sentence(`${lead.density.charAt(0).toUpperCase()}${lead.density.slice(1)}; ${profile.density.charAt(0).toLowerCase()}${profile.density.slice(1)}`),
+    // R7: a dense card no longer reads "Dense; ... generous spacing" (the draft judge's most named contradiction).
+    density: sentence(`${lead.density.charAt(0).toUpperCase()}${lead.density.slice(1)}; ${(lead.density === "dense" ? profile.density.replace(/generous spacing/i, "tight spacing") : profile.density).replace(/^./, (c) => c.toLowerCase())}`),
     signature: sentence(input.how),
     pattern: sentence(`${lead.name} on the ${part}${input.mechanic ? `: ${input.mechanic.name}` : ""}`),
     steal: [
@@ -812,7 +853,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const pageOk = !asLead || pageFitOf.size === 0 || (pageFitOf.get(c.id)?.score ?? 0) >= 2;
     const gulf = market === "gulf" && c.region === "gulf" && pageOk ? (c.kind === "tradition" ? GULF_BONUS : GULF_CARD_BONUS) : 0;
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
-    return (base + gulf + styleFit(c.styles, asked)) * weight;
+    // R7: a lead that is the expected move on a screen gives way to a wilder card of near fit.
+    const expected = asLead && !(lens && isLensCard(c)) ? expectedPenalty(c, wildness) : 0;
+    return (base + gulf + styleFit(c.styles, asked) - expected) * weight;
   };
   const mmr = (pool: IngredientCard[], n: number, chosen: IngredientCard[] = []): IngredientCard[] => {
     const left = [...pool];
@@ -843,7 +886,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const leadsLens = mmr(lensCards, GENERATED);
   const drawn = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   // No style asked and no lens: the first directions take different main styles (R2).
-  const leads = asked.length === 0 && !lens ? spreadByStyle(drawn, input.count) : drawn;
+  // R7: on a wild brief (wildness 3 or more) an expected lead never takes a place for its style alone.
+  const demote = (c: IngredientCard) => wildness >= EXPECTED_DEMOTE_FROM && isExpectedCard(c);
+  const leads = asked.length === 0 && !lens ? spreadByStyle(drawn, input.count, demote) : drawn;
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
 
   // 4. The second card (texture or motion) and the clash check.

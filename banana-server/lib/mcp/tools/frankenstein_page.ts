@@ -188,7 +188,7 @@ export function createStitchPageTool(deps: CanvasToolDeps) {
       const stitches = placed.map((p, i) => summarize(p.id, datas[i]!, parts));
       const out: StitchPageOutput = { canvasId: input.canvasId, sectionId, stitches, notes, webUrl: canvasWebUrl(deps.appUrl(), input.canvasId) };
       const lines = [`Made ${stitches.length} Frankenstein page${stitches.length === 1 ? "" : "s"} in the "${STITCH_SECTION_TITLE}" section (${sectionId}):`];
-      placed.forEach((p, i) => lines.push(...stitchText(p.id, datas[i]!, parts)));
+      placed.forEach((p, i) => lines.push(...stitchText(p.id, datas[i]!, parts, direction?.detail?.mechanic)));
       lines.push(...notes, SOURCE_REMINDER, "Change one with update_frankenstein, or make variants with remix_frankenstein.", `Web link: ${out.webUrl}`);
       return toolResult(lines.join("\n"), out);
     } catch {

@@ -50,6 +50,7 @@ import {
   zoneQuotas,
   type LaneName,
   type PlannedRequest,
+  type SiteCap,
 } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import { isGenreTitle, laneGenre, type Genre } from "./genre";
@@ -179,6 +180,8 @@ export type RunPlanOptions = {
    * for the canvas pool the board's later directions share (lib/sources/baseline.ts, Gate 2 round 2).
    */
   poolLanes?: readonly LaneName[];
+  /** R7: a source that fills at most its share of the UI places while other UI results are left (mergeLanes siteCap). */
+  siteCap?: SiteCap;
 };
 
 /** What one planned request brought back. */
@@ -879,7 +882,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     const quotas = zoneQuotas(count, [...lists.keys()]);
     const capped = new Set([...TAIL_LANES].filter((l) => [...quotas.keys()].some((o) => o !== l && o !== "art" && !TAIL_LANES.has(o))));
     const references = byZone(
-      mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], { groupsOf: (r) => creatorKeys(r.title), capped }),
+      mergeLanes(lists, quotas, count, (r) => [itemKey(r.sourceUrl), dedupeKey(r.imageUrl)], { groupsOf: (r) => creatorKeys(r.title), capped, ...(opts.siteCap ? { siteCap: opts.siteCap } : {}) }),
     );
 
     const result: PlanSearchResult = {

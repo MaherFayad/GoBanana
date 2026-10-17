@@ -7,6 +7,7 @@ import { z } from "zod";
 import { appendNodes, parseState, resolveStitchRows, type NewNode, type PlacedNode } from "@/lib/canvas/store";
 import type { CanvasState, StoredNode } from "@/canvas/types";
 import { GAP } from "@/lib/layout";
+import { bendLines, type BendMechanic } from "@/lib/stitch/bend-lines";
 import { skeleton, skeletonLines, type SkeletonRow } from "@/lib/stitch/skeleton";
 import { stitchSize, STITCH_DISPLAY_WIDTH, STITCH_HEADER } from "@/lib/stitch/size";
 import { PART_ROLES, STITCH_MODE_INPUTS, type HarmonizeColors, type Part, type StitchData } from "@/lib/stitch/types";
@@ -172,11 +173,13 @@ export function summarize(id: string, data: StitchData, parts: readonly Part[]):
 }
 
 /** Text block for one page: title line plus the numbered skeleton. */
-export function stitchText(id: string, data: StitchData, parts: readonly Part[]): string[] {
-  return [
-    `- ${data.title} (${id}, ${data.platform}, ${data.mode})${data.note ? `: ${data.note}` : ""}`,
-    ...skeletonLines(resolveStitchRows(data, parts), "    "),
-  ];
+/**
+ * A stitch's lines in tool output: title, then one skeleton line per row. With the direction's
+ * mechanic (R7), the "Bend it" lines follow: which slot each page part of the idea goes in.
+ */
+export function stitchText(id: string, data: StitchData, parts: readonly Part[], mechanic?: BendMechanic): string[] {
+  const rows = resolveStitchRows(data, parts);
+  return [`- ${data.title} (${id}, ${data.platform}, ${data.mode})${data.note ? `: ${data.note}` : ""}`, ...skeletonLines(rows, "    "), ...bendLines(mechanic, rows)];
 }
 
 export const SOURCE_REMINDER = "Show each slot's source link next to it. Take the structure, not the pixels.";
