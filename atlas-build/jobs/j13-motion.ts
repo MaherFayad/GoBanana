@@ -27,7 +27,7 @@ export const PER_GROUP = 4;
 export const PER_LENS = 2;
 const RENDER_DIR = join(PATHS.review, "j13-motion");
 
-const SYSTEM = `You write UI motion recipes for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. Each recipe is one motion a developer adds to a shipped product screen: how a card enters, how list rows arrive, how a total changes, how a success moment lands, how a loading state breathes. It carries the motion verb of an ingredient card (a material, era, object, tradition, scale or rule) or of a cultural lens, built so it plays the same in every browser.
+export const SYSTEM = `You write UI motion recipes for GoBanana, a tool that bends one app or web page into a wild but buildable design direction. Each recipe is one motion a developer adds to a shipped product screen: how a card enters, how list rows arrive, how a total changes, how a success moment lands, how a loading state breathes. It carries the motion verb of an ingredient card (a material, era, object, tradition, scale or rule) or of a cultural lens, built so it plays the same in every browser.
 
 ${PROMPT_RULES}
 

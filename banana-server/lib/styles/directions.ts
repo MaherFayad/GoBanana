@@ -4,7 +4,7 @@
  */
 import { detectGenre } from "@/lib/sources/genre";
 import { assignDirectionStyles } from "./diversity";
-import { detectStyles, styleById, styleGenre, type StyleGenre, type StyleId } from "./index";
+import { cleanStyles, detectStyles, styleById, styleGenre, type StyleGenre, type StyleId } from "./index";
 
 /**
  * Styles a direction takes when its words name none, per genre, in the order of the owner's picks
@@ -20,6 +20,8 @@ export const FALLBACK_STYLES: Record<StyleGenre, readonly StyleId[]> = {
 
 export type StyledDirection = {
   platform?: string | null;
+  /** The lead card's style tags (Atlas engine, R2): named before the spec's style words. */
+  cardStyles?: readonly string[] | null;
   spec?: { styleWords?: readonly string[] } | null;
 };
 
@@ -41,7 +43,7 @@ export function askedStyles(texts: readonly (string | null | undefined)[], genre
 export function directionStyleIds(directions: readonly StyledDirection[], opts: { brief: string; taste?: readonly string[]; platform?: string | null }): { ids: StyleId[]; asked: StyleId[]; genre: StyleGenre } {
   const genre = briefStyleGenre(opts.brief, opts.platform ?? directions[0]?.platform ?? null);
   const asked = askedStyles([opts.brief, ...(opts.taste ?? [])], genre);
-  const named = directions.map((d) => detectStyles(d.spec?.styleWords ?? [], genre));
+  const named = directions.map((d) => [...new Set([...(cleanStyles(d.cardStyles) ?? []), ...detectStyles(d.spec?.styleWords ?? [], genre)])]);
   const fits = (id: StyleId) => styleById(id).genres.includes(genre);
   const ids = assignDirectionStyles(named, { asked, fits, fallback: FALLBACK_STYLES[genre] });
   return { ids, asked, genre };

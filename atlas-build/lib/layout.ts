@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { bucketOf, recipeKeyString } from "../../banana-server/lib/atlas/loader.ts";
 import { SHARD_MAX_BYTES } from "../config.ts";
 import { readManifest, sha256, shardText } from "./shards.ts";
+import { applyOverlays, overlaysFrom, type OverlayCounts } from "./overlays.ts";
 
 /**
  * The kinds the server's loader reads (banana-server/lib/atlas/loader.ts ATLAS_KINDS), plus the
@@ -112,6 +113,8 @@ export type ServerLayout = {
   files: Map<string, string>;
   /** Job kinds the server does not read. */
   skipped: string[];
+  /** R2 overlays applied per job kind (lib/overlays.ts): style tags, rewrites and taste drops. */
+  overlays: Record<string, OverlayCounts>;
 };
 
 /** Pure: records by job kind to the server layout. Kinds that map to one server kind are joined. */
@@ -119,12 +122,17 @@ export function serverLayout(recordsByJobKind: ReadonlyMap<string, readonly unkn
   const maxBytes = opts.maxBytes ?? SHARD_MAX_BYTES;
   const joined = new Map<ServerKind, { rule: Rule; records: unknown[] }>();
   const skipped: string[] = [];
-  for (const [jobKind, records] of [...recordsByJobKind].sort(([a], [b]) => a.localeCompare(b))) {
+  // R2: style tags, taste verdicts and rewrites live in their own job kinds; lay them over here.
+  const ov = overlaysFrom(recordsByJobKind);
+  const overlays: Record<string, OverlayCounts> = {};
+  for (const [jobKind, raw] of [...recordsByJobKind].sort(([a], [b]) => a.localeCompare(b))) {
     const rule = JOB_KINDS[jobKind];
     if (!rule) {
       skipped.push(jobKind);
       continue;
     }
+    const { records, counts } = applyOverlays(jobKind, raw, ov);
+    if (counts.tagged + counts.rewritten + counts.dropped > 0) overlays[jobKind] = counts;
     const entry = joined.get(rule.kind) ?? { rule, records: [] };
     entry.records.push(...records);
     joined.set(rule.kind, entry);
@@ -142,7 +150,7 @@ export function serverLayout(recordsByJobKind: ReadonlyMap<string, readonly unkn
     }
   }
   const hash = shards.length > 0 ? sha256(shards.map((s) => `${s.kind}/${s.shard}:${s.sha256}`).join("\n")) : "";
-  return { manifest: { version: opts.version ?? "v1", hash, shards }, files, skipped };
+  return { manifest: { version: opts.version ?? "v1", hash, shards }, files, skipped, overlays };
 }
 
 /** Records of every job kind in out/v1, read through the job manifest (verify it first). */

@@ -138,6 +138,8 @@ export interface Direction {
   mechanic: Mechanic;
   /** Atlas engine only (P1-I2): the lead card first, then the card that adds texture or motion. */
   cardIds?: string[];
+  /** Atlas engine only (R2): the lead card's style tags (docs/styles), main style first. directionStyleIds reads them first. */
+  cardStyles?: string[];
   /** Atlas engine only: the Atlas mechanic the direction is built on. */
   mechanicId?: string;
   /** Atlas engine only: the query recipes its queries came from (lib/atlas/loader.ts recipeId). */

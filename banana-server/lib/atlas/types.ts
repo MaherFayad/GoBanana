@@ -57,6 +57,7 @@ export interface IngredientCard {
   avoid: string[];
   artQueries: string[];
   culturalNotes?: string;                       // required for kind "tradition"
+  styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
 }
 
 export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
@@ -75,6 +76,7 @@ export interface Mechanic {
   rtl: string;                                  // what mirrors in Arabic
   a11y: string;                                 // the WCAG 2.2 risk and the fix
   pages: string[];                              // PageAnatomy ids where it pays off
+  styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
 }
 
 export interface LensPack {
@@ -94,6 +96,7 @@ export interface QueryRecipe {
   precision: number;                            // share of top 8 judged good or great, 0 to 1
   judged: number;                               // results judged
   at: string;                                   // YYYY-MM-DD
+  styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
 }
 
 export interface CC0Item {
@@ -134,6 +137,7 @@ export interface ShaderRecipe {
   families: string[];                           // card families, computed offline from cardIds
   lensIds: string[];                            // J6 lenses it follows
   culturalNotes?: string;
+  styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
 }
 
 export interface MotionKeyframe { offset?: number; easing?: string; transform?: string; opacity?: number; clipPath?: string; filter?: string }
@@ -156,4 +160,5 @@ export interface MotionRecipe {
   families: string[];
   lensIds: string[];
   culturalNotes?: string;
+  styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
 }
