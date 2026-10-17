@@ -1,0 +1,6238 @@
+{
+ "agency-portfolio": [
+  {
+   "look": "huge bold sans-serif headline on a clean white page",
+   "cards": [
+    "every-word-a-different-size",
+    "headlines",
+    "headlines-wider-than-the-screen",
+    "numerals",
+    "one-typeface-only-no-images",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "minimal black and white monochrome portfolio",
+   "cards": [
+    "70-percent-empty-space",
+    "black-and-white-only",
+    "black-white-and-one-gray",
+    "grayscale-plus-one-neon-accent",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "visible Swiss grid with modular columns and small captions",
+   "cards": [
+    "a-strict-12-column-grid",
+    "everything-on-a-baseline-grid",
+    "plus-signs",
+    "swiss-style-1960s",
+    "the-grid-lines-stay-visible"
+   ]
+  },
+  {
+   "look": "bento grid of mixed-size project tiles",
+   "cards": [
+    "bento-box",
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "numbered work index list with hover image preview",
+   "cards": [
+    "big-index-numbers-on-sections",
+    "everything-is-a-list",
+    "exhibition-catalog",
+    "hairline-rules-between-everything"
+   ]
+  },
+  {
+   "look": "full-bleed project image or video hero",
+   "cards": [
+    "every-section-a-full-height-panel",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "neo-brutalist bright cards with thick outlines",
+   "cards": [
+    "neo-brutalism-2022",
+    "web-brutalism-2015"
+   ]
+  },
+  {
+   "look": "dark mode with a single neon or gradient accent",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "oversized marquee ticker and giant footer contact line",
+   "cards": [
+    "one-word-per-line",
+    "the-footer-is-the-hero"
+   ]
+  },
+  {
+   "look": "asterisk, arrow and sticker marks as playful agency motifs",
+   "cards": [
+    "arrows",
+    "asterisks",
+    "stickers"
+   ]
+  },
+  {
+   "look": "monospace studio details with small metadata labels",
+   "cards": [
+    "labels-sit-in-the-margins",
+    "monospace-type-only",
+    "museum-wall-label"
+   ]
+  },
+  {
+   "look": "editorial serif with italic accents on a cream page",
+   "cards": [
+    "ampersands",
+    "every-heading-in-italics",
+    "serif-type-only"
+   ]
+  },
+  {
+   "look": "horizontal scrolling case study gallery",
+   "cards": [
+    "a-single-horizontal-scroll",
+    "film-frames"
+   ]
+  },
+  {
+   "look": "glassy blurred gradient panels",
+   "cards": [
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "pastel playful blobs and rounded shapes with flat illustrations",
+   "cards": [
+    "flat-design-2013",
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "grainy risograph and duotone print aesthetics",
+   "cards": [
+    "duotone-images-only",
+    "risograph-ink"
+   ]
+  }
+ ],
+ "ai-assistant": [
+  {
+   "look": "left-right chat bubbles in a single scrolling thread",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "one centered narrow column with a pill-shaped composer at the bottom",
+   "cards": [
+    "every-corner-fully-rounded",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "minimal black, white and gray neutral interface",
+   "cards": [
+    "black-and-white-only",
+    "black-white-and-one-gray",
+    "color-only-for-state",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "dark mode SaaS with a hairline-lit panel and a purple or blue glow",
+   "cards": [
+    "dark-mode-saas-2021"
+   ]
+  },
+  {
+   "look": "gradient or glowing orb sparkle as the AI mark",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "sidebar list of past chats with a search box",
+   "cards": [
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "suggested prompt chips or cards under a greeting",
+   "cards": [
+    "bento-grid-2023"
+   ]
+  },
+  {
+   "look": "numbered footnote citations and source chips",
+   "cards": [
+    "footnote-markers"
+   ]
+  },
+  {
+   "look": "typing-in-progress streaming text and a blinking cursor",
+   "cards": [
+    "everything-enters-in-reading-order"
+   ]
+  },
+  {
+   "look": "monospace code blocks with a copy button",
+   "cards": [
+    "monospace-type-only"
+   ]
+  },
+  {
+   "look": "toggle switches and sliders in settings and custom instructions",
+   "cards": [
+    "toggle-switches"
+   ]
+  },
+  {
+   "look": "frosted translucent panels for model picker and menus",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "thin-line simple icons",
+   "cards": [
+    "icons-drawn-with-one-stroke"
+   ]
+  },
+  {
+   "look": "usage limit progress bar",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "sans-serif type with one weight hierarchy on a white page",
+   "cards": [
+    "one-typeface-only-no-images"
+   ]
+  },
+  {
+   "look": "large greeting question as the empty-state hero",
+   "cards": [
+    "question-marks"
+   ]
+  }
+ ],
+ "airline": [
+  {
+   "look": "a boarding pass with a big barcode or QR code and a perforated stub",
+   "cards": [
+    "barcodes",
+    "metro-ticket",
+    "museum-ticket",
+    "parking-ticket",
+    "shipping-label",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "a departure board listing flights, gates and times",
+   "cards": [
+    "airport-departure-board",
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "airport wayfinding signs with pictograms and arrows",
+   "cards": [
+    "arrows",
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "a sky blue gradient with clouds and plane silhouettes",
+   "cards": [
+    "clouds"
+   ]
+  },
+  {
+   "look": "a seat map grid of small colored seat squares",
+   "cards": []
+  },
+  {
+   "look": "a dotted flight path arc between two airport codes with a small plane icon",
+   "cards": [
+    "dotted-leaders",
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "a world map with route lines from the origin",
+   "cards": [
+    "desk-globe"
+   ]
+  },
+  {
+   "look": "a clean white card layout with the carrier's brand color accent",
+   "cards": [
+    "flat-design-2013",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "a large time and three-letter city code as the hero numerals",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a step progress bar for booking and check-in",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a luggage tag or baggage icon for bag allowance",
+   "cards": [
+    "luggage-tag"
+   ]
+  },
+  {
+   "look": "a miles tier status card with a metallic gold, silver or platinum look",
+   "cards": []
+  },
+  {
+   "look": "destination photo cards with full-bleed hero images",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "a vintage jet-age travel poster look with retro airline branding",
+   "cards": [
+    "1930s-travel-posters",
+    "1970s-airline-branding"
+   ]
+  },
+  {
+   "look": "a boarding countdown or flight status timeline",
+   "cards": [
+    "clock-faces"
+   ]
+  }
+ ],
+ "analytics-saas": [
+  {
+   "look": "a row of KPI cards with a big number and a green or red delta arrow",
+   "cards": [
+    "bento-box",
+    "bento-grid-2023",
+    "every-change-shown-as-a-delta",
+    "everything-in-a-bento-grid",
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "line and area charts over time with a date range picker",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "tiny sparklines beside metrics",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "bar and column charts in a blue-purple palette",
+   "cards": [
+    "bars-instead-of-numbers",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "donut and pie charts for share of total",
+   "cards": [
+    "pie-slices",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "funnel and sankey charts for conversion flows",
+   "cards": [
+    "sankey-flows"
+   ]
+  },
+  {
+   "look": "cohort retention heatmap grid",
+   "cards": [
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "gauge or radial progress for goals",
+   "cards": [
+    "gauge-dials",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "dark mode SaaS dashboard with a sidebar and hairline borders",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent",
+    "hairline-rules-between-everything"
+   ]
+  },
+  {
+   "look": "clean white cards with soft shadows and rounded corners",
+   "cards": [
+    "bento-grid-2023",
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "dense data tables with tabular figures and sortable columns",
+   "cards": [
+    "everything-is-a-list",
+    "numbers-in-tabular-figures",
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "filter chips, dropdowns and legend toggles",
+   "cards": [
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "treemap for composition by size",
+   "cards": [
+    "treemap-tiles"
+   ]
+  },
+  {
+   "look": "frosted glass panels over gradient",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "color used only for status like green, amber and red alerts",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "box plots and distribution charts",
+   "cards": [
+    "box-plots"
+   ]
+  }
+ ],
+ "automotive": [
+  {
+   "look": "a big hero photo of a car, full-bleed, with a price overlaid",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "dark, glossy showroom look with black and red or silver accents",
+   "cards": [
+    "carbon-fiber",
+    "molten-chrome"
+   ]
+  },
+  {
+   "look": "round speedometer and tachometer gauges as the data display",
+   "cards": [
+    "barometer-dial",
+    "gauge-dials",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "carbon fiber weave texture on performance panels",
+   "cards": [
+    "carbon-fiber"
+   ]
+  },
+  {
+   "look": "brushed metal and chrome trim on buttons and badges",
+   "cards": [
+    "anodized-aluminum",
+    "brushed-aluminum",
+    "molten-chrome"
+   ]
+  },
+  {
+   "look": "spec tables with trim columns and checkmark comparisons",
+   "cards": []
+  },
+  {
+   "look": "monthly payment sliders for down payment and term",
+   "cards": [
+    "dial-caliper",
+    "sliders"
+   ]
+  },
+  {
+   "look": "road sign and highway green wayfinding for navigation",
+   "cards": [
+    "chevrons",
+    "highway-shields",
+    "highway-sign"
+   ]
+  },
+  {
+   "look": "gas station price board with big stacked numbers",
+   "cards": [
+    "gas-station-price-sign"
+   ]
+  },
+  {
+   "look": "license plate shaped tags for VIN or registration",
+   "cards": [
+    "license-plate"
+   ]
+  },
+  {
+   "look": "hazard stripes and warning yellow for service alerts",
+   "cards": [
+    "hazard-stripes"
+   ]
+  },
+  {
+   "look": "service checklist with progress steps and calendar time slots",
+   "cards": []
+  },
+  {
+   "look": "bold racing-style condensed type and large numerals",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "360 degree color swatch picker for paint options",
+   "cards": [
+    "color-swatches",
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "wet glossy car-wash visuals with water and bubbles",
+   "cards": [
+    "wet-asphalt"
+   ]
+  }
+ ],
+ "beauty": [
+  {
+   "look": "color swatch grid of shade chips with names",
+   "cards": [
+    "color-swatches",
+    "glaze-test-tiles",
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "soft dusty pink and blush pastel surfaces",
+   "cards": [
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "clean white minimal product-on-seamless-backdrop layout",
+   "cards": [
+    "70-percent-empty-space",
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "black and gold luxury foil with serif type",
+   "cards": [
+    "art-deco-1925",
+    "brushed-brass",
+    "gold-leaf",
+    "perfume-bottle"
+   ]
+  },
+  {
+   "look": "glass bottle and perfume object hero shots",
+   "cards": [
+    "perfume-bottle"
+   ]
+  },
+  {
+   "look": "frosted glass or glossy translucent cards",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "milk-glass"
+   ]
+  },
+  {
+   "look": "iridescent pearlescent holographic sheen",
+   "cards": [
+    "holographic-foil",
+    "mother-of-pearl",
+    "soap-bubble-film"
+   ]
+  },
+  {
+   "look": "star rating row with review cards",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "heart icon to save favorites",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "loyalty points tier progress bar with reward badges",
+   "cards": [
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "skin quiz as stepped cards with pill option buttons",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "botanical ingredient illustrations and flowers",
+   "cards": [
+    "botanical-specimen-sheet",
+    "flowers",
+    "pressed-flowers"
+   ]
+  },
+  {
+   "look": "soft blobs and organic gradient shapes",
+   "cards": [
+    "blobs",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "full-bleed model photography with overlaid text",
+   "cards": [
+    "magazine-cover",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "gift set box and packaging tiles",
+   "cards": [
+    "date-shop-gift-box"
+   ]
+  },
+  {
+   "look": "magazine-style editorial lookbook layout",
+   "cards": [
+    "magazine-cover"
+   ]
+  }
+ ],
+ "bnpl": [
+  {
+   "look": "a row of dots or segments showing 4 installments paid and unpaid",
+   "cards": [
+    "dot-grids-for-every-count",
+    "dots-carry-every-mark",
+    "pie-slices",
+    "progress-bars",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "a progress bar or ring for how much of the plan is paid",
+   "cards": [
+    "gauge-dials",
+    "pie-slices",
+    "progress-bars",
+    "saturn-rings",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "a gauge or bar showing remaining spending limit",
+   "cards": [
+    "barometer-dial",
+    "bars-instead-of-numbers",
+    "gauge-dials",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a payment schedule timeline with dated rows",
+   "cards": [
+    "calendar-dates",
+    "everything-is-a-list",
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a big amount due with a due date",
+   "cards": [
+    "calendar-dates",
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "pastel pink or mint brand colors with soft rounded cards",
+   "cards": [
+    "every-corner-fully-rounded",
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "clean white minimal fintech UI with a single bold accent",
+   "cards": [
+    "a-single-accent-shape-repeats",
+    "one-color-only",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "bold rounded sans type with playful friendly tone",
+   "cards": []
+  },
+  {
+   "look": "merchant logo tiles and store deal cards in a grid",
+   "cards": [
+    "everything-in-a-bento-grid",
+    "postage-stamp"
+   ]
+  },
+  {
+   "look": "a virtual or linked card shown as a credit card graphic",
+   "cards": []
+  },
+  {
+   "look": "a checkout summary list of itemized lines and total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "numbers-in-tabular-figures",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "green check marks and status chips for paid, due, late",
+   "cards": [
+    "checkboxes",
+    "color-only-for-state",
+    "glossy-enamel"
+   ]
+  },
+  {
+   "look": "bottom tab navigation with home, shop, cards, account",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "bell icons and notification banners for payment reminders",
+   "cards": [
+    "hamza"
+   ]
+  },
+  {
+   "look": "gradient hero card with frosted glass panels",
+   "cards": [
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  }
+ ],
+ "charity": [
+  {
+   "look": "a horizontal goal progress bar showing amount raised",
+   "cards": [
+    "progress-bars",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "a big donation total as one hero number",
+   "cards": [
+    "eastern-arabic-digits",
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "heart icons and heart-shaped giving buttons",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "warm documentary photos of beneficiaries, full-bleed hero",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "preset amount chips with a bold donate button",
+   "cards": [
+    "buttons"
+   ]
+  },
+  {
+   "look": "a clean emailed donation receipt with itemised lines and total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "impact infographics with icons and simple counts (meals, wells, children)",
+   "cards": [
+    "dot-grids-for-every-count",
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "a donut or pie chart showing where the money goes",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "a Sankey or breakdown bar for fund allocation",
+   "cards": [
+    "sankey-flows"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of people, hands and gifts",
+   "cards": [
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "a certificate or card for a gift in someone's name",
+   "cards": [
+    "greeting-card"
+   ]
+  },
+  {
+   "look": "badges and milestones for donor streaks",
+   "cards": [
+    "badges",
+    "ribbons"
+   ]
+  },
+  {
+   "look": "a coin or piggy bank motif for round-up and savings",
+   "cards": [
+    "coins"
+   ]
+  },
+  {
+   "look": "calm green or teal trust palette with white cards and rounded corners",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "Islamic geometric star patterns and crescent motifs for zakat and sadaqah apps",
+   "cards": [
+    "girih-tiles",
+    "moroccan-zellige"
+   ]
+  },
+  {
+   "look": "a zakat calculator as a form with sliders and a result total",
+   "cards": [
+    "pocket-calculator",
+    "sliders"
+   ]
+  }
+ ],
+ "coffee": [
+  {
+   "look": "kraft paper and brown bag packaging with a stamped logo",
+   "cards": [
+    "corrugated-cardboard",
+    "jute-burlap",
+    "kraft-paper",
+    "luggage-tag",
+    "rice-sack"
+   ]
+  },
+  {
+   "look": "coffee bag label with origin, roast date and tasting notes laid out like a spec sheet",
+   "cards": [
+    "apothecary-label",
+    "garment-care-label",
+    "museum-wall-label",
+    "wine-label"
+   ]
+  },
+  {
+   "look": "stamp card with a row of dots or cups to fill toward a free drink",
+   "cards": [
+    "dot-grids-for-every-count",
+    "passport-stamp-page",
+    "punch-card",
+    "rubber-stamps",
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "chalkboard cafe menu with hand lettering",
+   "cards": [
+    "chalkboard",
+    "diner-menu",
+    "dotted-leaders",
+    "every-word-hand-lettered"
+   ]
+  },
+  {
+   "look": "warm earthy brown and cream palette with coffee-bean tones",
+   "cards": [
+    "butcher-block",
+    "rammed-earth",
+    "stoneware",
+    "walnut-veneer"
+   ]
+  },
+  {
+   "look": "minimal white spaced layout with big product photography of bags and cups",
+   "cards": [
+    "70-percent-empty-space",
+    "cotton-rag-paper",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "hand-drawn line illustrations of beans, cups and plants",
+   "cards": [
+    "botanical-specimen-sheet",
+    "line-illustrations-only",
+    "only-hand-drawn-shapes"
+   ]
+  },
+  {
+   "look": "flavor wheel or radar chart for tasting notes",
+   "cards": [
+    "paint-swatch-card",
+    "ph-test-strip"
+   ]
+  },
+  {
+   "look": "roast level scale from light to dark as a slider or color strip",
+   "cards": [
+    "paint-swatch-card",
+    "ph-test-strip",
+    "sliders"
+   ]
+  },
+  {
+   "look": "origin map or farm story with region and altitude details",
+   "cards": [
+    "field-guide",
+    "topographic-map"
+   ]
+  },
+  {
+   "look": "retro diner or vintage cafe signage and enamel mug styling",
+   "cards": [
+    "1950s-diner-signage"
+   ]
+  },
+  {
+   "look": "clean sans-serif modern cafe branding with a small logo mark",
+   "cards": [
+    "flat-color-no-gradients",
+    "lowercase-letters-only"
+   ]
+  },
+  {
+   "look": "order-ahead pickup ticket or receipt with order number and ready status",
+   "cards": [
+    "a-receipt-width-column-only",
+    "thermal-receipt",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "pastel or matte colored cups and ceramic mugs as product tiles",
+   "cards": [
+    "glazed-ceramic",
+    "stoneware",
+    "wet-clay"
+   ]
+  },
+  {
+   "look": "subscription box with kraft packaging and a delivery schedule",
+   "cards": [
+    "bakery-box",
+    "kraft-paper",
+    "sneaker-box"
+   ]
+  }
+ ],
+ "crm-sales": [
+  {
+   "look": "kanban board with draggable deal cards in stage columns",
+   "cards": [
+    "bento-grid-2023"
+   ]
+  },
+  {
+   "look": "horizontal funnel or pipeline stage bars",
+   "cards": [
+    "progress-bars",
+    "sankey-flows"
+   ]
+  },
+  {
+   "look": "clean white SaaS UI with blue accent and rounded cards",
+   "cards": [
+    "bento-grid-2023",
+    "dark-mode-saas-2021",
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "dense data tables with sortable rows and filters",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures",
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "KPI tiles with big numbers and trend deltas",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "every-change-shown-as-a-delta",
+    "numerals",
+    "one-giant-number-per-screen",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "ring or gauge for quota attainment",
+   "cards": [
+    "barometer-dial",
+    "gauge-dials",
+    "pie-slices",
+    "progress-bars",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "line and bar charts for forecast and revenue",
+   "cards": [
+    "bars-instead-of-numbers",
+    "scale-bars",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "vertical activity timeline of calls, emails and notes",
+   "cards": [
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "contact avatars with initials in colored circles",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "colored status pills and stage chips",
+   "cards": [
+    "color-only-for-state",
+    "glossy-enamel",
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "sidebar navigation with line icons",
+   "cards": [
+    "icons-drawn-with-one-stroke",
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "calendar and task checklist for follow-ups",
+   "cards": [
+    "calendar-dates",
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "deal win celebration with confetti and leaderboard",
+   "cards": [
+    "arcade-cabinet",
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "card-style contact records like a rolodex",
+   "cards": [
+    "rolodex"
+   ]
+  },
+  {
+   "look": "heatmap of activity or territory",
+   "cards": [
+    "heatmap-cells"
+   ]
+  }
+ ],
+ "crypto": [
+  {
+   "look": "candlestick chart for price",
+   "cards": [
+    "candlesticks"
+   ]
+  },
+  {
+   "look": "dark mode dashboard with neon accent on black",
+   "cards": [
+    "cyberpunk-1982",
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent",
+    "synthwave-1984"
+   ]
+  },
+  {
+   "look": "green and red up/down delta colors with percent change",
+   "cards": [
+    "color-only-for-state",
+    "every-change-shown-as-a-delta"
+   ]
+  },
+  {
+   "look": "sparkline beside each coin price in a list",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "coin glyph and token logo icons in circles",
+   "cards": [
+    "coins",
+    "currency-symbols"
+   ]
+  },
+  {
+   "look": "big portfolio balance number with a line chart under it",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "donut or pie chart of portfolio allocation",
+   "cards": [
+    "pie-slices",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "order book depth chart and bid/ask tables with red green rows",
+   "cards": [
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures",
+    "treemap-tiles"
+   ]
+  },
+  {
+   "look": "heatmap or treemap of market caps in red and green",
+   "cards": [
+    "heatmap-cells",
+    "treemap-tiles"
+   ]
+  },
+  {
+   "look": "scrolling price ticker band",
+   "cards": [
+    "a-single-scrolling-ticker",
+    "airport-departure-board"
+   ]
+  },
+  {
+   "look": "glassmorphism cards with gradient glow",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "bento grid of tiles for features and stats",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "shield, lock and key icons for security",
+   "cards": [
+    "keys"
+   ]
+  },
+  {
+   "look": "seed phrase as numbered word grid",
+   "cards": []
+  },
+  {
+   "look": "bottom tab bar navigation in mobile wallet",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "gradient purple-blue Web3 hero with holographic 3D shapes",
+   "cards": [
+    "dichroic-glass",
+    "holographic-foil",
+    "y2k-chrome"
+   ]
+  }
+ ],
+ "dating": [
+  {
+   "look": "full-bleed portrait photo cards you swipe, with a name and age overlay",
+   "cards": [
+    "cards-stacked-like-a-deck",
+    "one-photo-fills-the-screen",
+    "trading-card"
+   ]
+  },
+  {
+   "look": "a stacked deck of profile cards with the next card peeking out",
+   "cards": [
+    "cards-stacked-like-a-deck",
+    "rolodex",
+    "trading-card"
+   ]
+  },
+  {
+   "look": "a heart icon and a heart-filled like button",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "a bold coral, pink and red gradient brand with flame or heart logo",
+   "cards": [
+    "millennial-pink-2016",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "chat bubbles in a message thread with rounded speech shapes",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "circular avatars with a verified checkmark badge",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "pill-shaped chips and tags for interests and intent",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "soft frosted glass cards over a photo or color field",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "prompt cards with a question and a typed answer under a photo",
+   "cards": [
+    "question-marks"
+   ]
+  },
+  {
+   "look": "a percentage ring or score for compatibility",
+   "cards": []
+  },
+  {
+   "look": "rounded friendly sans-serif UI with pastel gradients and blobs",
+   "cards": [
+    "blobs",
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "a premium gold boost or subscription tier badge",
+   "cards": [
+    "ribbons"
+   ]
+  },
+  {
+   "look": "playful emoji, sticker and GIF reactions",
+   "cards": [
+    "smiley-faces",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "bottom tab bar with a few icon tabs",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a dark mode glowing gradient look for nightlife energy",
+   "cards": []
+  }
+ ],
+ "design-tools": [
+  {
+   "look": "a neutral gray or dark-gray workspace with floating tool panels around a central canvas",
+   "cards": [
+    "black-white-and-one-gray",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "a left toolbar of small icons, a right properties inspector and a layers panel",
+   "cards": []
+  },
+  {
+   "look": "color swatch grids and paint-chip palettes with hex codes",
+   "cards": [
+    "color-swatches",
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "a dot-grid or graph-paper canvas with rulers, guides and snapping",
+   "cards": [
+    "a-ruler-down-one-side",
+    "graph-paper",
+    "ruler-ticks",
+    "the-grid-lines-stay-visible"
+   ]
+  },
+  {
+   "look": "selection handles and thin bounding boxes with corner anchors around the chosen object",
+   "cards": [
+    "corner-brackets"
+   ]
+  },
+  {
+   "look": "a template gallery of thumbnail cards in a masonry or card grid",
+   "cards": [
+    "bento-grid-2023",
+    "film-contact-sheet"
+   ]
+  },
+  {
+   "look": "a dark mode SaaS interface with a hairline highlight and a purple or blue accent",
+   "cards": [
+    "dark-mode-saas-2021"
+   ]
+  },
+  {
+   "look": "frosted glass panels and blurred floating popovers",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "mouse cursors with collaborator name flags and live presence",
+   "cards": [
+    "mouse-cursors"
+   ]
+  },
+  {
+   "look": "sliders and knobs for brush size, opacity and adjustments",
+   "cards": [
+    "sliders"
+   ]
+  },
+  {
+   "look": "a bento-style marketing page with feature tiles and product screenshots",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "a gradient mesh or colorful gradient hero on the marketing site",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "speech-bubble comment pins on the canvas",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "a checkerboard transparency background and a layer mask thumbnail",
+   "cards": []
+  },
+  {
+   "look": "rounded-corner cards with soft shadows on a white surface",
+   "cards": [
+    "neumorphism-2020",
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "a version history timeline list with timestamps",
+   "cards": []
+  }
+ ],
+ "dev-tools": [
+  {
+   "look": "dark mode with blue-black background and a single bright accent",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "monospace code type everywhere",
+   "cards": [
+    "ascii-characters-only",
+    "monospace-type-only"
+   ]
+  },
+  {
+   "look": "terminal-style black screen with green or amber text",
+   "cards": [
+    "8-bit-1985",
+    "dot-matrix-printout",
+    "teletext-1980s"
+   ]
+  },
+  {
+   "look": "green, red and yellow status dots and pills for pass, fail and pending",
+   "cards": [
+    "color-only-for-state",
+    "dots-carry-every-mark"
+   ]
+  },
+  {
+   "look": "dense tables and lists with hairline rows",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures",
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "sparklines and small trend charts beside metrics",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "contribution heatmap grid of squares",
+   "cards": [
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "line and bar charts for requests, latency and error rates",
+   "cards": [
+    "bars-instead-of-numbers",
+    "box-plots"
+   ]
+  },
+  {
+   "look": "gauges and progress bars for rate limits and quotas",
+   "cards": [
+    "gauge-dials",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "diff view with red and green lines",
+   "cards": [
+    "tracing-paper"
+   ]
+  },
+  {
+   "look": "build and deploy pipeline as connected stage nodes",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "bento grid feature tiles on a marketing page",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "command palette and keyboard shortcut key caps",
+   "cards": []
+  },
+  {
+   "look": "masked secret fields with copy buttons",
+   "cards": []
+  },
+  {
+   "look": "frosted glass and soft gradient glow on dark landing pages",
+   "cards": [
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "slash and bracket syntax motifs and code snippets as decoration",
+   "cards": [
+    "brackets",
+    "slashes"
+   ]
+  },
+  {
+   "look": "minimal grayscale with thin outlines",
+   "cards": [
+    "black-white-and-one-gray",
+    "outlines-only-no-fills"
+   ]
+  },
+  {
+   "look": "timeline log stream with timestamps",
+   "cards": [
+    "a-timestamp-on-everything",
+    "everything-enters-in-reading-order"
+   ]
+  }
+ ],
+ "ecommerce": [
+  {
+   "look": "clean white cards on a light grid with a large product photo",
+   "cards": [
+    "a-strict-12-column-grid",
+    "everything-on-a-baseline-grid"
+   ]
+  },
+  {
+   "look": "two-column product grid of tiles with price under each photo",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "star rating row with review count",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "heart icon to save to wishlist",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "red sale badges, strikethrough prices and flash sale countdown",
+   "cards": [
+    "lightning-bolts",
+    "price-tags",
+    "ribbons"
+   ]
+  },
+  {
+   "look": "bright orange or red brand accent on primary buy button",
+   "cards": []
+  },
+  {
+   "look": "sticky bottom tab bar with cart icon and badge count",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "order tracking as a vertical or horizontal step timeline with dots",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "itemized order summary with dotted lines and bold total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "shipping label or barcode styling on order and parcel info",
+   "cards": [
+    "barcodes",
+    "shipping-label"
+   ]
+  },
+  {
+   "look": "cardboard box and parcel imagery for delivery",
+   "cards": [
+    "corrugated-cardboard",
+    "kraft-paper"
+   ]
+  },
+  {
+   "look": "coupon ticket with dashed cut line and code",
+   "cards": [
+    "perforations",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "color swatch dots and size chip pickers for variants",
+   "cards": [
+    "color-swatches",
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "flat 2010s tiles and rounded modern app styling",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "pastel or dusty pink direct-to-consumer brand look",
+   "cards": [
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "progress bar toward free shipping",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "sticker-like badges for new, bestseller or discount",
+   "cards": [
+    "sticker-sheet",
+    "stickers"
+   ]
+  }
+ ],
+ "education": [
+  {
+   "look": "a horizontal progress bar on each course card",
+   "cards": [
+    "progress-bars",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "ring or gauge showing percent complete",
+   "cards": [
+    "gauge-dials",
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "badges and certificates as achievement rewards",
+   "cards": [
+    "badges",
+    "ribbons",
+    "stars",
+    "sticker-sheet"
+   ]
+  },
+  {
+   "look": "streak counters and gamified points",
+   "cards": [
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "course cards in a tidy grid with thumbnail, title and instructor",
+   "cards": [
+    "bento-grid-2023"
+   ]
+  },
+  {
+   "look": "clean white interface with one brand blue or purple accent",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "checklists with ticked lessons in a syllabus outline",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "quiz screens with multiple-choice radio options",
+   "cards": [
+    "exam-answer-sheet"
+   ]
+  },
+  {
+   "look": "calendar of deadlines and due dates",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "grade tables with letter grades and GPA numbers",
+   "cards": [
+    "numerals"
+   ]
+  },
+  {
+   "look": "academic serif look with crest and graduation motifs",
+   "cards": [
+    "dark-academia-2020"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of students and laptops",
+   "cards": []
+  },
+  {
+   "look": "tabbed course pages (overview, modules, discussion, grades)",
+   "cards": [
+    "folder-tabs"
+   ]
+  },
+  {
+   "look": "heatmap activity calendar of study days",
+   "cards": [
+    "heatmap-cells"
+   ]
+  }
+ ],
+ "ev-charging": [
+  {
+   "look": "a map of pins colored by charger availability and speed",
+   "cards": [
+    "legend-keys",
+    "weather-map"
+   ]
+  },
+  {
+   "look": "a battery fill bar or percent ring showing state of charge",
+   "cards": [
+    "bars-instead-of-numbers",
+    "gauge-dials",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a big charging percent or kW number as the hero with a ring animation",
+   "cards": [
+    "gauge-dials",
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "lightning bolt icons for fast charging and power",
+   "cards": [
+    "lightning-bolts"
+   ]
+  },
+  {
+   "look": "dark mode dashboard with neon green or electric blue accents",
+   "cards": [
+    "cyberpunk-1982",
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "a power curve line chart of kW over time during a session",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "green leaf and eco motifs for clean energy and CO2 saved",
+   "cards": [
+    "solarpunk-2050"
+   ]
+  },
+  {
+   "look": "connector type icons and plug glyphs in filter chips",
+   "cards": [
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "bottom sheet station cards with price per kWh, status and distance over a map",
+   "cards": [
+    "bento-grid-2023"
+   ]
+  },
+  {
+   "look": "trip route planner with a line across the map and charging stops as dots",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "car dashboard style gauges for range and consumption",
+   "cards": [
+    "gauge-dials",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "frosted glass cards over a map or car image",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "clean white minimal app with one bright brand color and rounded cards",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "a session receipt with itemised kWh, time and cost",
+   "cards": [
+    "thermal-receipt"
+   ]
+  }
+ ],
+ "events": [
+  {
+   "look": "a ticket stub with a perforated edge and tear-off line",
+   "cards": [
+    "carnival-ticket-roll",
+    "metro-ticket",
+    "museum-ticket",
+    "parking-ticket",
+    "perforations",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "a gig or festival poster with huge lineup type",
+   "cards": [
+    "1980s-hip-hop-flyers",
+    "1990s-rave-flyers",
+    "boxing-poster",
+    "britpop-1995",
+    "chicha-posters-lima-1980s",
+    "gig-poster",
+    "peruvian-chicha-posters",
+    "psychedelic-1967",
+    "screen-print-ink"
+   ]
+  },
+  {
+   "look": "a dark neon nightlife interface with glowing accents",
+   "cards": [
+    "acid-house-1988",
+    "cyberpunk-1982",
+    "disco-1977",
+    "hong-kong-neon-1980s",
+    "neon-shop-sign",
+    "neon-tubing",
+    "synthwave-1984"
+   ]
+  },
+  {
+   "look": "a QR or barcode block on the ticket",
+   "cards": [
+    "barcodes"
+   ]
+  },
+  {
+   "look": "a seat map with colored sections and price tiers",
+   "cards": [
+    "heatmap-cells",
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "a theater playbill or concert program with dates and lineup",
+   "cards": [
+    "concert-program",
+    "theater-playbill"
+   ]
+  },
+  {
+   "look": "a big date numeral with the event day and month",
+   "cards": [
+    "calendar-dates",
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a full-bleed hero photo of the artist or crowd with text over it",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "a dark mode with one vivid accent for the buy button",
+   "cards": [
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "gold or foil VIP pass styling",
+   "cards": [
+    "brushed-brass",
+    "gold-leaf",
+    "holographic-foil"
+   ]
+  },
+  {
+   "look": "a wallet pass card with a countdown to door time",
+   "cards": [
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "a stadium scoreboard for match events",
+   "cards": [
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "a price breakdown in itemized receipt lines",
+   "cards": [
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "a card carousel of event tiles with rounded cards",
+   "cards": [
+    "trading-card"
+   ]
+  }
+ ],
+ "faith-lifestyle": [
+  {
+   "look": "a crescent moon and star motif",
+   "cards": [
+    "moons"
+   ]
+  },
+  {
+   "look": "a mosque silhouette with domes and minarets at the top of the screen",
+   "cards": []
+  },
+  {
+   "look": "green and gold palette on a dark or cream ground",
+   "cards": []
+  },
+  {
+   "look": "geometric Islamic star patterns and arabesque borders as ornament",
+   "cards": [
+    "girih-tiles",
+    "mashrabiya-screens",
+    "moroccan-zellige"
+   ]
+  },
+  {
+   "look": "Arabic calligraphy for headings and greetings",
+   "cards": [
+    "diwani-calligraphy",
+    "square-kufic-lettering"
+   ]
+  },
+  {
+   "look": "a compass dial with a Kaaba or qibla needle",
+   "cards": [
+    "compass-roses"
+   ]
+  },
+  {
+   "look": "a list of five prayer times with the next prayer highlighted and a countdown",
+   "cards": [
+    "bus-stop-timetable"
+   ]
+  },
+  {
+   "look": "a big iftar or next-prayer countdown timer",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a ring or arc progress gauge for fasting, khatmah or daily goals",
+   "cards": [
+    "only-circles-and-half-circles",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a tasbih bead counter with a big tap circle for dhikr",
+   "cards": [
+    "soroban-abacus"
+   ]
+  },
+  {
+   "look": "a Ramadan lantern (fanous) and hanging ornaments with night sky and stars",
+   "cards": [
+    "star-chart"
+   ]
+  },
+  {
+   "look": "a Hijri and Gregorian calendar grid with moon phase markers",
+   "cards": [
+    "calendar-dates",
+    "hijri-and-gregorian-dates-side-by-side"
+   ]
+  },
+  {
+   "look": "an Ramadan 30-day tracker grid with ticked days",
+   "cards": [
+    "checkboxes",
+    "dot-grids-for-every-count"
+   ]
+  },
+  {
+   "look": "an open Quran page with ornamental border and verse-end markers",
+   "cards": []
+  },
+  {
+   "look": "mosque or sunrise-to-sunset sky gradient backgrounds that shift by prayer time",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "a nearby mosque map with pins",
+   "cards": []
+  },
+  {
+   "look": "Eastern Arabic numerals and bilingual Arabic and Latin layout with RTL mirroring",
+   "cards": [
+    "both-numeral-sets-side-by-side",
+    "eastern-arabic-digits",
+    "the-layout-mirrors-by-language"
+   ]
+  }
+ ],
+ "fashion": [
+  {
+   "look": "clean white minimal grid of model photos on seamless backdrop",
+   "cards": [
+    "70-percent-empty-space",
+    "a-strict-12-column-grid",
+    "millennial-pink-2016",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "full-bleed editorial campaign photo with overlaid type",
+   "cards": [
+    "headlines-wider-than-the-screen",
+    "magazine-cover",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "magazine-style lookbook spreads with serif headlines",
+   "cards": [
+    "exhibition-catalog",
+    "magazine-cover",
+    "newspaper-front-page"
+   ]
+  },
+  {
+   "look": "color swatch dots under product",
+   "cards": [
+    "color-swatches",
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "price tags and red sale badges",
+   "cards": [
+    "price-tags"
+   ]
+  },
+  {
+   "look": "heart icon for wishlist",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "size chart tables and tape-measure fit guides",
+   "cards": [
+    "foot-measuring-gauge",
+    "ruler-ticks"
+   ]
+  },
+  {
+   "look": "star or fit-scale rating bars",
+   "cards": []
+  },
+  {
+   "look": "black and gold luxury boutique look",
+   "cards": [
+    "art-deco-1925",
+    "brushed-brass",
+    "gold-leaf"
+   ]
+  },
+  {
+   "look": "streetwear drop aesthetic with bold type and stickers",
+   "cards": [
+    "neo-brutalism-2022",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "product cards with shoe/box packaging imagery",
+   "cards": [
+    "sneaker-box"
+   ]
+  },
+  {
+   "look": "garment care label icons",
+   "cards": [
+    "garment-care-label"
+   ]
+  },
+  {
+   "look": "pastel direct-to-consumer brand look",
+   "cards": [
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "gift card with ribbon or wrapped box",
+   "cards": [
+    "ribbons"
+   ]
+  }
+ ],
+ "fintech": [
+  {
+   "look": "one huge balance number at the top of the home screen",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "sparkline or small trend chart beside amounts",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "transaction list of rows with merchant icon, amount and date",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "donut or pie chart of spending by category",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "progress bar or ring for savings goals and spending limits",
+   "cards": [
+    "progress-bars",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "bank card visual with chip and gradient",
+   "cards": []
+  },
+  {
+   "look": "dark mode with one vivid accent color",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "rounded white cards on a soft tinted background with pill buttons",
+   "cards": [
+    "bento-grid-2023",
+    "every-corner-fully-rounded",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "green checkmark success confirmation screen",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "clean minimal flat sans-serif look with generous whitespace",
+   "cards": [
+    "flat-color-no-gradients",
+    "no-shadows-no-depth",
+    "one-typeface-only-no-images",
+    "only-space-separates-groups"
+   ]
+  },
+  {
+   "look": "green and red for money in and out with plus or minus deltas",
+   "cards": [
+    "every-change-shown-as-a-delta"
+   ]
+  },
+  {
+   "look": "frosted glass or gradient fintech surfaces",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "line icons for categories and actions",
+   "cards": [
+    "icons-drawn-with-one-stroke"
+   ]
+  },
+  {
+   "look": "toggle switches for card freeze and settings",
+   "cards": [
+    "toggle-switches"
+   ]
+  },
+  {
+   "look": "Sankey or bar charts of cash flow",
+   "cards": [
+    "sankey-flows"
+   ]
+  },
+  {
+   "look": "stepper flow for transfers with step dots",
+   "cards": [
+    "line-diagrams"
+   ]
+  }
+ ],
+ "fitness": [
+  {
+   "look": "dark mode with neon accent (lime, orange or red) on black",
+   "cards": [
+    "grayscale-plus-one-neon-accent",
+    "matte-rubber",
+    "reflective-tape"
+   ]
+  },
+  {
+   "look": "activity rings and ring gauges for daily goals",
+   "cards": [
+    "only-circles-and-half-circles",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "heart rate zone gauge or arc dial",
+   "cards": [
+    "gauge-dials",
+    "vintage-car-dashboard"
+   ]
+  },
+  {
+   "look": "streak counter with flame and calendar dots",
+   "cards": [
+    "dot-grids-for-every-count",
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "progress line charts and bar charts of weight and lifts over time",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "bars-instead-of-numbers",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "huge bold stat numbers in condensed type",
+   "cards": [
+    "headlines-wider-than-the-screen",
+    "numerals",
+    "one-giant-number-per-screen",
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "badges, trophies and achievement medals",
+   "cards": [
+    "badges",
+    "ribbons",
+    "stars"
+   ]
+  },
+  {
+   "look": "heatmap calendar of workout days",
+   "cards": [
+    "calendar-dates",
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "big bottom tab bar with large tap targets",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "full-bleed athlete photo with dark overlay and bold text",
+   "cards": [
+    "duotone-images-only",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "rest timer countdown ring or big countdown clock",
+   "cards": [
+    "everything-ticks-once-per-second",
+    "watch-dial"
+   ]
+  },
+  {
+   "look": "set and rep rows with checkboxes and steppers",
+   "cards": [
+    "checkboxes",
+    "everything-is-a-list",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "QR check-in pass card",
+   "cards": [
+    "metro-ticket",
+    "race-bib",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "body silhouette muscle map and exercise line icons",
+   "cards": [
+    "icons-drawn-with-one-stroke",
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "bold italic sporty athletic type with speed accents",
+   "cards": [
+    "italian-futurism-1910s",
+    "lightning-bolts"
+   ]
+  },
+  {
+   "look": "class schedule timetable grid with time slots",
+   "cards": [
+    "bus-stop-timetable"
+   ]
+  }
+ ],
+ "food-delivery": [
+  {
+   "look": "big appetizing food photo cards in a vertical feed",
+   "cards": [
+    "instant-photo",
+    "photos-only-no-shapes"
+   ]
+  },
+  {
+   "look": "a map with a moving courier pin and route line",
+   "cards": [
+    "model-railway",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a step progress tracker (placed, preparing, on the way, delivered)",
+   "cards": [
+    "line-diagrams",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a bold brand-color header with white rounded cards (red, orange or green)",
+   "cards": [
+    "flat-design-2013",
+    "white-text-on-color-only"
+   ]
+  },
+  {
+   "look": "pill chips for cuisine and category filters",
+   "cards": [
+    "every-corner-fully-rounded",
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "a sticky bottom cart bar showing item count and total",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a receipt-style itemized order summary with fees and total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "numbers-in-tabular-figures",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "star rating with review count on restaurant cards",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "promo coupon banners and ticket-style discount cards",
+   "cards": [
+    "perforations",
+    "price-tags",
+    "sticker-sheet",
+    "stickers",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "a delivery time estimate shown as a big minutes badge",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations and emoji-like food icons",
+   "cards": [
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "a quantity stepper with plus and minus and add-on checkboxes",
+   "cards": []
+  },
+  {
+   "look": "a menu list with dish name, description, price and thumbnail",
+   "cards": [
+    "diner-menu",
+    "everything-is-a-list",
+    "ice-cream-truck-menu"
+   ]
+  },
+  {
+   "look": "a paper bag or takeout box brand motif",
+   "cards": [
+    "bakery-box",
+    "sneaker-box"
+   ]
+  },
+  {
+   "look": "a tip selector with percentage buttons",
+   "cards": []
+  }
+ ],
+ "gaming": [
+  {
+   "look": "dark neon dashboard with glowing accent colors",
+   "cards": [
+    "cyberpunk-1982",
+    "grayscale-plus-one-neon-accent",
+    "neon-shop-sign",
+    "neon-tubing",
+    "synthwave-1984"
+   ]
+  },
+  {
+   "look": "angular esports aesthetic with condensed caps headlines and aggressive diagonals",
+   "cards": [
+    "all-caps-everywhere",
+    "carbon-fiber",
+    "diagonal-layout-only",
+    "headlines-wider-than-the-screen",
+    "italian-futurism-1910s"
+   ]
+  },
+  {
+   "look": "pixel art and retro 8-bit arcade styling",
+   "cards": [
+    "1-bit-gui-1984",
+    "8-bit-1985",
+    "8-bit-pixels-only",
+    "arcade-cabinet",
+    "game-cartridge",
+    "pixels",
+    "vector-arcade-1979"
+   ]
+  },
+  {
+   "look": "leaderboard tables with ranked rows and big rank numbers",
+   "cards": [
+    "arcade-cabinet",
+    "numerals",
+    "one-giant-number-per-screen",
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "tournament bracket tree diagrams",
+   "cards": [
+    "brackets"
+   ]
+  },
+  {
+   "look": "rank emblems, shields, badges and tier medals",
+   "cards": [
+    "badges",
+    "glossy-enamel",
+    "ribbons"
+   ]
+  },
+  {
+   "look": "battle pass reward track with tiered unlock nodes and progress bar",
+   "cards": [
+    "keys",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "collectible skin and character cards with rarity glow",
+   "cards": [
+    "holographic-foil",
+    "sticker-sheet",
+    "trading-card"
+   ]
+  },
+  {
+   "look": "gold coin icons for in-game currency",
+   "cards": [
+    "casino-chip",
+    "coins"
+   ]
+  },
+  {
+   "look": "loot box or chest reveal with scratch or unlock animation",
+   "cards": [
+    "lottery-scratch-card"
+   ]
+  },
+  {
+   "look": "radar or stat gauge charts for player stats",
+   "cards": [
+    "gauge-dials",
+    "heatmap-cells",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "live stream overlay with chat and viewer counts",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "hexagon grid and tech HUD frames with corner brackets",
+   "cards": [
+    "corner-brackets",
+    "hexagons"
+   ]
+  },
+  {
+   "look": "streak and achievement badges with stars and XP bars",
+   "cards": [
+    "progress-bars",
+    "stars"
+   ]
+  },
+  {
+   "look": "versus matchup screen with two sides facing off",
+   "cards": [
+    "boxing-poster",
+    "split-screen-down-the-middle"
+   ]
+  },
+  {
+   "look": "dark glassy panels over game key art",
+   "cards": [
+    "dark-mode-saas-2021",
+    "glassmorphism-2021",
+    "smoked-acrylic"
+   ]
+  },
+  {
+   "look": "lightning bolts and speed motifs",
+   "cards": [
+    "lightning-bolts"
+   ]
+  }
+ ],
+ "government": [
+  {
+   "look": "a numbered step tracker or stepper for each application",
+   "cards": [
+    "dot-grids-for-every-count",
+    "line-diagrams",
+    "onigiri-wrapper",
+    "progress-bars",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "status badges and pills in green, amber and red for each request",
+   "cards": [
+    "color-only-for-state",
+    "rubber-stamps"
+   ]
+  },
+  {
+   "look": "a green checkmark success screen with a reference number",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "a plain form-based layout with labeled fields and checkboxes",
+   "cards": [
+    "checkboxes",
+    "exam-answer-sheet"
+   ]
+  },
+  {
+   "look": "a request-number tracker with a timeline of status updates",
+   "cards": [
+    "a-timestamp-on-everything"
+   ]
+  },
+  {
+   "look": "official crest or national emblem in a header bar with flag colors",
+   "cards": [
+    "dilmun-stamp-seal",
+    "wax-seal",
+    "wax-seals"
+   ]
+  },
+  {
+   "look": "a clean white card grid of service tiles with line icons",
+   "cards": [
+    "everything-in-a-bento-grid",
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "a document or ID card preview with a QR code and a digital certificate stamp",
+   "cards": [
+    "license-plate",
+    "metro-ticket"
+   ]
+  },
+  {
+   "look": "a calendar and time-slot picker for booking appointments",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "a fee summary with itemized lines and a total to pay",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "a bilingual Arabic and English layout that mirrors by language",
+   "cards": [
+    "both-numeral-sets-side-by-side",
+    "the-layout-mirrors-by-language"
+   ]
+  },
+  {
+   "look": "institutional blue and white palette with sober sans-serif type",
+   "cards": [
+    "1970s-nasa-graphics-manual",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "a hero search bar over a service directory list",
+   "cards": [
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "an official stamp or seal marking completed requests",
+   "cards": [
+    "passport-stamp-page",
+    "rubber-stamps"
+   ]
+  }
+ ],
+ "grocery": [
+  {
+   "look": "a grid of product cards with photo, price and a plus button",
+   "cards": [
+    "date-shop-gift-box",
+    "egg-carton",
+    "mexican-loteria-card",
+    "vending-machine"
+   ]
+  },
+  {
+   "look": "fresh produce photos and fruit and veg illustration",
+   "cards": [
+    "fruit-crate-label"
+   ]
+  },
+  {
+   "look": "bright fresh green or orange brand color with white cards",
+   "cards": []
+  },
+  {
+   "look": "price tags and red sale badges with strike-through prices",
+   "cards": [
+    "price-tags",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "category tiles with icons or photos in a rounded grid",
+   "cards": [
+    "bento-box",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "a delivery slot picker with time chips by day",
+   "cards": [
+    "bus-stop-timetable"
+   ]
+  },
+  {
+   "look": "a live map with a rider pin and ETA countdown",
+   "cards": []
+  },
+  {
+   "look": "a step tracker for order status with dots and a progress line",
+   "cards": [
+    "line-diagrams",
+    "progress-bars",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "itemised receipt or basket list with dotted totals",
+   "cards": [
+    "a-receipt-width-column-only",
+    "bilingual-baqala-receipt",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "promo banners with coupon codes and cut-out coupons",
+   "cards": [
+    "perforations"
+   ]
+  },
+  {
+   "look": "loyalty points progress bar and tier badges",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "quantity stepper with minus and plus in a pill",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation with cart badge",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "rounded friendly sans type with flat clean cards",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "substitution and out-of-stock labels with swap cards",
+   "cards": []
+  }
+ ],
+ "healthcare": [
+  {
+   "look": "clean white screens with a calm teal or blue accent",
+   "cards": [
+    "embossed-card",
+    "milk-glass",
+    "one-color-only",
+    "porcelain"
+   ]
+  },
+  {
+   "look": "soft rounded cards with pill buttons and friendly sans type",
+   "cards": [
+    "every-corner-fully-rounded",
+    "everything-in-a-bento-grid",
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "medical cross, heart, stethoscope and pill glyph icons",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "friendly flat spot illustrations of doctors and patients",
+   "cards": [
+    "flat-color-no-gradients",
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "heart-rate line or ECG pulse graphic for vitals",
+   "cards": [
+    "ecg-strip"
+   ]
+  },
+  {
+   "look": "ring or gauge charts for vitals and goals",
+   "cards": [
+    "barometer-dial",
+    "gauge-dials"
+   ]
+  },
+  {
+   "look": "lab result range bar with in-range green and out-of-range red flags",
+   "cards": [
+    "ph-test-strip",
+    "ruler-ticks"
+   ]
+  },
+  {
+   "look": "list rows for appointments, records and results",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything"
+   ]
+  },
+  {
+   "look": "calendar and time-slot picker for booking",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "step-by-step progress for booking and check-in flows",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "medication reminder checklist with ticks and pill icons",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "doctor profile card with round photo, rating and book button",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "status chips in green, amber and red",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "digital insurance card styled like a bank card",
+   "cards": []
+  }
+ ],
+ "home-services": [
+  {
+   "look": "clean white cards with one bright blue or green primary button",
+   "cards": [
+    "flat-design-2013",
+    "ulm-school-1955"
+   ]
+  },
+  {
+   "look": "5-star rating row with review count under a technician photo",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "technician profile card with round avatar and verified badge",
+   "cards": [
+    "stickers"
+   ]
+  },
+  {
+   "look": "day and time-slot chip picker on a calendar strip",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "stepper or progress tracker for booking and technician en route",
+   "cards": [
+    "line-diagrams",
+    "progress-bars",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "itemized quote and invoice with price lines and bold total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "before and after photo slider or side by side",
+   "cards": [
+    "tracing-paper"
+   ]
+  },
+  {
+   "look": "line icons for wrench, pipe, bulb, AC and broom service categories",
+   "cards": [
+    "icons-drawn-with-one-stroke"
+   ]
+  },
+  {
+   "look": "service category grid of icon tiles",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "tool and house illustrations in friendly flat vector style",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "warranty shield or checkmark badge and guarantee seals",
+   "cards": [
+    "rubber-stamps"
+   ]
+  },
+  {
+   "look": "checklist of included tasks with ticked boxes",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "map with technician pin and service area",
+   "cards": []
+  },
+  {
+   "look": "sticky bottom bar with price and book button",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "toggle switches for add-ons and reminders",
+   "cards": [
+    "toggle-switches"
+   ]
+  }
+ ],
+ "hotels": [
+  {
+   "look": "full-bleed hero photo of the room or property with text on top",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "photo grid or carousel gallery of rooms",
+   "cards": [
+    "film-contact-sheet",
+    "photos-only-no-shapes"
+   ]
+  },
+  {
+   "look": "star rating and review score badges",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "map with price pins for property locations",
+   "cards": []
+  },
+  {
+   "look": "clean white cards with a bold price per night and a single bright booking button",
+   "cards": []
+  },
+  {
+   "look": "amenity icon row with simple line icons",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "luxury boutique hotel look: dark, gold accents, serif type",
+   "cards": [
+    "art-deco-1925",
+    "brushed-brass",
+    "gold-leaf",
+    "hotel-stationery"
+   ]
+  },
+  {
+   "look": "calendar date range picker for check-in and check-out",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "booking confirmation as ticket or boarding-pass style card",
+   "cards": [
+    "metro-ticket",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "key card or room number door tag for check-in",
+   "cards": [
+    "hotel-key-tag"
+   ]
+  },
+  {
+   "look": "loyalty tier progress bar and points counter",
+   "cards": []
+  },
+  {
+   "look": "itemized price breakdown with taxes and total",
+   "cards": [
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "filter chips and sort bars for search results",
+   "cards": [
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "sticky bottom bar with price and reserve button",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  }
+ ],
+ "hr-recruiting": [
+  {
+   "look": "kanban pipeline board with candidate cards in stage columns",
+   "cards": [
+    "cards-stacked-like-a-deck"
+   ]
+  },
+  {
+   "look": "clean white SaaS dashboard with blue or purple accent and rounded cards",
+   "cards": [
+    "dark-mode-saas-2021"
+   ]
+  },
+  {
+   "look": "horizontal stepper or progress tracker for application and onboarding stages",
+   "cards": [
+    "line-diagrams",
+    "progress-bars",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "checklist with ticked checkboxes for onboarding tasks",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "status pills in green, amber and red (approved, pending, rejected)",
+   "cards": [
+    "color-only-for-state",
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "org chart as a tree of avatar cards with connecting lines",
+   "cards": [
+    "dried-leaves",
+    "river-delta"
+   ]
+  },
+  {
+   "look": "calendar grid for leave, interview slots and scheduling",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "dense data tables of employees, timesheets and payroll rows",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures",
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "payslip as a tidy itemized statement with earnings, deductions and net pay",
+   "cards": [
+    "accounting-ledger",
+    "dotted-leaders",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "donut or pie chart of pay breakdown and headcount split",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "bar and line charts for headcount, turnover and hiring metrics",
+   "cards": [
+    "box-plots"
+   ]
+  },
+  {
+   "look": "circular avatars with initials or photos for people",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "leave balance rings or progress bars showing days remaining",
+   "cards": [
+    "dot-grids-for-every-count",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of diverse teams with soft pastel colors",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "e-signature field with a signed line on offer letters and contracts",
+   "cards": [
+    "signatures"
+   ]
+  }
+ ],
+ "insurance": [
+  {
+   "look": "a shield or umbrella icon as the brand and trust symbol",
+   "cards": []
+  },
+  {
+   "look": "blue and teal corporate palette with white cards and friendly rounded sans",
+   "cards": [
+    "flat-design-2013",
+    "porcelain"
+   ]
+  },
+  {
+   "look": "flat friendly spot illustrations of families, cars and houses",
+   "cards": [
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "a green check mark and status pill for covered items and approved claims",
+   "cards": [
+    "checkboxes",
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "a step tracker for claim status with dots along a line",
+   "cards": [
+    "line-diagrams",
+    "progress-bars",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a big monthly price with a slider to adjust cover level or excess",
+   "cards": [
+    "dial-caliper",
+    "one-giant-number-per-screen",
+    "sliders"
+   ]
+  },
+  {
+   "look": "a tiered plan comparison table with basic, standard and premium columns",
+   "cards": [
+    "paint-swatch-card"
+   ]
+  },
+  {
+   "look": "a digital policy ID card with the policy number and QR code",
+   "cards": [
+    "hotel-key-tag",
+    "license-plate",
+    "metro-ticket"
+   ]
+  },
+  {
+   "look": "a coverage ring or donut chart showing how much of the limit is used",
+   "cards": [
+    "pie-slices",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with home, policies, claims and profile",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a multi-step quote form with a progress bar and large tap choices",
+   "cards": [
+    "checkboxes",
+    "everything-is-a-list",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "photo upload tiles in the claim flow for accident photos and documents",
+   "cards": [
+    "paper-clips"
+   ]
+  },
+  {
+   "look": "an accordion list of what is covered and not covered",
+   "cards": [
+    "everything-is-a-list",
+    "footnote-markers"
+   ]
+  },
+  {
+   "look": "a policy document list with PDF rows and download buttons",
+   "cards": [
+    "folder-tabs",
+    "manila-file-folder"
+   ]
+  },
+  {
+   "look": "a renewal countdown banner with a date and a call to action",
+   "cards": [
+    "calendar-dates"
+   ]
+  }
+ ],
+ "investing": [
+  {
+   "look": "candlestick charts for price history",
+   "cards": [
+    "candlesticks"
+   ]
+  },
+  {
+   "look": "green and red up/down price coloring",
+   "cards": [
+    "every-change-shown-as-a-delta"
+   ]
+  },
+  {
+   "look": "a sparkline beside each watchlist price",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "a dark neon dashboard with dark mode panels",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "one big portfolio value number with a day change",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "tabular rows of tickers with prices and percent change",
+   "cards": [
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures",
+    "zero-white-space"
+   ]
+  },
+  {
+   "look": "a line area chart with 1D 1W 1M 1Y range tabs",
+   "cards": []
+  },
+  {
+   "look": "a donut or pie chart of portfolio allocation",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "a treemap or heatmap of market performance",
+   "cards": [
+    "heatmap-cells",
+    "treemap-tiles"
+   ]
+  },
+  {
+   "look": "a scrolling ticker tape of quotes",
+   "cards": [
+    "a-single-scrolling-ticker"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with Home, Portfolio, Trade, Watchlist",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a buy/sell order ticket with a quantity field and a big confirm button",
+   "cards": [
+    "sliders"
+   ]
+  },
+  {
+   "look": "bento grid cards on a fintech dashboard",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "clean flat fintech minimalism with one accent color",
+   "cards": [
+    "black-white-and-one-gray",
+    "color-only-for-state",
+    "flat-color-no-gradients"
+   ]
+  },
+  {
+   "look": "monospace terminal style trading screens",
+   "cards": [
+    "monospace-type-only"
+   ]
+  },
+  {
+   "look": "frosted glass cards over a gradient",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  }
+ ],
+ "kids-learning": [
+  {
+   "look": "star rewards and gold stars for finishing activities",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "sticker collections and sticker book rewards",
+   "cards": [
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "badges and achievement medals",
+   "cards": [
+    "badges",
+    "ribbons"
+   ]
+  },
+  {
+   "look": "bright primary-color chunky rounded buttons and cards",
+   "cards": [
+    "every-corner-fully-rounded",
+    "gummy-candy",
+    "primary-colors-only"
+   ]
+  },
+  {
+   "look": "friendly cartoon mascot characters and smiley faces",
+   "cards": [
+    "eyes",
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "soft pastel blobs and bubbles as playful shapes",
+   "cards": [
+    "blobs",
+    "bubbles"
+   ]
+  },
+  {
+   "look": "storybook illustrated pages with a cozy picture-book style",
+   "cards": [
+    "book-jacket",
+    "bookmarks"
+   ]
+  },
+  {
+   "look": "path or map of lessons with stepping stones",
+   "cards": [
+    "board-game-box",
+    "hopscotch-court",
+    "stepping-stones"
+   ]
+  },
+  {
+   "look": "flashcards with a big picture and word",
+   "cards": [
+    "trading-card"
+   ]
+  },
+  {
+   "look": "handwriting and letter tracing on lined paper or chalkboard",
+   "cards": [
+    "chalkboard",
+    "every-word-hand-lettered",
+    "only-hand-drawn-shapes"
+   ]
+  },
+  {
+   "look": "paper cut-out and felt craft shapes",
+   "cards": [
+    "wool-felt"
+   ]
+  },
+  {
+   "look": "progress bars and streak counters",
+   "cards": [
+    "progress-bars",
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "hearts, clouds and sun nature motifs as a cheerful sky",
+   "cards": [
+    "clouds",
+    "hearts",
+    "sun-rays"
+   ]
+  },
+  {
+   "look": "speech bubbles for helper characters",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "colorful confetti and playful geometric shapes",
+   "cards": [
+    "memphis-1981",
+    "polka-dots"
+   ]
+  }
+ ],
+ "language-learning": [
+  {
+   "look": "a flame or streak counter with a day count",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen",
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "XP points, gems, coins and hearts as rewards",
+   "cards": [
+    "coins",
+    "cowrie-shell",
+    "hearts"
+   ]
+  },
+  {
+   "look": "gold stars, badges and trophies for achievements",
+   "cards": [
+    "badges",
+    "glossy-enamel",
+    "ribbons",
+    "stars",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "a winding path of lesson nodes on a skill map",
+   "cards": [
+    "board-game-box",
+    "hopscotch-court",
+    "stepping-stones",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a friendly cartoon mascot with big eyes",
+   "cards": [
+    "eyes",
+    "finger-puppet",
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "bright flat colors with rounded chunky buttons",
+   "cards": [
+    "every-corner-fully-rounded",
+    "flat-color-no-gradients",
+    "flat-design-2013",
+    "gummy-candy",
+    "translucent-silicone"
+   ]
+  },
+  {
+   "look": "a progress bar across the top during a lesson",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "flashcards that flip to show the translation",
+   "cards": [
+    "cards-stacked-like-a-deck",
+    "trading-card"
+   ]
+  },
+  {
+   "look": "speech bubbles for dialogue and tips",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "multiple-choice answer buttons with green and red feedback",
+   "cards": [
+    "exam-answer-sheet"
+   ]
+  },
+  {
+   "look": "a leaderboard list with ranks and league tiers",
+   "cards": [
+    "arcade-cabinet"
+   ]
+  },
+  {
+   "look": "a weekly calendar with ticked days and a daily goal ring",
+   "cards": [
+    "calendar-dates",
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "a waveform and microphone button for speaking drills",
+   "cards": []
+  },
+  {
+   "look": "simple flat illustrations of people and objects for vocab",
+   "cards": [
+    "line-illustrations-only"
+   ]
+  }
+ ],
+ "logistics": [
+  {
+   "look": "a vertical timeline or stepper of tracking events with dots on a line",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a map with a moving courier pin and route line",
+   "cards": []
+  },
+  {
+   "look": "a progress bar or step tracker showing placed, shipped, out for delivery, delivered",
+   "cards": [
+    "line-diagrams",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "shipping label with barcode and boxed fields",
+   "cards": [
+    "barcodes",
+    "shipping-label"
+   ]
+  },
+  {
+   "look": "cardboard box and kraft parcel imagery",
+   "cards": [
+    "corrugated-cardboard",
+    "kraft-paper"
+   ]
+  },
+  {
+   "look": "a big delivery date or ETA hero with a time window",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "brand-color header (yellow, red, purple, brown) with courier logo and bold sans type",
+   "cards": []
+  },
+  {
+   "look": "green checkmark for delivered and colored status chips",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "delivery truck, van and box line icons",
+   "cards": []
+  },
+  {
+   "look": "dense stop and scan lists for couriers with status rows",
+   "cards": [
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "signature capture or photo as proof of delivery",
+   "cards": [
+    "signatures"
+   ]
+  },
+  {
+   "look": "pickup point or locker map with pins and list cards",
+   "cards": []
+  },
+  {
+   "look": "tracking number input box with a track button",
+   "cards": []
+  },
+  {
+   "look": "scan and QR code screens for lockers and returns",
+   "cards": [
+    "barcodes"
+   ]
+  }
+ ],
+ "luxury": [
+  {
+   "look": "black and gold foil on a dark luxe page",
+   "cards": [
+    "art-deco-1925",
+    "brushed-brass",
+    "gold-leaf",
+    "hollywood-regency-1940s",
+    "obsidian",
+    "polished-marble",
+    "red-lacquer"
+   ]
+  },
+  {
+   "look": "full-bleed campaign photo with small overlaid type",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "generous white space and a calm minimal grid",
+   "cards": [
+    "70-percent-empty-space",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "thin high-contrast serif wordmark and headlines",
+   "cards": [
+    "labels-in-small-caps",
+    "serif-type-only"
+   ]
+  },
+  {
+   "look": "interlaced monogram crest as brand mark",
+   "cards": [
+    "monograms"
+   ]
+  },
+  {
+   "look": "product on seamless pale or neutral backdrop, single hero object",
+   "cards": [
+    "perfume-bottle"
+   ]
+  },
+  {
+   "look": "gift box, ribbon and tissue unboxing motifs",
+   "cards": [
+    "ribbons"
+   ]
+  },
+  {
+   "look": "engraved watch dial and movement imagery",
+   "cards": [
+    "watch-dial",
+    "watch-movement"
+   ]
+  },
+  {
+   "look": "faceted diamond and gem graphics for jewelry",
+   "cards": [
+    "diamonds"
+   ]
+  },
+  {
+   "look": "leather, saddle stitching and debossed maker's marks",
+   "cards": [
+    "debossed-leather",
+    "tooled-leather"
+   ]
+  },
+  {
+   "look": "ivory, cream and champagne neutral palette with satin or marble",
+   "cards": [
+    "cotton-rag-paper",
+    "silk-satin"
+   ]
+  },
+  {
+   "look": "certificate and provenance as a printed card with seal or letterpress",
+   "cards": [
+    "embossed-card",
+    "letterpress-invitation",
+    "wax-seal",
+    "wax-seals"
+   ]
+  },
+  {
+   "look": "editorial magazine-style layouts with lookbook spreads",
+   "cards": [
+    "exhibition-catalog",
+    "magazine-cover"
+   ]
+  },
+  {
+   "look": "dark velvet or lacquer jewelry-case surfaces",
+   "cards": [
+    "crushed-velvet",
+    "smoked-acrylic"
+   ]
+  }
+ ],
+ "maps-mobility": [
+  {
+   "look": "a street map with a blue route line and a pulsing location dot",
+   "cards": [
+    "nautical-chart"
+   ]
+  },
+  {
+   "look": "a bottom sheet over a full-bleed map with a floating search bar",
+   "cards": [
+    "frosted-glass"
+   ]
+  },
+  {
+   "look": "turn arrows and big next-maneuver banners",
+   "cards": [
+    "arrows",
+    "chevrons",
+    "highway-sign"
+   ]
+  },
+  {
+   "look": "subway and transit line maps with colored lines and station dots",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "colored line badges and route number circles",
+   "cards": [
+    "highway-shields",
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "departure board lists with minutes-to-arrival countdowns",
+   "cards": [
+    "airport-departure-board",
+    "bus-stop-timetable"
+   ]
+  },
+  {
+   "look": "a dark night mode map with a glowing route",
+   "cards": [
+    "city-lights-at-night"
+   ]
+  },
+  {
+   "look": "traffic overlay in green, orange and red road segments",
+   "cards": [
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "a map pin and a pin-drop marker for saved places",
+   "cards": [
+    "push-pins"
+   ]
+  },
+  {
+   "look": "a big ETA number with distance in a bottom bar",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a parking zone map with blue P badges and colored street segments",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "a parking session countdown timer with a ring or big time",
+   "cards": [
+    "clock-faces"
+   ]
+  },
+  {
+   "look": "a digital ticket or pass card with a QR code",
+   "cards": [
+    "metro-ticket",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "a license plate field showing the plate number",
+   "cards": [
+    "license-plate"
+   ]
+  },
+  {
+   "look": "a receipt-style fare and payment summary",
+   "cards": [
+    "parking-ticket",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with big thumb-reach buttons",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  }
+ ],
+ "mental-health": [
+  {
+   "look": "soft pastel blobs and gradients in calming hues",
+   "cards": [
+    "blobs",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "sage green, soft blue and lavender calm palette with generous white space",
+   "cards": [
+    "70-percent-empty-space",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "rounded pill buttons and softly rounded cards",
+   "cards": [
+    "every-corner-fully-rounded",
+    "no-straight-lines"
+   ]
+  },
+  {
+   "look": "frosted glass or soft blurred cards over gradient backgrounds",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "milk-glass"
+   ]
+  },
+  {
+   "look": "neumorphic soft pressed surfaces",
+   "cards": [
+    "neumorphism-2020"
+   ]
+  },
+  {
+   "look": "emoji or face-icon mood picker",
+   "cards": [
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "mood slider or scale for check-ins",
+   "cards": [
+    "sliders"
+   ]
+  },
+  {
+   "look": "calendar or dot-grid mood tracker with streaks",
+   "cards": [
+    "calendar-dates",
+    "dot-grids-for-every-count"
+   ]
+  },
+  {
+   "look": "breathing circle that expands and contracts",
+   "cards": [
+    "only-circles-and-half-circles"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of people, plants and leaves",
+   "cards": [
+    "flowers",
+    "leaves",
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "nature motifs such as clouds, waves, moons and raindrops for calm",
+   "cards": [
+    "clouds",
+    "moons",
+    "raindrops",
+    "waves"
+   ]
+  },
+  {
+   "look": "therapist profile cards with circular photos and booking buttons",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "step-by-step intake questionnaire with progress bar",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "heart icons for care and support",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "bottom tab navigation with large thumb-reach actions",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "one calming sentence or affirmation per screen",
+   "cards": [
+    "one-sentence-per-screen",
+    "quotation-marks"
+   ]
+  },
+  {
+   "look": "journal page with lined paper and handwritten feel",
+   "cards": [
+    "lab-notebook"
+   ]
+  }
+ ],
+ "messaging": [
+  {
+   "look": "speech bubble message bubbles with tails",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "round avatar circles in lists and headers",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "emoji and sticker reactions, smiley faces",
+   "cards": [
+    "smiley-faces",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "heart or like reaction counts",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "red unread count badges and notification dots",
+   "cards": [
+    "hamza"
+   ]
+  },
+  {
+   "look": "paper plane send icon",
+   "cards": [
+    "paper-planes"
+   ]
+  },
+  {
+   "look": "toggle switches for mute and notification settings",
+   "cards": [
+    "toggle-switches"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "clean white or dark flat UI with one accent color",
+   "cards": [
+    "color-only-for-state",
+    "flat-design-2013",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "pill-shaped rounded inputs and buttons",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "pinned message strip or pin icon",
+   "cards": [
+    "push-pins"
+   ]
+  },
+  {
+   "look": "single-column list of conversation rows",
+   "cards": [
+    "everything-is-a-list",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "typing indicator bouncing dots",
+   "cards": [
+    "dots-carry-every-mark"
+   ]
+  },
+  {
+   "look": "gradient colored message bubbles and frosted blur headers",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "timestamps under messages",
+   "cards": [
+    "a-timestamp-on-everything"
+   ]
+  },
+  {
+   "look": "spinner while loading messages",
+   "cards": [
+    "loading-spinners"
+   ]
+  },
+  {
+   "look": "dark mode community dashboard with blurple accents",
+   "cards": [
+    "dark-mode-saas-2021"
+   ]
+  }
+ ],
+ "music": [
+  {
+   "look": "dark mode UI with one bright accent color (green, pink or purple)",
+   "cards": [
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "square album cover art grid as the main visual",
+   "cards": [
+    "vinyl-record-sleeve"
+   ]
+  },
+  {
+   "look": "cover colors tinting the player background with blur or gradient",
+   "cards": [
+    "colors-come-from-one-photo",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "full-bleed artist photo hero with text on top",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "spinning vinyl record or turntable metaphor on the now playing screen",
+   "cards": [
+    "vinyl-record-sleeve"
+   ]
+  },
+  {
+   "look": "waveform or scrubber bar with thin progress line",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "round play/pause/skip buttons and heart like icon",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "horizontal scrolling shelves of cards on home",
+   "cards": [
+    "a-single-horizontal-scroll"
+   ]
+  },
+  {
+   "look": "bottom tab bar with a mini player above it",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "synced lyrics with the current line highlighted large",
+   "cards": []
+  },
+  {
+   "look": "circular artist avatars",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "animated equalizer bars or sound waves for playing state",
+   "cards": []
+  },
+  {
+   "look": "year-in-review stories with bold duotone color blocks and big type",
+   "cards": [
+    "duotone-images-only",
+    "flat-color-no-gradients"
+   ]
+  },
+  {
+   "look": "glassy blurred cards and sheets over artwork",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "pill-shaped chips for filters and genres",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  }
+ ],
+ "news": [
+  {
+   "look": "a ruled masthead over a big serif headline in dense newspaper columns",
+   "cards": [
+    "a-strict-12-column-grid",
+    "hairline-rules-between-everything",
+    "headlines",
+    "newspaper-front-page",
+    "newsprint-paper"
+   ]
+  },
+  {
+   "look": "a clean white page with a black serif headline and a single narrow reading column",
+   "cards": [
+    "lines-capped-at-60-characters",
+    "one-centered-column",
+    "serif-type-only",
+    "web-brutalism-2015"
+   ]
+  },
+  {
+   "look": "a card feed of thumbnail, headline and byline rows",
+   "cards": [
+    "everything-in-a-bento-grid",
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "a red breaking or live tag and pulsing dot",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "a scrolling news ticker band",
+   "cards": [
+    "a-single-scrolling-ticker",
+    "teletext-1980s"
+   ]
+  },
+  {
+   "look": "a magazine cover home with a big photo and cover lines",
+   "cards": [
+    "magazine-cover"
+   ]
+  },
+  {
+   "look": "a full-bleed hero photo with headline overlaid",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "a timestamped live blog timeline",
+   "cards": [
+    "a-timestamp-on-everything"
+   ]
+  },
+  {
+   "look": "an oversized serif drop cap or pull quote in long reads",
+   "cards": [
+    "drop-caps",
+    "quotation-marks"
+   ]
+  },
+  {
+   "look": "a bookmark or save icon for saved stories",
+   "cards": [
+    "bookmarks"
+   ]
+  },
+  {
+   "look": "section tabs or a bottom tab bar",
+   "cards": [
+    "folder-tabs",
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a photo gallery grid or contact-sheet carousel",
+   "cards": [
+    "film-contact-sheet"
+   ]
+  },
+  {
+   "look": "a blurred frosted paywall overlay over the article",
+   "cards": [
+    "frosted-glass"
+   ]
+  },
+  {
+   "look": "small caps section labels and kickers",
+   "cards": [
+    "labels-in-small-caps"
+   ]
+  },
+  {
+   "look": "black, white and a single red accent editorial palette",
+   "cards": [
+    "black-white-and-one-gray",
+    "swiss-style-1960s"
+   ]
+  }
+ ],
+ "parenting": [
+  {
+   "look": "soft pastel blobs and gradients in baby blue, pink and mint",
+   "cards": [
+    "blobs",
+    "clouds",
+    "millennial-pink-2016"
+   ]
+  },
+  {
+   "look": "gold stars and sticker rewards for chores and good behavior",
+   "cards": [
+    "badges",
+    "smiley-faces",
+    "stars",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "cute rounded cartoon illustrations of animals and baby items",
+   "cards": [
+    "finger-puppet",
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "growth chart with percentile curves",
+   "cards": [
+    "foot-measuring-gauge",
+    "ruler-ticks"
+   ]
+  },
+  {
+   "look": "timeline log of feeds, sleeps and diapers with timestamps",
+   "cards": [
+    "a-timestamp-on-everything",
+    "bus-stop-timetable",
+    "tide-table"
+   ]
+  },
+  {
+   "look": "color-coded family calendar with colored dots per member",
+   "cards": [
+    "calendar-dates",
+    "legend-keys",
+    "polka-dots"
+   ]
+  },
+  {
+   "look": "progress bar or ring for chores, allowance and goals",
+   "cards": [
+    "only-circles-and-half-circles",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "moon and stars for sleep tracking with night mode",
+   "cards": [
+    "moons",
+    "stars"
+   ]
+  },
+  {
+   "look": "milestone cards and badges celebrating firsts",
+   "cards": [
+    "badges",
+    "ribbons",
+    "stars"
+   ]
+  },
+  {
+   "look": "rounded pill buttons and big tap targets on bottom tab bar",
+   "cards": [
+    "every-corner-fully-rounded",
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "heart icons for care and love",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "checklists with tick boxes for vaccines and tasks",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "soft rounded cards with friendly cartoon faces and avatars",
+   "cards": [
+    "every-corner-fully-rounded",
+    "every-image-in-a-circle",
+    "smiley-faces"
+   ]
+  }
+ ],
+ "payments-wallet": [
+  {
+   "look": "a big balance number on a clean card or colored hero",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a credit card graphic of the linked card",
+   "cards": [
+    "embossed-card"
+   ]
+  },
+  {
+   "look": "a QR code in a rounded white frame with corner brackets scan viewfinder",
+   "cards": [
+    "corner-brackets"
+   ]
+  },
+  {
+   "look": "a list of transactions with circle avatars, amounts and dates",
+   "cards": [
+    "every-image-in-a-circle",
+    "everything-is-a-list",
+    "hairline-rules-between-everything",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with home, scan, history and profile",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "rounded cards with soft shadows on a light background",
+   "cards": [
+    "every-corner-fully-rounded",
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "a bold brand color with white text on saturated fields",
+   "cards": [
+    "white-text-on-color-only"
+   ]
+  },
+  {
+   "look": "a green check success confirmation with a receipt summary",
+   "cards": [
+    "a-receipt-width-column-only",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "coin and currency symbol icons beside amounts",
+   "cards": [
+    "coins",
+    "currency-symbols"
+   ]
+  },
+  {
+   "look": "a spending breakdown donut or pie chart",
+   "cards": [
+    "pie-slices",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a bento grid of quick action tiles",
+   "cards": [
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "frosted glass and gradient fintech cards",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "dark mode fintech dashboard with neon accent",
+   "cards": [
+    "dark-mode-saas-2021",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "a cashback reward badge or confetti scratch card",
+   "cards": []
+  },
+  {
+   "look": "line icons for send, request, top up and scan",
+   "cards": [
+    "icons-drawn-with-one-stroke"
+   ]
+  },
+  {
+   "look": "a PIN keypad of round number buttons",
+   "cards": [
+    "pocket-calculator"
+   ]
+  }
+ ],
+ "pets": [
+  {
+   "look": "soft pastel rounded cards with friendly pill buttons",
+   "cards": [
+    "blobs",
+    "every-corner-fully-rounded",
+    "no-straight-lines",
+    "translucent-silicone"
+   ]
+  },
+  {
+   "look": "cute illustrated animal mascots and paw print icons",
+   "cards": [
+    "eyes",
+    "finger-puppet",
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "round pet photo avatars",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "pet profile as an ID card or trading-card style with stats",
+   "cards": [
+    "hotel-key-tag",
+    "trading-card"
+   ]
+  },
+  {
+   "look": "vaccination record as a checklist with due-date status chips",
+   "cards": [
+    "checkboxes",
+    "rubber-stamps",
+    "stickers"
+   ]
+  },
+  {
+   "look": "paper vaccination booklet or passport with stamps",
+   "cards": [
+    "library-checkout-card",
+    "passport-stamp-page"
+   ]
+  },
+  {
+   "look": "calendar or timeline of appointments with a next-up highlight",
+   "cards": [
+    "bus-stop-timetable",
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "weight line chart with a trend curve",
+   "cards": [
+    "ruler-ticks"
+   ]
+  },
+  {
+   "look": "streak, badge and reward systems for care routines",
+   "cards": [
+    "badges",
+    "hearts",
+    "stars",
+    "sticker-sheet"
+   ]
+  },
+  {
+   "look": "medication reminder pill icons and pill-schedule rows",
+   "cards": [
+    "apothecary-label",
+    "pill-blister-pack"
+   ]
+  },
+  {
+   "look": "clean clinical white and teal medical UI",
+   "cards": [
+    "frutiger-aero-2007",
+    "x-ray-film"
+   ]
+  },
+  {
+   "look": "friendly flat illustrations of pets in bright colors",
+   "cards": [
+    "flat-design-2013",
+    "line-illustrations-only"
+   ]
+  },
+  {
+   "look": "hearts and care-themed warm icons",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "product grid for food subscription with reorder countdown",
+   "cards": [
+    "price-tags"
+   ]
+  },
+  {
+   "look": "adoption listing as a photo card grid with a heart to save",
+   "cards": [
+    "instant-photo"
+   ]
+  },
+  {
+   "look": "folder-style medical records list",
+   "cards": [
+    "folder-tabs",
+    "manila-file-folder"
+   ]
+  }
+ ],
+ "pharmacy": [
+  {
+   "look": "white clean clinical interface with a teal or green medical accent",
+   "cards": [
+    "embossed-card",
+    "milk-glass",
+    "porcelain"
+   ]
+  },
+  {
+   "look": "green cross and pill capsule iconography",
+   "cards": []
+  },
+  {
+   "look": "pill blister pack and capsule imagery for medicines",
+   "cards": [
+    "pill-blister-pack"
+   ]
+  },
+  {
+   "look": "amber prescription bottle with a printed label",
+   "cards": [
+    "apothecary-label"
+   ]
+  },
+  {
+   "look": "pill reminder schedule with check-off dose times",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "product grid of cards with photo, price and add-to-cart button",
+   "cards": [
+    "price-tags"
+   ]
+  },
+  {
+   "look": "category icon tiles for vitamins, skincare, baby, and so on",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "delivery tracker with a step progress bar and map",
+   "cards": [
+    "line-diagrams",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "soft pastel wellness and beauty look with rounded cards",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "minimalist skincare-store style with white space and light serif type",
+   "cards": [
+    "scandinavian-modern-1955"
+   ]
+  },
+  {
+   "look": "pharmacist chat bubble interface with a friendly avatar",
+   "cards": []
+  },
+  {
+   "look": "insurance card and prescription scan illustrated as a card",
+   "cards": []
+  },
+  {
+   "look": "delivery slot picker as a calendar and time chips",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "dosage instructions as icon rows (with food, morning, etc.)",
+   "cards": [
+    "garment-care-label"
+   ]
+  },
+  {
+   "look": "trust badges and certified pharmacist seals",
+   "cards": [
+    "dilmun-stamp-seal",
+    "rubber-stamps"
+   ]
+  }
+ ],
+ "podcasts": [
+  {
+   "look": "big square cover art grid of shows",
+   "cards": [
+    "book-jacket",
+    "magazine-cover",
+    "vinyl-record-sleeve"
+   ]
+  },
+  {
+   "look": "dark mode with one vivid accent color (purple, green or orange)",
+   "cards": [
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "gradient backdrop tinted from the cover art color",
+   "cards": [
+    "colors-come-from-one-photo",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "bottom tab bar with mini player docked above it",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "full-screen player with large artwork and scrubber bar",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "audio waveform or equalizer bars",
+   "cards": [
+    "mixing-desk-channel-strip"
+   ]
+  },
+  {
+   "look": "round play/pause with skip back 15 and forward 30 buttons",
+   "cards": []
+  },
+  {
+   "look": "playback speed pill and sleep timer moon icon",
+   "cards": [
+    "moons"
+   ]
+  },
+  {
+   "look": "scrubber slider with chapter ticks",
+   "cards": [
+    "ruler-ticks",
+    "sliders"
+   ]
+  },
+  {
+   "look": "rounded white or dark cards with soft shadows in lists",
+   "cards": [
+    "every-corner-fully-rounded",
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "scrolling transcript with highlighted current line",
+   "cards": [
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "episode rows with thumbnail, title, date, duration and download arrow",
+   "cards": [
+    "everything-is-a-list",
+    "jukebox-title-strip"
+   ]
+  },
+  {
+   "look": "frosted glass blurred player over artwork",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "headphones, microphone and sound wave icons",
+   "cards": []
+  },
+  {
+   "look": "heart or star for favorites and ratings",
+   "cards": [
+    "hearts",
+    "stars"
+   ]
+  },
+  {
+   "look": "audiobook cover with progress ring or bar",
+   "cards": [
+    "book-jacket"
+   ]
+  }
+ ],
+ "productivity": [
+  {
+   "look": "a checkbox list with tappable round or square checkboxes and strike-through on done",
+   "cards": [
+    "checkboxes"
+   ]
+  },
+  {
+   "look": "a kanban board of draggable cards in columns",
+   "cards": []
+  },
+  {
+   "look": "clean white minimal pages with lots of whitespace and a single sans-serif type",
+   "cards": [
+    "70-percent-empty-space",
+    "one-centered-column",
+    "one-typeface-only-no-images",
+    "only-space-separates-groups"
+   ]
+  },
+  {
+   "look": "a progress bar or ring showing percent of tasks done",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a calendar grid or date strip with a highlighted today",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "colored tag pills and label chips",
+   "cards": [
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "a ruled or lined notebook page, legal pad or yellow paper note",
+   "cards": [
+    "lab-notebook",
+    "punch-holes"
+   ]
+  },
+  {
+   "look": "sticky notes and pinned cards on a board",
+   "cards": [
+    "cork-board",
+    "push-pins"
+   ]
+  },
+  {
+   "look": "a flat grid of tiles or cards with soft rounded corners",
+   "cards": [
+    "bento-box",
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "dark mode SaaS with a sidebar and hairline borders",
+   "cards": [
+    "dark-mode-saas-2021",
+    "hairline-rules-between-everything"
+   ]
+  },
+  {
+   "look": "a streak counter, stars or badges as completion rewards",
+   "cards": [
+    "badges",
+    "stars"
+   ]
+  },
+  {
+   "look": "a toggle switch for settings and reminders",
+   "cards": [
+    "toggle-switches"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with a floating add button",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "folder and file tabs for organizing notes and projects",
+   "cards": [
+    "folder-tabs",
+    "manila-file-folder"
+   ]
+  },
+  {
+   "look": "a plain bulleted outline list with nested indents",
+   "cards": [
+    "dots-carry-every-mark",
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "a heatmap grid of activity by day",
+   "cards": [
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "frosted glass cards and soft pastel gradients",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  }
+ ],
+ "real-estate": [
+  {
+   "look": "a grid of listing cards with a big photo, price and beds/baths/sqm line",
+   "cards": [
+    "price-tags"
+   ]
+  },
+  {
+   "look": "a map with price pins and neighborhood POIs",
+   "cards": [
+    "legend-keys"
+   ]
+  },
+  {
+   "look": "clean white minimal UI with one brand accent color",
+   "cards": [
+    "flat-design-2013",
+    "swiss-style-1960s"
+   ]
+  },
+  {
+   "look": "a flat floor plan line drawing with room dimensions",
+   "cards": [
+    "architectural-drawing",
+    "blueprint-paper"
+   ]
+  },
+  {
+   "look": "full-bleed hero photo of a home with overlaid search bar",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "photo gallery carousel with a thumbnail strip",
+   "cards": [
+    "film-frames"
+   ]
+  },
+  {
+   "look": "price and size sliders and filter chips",
+   "cards": [
+    "sliders"
+   ]
+  },
+  {
+   "look": "mortgage calculator with sliders and a donut or pie breakdown",
+   "cards": [
+    "pie-slices",
+    "pocket-calculator",
+    "sliders"
+   ]
+  },
+  {
+   "look": "heart icon for saved listings",
+   "cards": []
+  },
+  {
+   "look": "key icon and house glyphs for sale, rent and handover",
+   "cards": [
+    "keys"
+   ]
+  },
+  {
+   "look": "neighborhood score badges and heatmap overlays",
+   "cards": [
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "virtual tour 360 button over photo",
+   "cards": []
+  },
+  {
+   "look": "agent contact card with a round headshot and call button",
+   "cards": []
+  },
+  {
+   "look": "price shown as one big bold number",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  }
+ ],
+ "restaurants": [
+  {
+   "look": "a full-bleed appetizing food photo hero behind the dish or menu",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "a menu list of item names with dotted leaders to prices",
+   "cards": [
+    "diner-menu",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "chalkboard cafe menu with hand-lettered chalk specials",
+   "cards": [
+    "chalkboard",
+    "every-word-hand-lettered"
+   ]
+  },
+  {
+   "look": "kraft paper, brown bag and cardboard takeaway packaging look",
+   "cards": [
+    "bakery-box",
+    "corrugated-cardboard",
+    "kraft-paper"
+   ]
+  },
+  {
+   "look": "warm cream and earthy rustic artisan cafe palette with serif type",
+   "cards": [
+    "butcher-block",
+    "cotton-rag-paper",
+    "stoneware"
+   ]
+  },
+  {
+   "look": "retro diner signage with neon script and chrome",
+   "cards": [
+    "1950s-diner-signage",
+    "googie-1958",
+    "neon-shop-sign"
+   ]
+  },
+  {
+   "look": "stamp or punch card loyalty with dots filling toward a free coffee",
+   "cards": [
+    "perforations",
+    "punch-card"
+   ]
+  },
+  {
+   "look": "itemized receipt style bill with a bold total and tip options",
+   "cards": [
+    "a-receipt-width-column-only",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "wood and exposed brick cozy cafe interior textures",
+   "cards": [
+    "butcher-block",
+    "exposed-red-brick",
+    "walnut-veneer"
+   ]
+  },
+  {
+   "look": "category chips or tabs and add-on checkboxes with a sticky cart bar",
+   "cards": [
+    "sticky-labels-on-every-section"
+   ]
+  },
+  {
+   "look": "hand-drawn food doodles and illustrated spot icons",
+   "cards": [
+    "only-hand-drawn-shapes"
+   ]
+  },
+  {
+   "look": "star rating and heart favorite for dishes",
+   "cards": [
+    "hearts",
+    "stars"
+   ]
+  },
+  {
+   "look": "ticket-like order number and pickup status progress tracker",
+   "cards": [
+    "numerals",
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "chef-style minimal dark luxury fine dining with gold accents",
+   "cards": [
+    "art-deco-1925",
+    "brushed-brass",
+    "gold-leaf"
+   ]
+  },
+  {
+   "look": "tin or label style specialty coffee bag branding",
+   "cards": [
+    "tea-tin",
+    "wine-label"
+   ]
+  }
+ ],
+ "retail-banking": [
+  {
+   "look": "one big balance number at the top of the home screen",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a list of transactions as plain rows with amounts and merchant icons",
+   "cards": [
+    "everything-is-a-list",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "a bank card illustration (credit card visual) with chip and network logo",
+   "cards": []
+  },
+  {
+   "look": "green or red coloured amounts for money in and out",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "donut or pie chart of spending by category",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "small line chart or sparkline of balance trend",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "progress bar for savings goals",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation with home, payments, cards, more",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "clean white cards with soft shadows and rounded corners",
+   "cards": [
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "one brand-colour header or accent on white, fintech minimal look",
+   "cards": [
+    "flat-color-no-gradients",
+    "one-color-only"
+   ]
+  },
+  {
+   "look": "green success checkmark confirmation screen after transfer",
+   "cards": []
+  },
+  {
+   "look": "digit-box OTP entry and keypad PIN pad",
+   "cards": [
+    "pocket-calculator"
+   ]
+  },
+  {
+   "look": "padlock and shield icons for security",
+   "cards": []
+  },
+  {
+   "look": "currency symbols beside amounts",
+   "cards": [
+    "currency-symbols"
+   ]
+  },
+  {
+   "look": "colourful gradient hero or glass cards on fintech neobank apps",
+   "cards": [
+    "glassmorphism-2021",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "round avatar or initials circles for beneficiaries",
+   "cards": [
+    "monograms"
+   ]
+  },
+  {
+   "look": "statement as a ruled table of dated rows",
+   "cards": [
+    "hairline-rules-between-everything"
+   ]
+  }
+ ],
+ "ride-hailing": [
+  {
+   "look": "a map with a route line and pickup/drop-off pins",
+   "cards": [
+    "nautical-chart"
+   ]
+  },
+  {
+   "look": "a dark mode map with a black and white minimal palette",
+   "cards": [
+    "color-only-for-state",
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "a bottom sheet with ride type cards, car images and prices",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a car icon moving along the route with a live arrival time",
+   "cards": []
+  },
+  {
+   "look": "a driver card with photo, star rating, car model and plate",
+   "cards": [
+    "license-plate",
+    "stars"
+   ]
+  },
+  {
+   "look": "a big black or white button to confirm the ride",
+   "cards": []
+  },
+  {
+   "look": "a line-item fare receipt with a total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "star rating and tip chips after the trip",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "a surge price badge in a warm color with a multiplier",
+   "cards": []
+  },
+  {
+   "look": "a step flow dot line from pickup to drop-off",
+   "cards": [
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "a clean white minimal UI with flat icons and one brand color",
+   "cards": [
+    "flat-color-no-gradients",
+    "no-shadows-no-depth"
+   ]
+  },
+  {
+   "look": "large arrival minutes as a hero number",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a pulsing circle at the pickup point on the map",
+   "cards": []
+  },
+  {
+   "look": "a progress bar for driver arrival",
+   "cards": [
+    "progress-bars"
+   ]
+  }
+ ],
+ "social": [
+  {
+   "look": "heart icon for likes that fills or bursts",
+   "cards": [
+    "hearts"
+   ]
+  },
+  {
+   "look": "speech bubble comment and chat threads",
+   "cards": [
+    "speech-bubbles"
+   ]
+  },
+  {
+   "look": "circular avatars with a gradient story ring",
+   "cards": [
+    "every-image-in-a-circle"
+   ]
+  },
+  {
+   "look": "bottom tab bar with home, search, post, reels, profile",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "full-bleed vertical photo or video with overlaid controls",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "square photo grid on the profile",
+   "cards": [
+    "film-contact-sheet",
+    "photos-only-no-shapes"
+   ]
+  },
+  {
+   "look": "red notification dots and count badges",
+   "cards": []
+  },
+  {
+   "look": "big bold follower and view counts",
+   "cards": [
+    "numerals"
+   ]
+  },
+  {
+   "look": "emoji reactions and sticker overlays",
+   "cards": [
+    "smiley-faces",
+    "sticker-sheet",
+    "stickers"
+   ]
+  },
+  {
+   "look": "instagram-style purple to orange gradient branding",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "clean white or dark mode cards with rounded corners",
+   "cards": [
+    "every-corner-fully-rounded"
+   ]
+  },
+  {
+   "look": "creator badges and verified checks",
+   "cards": [
+    "badges"
+   ]
+  },
+  {
+   "look": "paper plane send icon for messages",
+   "cards": [
+    "paper-planes"
+   ]
+  },
+  {
+   "look": "glass blurred overlays on media",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "polaroid style photo frames for posts",
+   "cards": [
+    "instant-photo"
+   ]
+  }
+ ],
+ "sports": [
+  {
+   "look": "dark mode with club-color accent and bold condensed sports type",
+   "cards": [
+    "carbon-fiber",
+    "numerals",
+    "white-text-on-color-only"
+   ]
+  },
+  {
+   "look": "a big live score numeral in a scoreboard header",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen",
+    "stadium-scoreboard"
+   ]
+  },
+  {
+   "look": "a league table as a ranked list with form dots",
+   "cards": [
+    "everything-is-a-list",
+    "numbers-in-tabular-figures"
+   ]
+  },
+  {
+   "look": "fixture cards listing crests, opponent and kickoff time",
+   "cards": []
+  },
+  {
+   "look": "ticket-style cards with a barcode or QR and stub edge for match tickets",
+   "cards": [
+    "metro-ticket",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "digital membership card with photo and club crest",
+   "cards": [
+    "trading-card"
+   ]
+  },
+  {
+   "look": "pitch diagram with player dots for lineups",
+   "cards": [
+    "foosball-table"
+   ]
+  },
+  {
+   "look": "full-bleed action photo hero with headline overlay",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "player cards with portrait and stat grid",
+   "cards": [
+    "trading-card"
+   ]
+  },
+  {
+   "look": "club crest and heraldic badge motifs",
+   "cards": [
+    "badges",
+    "monograms"
+   ]
+  },
+  {
+   "look": "kit stripes and jersey patterns in club colors",
+   "cards": [
+    "stripes",
+    "white-text-on-color-only"
+   ]
+  },
+  {
+   "look": "video highlight tiles with play button over thumbnails",
+   "cards": []
+  },
+  {
+   "look": "news feed of photo cards with bold headlines",
+   "cards": [
+    "headlines",
+    "magazine-cover"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation for fixtures, table, tickets, store",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "live match timeline with minute markers and goal icons",
+   "cards": []
+  },
+  {
+   "look": "product grid store with kit photos on clean tiles",
+   "cards": []
+  }
+ ],
+ "streaming": [
+  {
+   "look": "dark cinematic theater-black interface",
+   "cards": [
+    "photos-only-no-shapes",
+    "x-ray-film"
+   ]
+  },
+  {
+   "look": "full-bleed hero poster artwork at the top of the home screen",
+   "cards": [
+    "magazine-cover",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "horizontal carousel rows of poster thumbnails",
+   "cards": [
+    "a-single-horizontal-scroll",
+    "film-contact-sheet",
+    "film-frames"
+   ]
+  },
+  {
+   "look": "vertical movie poster cards with rounded corners",
+   "cards": [
+    "trading-card",
+    "vinyl-record-sleeve"
+   ]
+  },
+  {
+   "look": "red progress bar under a thumbnail for continue watching",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "scrubber timeline with playhead and timecode in the player",
+   "cards": [
+    "ruler-ticks",
+    "scrolling-scrubs-a-timeline"
+   ]
+  },
+  {
+   "look": "bottom tab bar navigation",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "one brand accent color on black (red or neon)",
+   "cards": [
+    "grayscale-plus-one-neon-accent"
+   ]
+  },
+  {
+   "look": "star or thumbs rating glyphs",
+   "cards": [
+    "hearts",
+    "stars"
+   ]
+  },
+  {
+   "look": "gradient scrim over artwork with title text on it",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "profile avatar tiles on a dark picker screen",
+   "cards": [
+    "each-view-one-solid-color"
+   ]
+  },
+  {
+   "look": "frosted translucent overlays on artwork",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "episode list rows with thumbnail, title and runtime",
+   "cards": [
+    "everything-is-a-list"
+   ]
+  },
+  {
+   "look": "top 10 big numeral ranking rows",
+   "cards": [
+    "big-index-numbers-on-sections"
+   ]
+  },
+  {
+   "look": "pricing plan cards side by side for subscription tiers",
+   "cards": [
+    "everything-in-a-bento-grid"
+   ]
+  }
+ ],
+ "telecom": [
+  {
+   "look": "a ring or arc gauge showing data left",
+   "cards": [
+    "gauge-dials",
+    "saturn-rings"
+   ]
+  },
+  {
+   "look": "a progress bar for data or minutes used",
+   "cards": [
+    "bars-instead-of-numbers",
+    "progress-bars",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "one huge data balance number on the home screen",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "plan cards in a grid with price and duration",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "bold brand-color blocks with white text",
+   "cards": [
+    "each-view-one-solid-color",
+    "white-text-on-color-only"
+   ]
+  },
+  {
+   "look": "flat gradient hero banners with promo offers",
+   "cards": [
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "a signal bars or coverage map with colored zones",
+   "cards": [
+    "city-lights-at-night",
+    "heatmap-cells"
+   ]
+  },
+  {
+   "look": "usage charts with line graphs and sparklines",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "a bottom tab bar navigation",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "a QR code activation screen with numbered steps",
+   "cards": [
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "a toggle list for add-ons and settings",
+   "cards": [
+    "toggle-switches"
+   ]
+  },
+  {
+   "look": "usage breakdown as a donut or pie chart",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "sliders to pick data amount or validity days",
+   "cards": [
+    "sliders"
+   ]
+  },
+  {
+   "look": "clean white app with rounded cards and soft shadows",
+   "cards": [
+    "shadows-only-no-borders"
+   ]
+  },
+  {
+   "look": "itemised bill lists with tabular figures",
+   "cards": [
+    "numbers-in-tabular-figures"
+   ]
+  }
+ ],
+ "tourism-culture": [
+  {
+   "look": "full-bleed hero photo of the site or landmark with text on top",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "museum wall label captions with title, date, medium",
+   "cards": [
+    "exhibition-catalog",
+    "museum-wall-label"
+   ]
+  },
+  {
+   "look": "timed-entry ticket card or stub with date, slot and QR code",
+   "cards": [
+    "metro-ticket",
+    "museum-ticket",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "clean white gallery minimalism with lots of empty space and a serif or sans headline",
+   "cards": [
+    "70-percent-empty-space",
+    "one-centered-column"
+   ]
+  },
+  {
+   "look": "visitor map with numbered pins, floor plans and route lines",
+   "cards": [
+    "architectural-drawing"
+   ]
+  },
+  {
+   "look": "wayfinding signage and pictograms for facilities and directions",
+   "cards": [
+    "arrows",
+    "wayfinding-pictograms"
+   ]
+  },
+  {
+   "look": "audio guide player with waveform and numbered stop list",
+   "cards": []
+  },
+  {
+   "look": "photo card grids for exhibitions and collection objects",
+   "cards": [
+    "exhibition-catalog"
+   ]
+  },
+  {
+   "look": "event calendar with date blocks and filter chips",
+   "cards": [
+    "calendar-dates"
+   ]
+  },
+  {
+   "look": "heritage-flavored ornament like regional patterns, arches and earthy sand tones",
+   "cards": []
+  },
+  {
+   "look": "dark immersive object spotlight with gold accent for premium exhibitions",
+   "cards": []
+  },
+  {
+   "look": "vintage travel poster or postcard illustration style",
+   "cards": [
+    "1930s-travel-posters"
+   ]
+  },
+  {
+   "look": "passport stamp or badge collecting for visited sites and kids trails",
+   "cards": [
+    "badges",
+    "passport-stamp-page"
+   ]
+  },
+  {
+   "look": "editorial magazine layout with big headline and pull quotes for stories",
+   "cards": [
+    "magazine-cover"
+   ]
+  }
+ ],
+ "travel": [
+  {
+   "look": "a full-bleed destination photo hero with search overlaid",
+   "cards": [
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "boarding pass or ticket-style cards with a perforated stub",
+   "cards": [
+    "metro-ticket",
+    "museum-ticket",
+    "ticket-stubs"
+   ]
+  },
+  {
+   "look": "airport departure board rows for flight status",
+   "cards": [
+    "airport-departure-board"
+   ]
+  },
+  {
+   "look": "a flight route line with dots and a plane icon between two cities",
+   "cards": [
+    "line-diagrams",
+    "subway-map"
+   ]
+  },
+  {
+   "look": "a map with price pins for hotels",
+   "cards": []
+  },
+  {
+   "look": "star ratings and review score badges",
+   "cards": [
+    "stars"
+   ]
+  },
+  {
+   "look": "clean white cards with one bright brand-blue or orange button",
+   "cards": []
+  },
+  {
+   "look": "filter chips, sliders and a date range calendar picker",
+   "cards": [
+    "calendar-dates",
+    "sliders"
+   ]
+  },
+  {
+   "look": "a seat map grid with selectable seats",
+   "cards": []
+  },
+  {
+   "look": "price tags, deal badges and strike-through discounts",
+   "cards": [
+    "price-tags"
+   ]
+  },
+  {
+   "look": "loyalty tier cards and points progress bars",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "a vertical itinerary timeline with day-by-day stops",
+   "cards": [
+    "line-diagrams"
+   ]
+  },
+  {
+   "look": "a green checkmark booking confirmation with a reference code",
+   "cards": []
+  },
+  {
+   "look": "luggage tag and passport stamp travel motifs",
+   "cards": [
+    "luggage-tag",
+    "passport-stamp-page"
+   ]
+  },
+  {
+   "look": "wayfinding airport pictogram icons for amenities and baggage",
+   "cards": [
+    "wayfinding-pictograms"
+   ]
+  }
+ ],
+ "utilities": [
+  {
+   "look": "a bar chart of monthly usage in kWh or cubic meters",
+   "cards": [
+    "bars-instead-of-numbers",
+    "scale-bars"
+   ]
+  },
+  {
+   "look": "a line or sparkline trend of consumption over time",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines"
+   ]
+  },
+  {
+   "look": "a ring or half-circle gauge for usage versus budget",
+   "cards": [
+    "gauge-dials"
+   ]
+  },
+  {
+   "look": "a big amount due as the hero number with a due date",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen"
+   ]
+  },
+  {
+   "look": "a bill breakdown as itemised lines with a total",
+   "cards": [
+    "a-receipt-width-column-only",
+    "dotted-leaders",
+    "numbers-in-tabular-figures",
+    "thermal-receipt"
+   ]
+  },
+  {
+   "look": "a donut or pie chart splitting charges by category",
+   "cards": [
+    "pie-slices"
+   ]
+  },
+  {
+   "look": "water drop and lightning bolt glyph icons",
+   "cards": [
+    "lightning-bolts",
+    "raindrops"
+   ]
+  },
+  {
+   "look": "blue and green eco palette with white cards",
+   "cards": []
+  },
+  {
+   "look": "tariff tier bands or tiered progress bar",
+   "cards": [
+    "progress-bars"
+   ]
+  },
+  {
+   "look": "status chips in green, amber and red for paid, due, overdue",
+   "cards": [
+    "color-only-for-state"
+   ]
+  },
+  {
+   "look": "a bottom tab bar with home, usage, pay and help",
+   "cards": [
+    "navigation-at-the-bottom"
+   ]
+  },
+  {
+   "look": "an outage map with pins and shaded areas",
+   "cards": []
+  },
+  {
+   "look": "a meter dial or digital register readout showing the reading",
+   "cards": [
+    "pocket-calculator"
+   ]
+  },
+  {
+   "look": "clean flat corporate fintech look with rounded cards",
+   "cards": [
+    "flat-design-2013"
+   ]
+  },
+  {
+   "look": "usage heatmap calendar of daily consumption",
+   "cards": [
+    "heatmap-cells"
+   ]
+  }
+ ],
+ "weather": [
+  {
+   "look": "a sky gradient behind one big temperature",
+   "cards": [
+    "numerals",
+    "one-giant-number-per-screen",
+    "one-gradient-nothing-else",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "sun, cloud and rain glyph icons",
+   "cards": [
+    "clouds",
+    "lightning-bolts",
+    "moons",
+    "raindrops",
+    "sun-rays"
+   ]
+  },
+  {
+   "look": "a ring or arc gauge for UV or air quality",
+   "cards": [
+    "barometer-dial",
+    "gauge-dials"
+   ]
+  },
+  {
+   "look": "a radar map with colored rain bands",
+   "cards": [
+    "contour-lines",
+    "heatmap-cells",
+    "weather-map"
+   ]
+  },
+  {
+   "look": "frosted glass cards over a photo",
+   "cards": [
+    "frosted-glass",
+    "glassmorphism-2021"
+   ]
+  },
+  {
+   "look": "a horizontal hourly strip of icons and temperatures",
+   "cards": [
+    "a-single-horizontal-scroll"
+   ]
+  },
+  {
+   "look": "a temperature line or sparkline curve across the day",
+   "cards": [
+    "a-sparkline-beside-every-number",
+    "sparklines",
+    "tide-table"
+   ]
+  },
+  {
+   "look": "a bento grid of small condition tiles (humidity, wind, UV)",
+   "cards": [
+    "bento-grid-2023",
+    "everything-in-a-bento-grid"
+   ]
+  },
+  {
+   "look": "a sunrise and sunset arc with a sun dot",
+   "cards": [
+    "sun-rays"
+   ]
+  },
+  {
+   "look": "a compass or arrow showing wind direction",
+   "cards": [
+    "arrows",
+    "compass-roses"
+   ]
+  },
+  {
+   "look": "color-coded warning banners in yellow, orange and red",
+   "cards": [
+    "hazard-stripes"
+   ]
+  },
+  {
+   "look": "dark mode with night sky and stars",
+   "cards": [
+    "star-chart"
+   ]
+  },
+  {
+   "look": "a color scale bar from cold blue to hot orange",
+   "cards": [
+    "heatmap-cells"
+   ]
+  }
+ ],
+ "wellness": [
+  {
+   "look": "soft pastel gradient blobs and washes behind content",
+   "cards": [
+    "blobs",
+    "glassmorphism-2021",
+    "millennial-pink-2016",
+    "one-gradient-nothing-else"
+   ]
+  },
+  {
+   "look": "night sky with moon and stars on deep navy",
+   "cards": [
+    "moons",
+    "star-chart",
+    "stars"
+   ]
+  },
+  {
+   "look": "calm nature imagery: clouds, mist, waves, leaves",
+   "cards": [
+    "cloud-streets",
+    "clouds",
+    "flowers",
+    "leaves",
+    "omani-dhofar-khareef-mist",
+    "raindrops",
+    "sun-rays",
+    "waves"
+   ]
+  },
+  {
+   "look": "full-bleed nature photo with centered text",
+   "cards": [
+    "colors-come-from-one-photo",
+    "one-photo-fills-the-screen"
+   ]
+  },
+  {
+   "look": "breathing circle that expands and contracts",
+   "cards": [
+    "bubbles",
+    "loading-spinners",
+    "only-circles-and-half-circles"
+   ]
+  },
+  {
+   "look": "streak counter, badges and milestone rewards",
+   "cards": [
+    "badges",
+    "dot-grids-for-every-count",
+    "kilometer-stones",
+    "tally-marks"
+   ]
+  },
+  {
+   "look": "frosted glass cards over a gradient or photo",
+   "cards": [
+    "fluted-glass",
+    "frosted-glass",
+    "glassmorphism-2021",
+    "milk-glass"
+   ]
+  },
+  {
+   "look": "soft rounded pill cards and buttons with generous whitespace",
+   "cards": [
+    "70-percent-empty-space",
+    "every-corner-fully-rounded",
+    "neumorphism-2020",
+    "no-straight-lines",
+    "one-centered-column",
+    "translucent-silicone"
+   ]
+  },
+  {
+   "look": "mood check-in with smiley or emoji faces",
+   "cards": [
+    "hearts",
+    "smiley-faces"
+   ]
+  },
+  {
+   "look": "minimal line illustrations of people, plants and zen motifs",
+   "cards": [
+    "bonsai",
+    "line-illustrations-only",
+    "pressed-flowers"
+   ]
+  },
+  {
+   "look": "dark mode sleep screen with dim muted colors",
+   "cards": [
+    "obsidian",
+    "one-color-only",
+    "smoked-acrylic"
+   ]
+  },
+  {
+   "look": "sleep score ring or soundscape waveform and sleep charts",
+   "cards": [
+    "saturn-rings",
+    "tide-table"
+   ]
+  },
+  {
+   "look": "earthy zen calm: stones, sand, natural paper and wood textures",
+   "cards": [
+    "korean-hanji-paper",
+    "lime-plaster",
+    "stoneware",
+    "washi-paper",
+    "worry-stone"
+   ]
+  },
+  {
+   "look": "sunrise or sun glow gradient hero",
+   "cards": [
+    "solarpunk-2050",
+    "sun-rays"
+   ]
+  }
+ ]
+}

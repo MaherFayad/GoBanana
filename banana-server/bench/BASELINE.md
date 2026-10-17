@@ -1033,3 +1033,72 @@ The merged bend changes 7 of 30 Bench leads against r8-b2: R7's expected-lead pe
 branched (R9 changes no lead). The weak drop of one is within the 1 to 2 direction spread: 1970s Airline Branding
 now leads telecom sign-up and fiber plans and is judged off brief (a travel metaphor), plus Fingerprints on bill
 payment; R8's two misses (Frutiger Aero, Nubian House Painting) are gone.
+
+## Refinement R10: domain cliches and a twist from another world (2026-10-17)
+
+Branch `next/refine-r10` (from `next/phase-1`, fdccfe0). Local Atlas from R8's build (manifest `3e60961d0581`; the
+dry bend reproduced r9-vb2 and r9-vw2 exactly), rebuilt with the two R10 overlays (manifest `def37b2d7879`), not
+uploaded. Budget r10: $4.76 of $30 (r10-cliche $2.59, r10-slop $1.20, r10-judge $0.68, r10-worlds $0.28). No Serper.
+Craftwork, Best Designs on X and x.com items were never model inputs (dry bends, specs only).
+
+### What changed
+
+- **Domain cliches** (`atlas-build/jobs/r10-cliche.ts`, Sonnet, one request per domain): the looks shipped apps of a
+  domain already use (8 to 15 per domain, 916 in all, listed in `atlas-build/data/r10-domain-looks.json`), and the
+  domain's candidate cards (fit 2 or 3, or page fit 2 or 3) that are one of them: 1,538 card and domain pairs. Telecom:
+  ring or arc gauges (Saturn Rings, Gauge Dials), progress bars, one huge balance number; food delivery: Flat Design
+  2013 under "bold brand-color header with white rounded cards", stars, ticket coupons; kids learning: stars,
+  stickers, badges, felt craft. The overlay `domain-cliches` sets `FitScore.cliche` in that domain only.
+  The first run marked task shapes instead of looks (an instruction manual on telecom because sign-up has numbered
+  steps, wax seals in real estate because leases are signed) and missed style cards; the prompt was rewritten once
+  (looks the user sees, examples from weather, wellness, fashion and crypto, never a Bench domain) and the second run
+  (request ids `r10c2-`) is the one in the Atlas. Never hand-edited.
+- **Card worlds** (`jobs/r10-worlds.ts`, Sonnet, 12 requests): every card's material or object world (21 worlds,
+  main first, at most 2): Wool Felt and Badges are both "textile and stitch", Topographic Map and Graph Paper share
+  "maps, charts and diagrams". Overlay `card-worlds` sets `IngredientCard.worlds`.
+- **Bend** (`lib/atlas/bend.ts`): a domain cliche loses 0.5 to 0.74 relevance by wildness (about two fit steps, on top
+  of R7's expected penalty), as a lead and as a second card, and never takes a style-spread place; lens cards are
+  exempt. `rankSeconds` puts a card from the lead's world (`sameWorld`) after every card from another world.
+- **Off-page lines** (`lib/atlas/spec-coherence.ts`, deterministic): `onPageFlows` turns flows and parts the page does
+  not have (onboarding, checkout, receipts, profile cards, leaderboards, filters, carousels and the like, judged against
+  the brief, the page name, the span parts and the task) into the page, keeping the ones it has, in the twist sentence
+  and the reduced motion text. `leadReduced`: the lead's reduced motion subject becomes "it" when no page part names
+  it and it is not a subject any page has. Fitness empty state before: "turns onboarding and checkout into calm
+  assembly steps", "the new initials appear at once ... and stay"; after: "turns the empty state into calm assembly
+  steps", "it appears at once ... and stays". Tests: `banana-server/tests/atlas-r10.test.ts`,
+  `atlas-build/tests/r10.test.ts`.
+
+### Results (R3 judge on specs, `jobs/r10-judge.ts`; slop check, `jobs/r10-slop.ts`)
+
+`r10-judge` keeps the verify round's request ids and started from a copy of `raw/r9-merged.jsonl`, so unchanged
+directions keep their verify votes word for word and v0 reproduces the verify numbers at no cost. The slop check is
+new (Opus, two votes, "is this what apps in this domain already look like? 1 to 5", 4 or more is slop, no gold set).
+
+| Run | On brief | Wow mean | Wow 4+ | Slop mean | Slop 4+ | Slop 3+ |
+| --- | --- | --- | --- | --- | --- | --- |
+| Bench before (r10-vb0 = r9-vb2) | 30 of 30 | 3.80 | 24 | 2.93 | 6 | 19 |
+| **Bench after (r10-vb1)** | **29 of 30** | 3.77 | 23 | **2.77** | **5** | 16 |
+| Weak before (r10-vw0 = r9-vw2) | 42 of 45 | 3.58 | 28 | 2.82 | 9 | 27 |
+| **Weak after (r10-vw1)** | **41 of 45** | **3.69** | **32** | **2.71** | **6** | 24 |
+
+All 75: slop directions 15 to 11, wow 4+ 52 to 55. 12 Bench and 12 weak leads changed. Examples (relevance, wow,
+slop): telecom usage home Saturn Rings (4, 3, 4) gives way, Perforated Metal now second (4, 4, 2); food delivery home
+Flat Design 2013 (4, 2, 4) and Stars (4, 2, 4) become Matchbook (4, 4, 2) and Bento Box (3, 3, 3); kids reading home
+Wool Felt with the texture of Badges (5, 4, 3) gives way to Game Cartridge with the texture of Cereal Box (4, 4, 3)
+and Drop Caps with Field Guide (4, 3, 2.5); flight checkout Line Diagrams (4, 3, 4) becomes Al Ahsa Jabal Al Qarah Caves
+(4, 4, 2).
+
+Off brief after: Eastern Arabic Digits on SaaS pricing (new: a Gulf numeral card leads a global B2B page once Vienna
+Secession and Dark Mode SaaS 2021 drop; the judge says the digits are hard to read there), Bento Box on food delivery
+home (a Japanese world on a Riyadh app), and the three verify misses: 1970s Airline Branding on telecom sign-up and
+fiber plans, Fingerprints on bill payment. Those three are not domain cliches of telecom, so the general rule does not
+reach them; no per-brief fix was made.
+
+### What is left
+
+- Sonnet's marks miss some cliches the slop check still finds: Polished Marble (slop 4 on four real estate briefs) was
+  not marked in real estate, and Flat Design 2013 was marked in food delivery but not telecom, so it now takes the
+  third telecom usage place Saturn Rings left (wow 2, slop 4). A second marking pass (Opus, or Sonnet over the slop
+  check's looks) is the next step; owner call.
+- Coffee: Jebena and Googie now read as the specialty-coffee look (slop 4 each); coffee's list did not mark them.
+- Eastern Arabic Digits leading a global page is a brief-fit gap (region), not R10's.

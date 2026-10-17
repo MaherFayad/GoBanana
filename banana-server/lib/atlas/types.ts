@@ -58,9 +58,11 @@ export interface IngredientCard {
   artQueries: string[];
   culturalNotes?: string;                       // required for kind "tradition"
   styles?: string[];                            // R2: style ids (lib/styles/ids.ts), main style first, at most 2. Optional.
+  worlds?: string[];                            // R10: the material or object world a designer sees in it (textile, stone, machine), main first, at most 2. Optional.
 }
 
-export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
+/** R10: `cliche` is the look apps of this domain already ship that the card is ("ring or arc gauges for what is left"), when it is one. */
+export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string; cliche?: string }
 
 /** J4b (Gate 2 round 2): how well a card can lead one page of one domain. reason only for 2 and 3. */
 export interface PageFitScore { cardId: string; domainId: string; pageId: string; score: 0 | 1 | 2 | 3; reason?: string }

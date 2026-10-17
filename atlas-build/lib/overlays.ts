@@ -15,6 +15,10 @@
  *   "rewrite" again is not given a third try: the record is left out.
  * - recipes: styles from their card (concept and art lanes), their web showcase style (website
  *   baseline keys), else the words of their query (deck, brand and the rest), when any.
+ * - domain-cliches (r10-cliche): `{ domainId, look, cardIds }`. Sets `cliche` (the look) on the fit
+ *   records of those cards in that domain only; the bend ranks them lower there.
+ * - card-worlds (r10-worlds): `{ id, worlds }`. Sets `worlds` on cards (the twist must come from
+ *   another world than its lead).
  */
 import { detectStyles, SHOWCASE_STYLE_MAP, type StyleId } from "../../banana-server/lib/styles/index.ts";
 import { cleanStyles } from "../../banana-server/lib/styles/ids.ts";
@@ -26,20 +30,28 @@ const isTagged = (k: string): k is TaggedKind => (TAGGED_KINDS as readonly strin
 
 export type StyleTag = { id: string; kind: TaggedKind; styles: string[] };
 export type TasteVerdict = { id: string; kind: "shaders" | "motion"; verdict: "keep" | "rewrite" | "drop" };
+/** R10 (r10-cliche): one look apps of a domain already ship, and the cards that are that look. */
+export type DomainCliche = { domainId: string; look: string; cardIds: string[] };
+/** R10 (r10-worlds): the material or object worlds a designer sees in a card, main first. */
+export type CardWorlds = { id: string; worlds: string[] };
 
 /** Job kinds that only hold overlays (the server layout skips them). */
-export const OVERLAY_KINDS = ["style-tags", "taste-verdicts", "rewrite-verdicts", ...TAGGED_KINDS.map((k) => `${k}-rewrites`)];
+export const OVERLAY_KINDS = ["style-tags", "taste-verdicts", "rewrite-verdicts", ...TAGGED_KINDS.map((k) => `${k}-rewrites`), "domain-cliches", "card-worlds"];
 
 export type Overlays = {
   tags: Map<string, Map<string, string[]>>;
   verdicts: Map<string, Map<string, TasteVerdict["verdict"]>>;
   rewriteVerdicts: Map<string, Map<string, TasteVerdict["verdict"]>>;
   rewrites: Map<string, Map<string, unknown>>;
+  /** R10: domain id to card id to the shipped look the card is (the first look that lists it). */
+  cliches: Map<string, Map<string, string>>;
+  /** R10: card id to its worlds. */
+  worlds: Map<string, string[]>;
 };
 
 /** The overlays in a set of job kinds (readJobRecords). Empty maps when none was built. */
 export function overlaysFrom(recordsByJobKind: ReadonlyMap<string, readonly unknown[]>): Overlays {
-  const ov: Overlays = { tags: new Map(), verdicts: new Map(), rewriteVerdicts: new Map(), rewrites: new Map() };
+  const ov: Overlays = { tags: new Map(), verdicts: new Map(), rewriteVerdicts: new Map(), rewrites: new Map(), cliches: new Map(), worlds: new Map() };
   const by = <V>(m: Map<string, Map<string, V>>, kind: string) => {
     if (!m.has(kind)) m.set(kind, new Map());
     return m.get(kind)!;
@@ -50,6 +62,11 @@ export function overlaysFrom(recordsByJobKind: ReadonlyMap<string, readonly unkn
   for (const kind of TAGGED_KINDS) {
     for (const r of (recordsByJobKind.get(`${kind}-rewrites`) ?? []) as { id: string }[]) by(ov.rewrites, kind).set(r.id, r);
   }
+  for (const c of (recordsByJobKind.get("domain-cliches") ?? []) as DomainCliche[]) {
+    const m = by(ov.cliches, c.domainId);
+    for (const id of c.cardIds) if (!m.has(id)) m.set(id, c.look);
+  }
+  for (const w of (recordsByJobKind.get("card-worlds") ?? []) as CardWorlds[]) if (w.worlds.length > 0) ov.worlds.set(w.id, w.worlds.slice(0, 2));
   return ov;
 }
 
@@ -61,7 +78,7 @@ export function recipeStyles(r: { key: { lane: string; cardId?: string; style?: 
   return cleanStyles(detectStyles([r.query], genre) as StyleId[]);
 }
 
-type Rec = { id?: string; styles?: string[] };
+type Rec = { id?: string; styles?: string[]; worlds?: string[] };
 
 export type OverlayCounts = { tagged: number; rewritten: number; dropped: number };
 
@@ -78,12 +95,26 @@ export function applyOverlays<T>(kind: string, records: readonly T[], ov: Overla
     });
     return { records: out, counts };
   }
+  if (kind === "fit") {
+    // R10: a fit record of a card that is a look its domain already ships carries that look.
+    const out = (records as readonly { cardId: string; domainId: string; cliche?: string }[]).map((r) => {
+      const look = ov.cliches.get(r.domainId)?.get(r.cardId);
+      const { cliche: _old, ...rest } = r;
+      if (!look) return _old === undefined ? r : rest;
+      counts.tagged++;
+      return { ...rest, cliche: look };
+    });
+    return { records: out as unknown as T[], counts };
+  }
   if (!isTagged(kind)) return { records: [...records], counts };
   const rewrites = ov.rewrites.get(kind) ?? new Map<string, unknown>();
   const verdicts = ov.verdicts.get(kind) ?? new Map<string, string>();
   const second = ov.rewriteVerdicts.get(kind) ?? new Map<string, string>();
   const tags = ov.tags.get(kind) ?? new Map<string, string[]>();
-  const tagged = (rec: Rec): Rec => {
+  const tagged = (r: Rec): Rec => {
+    // R10: cards carry their worlds (never counted as a style tag).
+    const worlds = kind === "cards" ? ov.worlds.get(r.id!) : undefined;
+    const rec = worlds ? { ...r, worlds } : r;
     if (rec.styles && rec.styles.length > 0) return rec;
     const styles = cleanStyles(tags.get(rec.id!));
     if (!styles) return rec;
