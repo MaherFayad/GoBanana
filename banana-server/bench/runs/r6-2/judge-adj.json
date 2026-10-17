@@ -1,0 +1,52 @@
+[
+ {
+  "tag": "2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-1tqal688",
+  "title": "1970s Airline Branding telecom",
+  "relevance": 3,
+  "reason": "The livery stripe progress band suits the OTP, plan and SIM steps, but a 1970s airline look is not native to a GCC telecom at wildness 2."
+ },
+ {
+  "tag": "2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-fiber-plans",
+  "directionId": "bd-v8mbe7kf",
+  "title": "City Lights at Night",
+  "relevance": 3,
+  "reason": "Night city lights and karak glass amber suit a Kuwait fiber plans page, but the mechanic is a standard dark card with an orange outline and the glass fluting only touches the order card, so the idea stays thin."
+ },
+ {
+  "tag": "2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-hdahauwy",
+  "title": "Ruler Ticks estate listing",
+  "relevance": 3,
+  "reason": "Ruler ticks measuring area in meters suit a listing, but here they only decorate a top band, card edges and row starts, and the yellow wood ruler reads as a workshop tool rather than Dubai luxury."
+ },
+ {
+  "tag": "2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "rental-search-results",
+  "directionId": "bd-ubw4fnw7",
+  "title": "Al Ahsa Oasis from",
+  "relevance": 3,
+  "reason": "Al Ahsa plots from above are a strong Saudi world for district search, but the idea only touches the no results art and thin channel lines, while the map, filters and result cards stay untouched."
+ },
+ {
+  "tag": "2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "rental-search-results",
+  "directionId": "bd-q4arryw3",
+  "title": "Push Pins search results",
+  "relevance": 3,
+  "reason": "Push pins and cork echo map pins and suit a Riyadh rental search, but the idea only skins the no results card, filter chips and recent rows and leaves the home list and map untouched, so it reads as decoration."
+ }
+]

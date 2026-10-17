@@ -2,7 +2,7 @@
  * R6: screens found in code on presentation images (lib/vision/screens.ts), from synthetic RGBA.
  */
 import { describe, expect, it } from "vitest";
-import { detectScreens, screensLine } from "@/lib/vision/screens";
+import { detectScreens, screensLine } from "../lib/screens.ts";
 
 type Rect = { x: number; y: number; w: number; h: number; rgb: [number, number, number] };
 

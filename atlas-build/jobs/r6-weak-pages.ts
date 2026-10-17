@@ -14,6 +14,12 @@
  * did for the Gulf cards: each new page shows how the domain's cards scored on its nearest judged
  * page, and the new page is scored on that scale.
  *
+ * R6 result: not shipped and not in the rebuild order (lib/refine.ts). On the R6 briefs the trusted
+ * judge put 27 of 45 directions on brief with it against 29 without: the leads got more page
+ * specific (a bilingual baqala receipt on bill payment, Eastern Arabic digits on fiber plans) but the
+ * mechanic still lands on a header, an empty state or one button, since list rows, cards and maps
+ * are not mechanic elements in the bend. Kept with its saved replies for a later bend that can use it.
+ *
  * Output: the whole page-fit kind with the new pairs added. A domain whose shard would pass the
  * size budget drops the score 1 rows of the new pages (the bend reads an unjudged card about as a 1).
  *
@@ -105,9 +111,9 @@ export default defineJob<Input, PageFitScore>({
     for (const [domainId, anchors] of Object.entries(NEW_PAGES)) {
       const domain = domains.find((d) => d.id === domainId);
       if (!domain) continue;
-      const rows = pageFit().filter((r) => r.domainId === domainId);
-      const judged = new Set(rows.map((r) => r.pageId));
-      const pages = Object.keys(anchors).filter((p) => anatomy.has(p) && !judged.has(p));
+      // Rows of the pages J4b and R1 judged (never this job's own pages), so a second run sends the same inputs.
+      const rows = pageFit().filter((r) => r.domainId === domainId && !(r.pageId in anchors));
+      const pages = Object.keys(anchors).filter((p) => anatomy.has(p));
       // The pool J4b and R1 already judged in this domain, in id order.
       const pool = [...new Set(rows.map((r) => r.cardId))].sort().map((id) => cards.get(id)).filter((c): c is IngredientCard => Boolean(c));
       if (pages.length && pool.length) out.push({ domain, cards: pool, pages });

@@ -1,7 +1,7 @@
 /**
  * Refinement R6, task A: crop accuracy for cut_parts (J11 follow-up of R3 and R4). R4 measured
  * 0.732 held-out mean IoU with each part named with its screen (gate 0.8). This job tests screens
- * found in code (banana-server/lib/vision/screens.ts, no model) as a hint in the look:
+ * found in code (lib/screens.ts, no model) as a hint in the look:
  *
  * - control: today's look text, each part named with its screen as R4 counted them (from the gold
  *   parts' columns), the R4 "screens" list. The baseline.
@@ -16,6 +16,9 @@
  *
  *   R6_CROP_SET=dev R6_CROP_VARIANTS=control,segnum,seg R6_CROP_REPS=2 npx tsx run.ts r6-crops --dry
  *
+ * Result (2 repeats each): dev control 0.769, segnum 0.764, seg 0.769; held control 0.746, seg 0.734.
+ * The hint does not ship.
+ *
  * Replies merge into raw/r6-crops.jsonl; review/r6-crops-report.md is rebuilt from all of them.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -25,7 +28,7 @@ import { z } from "zod";
 import { decodeImage } from "../../banana-server/lib/palette/decode.ts";
 import { IOU_TARGET } from "../../banana-server/lib/stitch/crop-iou.ts";
 import { PART_ROLES } from "../../banana-server/lib/stitch/types.ts";
-import { detectScreens, screensLine, type ScreenBox } from "../../banana-server/lib/vision/screens.ts";
+import { detectScreens, screensLine, type ScreenBox } from "../lib/screens.ts";
 import { PATHS, SONNET } from "../config.ts";
 import { defineJob, placeholderImage } from "../lib/job.ts";
 import { fetchImageBlock } from "../lib/thumbs.ts";

@@ -1,6 +1,8 @@
 /**
  * Screens on a presentation image, found in code (no model): phones or browser windows laid out on
- * a backdrop (R6, bench/BASELINE.md "Refinement R6"). Two finders over a downsampled copy:
+ * a backdrop (R6, banana-server/bench/BASELINE.md "Refinement R6"). An eval helper for jobs/r6-crops.ts:
+ * the hint lost on held-out images (0.734 against 0.746 mean IoU), so cut_parts does not use it.
+ * Two finders over a downsampled copy:
  *
  * - backdrop fill: the backdrop is grown from the image border over smooth color (a flat or
  *   gradient backdrop and soft shadows pass, a screen's edge stops it); large foreground blobs
@@ -16,7 +18,7 @@
  *
  * Pure: takes decoded RGBA, keeps nothing.
  */
-import type { Crop } from "@/lib/stitch/types";
+import type { Crop } from "../../banana-server/lib/stitch/types.ts";
 
 export type ScreenBox = Crop;
 
