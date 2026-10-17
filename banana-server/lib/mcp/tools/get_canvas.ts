@@ -46,7 +46,7 @@ export type CanvasSummary = {
   webUrl: string | null;
   directions: { id: string; title: string; verdict: "keep" | "drop" | null; reconciled: boolean }[];
   sections: { id: string; title: string; directionId: string | null }[];
-  items: { id: string; type: string; title?: string; role?: string; note?: string; directionId?: string }[];
+  items: { id: string; type: string; title?: string; role?: string; note?: string; stealAxis?: string; becomes?: string; directionId?: string }[];
   parts: { id: string; role: string; note?: string }[];
   stitches: { id: string; title: string; directionId?: string }[];
 };
@@ -71,7 +71,7 @@ export function canvasSummary(c: CanvasSnapshot): CanvasSummary {
       switch (it.type) {
         case "image":
         case "upload":
-          return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}) };
+          return { ...base, ...(it.title ? { title: clip(it.title, 80) } : {}), role: it.zone === "art" ? "art" : "ui", ...(it.note ? { note: clip(it.note, 160) } : {}), ...(it.stealAxis ? { stealAxis: it.stealAxis } : {}), ...(it.becomes ? { becomes: it.becomes } : {}) };
         case "note":
           return { ...base, note: clip(it.text, 160) };
         case "swatch":
@@ -96,7 +96,7 @@ export function summaryText(s: CanvasSummary): string {
   for (const it of s.items) byDir.set(it.directionId ?? null, [...(byDir.get(it.directionId ?? null) ?? []), it]);
   for (const [dir, items] of byDir) {
     lines.push(dir ? `Items of direction ${dir}:` : "Items with no direction:");
-    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}`);
+    for (const it of items) lines.push(`  - ${it.type} ${it.id}${it.role ? ` (${it.role})` : ""}${it.title ? `: ${it.title}` : ""}${it.note ? ` note: ${it.note}` : ""}${it.becomes ? ` becomes: ${it.becomes}` : ""}`);
   }
   if (s.parts.length > 0) lines.push(`Parts: ${s.parts.map((p) => `${p.id} (${p.role})`).join(", ")}`);
   for (const st of s.stitches) lines.push(`Frankenstein page ${st.id}: ${st.title}${st.directionId ? ` (direction ${st.directionId})` : ""}`);
@@ -176,7 +176,7 @@ function describeItem(it: CanvasItem): string {
   switch (it.type) {
     case "image":
     case "upload":
-      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}`;
+      return `${it.type} ${it.id}: ${it.title ?? "Untitled"} (${it.sourceSite}) ${it.sourceUrl}${it.zone === "art" ? " [art direction]" : ""}${it.tag ? ` [${it.tag}]` : ""}${it.note ? ` note: ${it.note}` : ""}${it.stealAxis ? ` steal axis: ${it.stealAxis}` : ""}${it.becomes ? ` becomes: ${it.becomes}` : ""}`;
     case "note":
       return `note ${it.id}: ${it.text.replace(/\s+/g, " ").slice(0, 200)}`;
     case "swatch":

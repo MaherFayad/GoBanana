@@ -176,6 +176,12 @@ export function ImageNode({ id, type, data, selected, width, parentId }: NodePro
             </p>
           )
         )}
+        {/* Art translation: the UI part this image turns into, under the steal note. */}
+        {type === "image" && data.zone === "art" && data.becomes && (
+          <p className="bn-image-note bn-image-becomes" dir="auto">
+            Becomes: {data.becomes}
+          </p>
+        )}
         <div className="bn-node-bar bn-node-bar-top">
           {type === "image" && data.zone === "art" && <ArtChip />}
           {type === "image" && data.kind === "build" && (

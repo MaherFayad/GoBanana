@@ -101,7 +101,7 @@ export function buildPromptMd(m: KitModel): string {
     "",
   );
 
-  out.push("### References", "", "Do not copy, trace or embed the reference images. Use them for mood and the what to steal notes only, and link the source when you mention one.", "");
+  out.push("### References", "", "Do not copy, trace or embed the reference images. Use them for the what to steal notes and, on art references, the UI part each one becomes. Link the source when you mention one.", "");
   const listed = new Set<string>();
   for (const d of m.focus) {
     const { art, ui } = directionRefs(m, d.direction.id);

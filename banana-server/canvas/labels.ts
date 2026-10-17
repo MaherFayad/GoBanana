@@ -32,7 +32,8 @@ function baseLabel(n: CanvasFlowNode): string {
       const site = n.type === "upload" ? "your uploads" : siteName(n.data.sourceSite, n.data.sourceUrl);
       const tag = n.data.tag ? `, ${tagLabel(n.data.tag)}` : "";
       const cluster = n.data.cluster ? `, cluster ${n.data.cluster}` : "";
-      return `${what}: ${n.data.title || "Untitled"}, from ${site}${tag}${cluster}`;
+      const becomes = n.type === "image" && n.data.zone === "art" && n.data.becomes ? `, becomes ${n.data.becomes}` : "";
+      return `${what}: ${n.data.title || "Untitled"}, from ${site}${tag}${cluster}${becomes}`;
     }
     case "note": {
       const text = n.data.text.trim();

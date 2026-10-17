@@ -18,6 +18,7 @@ import {
   type NewNode,
   type PlacedNode,
 } from "@/lib/canvas/store";
+import { artTranslationMessage, clusterForAxis, MAX_BECOMES, STEAL_AXES, translationFieldsMessage, type StealAxis } from "@/lib/canvas/art";
 import type { ReferenceRecord } from "@/lib/db/types";
 import type { Zone } from "@/lib/direction-detail";
 import { MAX_CLUSTER } from "@/lib/layout";
@@ -51,13 +52,50 @@ export const MAX_BUILD_URL = 2048;
 const BUILD_GAP = 48;
 
 export const TOOL_DESCRIPTION =
-  "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
-  "Direction results go to that direction's section, art above UI. " +
-  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal, and a cluster (layout, component: nav, type...) for by_cluster.`;
+  "Place references (referenceId from search_references), Mobbin screens (imageUrl, sourceUrl), notes, swatches and sections. " +
+  "Direction results go to that direction's section. " +
+  `A reference can carry a steal note (up to ${MAX_NOTE} characters) and a cluster for by_cluster. ` +
+  `Art results need stealAxis and becomes: the UI part it turns into, up to ${MAX_BECOMES} characters.`;
 
 /** Optional cluster label on image items: what to take from it. */
 const cluster = z.string().trim().min(1).max(MAX_CLUSTER).optional();
 const CLUSTER_MESSAGE = `cluster must be 1 to ${MAX_CLUSTER} characters, for example "layout", "component: nav" or "color".`;
+
+/** What to take from an image item, and the UI part it turns into. Required on art results. */
+const stealAxis = z.enum(STEAL_AXES).optional();
+const becomes = z.string().trim().min(1).max(MAX_BECOMES).optional();
+
+/**
+ * Items whose stealAxis or becomes is present but not valid. Those fields are taken out before
+ * parsing so one bad item does not fail the whole call; the item itself is refused later with a
+ * plain message (art items need both fields, UI items may leave them out).
+ */
+function translationProblems(raw: unknown): { raw: unknown; bad: Set<number> } {
+  const bad = new Set<number>();
+  const items = (raw as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) return { raw, bad };
+  const cleaned = items.map((it, i) => {
+    if (!it || typeof it !== "object") return it;
+    const o = it as Record<string, unknown>;
+    const axisBad = o.stealAxis !== undefined && !stealAxis.safeParse(o.stealAxis).success;
+    const becomesBad = o.becomes !== undefined && !becomes.safeParse(o.becomes).success;
+    if (!axisBad && !becomesBad) return it;
+    bad.add(i);
+    const { stealAxis: _a, becomes: _b, ...rest } = o;
+    return rest;
+  });
+  return { raw: { ...(raw as object), items: cleaned }, bad };
+}
+
+/** True when a refusal already names its item ("Item 3 is art: ..."). */
+function ownsItem(index: number, reason: string): boolean {
+  return reason.startsWith(`Item ${index + 1} `) || reason.startsWith(`Item ${index + 1}:`);
+}
+
+/** One line for a refused item: its own message when it names the item, else "Item N: reason". */
+function skipLine(index: number, reason: string): string {
+  return ownsItem(index, reason) ? reason : `Item ${index + 1}: ${reason}`;
+}
 
 /** A plain message when an item's cluster is empty or too long, else null. */
 function clusterProblem(raw: unknown): string | null {
@@ -78,6 +116,8 @@ const item = z.discriminatedUnion("type", [
     referenceId: z.string().min(1).max(100),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     cluster,
+    stealAxis,
+    becomes,
   }),
   z.object({
     type: z.literal("screen"),
@@ -90,6 +130,8 @@ const item = z.discriminatedUnion("type", [
     directionId: z.string().min(1).max(100).optional(),
     screenId: z.string().trim().min(1).max(100).optional(),
     cluster,
+    stealAxis,
+    becomes,
   }),
   z.object({
     type: z.literal("build"),
@@ -99,6 +141,8 @@ const item = z.discriminatedUnion("type", [
     title: z.string().trim().min(1).max(200).optional(),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     cluster,
+    stealAxis,
+    becomes,
   }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
   z.object({
@@ -129,7 +173,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note?, cluster? } (note up to ${MAX_NOTE} characters, cluster up to ${MAX_CLUSTER}), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId?, cluster? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note?, cluster? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note?, cluster?, stealAxis?, becomes? } (note up to ${MAX_NOTE} characters, cluster up to ${MAX_CLUSTER}; an art result needs stealAxis, one of ${STEAL_AXES.join(", ")}, and becomes, the UI part it turns into, up to ${MAX_BECOMES}), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId?, cluster? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note?, cluster? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -184,8 +228,10 @@ function referenceNode(ref: {
   title?: string | null;
   width?: number | null;
   height?: number | null;
-}, extra: { note?: string; zone: Zone; cluster?: string }): NewNode {
+}, extra: { note?: string; zone: Zone; cluster?: string; stealAxis?: StealAxis; becomes?: string }): NewNode {
   const size = referenceSize(ref.width, ref.height);
+  // Art lands in the row of what it informs: an explicit cluster wins, else the steal axis picks it.
+  const cluster = extra.cluster ?? (extra.zone === "art" && extra.stealAxis ? clusterForAxis(extra.stealAxis) : undefined);
   return {
     type: "image",
     w: size.w,
@@ -199,7 +245,9 @@ function referenceNode(ref: {
       note: extra.note ?? null,
       tag: null,
       ...(extra.zone === "art" ? { zone: "art" as const } : {}),
-      ...(extra.cluster ? { cluster: extra.cluster } : {}),
+      ...(cluster ? { cluster } : {}),
+      ...(extra.stealAxis ? { stealAxis: extra.stealAxis } : {}),
+      ...(extra.becomes ? { becomes: extra.becomes } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },
@@ -210,7 +258,7 @@ function text(out: AddToCanvasOutput, title: string): string {
   const lines = [`Added ${out.items.length} item${out.items.length === 1 ? "" : "s"} to "${title}".${out.updated?.length ? ` Refreshed ${out.updated.length}.` : ""}`];
   for (const it of out.items) lines.push(`- ${it.type} ${it.id} at (${it.x}, ${it.y})${it.sectionId ? ` in section ${it.sectionId}` : ""}`);
   for (const u of out.updated ?? []) lines.push(`- refreshed the image of ${u.type} ${u.id} in place`);
-  for (const s of out.skipped) lines.push(`Skipped item ${s.index + 1}: ${s.reason}`);
+  for (const s of out.skipped) lines.push(ownsItem(s.index, s.reason) ? `${s.reason} Not placed.` : `Skipped item ${s.index + 1}: ${s.reason}`);
   lines.push(`Web link: ${out.webUrl}`);
   return lines.join("\n");
 }
@@ -220,7 +268,8 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
     const badCluster = clusterProblem(raw);
     if (badCluster) return toolMessage(badCluster);
-    const parsed = parseArgs(inputSchema, raw, MESSAGES, MESSAGES.items!);
+    const translation = translationProblems(raw);
+    const parsed = parseArgs(inputSchema, translation.raw, MESSAGES, MESSAGES.items!);
     if (!parsed.ok) return toolMessage(parsed.message);
     const input = parsed.data;
     if (!plausibleId(input.canvasId)) return toolMessage(CANVAS_NOT_FOUND);
@@ -243,7 +292,14 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
           return { error: "That section was not found on this canvas. Call get_canvas to see section ids." };
         }
         const tray = new Map(state.tray.map((r) => [r.id, r]));
-        const prepared: Prepared[] = input.items.map((it) => {
+        const prepared: Prepared[] = input.items.map((it, index) => {
+          // Optional on UI items, but a bad value is refused rather than dropped.
+          const translated = (zone: Zone): { stealAxis?: StealAxis; becomes?: string } | { skip: string } => {
+            if (it.type !== "reference" && it.type !== "screen" && it.type !== "build") return {};
+            if (zone === "art" && (translation.bad.has(index) || !it.stealAxis || !it.becomes)) return { skip: artTranslationMessage(index + 1) };
+            if (translation.bad.has(index)) return { skip: translationFieldsMessage(index + 1) };
+            return { ...(it.stealAxis ? { stealAxis: it.stealAxis } : {}), ...(it.becomes ? { becomes: it.becomes } : {}) };
+          };
           switch (it.type) {
             case "reference": {
               const row = saved.get(it.referenceId);
@@ -251,10 +307,12 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const ref = row ?? fromTray;
               if (!ref) return { skip: `reference ${it.referenceId} was not found for this canvas. Search with this canvasId first.` };
               if (matcher.isReferenceBlocked(ref)) return { skip: `reference ${it.referenceId} was removed after a takedown request.` };
-              // Zone: the tray's tag from the search, else the saved row's lane ("art" lane is art direction).
-              const zone = fromTray?.zone ?? (row?.lane === "art" ? "art" : "ui");
+              // Zone: the tray's tag from the search, else the saved row's lane (any "art" or "art:<rung>" lane is art direction).
+              const zone = fromTray?.zone ?? ((row?.lane ?? "").startsWith("art") ? "art" : "ui");
+              const art = translated(zone);
+              if ("skip" in art) return art;
               return {
-                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) }),
+                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}), ...art }),
                 ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
               };
             }
@@ -262,10 +320,12 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const check = checkMobbinScreen(it.sourceUrl, it.imageUrl);
               if (!check.ok) return { skip: check.reason };
               if (matcher.isReferenceBlocked(it)) return { skip: "that screen was removed after a takedown request." };
+              const extra = translated("ui");
+              if ("skip" in extra) return extra;
               const title = it.app && it.title ? `${it.app}: ${it.title}` : (it.title ?? it.app ?? "Mobbin screen");
               const node = referenceNode(
                 { imageUrl: it.imageUrl, sourceUrl: it.sourceUrl, sourceSite: MOBBIN_SITE, title },
-                { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) },
+                { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}), ...extra },
               );
               if (node.type === "image") Object.assign(node.data, { placedAt, ...(it.screenId ? { mobbinId: it.screenId } : {}) });
               // The same screen already on the board: refresh its image link in place (Mobbin links expire).
@@ -292,7 +352,9 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               }
               const ref = { imageUrl: image.toString(), sourceUrl: link.toString() };
               if (matcher.isReferenceBlocked(ref)) return { skip: "that link was removed after a takedown request." };
-              const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) });
+              const extra = translated("ui");
+              if ("skip" in extra) return extra;
+              const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}), ...extra });
               if (node.type === "image") Object.assign(node.data, { kind: "build" as const, stitchId: it.stitchId, placedAt });
               return { node, stitchId: it.stitchId };
             }
@@ -325,6 +387,8 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
                 ...(fresh.mobbinId ? { mobbinId: fresh.mobbinId } : {}),
                 ...(fresh.note ? { note: fresh.note } : {}),
                 ...(fresh.cluster ? { cluster: fresh.cluster } : {}),
+                ...(fresh.stealAxis ? { stealAxis: fresh.stealAxis } : {}),
+                ...(fresh.becomes ? { becomes: fresh.becomes } : {}),
               };
               const abs = absolute(base.nodes, n);
               updated.push({ id: n.id, type: n.type, x: abs.x, y: abs.y, sectionId: n.parentId ?? null, ...imageOut({ ...n, data }) });
@@ -334,7 +398,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
         }
         const builds = prepared.flatMap((p) => ("node" in p && p.stitchId ? [p] : []));
         const nodes = prepared.flatMap((p) => ("node" in p && !p.refresh && !p.stitchId ? [p] : []));
-        if (nodes.length === 0 && builds.length === 0 && updated.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? `Item ${i + 1}: ${p.skip}` : "")).filter(Boolean).join("\n") };
+        if (nodes.length === 0 && builds.length === 0 && updated.length === 0) return { error: prepared.map((p, i) => ("skip" in p ? skipLine(i, p.skip) : "")).filter(Boolean).join("\n") };
 
         // References found for a saved direction land in that direction's section,
         // which is created on first use (spec section 11: a direction becomes a section).

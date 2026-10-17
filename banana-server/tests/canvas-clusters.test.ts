@@ -49,7 +49,7 @@ describe("add_to_canvas cluster", () => {
         canvasId: s.canvasId,
         items: [
           { type: "reference", referenceId: ref(1).id, note: "steal: the grid", cluster: "  layout  " },
-          { type: "reference", referenceId: ref(2).id, cluster: "art" },
+          { type: "reference", referenceId: ref(2).id, cluster: "art", stealAxis: "pattern", becomes: "the divider pattern" },
           { type: "reference", referenceId: ref(3).id },
           {
             type: "screen",

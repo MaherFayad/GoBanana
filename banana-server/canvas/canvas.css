@@ -903,6 +903,17 @@
   font-size: var(--st-text-s);
 }
 
+/* "Becomes: ..." on art tiles: same look as the note, one block under it. */
+.bn-image-note:has(+ .bn-image-becomes) {
+  padding-block-end: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.bn-image-becomes {
+  max-block-size: 25%;
+}
+
 .bn-image > .st-input {
   flex: none;
   min-block-size: 72px;

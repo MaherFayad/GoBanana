@@ -27,6 +27,7 @@ import {
   type Zone,
 } from "../direction-detail";
 import { parseReconciled } from "../db/detail";
+import { isStealAxis, MAX_BECOMES, type StealAxis } from "../canvas/art";
 import fontsData from "../kit/fonts.json";
 import { voiceFonts, voiceFontsUrl, type VoiceFonts } from "../kit/voice-fonts";
 import { EXPORT_PLATFORMS, platformOf, type ExportPlatform } from "./platform";
@@ -148,6 +149,9 @@ export interface Reference {
   /** Direction of the section the reference sits in, if any. */
   directionId: string | null;
   zone: Zone;
+  /** Art translation (V4.3): what to take and the UI part it becomes. Missing on older boards. */
+  stealAxis?: StealAxis;
+  becomes?: string;
 }
 
 export interface ResolvedSection {
@@ -312,6 +316,8 @@ function buildReferences(sections: ResolvedSection[], unsorted: CanvasItem[]): R
       sectionId: sectionOf.get(item.id) ?? null,
       directionId: directionOf.get(item.id) ?? null,
       zone: zoneOf((item as WithZone).zone),
+      ...(isStealAxis(item.stealAxis) ? { stealAxis: item.stealAxis } : {}),
+      ...(oneLine(item.becomes, MAX_BECOMES) ? { becomes: oneLine(item.becomes, MAX_BECOMES) } : {}),
     });
   }
   return out;

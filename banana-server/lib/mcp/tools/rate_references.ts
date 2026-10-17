@@ -14,7 +14,7 @@ import { authExtra } from "@/lib/auth";
 import { loadCanvas, mutateCanvas } from "@/lib/canvas/store";
 import type { NewFeedback, ReferenceRecord } from "@/lib/db/types";
 import { parseCreator } from "@/lib/learning/creator";
-import { badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, type FeedbackReason } from "@/lib/learning/hints";
+import { ART_ONLY_REASONS, badHint, FEEDBACK_REASONS, FEEDBACK_VERDICTS, isArtOnlyReason, type FeedbackReason } from "@/lib/learning/hints";
 import { itemKey } from "@/lib/sources/web-search";
 import { LANE_NAMES, type LaneName } from "@/lib/sources/types";
 import {
@@ -35,7 +35,7 @@ export const TOOL_DESCRIPTION =
   "Rate search results so later searches get better. Free. " +
   'Pass referenceIds from search_references with verdict "bad" (off topic, shop or stock, cluttered, duplicate) or "great" (standouts only). ' +
   "Bad results leave the canvas tray and never come back in this user's searches. " +
-  "Rate art direction results the same way (shop or off idea is bad). " +
+  "Rate art direction results the same way (shop or off idea is bad); art only bad reasons: object_only (an object photo, no graphic system) and no_translation (nothing maps to a UI part). " +
   "Each bad rating returns a hint for re-searching its lane. " +
   "Rate from the thumbnails search_references returned, never from the titles alone.";
 
@@ -99,6 +99,12 @@ function text(out: RateReferencesOutput): string {
 
 const NOTHING_TO_REMOVE = "nothing to remove";
 
+/** Plain refusal when art only reasons are given for UI results. Nothing is saved. */
+export function artOnlyMessage(ids: readonly string[]): string {
+  const which = ids.length === 1 ? `${ids[0]} is a UI result` : `${ids.join(", ")} are UI results`;
+  return `${ART_ONLY_REASONS.join(" and ")} are for art direction results only, and ${which}. Use another reason, such as off_topic or not_ui. Nothing was saved.`;
+}
+
 export function createRateReferencesTool(deps: CanvasToolDeps) {
   return async function rateReferences(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage(NOT_SIGNED_IN);
@@ -119,6 +125,19 @@ export function createRateReferencesTool(deps: CanvasToolDeps) {
         found = await deps.repos.references.getByIds(input.canvasId, ids);
       } else {
         found = await deps.repos.references.findOwned(userId, ids);
+      }
+
+      // Art only reasons: refuse the call when any is given for a UI result (lane, tray or board zone).
+      const artOnly = ids.filter((id) => found.has(id) && (byId.get(id)!.reasons ?? []).some(isArtOnlyReason) && !(found.get(id)!.lane ?? "").startsWith("art"));
+      if (artOnly.length > 0) {
+        const artKeys = new Set<string>();
+        if (input.canvasId) {
+          const loaded = await loadCanvas(deps.repos, userId, input.canvasId, takedownLoader(deps));
+          for (const t of loaded?.state.tray ?? []) if (t.zone === "art") artKeys.add(itemKey(t.sourceUrl));
+          for (const n of loaded?.state.nodes ?? []) if (n.type === "image" && n.data.zone === "art") artKeys.add(itemKey(n.data.sourceUrl));
+        }
+        const ui = artOnly.filter((id) => !artKeys.has(itemKey(found.get(id)!.sourceUrl)));
+        if (ui.length > 0) return toolMessage(artOnlyMessage(ui));
       }
 
       const rows: NewFeedback[] = [];

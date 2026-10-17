@@ -34,7 +34,10 @@ export function statusText(d: DirectionSummary): string {
 export function refLine(r: Reference): string {
   const link = r.url ? mdAutolink(r.url) : `source link not usable (${mdText(r.rawUrl) || "missing"})`;
   const steal = r.note ? ` What to steal: ${mdText(r.note, 300)}` : "";
-  return `- ${mdText(r.title)} (${mdText(r.site)}): ${link}${steal}`;
+  // Art translation: the UI part the image turns into, and what to take from it.
+  const parts = [...(r.stealAxis ? [`take its ${r.stealAxis}`] : []), ...(r.becomes ? [`becomes: ${mdText(r.becomes, 80)}`] : [])];
+  const becomes = parts.length > 0 ? `${steal && !/[.!?]$/.test(steal) ? ";" : ""} ${parts.join("; ")}` : "";
+  return `- ${mdText(r.title)} (${mdText(r.site)}): ${link}${steal}${becomes}`;
 }
 
 /** Numbered sources for the references this kit is about. */

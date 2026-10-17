@@ -145,7 +145,7 @@ describe("add_to_canvas notes and zones", () => {
         canvasId: s.canvasId,
         items: [
           { type: "reference", referenceId: ref(1).id, note: "steal: the date stamp https://example.com/x." },
-          { type: "reference", referenceId: ref(2).id, note: "steal: ink texture" },
+          { type: "reference", referenceId: ref(2).id, note: "steal: ink texture", stealAxis: "texture", becomes: "ink grain on the ticket card" },
           { type: "reference", referenceId: ref(3).id },
         ],
       },
@@ -172,7 +172,7 @@ describe("add_to_canvas notes and zones", () => {
     const sec = sectionNode("sec_1", { directionId: "bd-a", title: "Stamped" });
     const ui = imageNode("img_ui", 5, { parentId: "sec_1", x: 16, y: SECTION_HEADER });
     const s = await setup([{ ...artRef(6), directionId: "bd-a" }], [sec, ui]);
-    await s.add({ canvasId: s.canvasId, items: [{ type: "reference", referenceId: ref(6).id }] }, ALICE);
+    await s.add({ canvasId: s.canvasId, items: [{ type: "reference", referenceId: ref(6).id, stealAxis: "notation", becomes: "the date stamp as a divider" }] }, ALICE);
     const saved = parseState((await s.repos.canvases.getOwned(ALICE, s.canvasId))!.state);
     const moved = saved.nodes.find((n) => n.id === "img_ui")!;
     const art = saved.nodes.find((n) => n.type === "image" && n.id !== "img_ui")!;
@@ -183,7 +183,7 @@ describe("add_to_canvas notes and zones", () => {
   it("takes the zone from the saved search row when the tray no longer has it", async () => {
     const s = await setup([]);
     await s.repos.references.insertMany(s.canvasId, [{ ...ref(7), lane: "art" as never }]);
-    await s.add({ canvasId: s.canvasId, items: [{ type: "reference", referenceId: ref(7).id }] }, ALICE);
+    await s.add({ canvasId: s.canvasId, items: [{ type: "reference", referenceId: ref(7).id, stealAxis: "pattern", becomes: "the row separator" }] }, ALICE);
     const saved = parseState((await s.repos.canvases.getOwned(ALICE, s.canvasId))!.state);
     const n = saved.nodes.find((x) => x.type === "image")!;
     expect(n.type === "image" && n.data.zone).toBe("art");

@@ -14,6 +14,7 @@ import type { Zone } from "@/lib/direction-detail";
 import { cleanStitchData, parseParts, pruneStitch } from "@/lib/stitch/parse";
 import type { Part } from "@/lib/stitch/types";
 import { MAX_CLUSTER } from "@/lib/layout";
+import { cleanBecomes, isStealAxis } from "@/lib/canvas/art";
 import { cleanTaste } from "@/lib/taste";
 import {
   type CanvasFlowNode,
@@ -118,6 +119,8 @@ function referenceData(d: Record<string, unknown>): ImageNodeData | null {
     tag: isTag(d.tag) ? d.tag : null,
     zone: isZone(d.zone) ? d.zone : undefined,
     cluster: str(d.cluster, MAX_CLUSTER),
+    stealAxis: isStealAxis(d.stealAxis) ? d.stealAxis : undefined,
+    becomes: cleanBecomes(d.becomes) ?? undefined,
     mobbinId: str(d.mobbinId, 100),
     placedAt: typeof d.placedAt === "string" && Number.isFinite(Date.parse(d.placedAt)) ? d.placedAt.slice(0, 40) : undefined,
     kind: d.kind === "build" ? ("build" as const) : undefined,

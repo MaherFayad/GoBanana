@@ -8,6 +8,7 @@
  */
 import type { DirectionDetail, Zone } from "@/lib/direction-detail";
 import type { Crop, Part, PartRole, PartTheme, StitchMode, StitchPlatform } from "@/lib/stitch/types";
+import type { StealAxis } from "./art";
 
 export type { DirectionDetail, Zone } from "@/lib/direction-detail";
 
@@ -72,6 +73,13 @@ export interface ImageItem extends ItemBase {
    * each cluster its own labelled row. Missing means "Other".
    */
   cluster?: string;
+  /**
+   * Art translation (V4.3): what to take from the image. Required on art items placed by
+   * add_to_canvas since V4.3, optional on UI items. Missing on older boards.
+   */
+  stealAxis?: StealAxis;
+  /** The UI part the image turns into, 1 to 80 characters ("the approval gate: one strip per agent"). */
+  becomes?: string;
   /** Mobbin screen id from the user's Mobbin connector (screens only), so a refresh finds the same tile. */
   mobbinId?: string;
   /** When the image link was placed or last refreshed (ISO date). Mobbin image links expire after about 30 days. */
