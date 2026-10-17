@@ -22,9 +22,9 @@ import { IngredientCardSchema, type IngredientCard } from "../schema.ts";
 import { SYSTEM as J3_SYSTEM, canonicalFont, check } from "./j3-cards.ts";
 import type { CardAudit } from "./r1-audit.ts";
 
-type Input = { card: IngredientCard; audit: CardAudit };
+export type Input = { card: IngredientCard; audit: CardAudit };
 
-const SYSTEM = `${J3_SYSTEM}
+export const SYSTEM = `${J3_SYSTEM}
 
 Rewrite requests: a critic flagged an existing card. You get the card, the critic's problems and the fix it asks for. Write the whole card again so every problem is gone, keeping what was good. Keep the same word and the same kind and family. Keep the name unless the critic says the name itself is loose or wrong (a tradition named only as "Islamic art"), then name it exactly. When the card cannot be made respectful or accurate (it rests on sacred text, a flag or a fact you cannot stand behind), turn it into the nearest sound card on the same word, for example the craft's construction grammar instead of its sacred content, and say so in culturalNotes. Reply with {"cards": [the one card], "dropped": []}.`;
 
@@ -40,7 +40,7 @@ const KEEP_GULF = new Set(["square-kufic-lettering"]);
 /** Request ids stay unique and within 64 characters. */
 const requestId = (cardId: string) => `rw-${cardId}`.slice(0, 64);
 
-function prepare(raw: unknown, input: Input, ctx: { fonts: () => FontIndex }): unknown {
+export function prepare(raw: unknown, input: Input, ctx: { fonts: () => FontIndex }): unknown {
   if (!raw || typeof raw !== "object") return raw;
   const r = { ...(raw as Record<string, unknown>) };
   delete r.word;

@@ -10,6 +10,8 @@
  *   npx tsx run.ts r1-audit --from-raw          (card-audit: the critic's flags on J3 cards, build only)
  *   npx tsx run.ts r1-gulf-audit --from-raw     (card-audit-gulf: fact check of the new cards, build only)
  *   npx tsx run.ts r1-rewrite --from-raw        (cards: flagged cards rewritten, same ids and families)
+ *   npx tsx run.ts r1-recheck --from-raw        (card-audit-recheck: the critic rereads the rewrites, build only)
+ *   npx tsx run.ts r1-rewrite2 --from-raw       (cards: the rewrites still flagged, rewritten once more)
  *   npx tsx run.ts j4-fit --from-raw, j4-elements --from-raw, j4b-page-fit --from-raw  (J3 cards only)
  *   npx tsx run.ts r1-gulf-fit --from-raw       (fit: the new cards on every domain)
  *   npx tsx run.ts r1-lines --from-raw          (card-elements: lines for new and rewritten cards)
