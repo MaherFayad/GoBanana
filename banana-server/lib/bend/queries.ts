@@ -647,3 +647,84 @@ export function laneTexts(
   if (picked.art.length > 0) lanes.artGalleries = picked.art;
   return lanes;
 }
+
+// ---------------------------------------------------------------------------
+// Sweep (search_references with sweep): the space around one page, before directions exist
+
+/** Page words a sweep's lanes are built from: the page read as a brief and worded for the platform. */
+export type SweepWords = {
+  /** "app ui", "ipad app ui", "website ui" or "dashboard ui". */
+  surface: string;
+  /** Core domain noun ("flight"), or "". */
+  core: string;
+  /** The page noun the words name ("checkout"), or "". */
+  page: string;
+  /** "{domain} {page} {surface}" ("flight checkout app ui"), as the fidelity lane words it. */
+  fidelity: string;
+  /** Fidelity with the domain cut to its core noun, when different (the niche fallback). */
+  fidelityCore?: string;
+  /** The page as a brief ("flight checkout screen"), for the taste and locale wording. */
+  brief: string;
+};
+
+/** Words a sweep phrase loses: UI and surface words the lanes add back in their own form. */
+const SWEEP_UI_WORDS = /\b(app ui|ui design|website ui|dashboard ui|ui ux|ui|ux|app|apps|screen|screens|design)\b/gi;
+
+/** A sweep phrase as plain words: no site operators, negatives or UI words, at most 4 words. */
+export function sweepPhrase(raw: string): string {
+  const plain = raw
+    .toLowerCase()
+    .replace(/-?\bsite:\S+/gi, " ")
+    .replace(/(^|\s)-\S+/g, " ")
+    .replace(SWEEP_UI_WORDS, " ")
+    .replace(/[^\p{L}\p{N}\s'’-]+/gu, " ");
+  return words(plain)
+    .slice(0, 4)
+    .join(" ");
+}
+
+/** The page's sweep words for a platform ("flight checkout" on mobile: "flight checkout app ui"). */
+export function sweepWords(page: string, platform: Platform): SweepWords {
+  const brief = `${sweepPhrase(page) || page} screen`;
+  const p = briefParts(brief, platform);
+  const fidelity = fidelityQuery(brief, platform);
+  const core = fidelityCoreQuery(brief, platform);
+  return {
+    surface: SURFACE_WORDS[p.surface],
+    core: coreNoun(p.domain) ?? "",
+    page: briefPage(p),
+    fidelity,
+    ...(core && core !== fidelity ? { fidelityCore: core } : {}),
+    brief,
+  };
+}
+
+/**
+ * A sweep component lane: "{core} {page} {component} {surface}" within the word cap, like the
+ * component lanes of a direction ("flight checkout fare summary app ui"); its fallback is the
+ * component alone on the surface ("fare summary app ui"). Null when the phrase has no words.
+ */
+export function sweepComponentQuery(w: SweepWords, component: string): { query: string; fallback?: string } | null {
+  const c = sweepPhrase(component);
+  if (!c) return null;
+  const pg = w.page && !c.split(" ").includes(w.page) ? w.page : "";
+  const core = w.core && !c.split(" ").includes(w.core) ? w.core : "";
+  const options = [`${core} ${pg} ${c} ${w.surface}`, `${core} ${c} ${w.surface}`, `${c} ${w.surface}`];
+  const query = capWords(options.find((o) => words(o).length <= MAX_FOCUSED_QUERY_WORDS) ?? options.at(-1)!);
+  const fallback = capWords(`${c} ${w.surface}`);
+  return { query, ...(fallback !== query ? { fallback } : {}) };
+}
+
+/**
+ * A sweep adjacent lane: the same job in another industry on the surface ("concert ticketing app
+ * ui"); its fallback is the phrase's core noun ("ticketing app ui"), the niche ladder. Null when
+ * the phrase has no words.
+ */
+export function sweepAdjacentQuery(w: SweepWords, phrase: string): { query: string; fallback?: string } | null {
+  const a = sweepPhrase(phrase);
+  if (!a) return null;
+  const query = capWords(`${a} ${w.surface}`);
+  const ws = a.split(" ");
+  const fallback = ws.length > 1 ? capWords(`${coreNoun(ws)} ${w.surface}`) : undefined;
+  return { query, ...(fallback && fallback !== query ? { fallback } : {}) };
+}

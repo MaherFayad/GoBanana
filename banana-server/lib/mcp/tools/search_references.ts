@@ -10,7 +10,8 @@ import { authExtra } from "@/lib/auth";
 import { addToTray as addToCanvasTray, canvasSourceUrls, mutateCanvas, parseState } from "@/lib/canvas/store";
 import type { ArmStatRow, Repos, SavedReference } from "@/lib/db/types";
 import { checkSearchQuota, type Plan, type UsageStore } from "@/lib/quota";
-import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts } from "@/lib/bend/queries";
+import { directionTasteVariants, inspirationFromQuery, isArabicBrief, laneTexts, pickStyle } from "@/lib/bend/queries";
+import { detectPlatform } from "@/lib/platform";
 import type { DirectionDetail } from "@/lib/direction-detail";
 import {
   agentArm,
@@ -27,12 +28,14 @@ import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
 import { ART_SITES, artQuota, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
+import { planSweep, type SweepTexts } from "@/lib/sources/sweep";
 import {
   DEFAULT_SOURCES,
   LANE_NAMES,
   MIXES,
   SOURCE_SITES,
   ZONE_INPUTS,
+  isLaneName,
   sourceZoneOk,
   type LaneName,
   type Mix,
@@ -43,10 +46,12 @@ import {
 } from "@/lib/sources/types";
 import { cleanTaste } from "@/lib/taste";
 import {
+  DEEP_COUNT,
   SERPER_MAX_REQUESTS,
   capByCreator,
   countNote,
   createWebSearchAdapter,
+  itemKey,
   sumWhy,
   type DropWhy,
   type WebSearchAdapter,
@@ -67,18 +72,23 @@ export const TOOL_DESCRIPTION =
   "Show both, but place art results in the art row of the direction, never among the UI references. " +
   "UI is the main grid of a board: per direction place 6 to 8 UI references and only 2 to 4 art items; when fewer than 6 UI results are good, search a UI lane again with better words before placing. " +
   "Every result links to its source: always show the source link next to the image. " +
-  "Pass a directionId from bend_brief, or a query. zone picks ui, art or both (default both for a directionId, ui for a query). " +
+  "Pass a directionId from bend_brief, or a query. count is 4 to 40 (default 12). " +
+  "Sweep first, before directions: sweep true with canvasId, query (the page), up to 3 components and up to 3 adjacent (the same job in other industries); then one search per direction. " +
+  "zone picks ui, art or both (default both for a directionId, ui for a query). " +
   "Pass canvasId to add the results to that canvas tray. " +
   "Pass taste with a few style words for the look the user likes, such as minimal, glassmorphism, dark mode, big typography; it is saved on the canvas. " +
   "To redo one lane with better words, pass directionId, lane and query (lane art takes raw words, no UI words). " +
   "Rate results with rate_references so later searches improve. mix is ignored. " +
   "The result carries a small thumbnail of up to 12 results (thumbs: false to skip): rate and note from the thumbnails, not the titles.";
 
+/** Most results one call returns. Above DEEP_COUNT the search pages deeper on its strongest lanes. */
+export const MAX_COUNT = 40;
+
 export const inputSchema = z.object({
   directionId: z.string().min(1).max(100).optional(),
   query: z.string().trim().min(1).max(300).optional(),
   sources: z.array(z.enum(SOURCE_SITES)).min(1).max(4).optional(),
-  count: z.number().int().min(4).max(24).default(12),
+  count: z.number().int().min(4).max(MAX_COUNT).default(12),
   canvasId: z.string().min(1).max(100).optional(),
   taste: tasteInputSchema.optional(),
   lane: z
@@ -91,6 +101,20 @@ export const inputSchema = z.object({
     .describe('"ui" for UI references, "art" for art direction (the wild idea as images), "both" (default for a directionId; a query defaults to "ui").'),
   mix: z.enum(MIXES).optional().describe("Ignored. Kept so older calls still work."),
   thumbs: z.boolean().optional().describe("Show a small thumbnail of each result (up to 12). Default true."),
+  sweep: z
+    .boolean()
+    .optional()
+    .describe("Look at the space before directions: needs canvasId and query (the page or screen); not with directionId or lane."),
+  components: z
+    .array(z.string().trim().min(1).max(60))
+    .max(3)
+    .optional()
+    .describe('Sweep only: 0 to 3 short component nouns, for example ["fare summary", "seat map"].'),
+  adjacent: z
+    .array(z.string().trim().min(1).max(60))
+    .max(3)
+    .optional()
+    .describe('Sweep only: 0 to 3 phrases naming the same job in other industries, for example ["queue management"].'),
 });
 
 export type SearchReferencesInput = z.input<typeof inputSchema>;
@@ -136,6 +160,8 @@ export type SearchReferencesDeps = {
    * to skip repeats, so two directions on one canvas never show the same references.
    */
   getCanvasSourceUrls?(userId: string, canvasId: string): Promise<string[]>;
+  /** The user's canvas brief and saved taste, for a sweep; null when the canvas is not theirs. */
+  getCanvasInfo?(userId: string, canvasId: string): Promise<{ brief: string | null; taste: readonly string[] | null } | null>;
   /**
    * What the user taught search with rate_references: blocked item keys (never shown again) and
    * their ratings of results with a known creator. A failure fails the search (blocked stays blocked).
@@ -161,6 +187,8 @@ export type SearchReferencesOutput = {
   learned?: boolean;
   /** Lane-only re-search: the lane that was searched. */
   lane?: LaneName;
+  /** Sweep only: the plain words of each sweep lane. */
+  sweep?: SweepTexts;
   /** Zones this search filled ("both", "ui" or "art"). */
   zone: ZoneInput;
   /** Results per zone. */
@@ -209,7 +237,7 @@ function resultText(out: SearchReferencesOutput): string {
     if (drops) lines.push(drops);
     return lines.join("\n");
   }
-  const searched = out.lane ? `the ${out.lane} lane "${out.query}"` : `"${out.query}"`;
+  const searched = out.lane ? `the ${out.lane} lane "${out.query}"` : out.sweep ? `the sweep of "${out.query}"` : `"${out.query}"`;
   lines.push(`Found ${out.zones.ui} UI references and ${out.zones.art} art direction references for ${searched}. Show each source link with its image.`);
   let n = 0;
   const list = (zone: Zone, heading: string) => {
@@ -223,7 +251,9 @@ function resultText(out: SearchReferencesOutput): string {
   };
   list("ui", "UI references:");
   list("art", "Art direction (place these in the art row, not with the UI references):");
-  if (out.zones.art > 0 || out.zones.ui > 0) {
+  if (out.sweep) {
+    lines.push("This is the space before directions: ground the direction candidates in it, then search once per kept direction.");
+  } else if (out.zones.art > 0 || out.zones.ui > 0) {
     lines.push(
       out.zones.ui < 6
         ? `Place 6 to 8 UI references per direction and at most 4 art items. Only ${out.zones.ui} UI came back: search a UI lane (fidelity, component or hero) with other words first, so art does not outnumber UI.`
@@ -304,6 +334,22 @@ export function laneTermKeys(lanes: LaneTexts): Partial<Record<LaneName, string>
   return out;
 }
 
+/** Requests the art zone of a plain query may send. */
+const ART_PLAIN_REQUESTS = 2;
+
+/** Item keys (shot id, pin id, else the normalized URL) of source links already on a canvas; bad URLs are skipped. */
+export function canvasKeys(urls: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const url of urls) {
+    try {
+      out.push(itemKey(url));
+    } catch {
+      // not a URL: nothing to match
+    }
+  }
+  return out;
+}
+
 /** UTC day, so arm picks stay put for a user and term within a day. */
 const day = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -357,10 +403,19 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
     const parsed = inputSchema.safeParse(rawInput);
     if (!parsed.success) {
       return toolMessage(
-        `Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to 24, at most 5 short taste words, zone as ui, art or both, at most 4 sources, and lane as one of ${LANE_NAMES.join(", ")}.`,
+        `Check the input: pass a directionId or a query (at most 300 characters), a count from 4 to ${MAX_COUNT}, at most 5 short taste words, zone as ui, art or both, at most 4 sources, lane as one of ${LANE_NAMES.join(", ")}, and at most 3 components and 3 adjacent phrases.`,
       );
     }
     const input = parsed.data;
+    if (input.sweep) {
+      if (input.directionId || input.lane) {
+        return toolMessage("A sweep looks at the space before directions: pass canvasId and query (the page), without directionId or lane.");
+      }
+      if (!input.canvasId) return toolMessage("A sweep needs a canvasId: pass the canvas the sweep is for, and query (the page).");
+      if (!input.query || !cleanQuery(input.query)) return toolMessage('A sweep needs query: the page or screen, for example "flight checkout".');
+    } else if (input.components?.length || input.adjacent?.length) {
+      return toolMessage("components and adjacent go with sweep true. Pass sweep, canvasId and query, or leave them out.");
+    }
     if (!input.directionId && !input.query) {
       return toolMessage("Pass a directionId from bend_brief or a query.");
     }
@@ -383,7 +438,27 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       let directionCanvasId: string | undefined;
       let lanes: LaneTexts | undefined;
       let variants: ArmVariants = {};
-      if (!query && input.directionId) {
+      let sweep: ReturnType<typeof planSweep> | undefined;
+      if (input.sweep) {
+        // The canvas brief sets the platform and market (Arabic adds the locale lane); its saved
+        // taste words feed the taste lane when this call gives none.
+        const info = deps.getCanvasInfo ? await deps.getCanvasInfo(userId, input.canvasId!) : { brief: null, taste: null };
+        if (!info) return toolMessage("That canvas was not found. Call open_canvas to create one, or check the canvasId.");
+        const page = cleanQuery(input.query!);
+        const brief = info.brief?.trim() || null;
+        const fromBrief = brief ? detectPlatform(brief) : "any";
+        const platform = fromBrief === "any" ? detectPlatform(page) : fromBrief;
+        const taste = inputTaste.length > 0 ? inputTaste : cleanTaste(info.taste);
+        sweep = planSweep({
+          page,
+          platform,
+          brief,
+          ...(input.components ? { components: input.components } : {}),
+          ...(input.adjacent ? { adjacent: input.adjacent } : {}),
+          ...(taste.length > 0 ? { style: pickStyle(taste, input.canvasId!) } : {}),
+        });
+        query = page;
+      } else if (!query && input.directionId) {
         const direction = await deps.getDirection(userId, input.directionId, input.canvasId);
         if (!direction) {
           return toolMessage(
@@ -440,7 +515,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       // mix is accepted for older clients and ignored: zones replace it.
       const mix: Mix = "ui";
       // Direction searches fill both zones by default; a plain query is UI unless asked.
-      const zone: ZoneInput = input.lane ? (input.lane === "art" ? "art" : "ui") : (input.zone ?? (input.directionId ? "both" : "ui"));
+      const zone: ZoneInput = sweep ? "ui" : input.lane ? (input.lane === "art" ? "art" : "ui") : (input.zone ?? (input.directionId ? "both" : "ui"));
       const artNote =
         zone !== "ui" && input.sources && !input.sources.some((s) => sourceZoneOk(s, "art"))
           ? `Art direction searches ${ART_SITES.join(" and ")} and art galleries; add one of them to sources for art results.`
@@ -448,8 +523,21 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       // What the user taught search: blocked items never come back, liked creators move up.
       const learning = deps.getUserLearning ? await deps.getUserLearning(userId) : { blocked: [], creatorRatings: [] };
       const preferCreators = preferredCreators(learning.creatorRatings);
+      // Everything already on the canvas (its tray or board, any direction) is skipped, for every
+      // search: one board never shows the same shot, pin or page twice.
+      const excludeCanvas = input.canvasId ?? directionCanvasId;
+      const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
       let searched: Searched;
-      if (lanes) {
+      if (sweep) {
+        const result = await deps.adapter.runPlan(sweep.plan, {
+          count: input.count,
+          userId,
+          exclude,
+          ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
+          ...(preferCreators.length > 0 ? { preferCreators } : {}),
+        });
+        searched = { result, queries: sweep.plan.map((r) => buildSourceQuery(r.query, r.site)) };
+      } else if (lanes) {
         const picked = input.sources ? sources : undefined;
         const termKeys = laneTermKeys(lanes);
         let plan;
@@ -466,9 +554,6 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         }
         // One path-scoped request per lane and source, at most SERPER_MAX_REQUESTS in all (fallbacks included).
         plan = plan.slice(0, SERPER_MAX_REQUESTS);
-        // Everything already on the canvas (any direction's tray or board) is skipped: cross-direction dedupe.
-        const excludeCanvas = input.canvasId ?? directionCanvasId;
-        const exclude = excludeCanvas && deps.getCanvasSourceUrls ? await deps.getCanvasSourceUrls(userId, excludeCanvas) : [];
         const result = await deps.adapter.runPlan(plan, {
           count: input.count,
           userId,
@@ -479,19 +564,23 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         const queries = plan.map((r) => buildSourceQuery(r.query, r.site));
         searched = { result, queries, lanes, arms, learned, termKeys };
       } else {
+        const excludeKeys = [...learning.blocked, ...canvasKeys(exclude)];
         const base = {
           query: query!,
           userId,
-          ...(learning.blocked.length > 0 ? { excludeKeys: learning.blocked } : {}),
+          ...(excludeKeys.length > 0 ? { excludeKeys } : {}),
           ...(preferCreators.length > 0 ? { preferCreators } : {}),
         };
         const artCount = zone === "both" ? artQuota(input.count) : input.count;
         const artSources = input.sources ? input.sources.filter((s) => sourceZoneOk(s, "art")) : [...ART_SITES];
+        const withArt = zone !== "ui" && artSources.length > 0;
+        // A large count pages deeper: the UI run may spend what the art run leaves of the 8 requests.
+        const deep = input.count > DEEP_COUNT ? { maxRequests: SERPER_MAX_REQUESTS - (withArt ? ART_PLAIN_REQUESTS : 0) } : {};
         const [ui, art] = await Promise.all([
-          zone === "art" ? undefined : deps.adapter.run({ ...base, count: input.count, sources }),
+          zone === "art" ? undefined : deps.adapter.run({ ...base, count: input.count, sources, ...deep }),
           zone === "ui" || artSources.length === 0
             ? undefined
-            : deps.adapter.run({ ...base, count: artCount, sources: artSources, zone: "art", maxRequests: 2 }),
+            : deps.adapter.run({ ...base, count: artCount, sources: artSources, zone: "art", maxRequests: ART_PLAIN_REQUESTS }),
         ]);
         const uiRefs = ui?.references ?? [];
         const artRefs = art?.references ?? [];
@@ -527,6 +616,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       };
       const out: SearchReferencesOutput = {
         query: input.lane ? queryWords(laneUiWords!) : lanes ? lanes.idea : query!,
+        ...(sweep ? { sweep: sweep.texts } : {}),
         queries: searched.queries,
         sources,
         references,
@@ -554,7 +644,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         out.canvasId = input.canvasId;
         // Saved with how they were found (zone included), so rate_references can credit the lane wording.
         const saved: SavedReference[] = references.map((r) => {
-          const lane = r.lane;
+          const lane = isLaneName(r.lane) ? r.lane : undefined;
           const tk = lane ? searched.termKeys?.[lane] : undefined;
           const arm = lane ? searched.arms?.[lane] ?? defaultArm(lane) : undefined;
           return {
@@ -638,6 +728,10 @@ export function createDbDeps(repos: Repos | (() => Repos), appUrl: () => string 
     getCanvasSourceUrls: async (userId, canvasId) => {
       const canvas = await r().canvases.getOwned(userId, canvasId);
       return canvas ? canvasSourceUrls(parseState(canvas.state)) : [];
+    },
+    getCanvasInfo: async (userId, canvasId) => {
+      const canvas = await r().canvases.getOwned(userId, canvasId);
+      return canvas ? { brief: canvas.brief ?? null, taste: parseState(canvas.state).taste ?? null } : null;
     },
     addToTray: async (userId, canvasId, references, directionId) => {
       const db = r();

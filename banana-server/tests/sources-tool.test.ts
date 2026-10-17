@@ -77,13 +77,14 @@ describe("search_references tool", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     expect(() => register(server)).not.toThrow();
     const json = z.toJSONSchema(inputSchema) as { properties: Record<string, unknown> };
-    expect(Object.keys(json.properties).sort()).toEqual(["canvasId", "count", "directionId", "lane", "mix", "query", "sources", "taste", "thumbs", "zone"]);
+    expect(Object.keys(json.properties).sort()).toEqual(["adjacent", "canvasId", "components", "count", "directionId", "lane", "mix", "query", "sources", "sweep", "taste", "thumbs", "zone"]);
   });
 
   it("validates count and sources", () => {
     expect(inputSchema.safeParse({ query: "x" }).data?.count).toBe(12);
     expect(inputSchema.safeParse({ query: "x", count: 3 }).success).toBe(false);
-    expect(inputSchema.safeParse({ query: "x", count: 25 }).success).toBe(false);
+    expect(inputSchema.safeParse({ query: "x", count: 40 }).success).toBe(true);
+    expect(inputSchema.safeParse({ query: "x", count: 41 }).success).toBe(false);
     expect(inputSchema.safeParse({ query: "x", sources: ["flickr"] }).success).toBe(false);
   });
 

@@ -14,7 +14,9 @@ describe("server instructions", () => {
     expect(SERVER_INSTRUCTIONS).toMatch(/never the whole page/);
     expect(SERVER_INSTRUCTIONS).not.toMatch(/never place Mobbin images/);
     expect(SERVER_INSTRUCTIONS).toMatch(/do not mention Mobbin/);
-    expect(SERVER_INSTRUCTIONS).toMatch(/6 to 8 UI and 2 to 4 art/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/sweep: true/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/arrange_canvas by_cluster/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/explore directions \(recommended, no code\)/);
   });
 
   it("push summary reads, reconcile before export and one direction at a time", () => {

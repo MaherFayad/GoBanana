@@ -23,7 +23,7 @@ import type { Platform } from "../direction-detail";
 import { hasUiWord, lensNegatives } from "./quality";
 import { cleanQuery } from "./query";
 import { sourceEntry } from "./registry";
-import { SOURCE_SITES, isGallery, laneZone, type LaneName, type Mix, type Reference, type SourceSite, type Zone, type ZoneInput } from "./types";
+import { SOURCE_SITES, isGallery, laneZone, type LaneName, type Mix, type Reference, type SearchLane, type SourceSite, type Zone, type ZoneInput } from "./types";
 
 /** Negatives for UI lanes: they cut template, kit and wireframe sales sheets. */
 export const UI_NEG = "-template -kit -free -wireframe";
@@ -37,7 +37,7 @@ export const MAX_ART_QUERIES = 3;
 /** Requests in a base plan; the rest of SERPER_MAX_REQUESTS (8) is kept for page 2 or a fallback. */
 export const BASE_MAX_REQUESTS = 7;
 
-export type { LaneName, Mix };
+export type { LaneName, Mix, SearchLane };
 
 /** Most component lanes a direction search plans. */
 export const MAX_COMPONENT_LANES = 2;
@@ -113,7 +113,7 @@ export function galleryWords(site: SourceSite, topic: string): string {
 }
 
 export type PlannedRequest = {
-  lane: LaneName;
+  lane: SearchLane;
   /** Query words sent before the site operator (negatives included). */
   query: string;
   site: SourceSite;
@@ -447,8 +447,8 @@ export function plainRetryQuery(query: string, sent: readonly string[] = []): st
  * How many results each lane may place: split evenly over the lanes in order (earlier lanes get
  * the rounding). One lane takes everything.
  */
-export function laneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneName, number> {
-  const quotas = new Map<LaneName, number>();
+export function laneQuotas(count: number, lanes: readonly SearchLane[]): Map<SearchLane, number> {
+  const quotas = new Map<SearchLane, number>();
   if (lanes.length === 0) return quotas;
   let left = count;
   lanes.forEach((lane, i) => {
@@ -468,7 +468,7 @@ export function artQuota(count: number): number {
  * Quotas when the art lane is present: art gets artQuota(count), the UI lanes share the rest
  * evenly (laneQuotas). Only art: all of it. No art: laneQuotas.
  */
-export function zoneQuotas(count: number, lanes: readonly LaneName[]): Map<LaneName, number> {
+export function zoneQuotas(count: number, lanes: readonly SearchLane[]): Map<SearchLane, number> {
   const ui = lanes.filter((l) => l !== "art");
   if (!lanes.includes("art")) return laneQuotas(count, lanes);
   if (ui.length === 0) return new Map([["art", count]]);
@@ -497,8 +497,8 @@ export type MergeOptions = {
  * has `groupCap` places is skipped too (the studio cap).
  */
 export function mergeLanes(
-  lists: ReadonlyMap<LaneName, readonly Reference[]>,
-  quotas: ReadonlyMap<LaneName, number>,
+  lists: ReadonlyMap<SearchLane, readonly Reference[]>,
+  quotas: ReadonlyMap<SearchLane, number>,
   count: number,
   keyOf: (ref: Reference) => string[],
   opts: MergeOptions = {},
@@ -507,13 +507,13 @@ export function mergeLanes(
   const seen = new Set<string>();
   const groups = new Map<string, number>();
   const cap = opts.groupCap ?? CREATOR_CAP;
-  const cursor = new Map<LaneName, number>();
-  const placed = new Map<LaneName, number>();
+  const cursor = new Map<SearchLane, number>();
+  const placed = new Map<SearchLane, number>();
   const lanes = [...lists.keys()];
   const zoneBudget = new Map<Zone, number>();
   for (const lane of lanes) zoneBudget.set(laneZone(lane), (zoneBudget.get(laneZone(lane)) ?? 0) + (quotas.get(lane) ?? 0));
   const zonePlaced = new Map<Zone, number>();
-  const nextFrom = (lane: LaneName): Reference | undefined => {
+  const nextFrom = (lane: SearchLane): Reference | undefined => {
     const list = lists.get(lane) ?? [];
     let i = cursor.get(lane) ?? 0;
     while (i < list.length) {

@@ -45,8 +45,8 @@ import {
   requestZone,
   titleHasWord,
   zoneQuotas,
-  type LaneName,
   type PlannedRequest,
+  type SearchLane,
 } from "./plan";
 import { buildSourceQuery, normalizeSources } from "./query";
 import {
@@ -148,7 +148,7 @@ export type RunPlanOptions = {
 
 /** What one planned request brought back. */
 export type PlanRequestReport = {
-  lane: LaneName;
+  lane: SearchLane;
   site: SourceSite;
   query: string;
   /** Good results (item pages that passed every filter). */
@@ -157,6 +157,8 @@ export type PlanRequestReport = {
   retried?: string;
   /** Set when page 2 was fetched because page 1 was mostly already on the canvas or blocked. */
   page2?: true;
+  /** Deepest page fetched when a large count paged deeper on this request (2 or 3). */
+  deepest?: number;
 };
 
 export type PlanSearchResult = WebSearchResult & { report?: PlanRequestReport[] };
@@ -189,6 +191,12 @@ export const SERPER_MAX_PAGES = 3;
  */
 export const SERPER_MAX_IN_FLIGHT = 4;
 export const SERPER_MAX_REQUESTS = 8;
+
+/**
+ * Counts above this (the old cap of search_references) page deeper: a plan run spends what its
+ * budget leaves on page 2 and 3 of its strongest requests, a plain query may get a bigger budget.
+ */
+export const DEEP_COUNT = 24;
 
 /** Requests one run may send: `maxRequests` when given, never more than SERPER_MAX_REQUESTS. */
 export function requestBudget(maxRequests?: number): number {
@@ -250,6 +258,15 @@ export function itemKey(sourceUrl: string): string {
     // fall through
   }
   return dedupeKey(sourceUrl);
+}
+
+/** itemKey as a list: [] for a link that is not a URL (so one bad link never fails a search). */
+function safeItemKey(sourceUrl: string): string[] {
+  try {
+    return [itemKey(sourceUrl)];
+  } catch {
+    return [];
+  }
 }
 
 /** Key used to spot the same image twice. */
@@ -552,9 +569,11 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
 
     const excludedKeys = new Set(q.excludeKeys ?? []);
     const prefer = q.preferCreators ?? [];
-    const budget = Math.min(requestBudget(q.maxRequests), PLAIN_MAX_REQUESTS);
+    // At most PLAIN_MAX_REQUESTS planned requests. A caller may pass a bigger maxRequests (a large
+    // count) so page 2 and 3 of them fit; never more than SERPER_MAX_REQUESTS.
+    const budget = q.maxRequests !== undefined && q.maxRequests > PLAIN_MAX_REQUESTS ? requestBudget(q.maxRequests) : Math.min(requestBudget(q.maxRequests), PLAIN_MAX_REQUESTS);
     const art = q.zone === "art";
-    const planned = (art ? artQueryPlan(q.query, q.sources ?? []) : plainQueryPlan(q.query, selected)).slice(0, budget);
+    const planned = (art ? artQueryPlan(q.query, q.sources ?? []) : plainQueryPlan(q.query, selected)).slice(0, Math.min(budget, PLAIN_MAX_REQUESTS));
     const artIdea = art ? bridgeHead(q.query) ?? undefined : undefined;
     if (planned.length === 0) return failure(NOTES.noResults);
 
@@ -669,11 +688,15 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       before: number;
       retried?: string;
       page2?: true;
+      deepest?: number;
+      /** Last page fetched of the request's own query, and whether it came back full. */
+      page: number;
+      lastFull: boolean;
     };
     // References already on the canvas, or blocked by the user, are skipped, so sections that share
     // lanes get fresh results instead of the same shots (and a later search never pulls a kept
     // reference into another section).
-    const excluded = new Set([...(opts.exclude ?? []).map(itemKey), ...(opts.excludeKeys ?? [])]);
+    const excluded = new Set([...(opts.exclude ?? []).flatMap(safeItemKey), ...(opts.excludeKeys ?? [])]);
     const mapPage = (req: PlannedRequest, query: string, images: unknown[]) => {
       const zone = requestZone(req);
       const words = queryWords(query);
@@ -700,11 +723,13 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     };
 
     const base = plan.slice(0, SERPER_MAX_REQUESTS);
+    // Good results one request keeps over its pages (page 2 and 3 add to page 1).
+    const SLOT_CAP = SERPER_PAGE_SIZE * SERPER_MAX_PAGES;
     let requests = base.length;
     const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, (r) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), r.page ?? 1));
     const slots: Slot[] = base.map((req, i) => {
       const out = outcomes[i]!;
-      if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status, full: false, before: 0 };
+      if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status, full: false, before: 0, page: req.page ?? 1, lastFull: false };
       const mapped = mapPage(req, req.query, out.images);
       return {
         req,
@@ -715,6 +740,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         status: 200,
         full: out.images.length >= SERPER_PAGE_SIZE,
         before: mapped.before,
+        page: req.page ?? 1,
+        lastFull: out.images.length >= SERPER_PAGE_SIZE,
       };
     });
     if (!slots.some((s) => s.ok)) {
@@ -752,27 +779,57 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       const out = second[i]!;
       if (page2) slot.page2 = true;
       else slot.retried = slot.req.fallback;
+      if (page2) {
+        slot.page = 2;
+        slot.lastFull = out.ok && out.images.length >= SERPER_PAGE_SIZE;
+      }
       if (!out.ok) return;
       const mapped = mapPage(slot.req, page2 ? slot.req.query : slot.req.fallback!, out.images);
       // Page 2 goes after page 1 (rank order); a fallback answer is interleaved with the thin one.
       slot.refs = page2
-        ? interleaveReferences([[...slot.refs, ...mapped.references]], SERPER_PAGE_SIZE * 2)
-        : interleaveReferences([slot.refs, mapped.references], SERPER_PAGE_SIZE * 2);
+        ? interleaveReferences([[...slot.refs, ...mapped.references]], SLOT_CAP)
+        : interleaveReferences([slot.refs, mapped.references], SLOT_CAP);
       slot.dropped += mapped.dropped;
       const why = sumWhy([slot.why, mapped.why]);
       if (why) slot.why = why;
     });
 
+    // Large counts (above DEEP_COUNT): what the budget leaves goes to the next page of the
+    // strongest requests (most good results, last page full), up to SERPER_MAX_PAGES, while the
+    // lanes hold fewer distinct results than the count. Still at most SERPER_MAX_REQUESTS in all.
+    const distinct = () => new Set(slots.flatMap((s) => s.refs.map((r) => itemKey(r.sourceUrl)))).size;
+    while (count > DEEP_COUNT && requests < SERPER_MAX_REQUESTS && distinct() < count) {
+      const deep = slots
+        .filter((s) => s.ok && s.lastFull && s.page < SERPER_MAX_PAGES && !planned.has(`${s.req.query}|${s.req.site}|${s.page + 1}`))
+        .sort((a, b) => b.refs.length - a.refs.length)
+        .slice(0, Math.min(SERPER_MAX_IN_FLIGHT, SERPER_MAX_REQUESTS - requests));
+      if (deep.length === 0) break;
+      requests += deep.length;
+      const pages = await mapLimit(deep, SERPER_MAX_IN_FLIGHT, (s) => fetchPage(apiKey, buildSourceQuery(s.req.query, s.req.site), s.page + 1));
+      deep.forEach((slot, i) => {
+        const out = pages[i]!;
+        slot.page += 1;
+        slot.deepest = slot.page;
+        slot.lastFull = out.ok && out.images.length >= SERPER_PAGE_SIZE;
+        if (!out.ok) return;
+        const mapped = mapPage(slot.req, slot.req.query, out.images);
+        slot.refs = interleaveReferences([[...slot.refs, ...mapped.references]], SLOT_CAP);
+        slot.dropped += mapped.dropped;
+        const why = sumWhy([slot.why, mapped.why]);
+        if (why) slot.why = why;
+      });
+    }
+
     // Per lane: its requests interleaved, newer work first within the lane's rank, preferred
     // creators nudged up, then lanes merged by quota in plan order. An empty lane's quota goes to
     // the other lanes of its zone first.
-    const byLane = new Map<LaneName, Reference[]>();
+    const byLane = new Map<SearchLane, Reference[]>();
     for (const slot of slots) {
       const prev = byLane.get(slot.req.lane);
-      byLane.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SERPER_PAGE_SIZE * 4) : slot.refs);
+      byLane.set(slot.req.lane, prev ? interleaveReferences([prev, slot.refs], SLOT_CAP * 2) : slot.refs);
     }
     const prefer = opts.preferCreators ?? [];
-    const lists = new Map<LaneName, Reference[]>();
+    const lists = new Map<SearchLane, Reference[]>();
     for (const [lane, list] of byLane) lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
     // Art zone about a third (at least 3), UI lanes share the rest; at most 2 per creator or studio;
     // UI references first, then art (the agent places them in their own rows).
@@ -792,6 +849,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         good: s.refs.length,
         ...(s.retried ? { retried: s.retried } : {}),
         ...(s.page2 ? { page2: true as const } : {}),
+        ...(s.deepest ? { deepest: s.deepest } : {}),
       })),
     };
     const note = countNote(references.length, count);

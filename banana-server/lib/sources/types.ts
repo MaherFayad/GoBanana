@@ -52,8 +52,22 @@ export type LaneName = (typeof LANE_NAMES)[number];
 /** UI lanes. `gallery` searches curated UI galleries (lib/sources/registry.ts) with topic words. */
 export const UI_LANES: readonly LaneName[] = ["fidelity", "taste", "component", "hero", "bridge", "locale", "gallery"];
 
+/**
+ * Sweep lanes (search_references with sweep): the space around a page before directions exist.
+ * UI lanes like the others; kept out of LANE_NAMES so a lane re-search never names one.
+ */
+export const SWEEP_LANES = ["sweep-fidelity", "sweep-component", "sweep-adjacent"] as const;
+export type SweepLane = (typeof SWEEP_LANES)[number];
+/** Any lane a planned request or a result can carry: a direction lane or a sweep lane. */
+export type SearchLane = LaneName | SweepLane;
+
+/** True for a direction lane (one a lane re-search, the learner and term keys know). */
+export function isLaneName(lane: unknown): lane is LaneName {
+  return typeof lane === "string" && (LANE_NAMES as readonly string[]).includes(lane);
+}
+
 /** The zone a lane's results go to. */
-export function laneZone(lane: LaneName | undefined): Zone {
+export function laneZone(lane: SearchLane | undefined): Zone {
   return lane === "art" ? "art" : "ui";
 }
 
@@ -104,8 +118,8 @@ export type Reference = {
   title?: string;
   width?: number;
   height?: number;
-  /** Direction searches: the lane that found it. */
-  lane?: LaneName;
+  /** Direction and sweep searches: the lane that found it. */
+  lane?: SearchLane;
   /** Direction searches: the words of the request that found it (no negatives, no site operator). */
   query?: string;
   /**
