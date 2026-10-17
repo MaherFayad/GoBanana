@@ -435,3 +435,90 @@ Notes:
 - Not a gate criterion: reference precision 70.7% (agent) is under the 75% target.
 - Spend: Serper 143 credits (the bench count; the account stays above the 350 floor). Claude $0.89 (J10, cap $2); no
   other API calls, no J job for the bend.
+
+## Refinement R3: judge calibration and crops (2026-10-17)
+
+Branch `next/refine-r3` (from `next/phase-1`, e7dfb28). Jobs in `atlas-build/jobs/`: `r3-judge.ts` (pass 1),
+`r3-judge-adj.ts` (second pass and report), `r3-crops.ts`, `r3-gold.ts`. All Message Batches with cached prefixes,
+under the spend guard (budget `r3`, $23). Spend: $9.55 (r3-judge $7.49, r3-judge-adj $0.30, r3-crops $1.06,
+r3-gold $0.70). No Serper.
+
+### Round 1: J10 relevance (held-out gold only)
+
+The old J10 prompt agreed with the 30 gold directions on the on-brief call 70%, 80%, 76.7% and 69% over four
+calibrations. The R3 judge turns the relevance line into a rubric with three checks (page, world, idea), adds 12 gold
+examples (text, with the gold scores and reason) and two votes; where the votes split on the on-brief call, a second
+Opus pass decides. Measurement: per seed the 30 gold directions are split into 3 stratified folds, and each direction
+is judged only by prompts whose examples come from the other two folds, so every scored item is held out. Seeds 1 to 3
+reshuffle the folds.
+
+| Judge | Seed 1 | Seed 2 | Seed 3 | Gold on brief found | Gold off brief found |
+| --- | --- | --- | --- | --- | --- |
+| Old J10 prompt (4 earlier calibrations, no split) | 70%, 80%, 76.7%, 69% (one per calibration) | | | 1 of 4 (last run) | 20 of 26 (last run) |
+| v1 rubric, no examples, one vote | 90% | | | 1 of 4 | 26 of 26 |
+| v1 rubric + 8 examples, final | 83.3% | 76.7% | 83.3% | 1 to 3 of 4 | 22 to 23 of 26 |
+| **v2 rubric + 12 examples, final** | **86.7%** | **80%** | **80%** | 1 of 4 | 23 to 25 of 26 |
+| v2, single votes (a, b) | 86.7%, 90% | 80%, 86.7% | 80%, 86.7% | | |
+
+- **Target met: 80% or more on all 3 seeds** (mean 82.2%), and on all 6 single votes. Coherence within 1 is 89 of 90,
+  wow 87 of 90. Relevance is a trusted metric again by the 75% rule.
+- v1's rubric named gold items as its examples (dried leaves, giant chevrons), so its numbers are optimistic and it
+  was dropped. v2's rubric uses examples that are not in the gold, adds wildness (a far world is on brief at wildness
+  4 or 5 when it gives the page a clear voice) and lets a look that pulls in two directions lower relevance, which is
+  how the gold rater scores it. The rubric was still written with the gold's reasons in view; only the examples are
+  cross-fitted.
+- The second pass changed little: 5 split votes in v2 (6 in v1, where the high-effort second pass sided against the
+  gold in both trial items). In v2 it sees both votes' examples at medium effort.
+- **Caveat: the gold has only 4 on-brief directions of 30**, so agreement mostly measures the off-brief call. The
+  judge finds 1 of the 4 on-brief golds: it is strict. Read its on-brief rate as a lower bound, and grow the gold with
+  on-brief items (round 3) before leaning on it.
+
+**g2l rescored** (`bench/runs/2026-10-17g2l/ratings-judge-r3.json`: directions from the R3 v2 judge, two votes, no
+split needed; references copied from J10's `ratings-judge.json`, whose reference prompt did not change):
+
+| Metric | Agent | Old J10 (untrusted) | **R3 judge (trusted)** | Target |
+| --- | --- | --- | --- | --- |
+| Brief relevance (4 or 5) | 86.7% (26 of 30) | 90% (27 of 30) | **73.3% (22 of 30)** | 80% or more |
+| Spec coherence (failures; median) | 0; 4 | 0; 3 | 0; 3 | 0 |
+| Wow (median) | 3 | 3 | 3 | 4 |
+| Reference precision (J10 verdicts) | 70.7% | 47.6% | 47.6% (same verdicts) | 75% or more |
+
+The R3 judge and the agent agree on 20 of 30. Both put Dotted Leaders off brief. The judge puts 7 more off brief, all
+for a thin idea (the world only skins one button, a header band or the dividers): Jebena Coffee Pot, Googie 1958,
+Qamar al-Din, Ruler Ticks, Coral Stone Blocks, Emirati Barjeel and Stickers. It puts 3 of the agent's off-brief ones on
+brief: Walnut Veneer, Arcade Cabinet and Game Cartridge. **On the trusted judge g2l is under the 80% bar (73.3%)**, so
+Gate 2's pass rests on the agent rater and the owner's spot check. Given how strict the judge is on the 4 gold
+on-brief items, the true rate is likely between the two. The judge's main complaint (the world shrinks to a skin on
+one element) is a concrete target for the next bend fix.
+
+### Round 2: crop accuracy (J11 follow-up)
+
+`r3-crops.ts` splits the 39 gold images once (seeded, stratified on the weak roles): 20 dev images (105 parts) to
+iterate on, 19 held-out (95 parts) for the ship decision. Sonnet 5.5, as J11. Mean IoU per gold part (no box scores 0):
+
+| Prompt | Dev (2 repeats) | Held-out (2 repeats) |
+| --- | --- | --- |
+| plain (today's cut_parts look text) | 0.717, 0.735 (0.726) | 0.696, 0.709 (**0.702**) |
+| roles (find the screen, then rules for status-header, tabbar, toolbar, content, bars hug) | 0.712, 0.706 (0.709) | not run (lost on dev) |
+| roles-px (roles, edges answered in pixels and divided by the job) | 0.722, 0.715 (0.718) | 0.674, 0.710 (0.692) |
+| bars (short bar and text-block rules only) | 0.706, 0.705 (0.706) | not run (lost on dev) |
+| plain, parts listed screen by screen (an eval change, not a prompt) | 0.773 (1 repeat) | 0.729 (1 repeat) |
+
+- **No prompt change ships.** No variant beats plain on dev, and the best one (roles-px) also loses on held-out
+  (0.692 against 0.702). The cut_parts look text stays as it is. Plain scores 0.70 to 0.73 over 4 repeats, in line
+  with J11's 0.708.
+- The weak roles stay weak: status-header 0.33 to 0.66, tabbar 0.44 to 0.67, content 0.25 to 0.70, toolbar 0 to 0.73
+  (2 to 11 parts per role and split, so noisy).
+- **Much of the gap is which screen, not how tight.** On presentation images with 3 phones, a role asked once can
+  sit on any phone, and the gold labeller picked one. Listing the parts screen by screen in the gold's order lifts
+  plain by 0.03 to 0.05. A real agent knows which screen it wants, so the 0.8 gate is closer than 0.70 suggests, but
+  the bench measures the grouped list. A fairer J11 eval (each part named with its screen) is the next step, not a
+  new prompt.
+
+### Round 3: gold growth (unconfirmed)
+
+`r3-gold.ts` had Opus 5.5 (the R3 v2 judge prompt, 12 gold examples, high effort) propose ratings for the g2l items
+that are not in the gold: 30 directions and 134 top 8 UI references (great 9, good 56, bad 69), each with a reason.
+They are in `bench/gold-candidates/2026-10-17g2l.json` and `.md`, marked `confirmed: false`. Nothing reads that
+folder, and the gold is unchanged. Owner action: review the rows (the on-brief directions matter most, since the gold
+has only 4) and move the confirmed ones into `bench/gold/ratings-gold.json`.

@@ -28,7 +28,8 @@ import { defineJob, type JobContext } from "../lib/job.ts";
 import { modelInputOk } from "../lib/thumbs.ts";
 import { briefText, directionText, GOLD_FILE, parseDirection, readRun, SYSTEM, thumb, type GoldDirection, type GoldFile, type RunBrief, type RunDirection } from "./j10-judge.ts";
 
-export const SCORE_RUN = "2026-10-17g2l";
+/** The run the score stage rates (R3_SCORE_RUN overrides, for rescoring later runs with this judge). */
+export const SCORE_RUN = process.env.R3_SCORE_RUN ?? "2026-10-17g2l";
 export const SEEDS = [1, 2, 3] as const;
 export const FOLDS = 3;
 /** Version: 1 is the first rubric (it named gold items as examples, so its held-out numbers are optimistic); 2 is the default. */
