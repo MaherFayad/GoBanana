@@ -1,0 +1,22 @@
+[
+ {
+  "tag": "w3",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-zpeidbky",
+  "title": "Frutiger Aero 2007 telecom",
+  "relevance": 3,
+  "reason": "Frutiger Aero suits a telecom sign-up and the progress bar touches the real OTP, plan and SIM steps, but the gloss lives only on one button and a bubble bar, so it decorates the flow rather than changing how it reads."
+ },
+ {
+  "tag": "w3",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-hdahauwy",
+  "title": "Ruler Ticks estate listing",
+  "relevance": 4,
+  "reason": "Ruler tick coordinates and price pins act on the listing's real map and tie to measuring space in real estate, so it passes all three checks; the off-luxury yellow wood and the sabkha crust that never shows are coherence problems, not relevance."
+ }
+]

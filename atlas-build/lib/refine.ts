@@ -17,14 +17,20 @@
  *   npx tsx run.ts r1-lines --from-raw          (card-elements: lines for new and rewritten cards)
  *   npx tsx run.ts r1-gulf-page-fit --from-raw  (page-fit: the new cards on their domains' pages)
  *   npx tsx run.ts r1-weak-page-fit --from-raw  (page-fit: Qatar services and flight checkout rejudged)
+ *   npx tsx run.ts r6-weak-pages --from-raw     (page-fit: telecom, food delivery and real estate on the 16 pages J4b skipped; R8 turned it on)
  *
  * Last, after every job that reads page names into its inputs (J4b's domainPages matches name words,
  * so the added names would shift its pages and misread its saved replies; J7 and the rest):
  *
  *   npx tsx run.ts r6-page-names --from-raw     (anatomy: names users of the weak domains type, parse guarded)
  *
- * Not in the order (tried in R6, not shipped): r6-weak-pages (page fit on the pages J4b skipped for
- * telecom, food delivery and real estate; the trusted judge scored it 2 directions lower).
+ * R8, after the R2 jobs (r2-mechanics-fix) and r6-page-names:
+ *
+ *   npx tsx run.ts r8-mechanics --from-raw      (mechanics: page mechanics for list rows, result cards, map, form fields, filters, search)
+ *   npx tsx run.ts r8-lines --from-raw          (card-elements: every card's lines for those six parts, rewritten to act on the part)
+ *
+ * r6-weak-pages was left out in R6 (the bend had no mechanic for list rows, cards, maps or forms, so
+ * the judge scored it 2 directions lower); with the R8 work part mechanics it adds 2 (BASELINE R8).
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

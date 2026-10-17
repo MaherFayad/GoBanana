@@ -18,7 +18,11 @@ import type { CardElementLine, Mechanic, PageAnatomy, UiElement } from "./types"
 /** Parts that carry the page's flow: moving from one step or moment to the next. */
 export const FLOW_ELEMENTS: ReadonlySet<UiElement> = new Set(["stepper", "progress", "onboarding-slide", "sheet", "success", "modal"]);
 /** Parts that carry its structure: what the page is made of and what the user scans, compares or picks. */
-export const STRUCTURE_ELEMENTS: ReadonlySet<UiElement> = new Set(["card", "list-row", "paywall-plan", "price-breakdown", "map", "chart", "chip-filter", "sidebar", "hero", "empty-state"]);
+export const STRUCTURE_ELEMENTS: ReadonlySet<UiElement> = new Set(["card", "list-row", "paywall-plan", "price-breakdown", "map", "chart", "chip-filter", "form-field", "sidebar", "hero", "empty-state"]);
+/** R8: the parts where a search, listing, browse or form page's work happens (mechanic elements in the bend). */
+export const WORK_ELEMENTS: ReadonlySet<UiElement> = new Set(["list-row", "card", "map", "form-field", "chip-filter"]);
+/** R8: a map section that shows places (not a seat or cabin map), the kind the R8 map lines are written for. */
+export const placeMap = (label: string) => !/\b(seats?|cabin)\b|\bzone map\b/i.test(label);
 /** Section roles that frame the page rather than do its task (a footer of links, the top bar, a logo strip). */
 const FRAME_ROLES: ReadonlySet<string> = new Set(["footer", "nav", "status-header", "logos", "tabbar"]);
 
@@ -30,6 +34,7 @@ const TASK_RANK: Partial<Record<UiElement, number>> = {
   "paywall-plan": 4,
   card: 3,
   "list-row": 3,
+  "form-field": 3,
   map: 3,
   chart: 3,
   "price-breakdown": 3,
@@ -86,6 +91,15 @@ export function platformSections(page: PageAnatomy, platform: ServerPlatform): P
   return page.sections.filter((s) => !p || Object.keys(s.bands ?? {}).length === 0 || p in s.bands);
 }
 
+/**
+ * R8: the section that stands for an element on this page: its required one when it has several
+ * (the search page's "result list", not its "recent searches"), else the first.
+ */
+export function partSection(sections: PageAnatomy["sections"], match: (el: UiElement) => boolean): PageAnatomy["sections"][number] | undefined {
+  const all = sections.filter((s) => match(s.element));
+  return all.find((s) => s.required) ?? all[0];
+}
+
 const lowerFirst = (s: string) => (/^[A-Z][a-z]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
 const capital = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const clean = (s: string) => fixCase(s.trim().replace(/[.\s]+$/, ""));
@@ -100,6 +114,7 @@ const TASK_PHRASE: Partial<Record<UiElement, string>> = {
   card: "scanning and picking",
   "list-row": "reading down the list",
   "chip-filter": "narrowing the choice",
+  "form-field": "filling in the details",
   map: "choosing a place",
   chart: "reading the numbers",
   "empty-state": "taking the first step",
@@ -120,6 +135,20 @@ export function taskSentence(brief: string, part: Pick<SpanPart, "element" | "la
   const own = part.element === "progress" && !/\bsteps?\b/i.test(part.label) ? "making progress" : TASK_PHRASE[part.element];
   const phrase = listed && listed.split(/\s+/).length <= 16 ? listed : (own ?? "using the page");
   return `${clean(`The main task, ${phrase}, now runs through the ${part.label}: ${lowerFirst(part.how)}`)}.`;
+}
+
+/** R8: brief words for the work the user does, and the work part it happens on. */
+const BRIEF_WORK: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = [
+  [/\b(browse|browsing|results?|listings?|list|nearby|restaurants|homes|dishes|menu)\b/i, ["card", "list-row"]],
+  [/\b(filter|filters|sort|narrow)\b/i, ["chip-filter"]],
+  [/\b(map|maps|courier|route)\b/i, ["map"]],
+  [/\b(sign-?up|verify|otp|enter|fill|address|details|form)\b/i, ["form-field"]],
+];
+
+/** R8: the work parts a brief's task list (after the colon) names ("browse nearby restaurants, filter by cuisine": cards, rows, filters). */
+export function briefWorks(brief: string): Set<UiElement> {
+  const task = brief.split(":").slice(1).join(":");
+  return new Set(BRIEF_WORK.filter(([re]) => re.test(task)).flatMap(([, els]) => els));
 }
 
 /** Protected parts that stay plain, for a brief with no must-keeps of its own. */
@@ -165,7 +194,7 @@ type Candidate = SpanPart & { score: number; order: number };
 const SPOT_DROP = 3;
 
 /** Names for a wild spot the page's sections do not show on this platform. */
-const SPOT_LABEL: Partial<Record<UiElement, string>> = { progress: "progress bar", stepper: "steps", "paywall-plan": "plan cards", card: "cards", "list-row": "list", "empty-state": "empty state", "onboarding-slide": "slides", "chip-filter": "filter chips", "section-nav": "section tabs", "nav-tabs": "tabs", "bottom-nav": "tab bar" };
+const SPOT_LABEL: Partial<Record<UiElement, string>> = { progress: "progress bar", stepper: "steps", "paywall-plan": "plan cards", card: "cards", "list-row": "list", "empty-state": "empty state", "onboarding-slide": "slides", "chip-filter": "filter chips", map: "map", "form-field": "form fields", "section-nav": "section tabs", "nav-tabs": "tabs", "bottom-nav": "tab bar" };
 
 /**
  * The page's sections as candidate parts (one per element, with the page's label and a how line),
@@ -175,13 +204,17 @@ function candidates(input: SpanInput): Candidate[] {
   const sections = platformSections(input.page, input.platform);
   const wild = input.page.wildSpots.map((w) => w.element);
   const seen: UiElement[] = [input.main.element];
+  const workPage = sections.some((s) => s.required && WORK_ELEMENTS.has(s.element));
   const out: Candidate[] = [];
   const spots = wild.map((element) => ({ role: "", element, label: SPOT_LABEL[element] ?? element.replace(/-/g, " "), required: false, spot: true }));
   [...sections, ...spots].forEach((s, order) => {
     const el = s.element;
     if (seen.some((x) => samePart(x, el)) || input.forbidden(el)) return;
     seen.push(el);
-    const line = input.lineOf(el);
+    // R8: a work part with several sections stands for its required one ("result list", not "recent searches").
+    const own = !("spot" in s) && WORK_ELEMENTS.has(el) ? (partSection(sections, (x) => x === el) ?? s) : s;
+    // The R8 map lines draw places: a seat map keeps to a J5 mechanic, if one is loaded.
+    const line = el === "map" && !placeMap(own.label) ? undefined : input.lineOf(el);
     let how = line && line.buildability >= MIN_LINE ? clean(line.how) : "";
     if (!how) {
       const m = [...(input.mechanicsOf?.(el) ?? [])]
@@ -190,19 +223,21 @@ function candidates(input: SpanInput): Candidate[] {
       if (m) how = clean(`${m.name}: ${lowerFirst(m.how.split(/[,;]/)[0] ?? m.how)}`);
     }
     if (!how) return;
-    const kind = partKind(el, s.role);
+    const kind = partKind(el, own.role);
     const named = input.named.indexOf(el);
     const score =
       (kind === "flow" ? 3 : kind === "structure" ? 2 : 0) +
       (kind === "surface" ? 0 : (TASK_RANK[el] ?? 0) * 0.5) +
       (wild.includes(el) ? 2 : 0) +
       (named >= 0 ? 3 - Math.min(2, named) * 0.5 : 0) +
-      (s.required ? 1 : 0) +
+      (own.required ? 1 : 0) +
       ((line?.buildability ?? 3) - 3) * 0.5 -
       1.5 * (input.used.get(el) ?? 0) -
       // A wild spot no section shows is a fallback: the page's own sections come first (r4-2 dry run).
-      ("spot" in s ? SPOT_DROP : 0);
-    out.push({ element: el, label: clean(lowerFirst(s.label)), how, kind, score, order });
+      ("spot" in s ? SPOT_DROP : 0) -
+      // R8: where a work part is required, the empty state is where the work fails, not where it happens.
+      (el === "empty-state" && workPage ? SPOT_DROP : 0);
+    out.push({ element: el, label: clean(lowerFirst(own.label)), how, kind, score, order });
   });
   return out.sort((a, b) => b.score - a.score || a.order - b.order);
 }
@@ -217,7 +252,10 @@ function candidates(input: SpanInput): Candidate[] {
 export function spanPage(input: SpanInput): PageSpan | null {
   const pool = candidates(input);
   if (pool.length === 0) return null;
-  const mainSection = platformSections(input.page, input.platform).find((s) => samePart(s.element, input.main.element));
+  const pageSections = platformSections(input.page, input.platform);
+  const mainSection = WORK_ELEMENTS.has(input.main.element)
+    ? partSection(pageSections, (el) => samePart(el, input.main.element))
+    : pageSections.find((s) => samePart(s.element, input.main.element));
   const main: SpanPart = {
     element: input.main.element,
     // A footer of links is not where tabs that switch sections live: the part keeps its own name then.
@@ -243,7 +281,7 @@ export function spanPage(input: SpanInput): PageSpan | null {
   const sections = platformSections(input.page, input.platform);
   const wild = new Set(input.page.wildSpots.map((w) => w.element));
   const rank = (p: SpanPart) =>
-    p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0) + (wild.has(p.element) ? 1 : 0) + (sections.some((s) => samePart(s.element, p.element) && s.required) ? 0.5 : 0);
+    p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0) + (wild.has(p.element) ? 1 : 0) + (sections.some((s) => samePart(s.element, p.element) && s.required) ? 0.5 : 0) + (briefWorks(input.brief).has(p.element) ? 2 : 0);
   const taskPart = parts.reduce((best, p) => (rank(p) > rank(best) ? p : best), parts[0]!);
   return { parts, task: taskSentence(input.brief, taskPart), keep: keepLine(input.mustKeep, input.protect) };
 }

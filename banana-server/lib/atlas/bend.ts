@@ -55,7 +55,7 @@ import { neighbourOf, type StyleId } from "@/lib/styles/index";
 import { isStyleId } from "@/lib/styles/ids";
 import { briefFit, briefWorld, occasionsIn } from "./brief-fit";
 import { searchHints } from "./search-hints";
-import { isStructural, platformSections, spanLayout, spanPage } from "./page-span";
+import { isStructural, placeMap, platformSections, spanLayout, spanPage } from "./page-span";
 import { coherentMechanic, coherentSpec, colorLine, densityLine } from "./spec-coherence";
 import { chooseRecipe, idWeight, type AtlasLearning } from "./learning";
 import { recipeId } from "./loader";
@@ -218,7 +218,15 @@ export const ELEMENT_TO_MECHANIC: Readonly<Partial<Record<UiElement, MechanicEle
   hero: "header",
   "empty-state": "empty-state",
   success: "empty-state",
+  // R8: the parts where the page's work happens (search, listing, browse and form pages).
+  "list-row": "list-row",
+  card: "card",
+  map: "map",
+  "form-field": "form-field",
+  "chip-filter": "chip-filter",
 };
+/** R8: work parts a page's own sections offer as the mechanic's part, after its wild spots. */
+const WORK_PARTS: readonly UiElement[] = ["list-row", "card", "map", "form-field", "chip-filter"];
 /** Elements tried after the page's wild spots, safest first. */
 const FALLBACK_ELEMENTS: readonly UiElement[] = ["header", "divider", "progress", "section-nav", "empty-state", "hero", "total", "cta"];
 
@@ -440,6 +448,13 @@ const REASON_ELEMENTS: ReadonlyArray<readonly [RegExp, readonly UiElement[]]> = 
   // Picking an amount ("slide jaw to pick data amount") is the plan choice, then the total.
   [/\b(amount|amounts|pick|picks|choose|select|compare)\b/, ["paywall-plan", "total"]],
   [/\b(header|hero|banner|headline|title|masthead|cover|welcome)\b/, ["header", "hero"]],
+  // R8: the parts where a search, listing, browse or form page's work happens.
+  [/\b(rows?|list|lists|listings?|results?|feed|ledger|menu items?|dishes)\b/, ["list-row", "card"]],
+  [/\b(map|maps|pins?|routes?|neighbou?rhoods?|districts?)\b/, ["map"]],
+  [/\b(forms?|fields?|inputs?|otp|sign-?up)\b/, ["form-field"]],
+  [/\b(filters?|sort|sorting|facets?|chips?)\b/, ["chip-filter"]],
+  // Not "plan cards" (the plan choice above) or a bank card.
+  [/\b(?<!plan |bank |credit |debit |id )(cards?|tiles?|thumbnails?)\b/, ["card"]],
   [/\b(empty|zero|invites?|first)\b/, ["empty-state"]],
   [/\b(tabs?|sections?|anchors?|nav)\b/, ["section-nav", "nav-tabs", "bottom-nav"]],
   [/\b(button|press|tap)\b/, ["cta"]],
@@ -594,14 +609,25 @@ interface CardPick {
   adds: "texture" | "motion" | "rule" | null;
 }
 
-/** The Atlas elements a direction's mechanic may land on, wild spots first. */
-function elementOrder(page: PageAnatomy, protect: ReadonlySet<MechanicElement>): UiElement[] {
+/**
+ * The Atlas elements a direction's mechanic may land on: wild spots first, then (R8) the work parts
+ * the page's sections show on this platform (list rows, result cards, the map, form fields, filters),
+ * then the fallback parts.
+ */
+function elementOrder(page: PageAnatomy, protect: ReadonlySet<MechanicElement>, platform: Platform): UiElement[] {
   const risky = (el: UiElement) => {
     const m = ELEMENT_TO_MECHANIC[el];
     return m !== undefined && forbiddenElement(m, protect);
   };
+  // A work part counts only when a section on this platform shows it (a wild spot alone, like the
+  // suggestion cards of an empty state page, is not where the work happens), and a map only when it
+  // shows places (a seat map is not one: r8-b1 put a radar of priced pins on a flight checkout).
+  const work = platformSections(page, platform)
+    .filter((s) => WORK_PARTS.includes(s.element) && (s.element !== "map" || placeMap(s.label)))
+    .map((s) => s.element);
   const out: UiElement[] = [];
-  for (const el of [...page.wildSpots.map((w) => w.element), ...FALLBACK_ELEMENTS]) {
+  for (const el of [...page.wildSpots.map((w) => w.element), ...work, ...FALLBACK_ELEMENTS]) {
+    if (WORK_PARTS.includes(el) && !work.includes(el)) continue;
     if (ELEMENT_TO_MECHANIC[el] && !risky(el) && !out.includes(el)) out.push(el);
   }
   return out;
@@ -909,7 +935,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const lines = await source.lines(leads.map((c) => c.id));
   if (!lines) return null;
   const lineOf = new Map<string, CardElementLine>(lines.map((l) => [`${l.cardId}|${l.element}`, l]));
-  const order = elementOrder(page, protect);
+  const order = elementOrder(page, protect, platform);
   if (order.length === 0) return null;
   const mechanicsByElement = new Map<UiElement, Mechanic[]>();
   const mechanicsFor = async (el: UiElement): Promise<Mechanic[] | null> => {
@@ -929,6 +955,10 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   // comes before a surface one (a header strip, the dividers, one button), the judge's thin idea.
   const onPage = new Set<UiElement>([...platformSections(page, platform).map((s) => s.element), ...page.wildSpots.map((w) => w.element)]);
   const pageHas = (el: UiElement) => onPage.has(el) || [...onPage].some((o) => ELEMENT_TO_MECHANIC[o] !== undefined && ELEMENT_TO_MECHANIC[o] === ELEMENT_TO_MECHANIC[el] && o !== "hero" && el !== "hero");
+  // R8: on a page whose required sections hold a work part (a result list, quick action cards, a
+  // form), the empty state is the moment the work fails, not where it happens (R6: rental search and
+  // telecom home put the idea on the no results art). It keeps its place only as a last resort.
+  const sideState = (el: UiElement) => el === "empty-state" && platformSections(page, platform).some((s) => s.required && WORK_PARTS.includes(s.element));
   const ranked = (lead: IngredientCard) => {
     // The element the lead's page reason names comes first (Gate 2 round 2 run g2g: "each finished
     // step lands as stamp" was built as a divider, "punched holes show step progress" as a header).
@@ -939,7 +969,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     // R4: a named element counts only when the page has it (r4-0: "total" on an offers page), and
     // among named elements a flow or structure one comes before a surface one ("offer" names the
     // header and the hero: the season banner, not the top bar).
-    const namedRank = (el: UiElement) => (named.includes(el) && pageHas(el) ? named.length - named.indexOf(el) + (isStructural(el) ? 1 : 0) : 0);
+    const namedRank = (el: UiElement) => (named.includes(el) && pageHas(el) && !sideState(el) ? named.length - named.indexOf(el) + (isStructural(el) ? 1 : 0) : 0);
     return order
       .map((el, idx) => ({
         el,
@@ -951,7 +981,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
           2 * (elementUse.get(ELEMENT_TO_MECHANIC[el]!) ?? 0) +
           (named.includes(el) ? REASON_ELEMENT_BONUS : 0) +
           (pageHas(el) ? ON_PAGE_BONUS : 0) +
-          (isStructural(el) ? STRUCTURE_BONUS : 0),
+          (isStructural(el) ? STRUCTURE_BONUS : 0) -
+          (sideState(el) ? ON_PAGE_BONUS + STRUCTURE_BONUS : 0),
         idx,
       }))
       .sort((a, b) => Number(b.named > 0) - Number(a.named > 0) || b.named - a.named || b.score - a.score || a.idx - b.idx)

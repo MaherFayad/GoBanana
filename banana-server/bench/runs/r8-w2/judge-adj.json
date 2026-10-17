@@ -1,0 +1,32 @@
+[
+ {
+  "tag": "w2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-sign-up",
+  "directionId": "bd-zpeidbky",
+  "title": "Frutiger Aero 2007 telecom",
+  "relevance": 3,
+  "reason": "Frutiger Aero suits a telecom sign-up with real steps, but the era lives only in a bubble on the progress bar and one glossy button, so the idea is thin and does not change how the OTP, plan and SIM steps work."
+ },
+ {
+  "tag": "w2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "dubai-real-estate",
+  "directionId": "bd-hdahauwy",
+  "title": "Ruler Ticks estate listing",
+  "relevance": 4,
+  "reason": "Ruler tick coordinates and price pins act on the listing's real map and tie to measuring space in real estate, so it passes all three checks; the off-luxury yellow wood and the sabkha crust that never shows are coherence problems, not relevance."
+ },
+ {
+  "tag": "w2",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "rental-search-results",
+  "directionId": "bd-ri2jyvw0",
+  "title": "Solarpunk 2050 search results",
+  "relevance": 3,
+  "reason": "Seed chips that sprout act on the real district, price and rooms filters, but a solarpunk garden does not feel native to Riyadh rentals at wildness 2, even with a loose link to a greening Riyadh."
+ }
+]

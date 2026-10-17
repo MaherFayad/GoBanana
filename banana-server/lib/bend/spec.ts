@@ -185,6 +185,11 @@ export const PART: Readonly<Record<MechanicElement, string>> = {
   header: "header strip",
   "empty-state": "empty state",
   plan: "plan cards",
+  "list-row": "list rows",
+  card: "cards",
+  map: "map",
+  "form-field": "form fields",
+  "chip-filter": "filters",
 };
 
 // ---------------------------------------------------------------------------
@@ -305,6 +310,11 @@ const PART_LAYOUT: Record<MechanicElement, string> = {
   header: "{idea} header strip over a single column",
   "empty-state": "{idea} art centered in the empty state, one action below",
   plan: "{idea} plan cards side by side, the selected plan marked",
+  "list-row": "{idea} list rows stacked in one scannable column",
+  card: "{idea} cards in a grid, one way into each",
+  map: "{idea} map with readable pins, the list beside or below it",
+  "form-field": "{idea} form fields in one column, one step at a time",
+  "chip-filter": "{idea} filters in a row above the results",
 };
 
 function layout(input: SpecInput): string {
