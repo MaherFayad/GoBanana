@@ -35,9 +35,9 @@ import { loadGoldImages, matchCrops, partList, PLAIN_SYSTEM, readCrops, type Gol
 import { rng, shuffle } from "./r3-judge.ts";
 
 export const WEAK_ROLES = ["toolbar", "content", "status-header", "tabbar"] as const;
-export const CROP_VARIANTS = ["plain", "roles", "roles-px", "bars"] as const;
+export const CROP_VARIANTS = ["plain", "roles", "roles-px", "bars", "screen"] as const;
 export type CropVariant = (typeof CROP_VARIANTS)[number];
-export const ORDERS = ["grouped", "ordered"] as const;
+export const ORDERS = ["grouped", "ordered", "screens"] as const;
 export type Order = (typeof ORDERS)[number];
 export const SETS = ["dev", "held"] as const;
 export type CropSet = (typeof SETS)[number];
@@ -57,6 +57,12 @@ export const ROLE_RULES = `How to measure:
 
 /** A short alternative (dev round 2): only the bar and text-block rules, no screen-finding steps. */
 export const BAR_RULES = `Thin bars (status-header, tabbar, toolbar, nav, filters) hug their own top and bottom edges with no padding: a status-header is one screen's top bar with its title row, a tabbar one screen's bottom icon bar, a toolbar one row of actions. A content part is one block of text: hug its lines.`;
+
+/**
+ * R4: the candidate cut_parts look line for the "screen" variant: each part sits on one screen,
+ * found first. Shipped only if it beats plain on held-out images with the screens list.
+ */
+export const SCREEN_RULE = `Each part sits on one screen of the image. On an image with several phones or windows, first find the screen the part is named with (counted from the left) and its four edges, then measure the part inside that screen; its box never crosses into another screen.`;
 
 const PX_ANSWER = `Answer with JSON only: {"parts": [{"role": "<role>", "left": 0, "top": 0, "right": 0, "bottom": 0}, ...]}, edges in whole pixels of the image, one entry for every part asked for, each role as many times as asked. No other text.`;
 
@@ -90,9 +96,35 @@ export function splitImages(images: readonly GoldImage[], devSize = DEV_SIZE): M
   return new Map(sorted.map((i) => [i.key, dev.has(i.key) ? "dev" : "held"]));
 }
 
-/** Parts asked for: J11's grouped list, or every part in the gold's order (screen by screen). */
+/**
+ * R4: the screens of an image, from its gold parts: parts whose horizontal spans overlap by half the
+ * narrower one share a screen; screens are counted from the left. Returns the screen index (0 based)
+ * per part, in part order, and the count.
+ */
+export function screensOf(parts: ReadonlyArray<{ crop: Crop }>): { screen: number[]; count: number } {
+  const parent = parts.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
+  parts.forEach((a, i) =>
+    parts.forEach((b, j) => {
+      if (j <= i) return;
+      const overlap = Math.min(a.crop.x + a.crop.w, b.crop.x + b.crop.w) - Math.max(a.crop.x, b.crop.x);
+      if (overlap >= 0.5 * Math.min(a.crop.w, b.crop.w)) parent[find(j)] = find(i);
+    }),
+  );
+  const left = (r: number) => Math.min(...parts.filter((_, i) => find(i) === r).map((p) => p.crop.x));
+  const order = [...new Set(parts.map((_, i) => find(i)))].sort((a, b) => left(a) - left(b));
+  return { screen: parts.map((_, i) => order.indexOf(find(i))), count: order.length };
+}
+
+/** Parts asked for: J11's grouped list, every part in the gold's order (screen by screen), or (R4) each part named with its screen. */
 export function askList(image: GoldImage, order: Order): string {
   if (order === "grouped") return `Cut these parts: ${partList(image.parts)}.`;
+  if (order === "screens") {
+    const { screen, count } = screensOf(image.parts);
+    if (count <= 1) return `Cut these parts: ${partList(image.parts)}.`;
+    const groups = Array.from({ length: count }, (_, k) => image.parts.filter((_, i) => screen[i] === k));
+    return `Cut these parts. The image shows ${count} screens; each part is named with the screen it sits on, counted from the left: ${groups.map((g, k) => `screen ${k + 1} of ${count}: ${partList(g)}`).join("; ")}.`;
+  }
   return `Cut these parts, listed screen by screen (left to right, then top to bottom), in this order: ${image.parts.map((p) => p.role).join(", ")}.`;
 }
 
@@ -227,7 +259,7 @@ export default defineJob<Input, R3Crop>({
   async buildPrompt(input, ctx) {
     const { image, variant } = input;
     const blocks: Anthropic.ContentBlockParam[] = [];
-    if (variant !== "plain") blocks.push({ type: "text", text: `Use these rules for this image:\n\n${variant === "bars" ? BAR_RULES : ROLE_RULES}${variant === "roles-px" ? `\n\n${PX_ANSWER} (This replaces the answer format in the system prompt.)` : ""}` });
+    if (variant !== "plain") blocks.push({ type: "text", text: `Use these rules for this image:\n\n${variant === "bars" ? BAR_RULES : variant === "screen" ? SCREEN_RULE : ROLE_RULES}${variant === "roles-px" ? `\n\n${PX_ANSWER} (This replaces the answer format in the system prompt.)` : ""}` });
     blocks.push({ type: "text", text: `Image: ${image.width ?? "?"} x ${image.height ?? "?"} px, a ${image.platform ?? "unknown"} reference${image.page ? ` showing a ${image.page} page` : ""}.` });
     if (ctx.dry) blocks.push(placeholderImage());
     else {

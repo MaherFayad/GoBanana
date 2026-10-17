@@ -81,7 +81,14 @@ export interface DirectionDetail {
   prompt?: string;
   wildness?: number;
   /** The working UI part the wild idea becomes ("progress", "Sadu weaving as the progress bar ..."). */
-  mechanic?: { element: string; how: string };
+  mechanic?: {
+    element: string;
+    how: string;
+    /** Atlas engine (R4): the 2 or 3 page parts the idea changes, this part first. */
+    parts?: { element: string; label: string; how: string }[];
+    /** Atlas engine (R4): how the page's main task works differently. */
+    task?: string;
+  };
   /**
    * Atlas ids (P1-I2, BEND_ENGINE=atlas only): the one place a direction keeps them. Search plan
    * v2 (P1-I3) reads the recipes, exports (P1-I5) the lead card, learning (P1-I6) credits the ids.

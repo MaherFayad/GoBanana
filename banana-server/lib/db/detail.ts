@@ -41,7 +41,8 @@ const SPEC_TEXT = [
 function spec(v: unknown): VisualSpec | undefined {
   if (!isObj(v) || !isTypeVoice(v.typeVoice)) return undefined;
   const out: Partial<VisualSpec> = { typeVoice: v.typeVoice };
-  for (const k of SPEC_TEXT) out[k] = str(v[k]) ?? "";
+  // R4: the layout line names the page parts and the main task, so it gets more room.
+  for (const k of SPEC_TEXT) out[k] = str(v[k], k === "layout" ? 1000 : 400) ?? "";
   out.steal = strs(v.steal) ?? [];
   out.avoid = strs(v.avoid) ?? [];
   out.styleWords = strs(v.styleWords, 6, 60) ?? [];
@@ -179,7 +180,18 @@ export function parseDirectionDetail(raw: unknown): DirectionDetail | null {
   if (isObj(raw.mechanic)) {
     const element = str(raw.mechanic.element, 40);
     const how = str(raw.mechanic.how, 400);
-    if (element && how) out.mechanic = { element, how };
+    if (element && how) {
+      out.mechanic = { element, how };
+      const parts = Array.isArray(raw.mechanic.parts)
+        ? raw.mechanic.parts.filter(isObj).flatMap((p) => {
+            const [e, l, h] = [str(p.element, 40), str(p.label, 120), str(p.how, 400)];
+            return e && l && h ? [{ element: e, label: l, how: h }] : [];
+          }).slice(0, 3)
+        : [];
+      if (parts.length) out.mechanic.parts = parts;
+      const task = str(raw.mechanic.task, 400);
+      if (task) out.mechanic.task = task;
+    }
   }
   const arabicPack = parseArabicPack(raw.arabic);
   if (arabicPack) out.arabic = arabicPack;

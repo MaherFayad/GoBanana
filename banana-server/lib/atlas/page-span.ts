@@ -116,7 +116,9 @@ const TASK_PHRASE: Partial<Record<UiElement, string>> = {
  */
 export function taskSentence(brief: string, part: Pick<SpanPart, "element" | "label" | "how">): string {
   const listed = brief.split(":").slice(1).join(":").trim().replace(/[.\s]+$/, "");
-  const phrase = listed && listed.split(/\s+/).length <= 16 ? listed : (TASK_PHRASE[part.element] ?? "using the page");
+  // A progress part with no steps in its name is a goal, not a step flow ("daily goal and sticker path").
+  const own = part.element === "progress" && !/\bsteps?\b/i.test(part.label) ? "making progress" : TASK_PHRASE[part.element];
+  const phrase = listed && listed.split(/\s+/).length <= 16 ? listed : (own ?? "using the page");
   return `${clean(`The main task, ${phrase}, now runs through the ${part.label}: ${lowerFirst(part.how)}`)}.`;
 }
 
@@ -159,13 +161,23 @@ export interface SpanInput {
 
 type Candidate = SpanPart & { score: number; order: number };
 
-/** The page's sections as candidate parts: one per element, with the page's label and a how line. */
+/** Score a wild spot with no section on this platform loses against the page's own sections. */
+const SPOT_DROP = 3;
+
+/** Names for a wild spot the page's sections do not show on this platform. */
+const SPOT_LABEL: Partial<Record<UiElement, string>> = { progress: "progress bar", stepper: "steps", "paywall-plan": "plan cards", card: "cards", "list-row": "list", "empty-state": "empty state", "onboarding-slide": "slides", "chip-filter": "filter chips", "section-nav": "section tabs", "nav-tabs": "tabs", "bottom-nav": "tab bar" };
+
+/**
+ * The page's sections as candidate parts (one per element, with the page's label and a how line),
+ * then its wild spots that no section shows on this platform.
+ */
 function candidates(input: SpanInput): Candidate[] {
   const sections = platformSections(input.page, input.platform);
   const wild = input.page.wildSpots.map((w) => w.element);
   const seen: UiElement[] = [input.main.element];
   const out: Candidate[] = [];
-  sections.forEach((s, order) => {
+  const spots = wild.map((element) => ({ role: "", element, label: SPOT_LABEL[element] ?? element.replace(/-/g, " "), required: false, spot: true }));
+  [...sections, ...spots].forEach((s, order) => {
     const el = s.element;
     if (seen.some((x) => samePart(x, el)) || input.forbidden(el)) return;
     seen.push(el);
@@ -187,7 +199,9 @@ function candidates(input: SpanInput): Candidate[] {
       (named >= 0 ? 3 - Math.min(2, named) * 0.5 : 0) +
       (s.required ? 1 : 0) +
       ((line?.buildability ?? 3) - 3) * 0.5 -
-      1.5 * (input.used.get(el) ?? 0);
+      1.5 * (input.used.get(el) ?? 0) -
+      // A wild spot no section shows is a fallback: the page's own sections come first (r4-2 dry run).
+      ("spot" in s ? SPOT_DROP : 0);
     out.push({ element: el, label: clean(lowerFirst(s.label)), how, kind, score, order });
   });
   return out.sort((a, b) => b.score - a.score || a.order - b.order);
@@ -197,7 +211,8 @@ function candidates(input: SpanInput): Candidate[] {
  * The page span for one direction: its own part, then the best page parts (flow and structure
  * first, the wild spots and the parts the page reason names next, the spread over the bend after),
  * so that at least one part is flow or structure; the main task through the part that carries it
- * most; and the must-keep line. Null when the page has no other usable part.
+ * most; and the must-keep line. Null when the page has no other usable part, or no flow or
+ * structure part at all (the direction then keeps its one part, as before R4).
  */
 export function spanPage(input: SpanInput): PageSpan | null {
   const pool = candidates(input);
@@ -221,7 +236,14 @@ export function spanPage(input: SpanInput): PageSpan | null {
   }
   picked.sort((a, b) => a.order - b.order);
   const parts: SpanPart[] = [main, ...picked.map(({ element, label, how, kind }) => ({ element, label, how, kind }))];
-  const rank = (p: SpanPart) => (p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0));
+  if (parts.every((p) => p.kind === "surface")) return null;
+  // The task runs through the part that carries it most; a wild spot or a required section of this
+  // page counts more (r4-1: the plan preview of a coffee landing page and the agent card of a listing
+  // were read as odd task carriers).
+  const sections = platformSections(input.page, input.platform);
+  const wild = new Set(input.page.wildSpots.map((w) => w.element));
+  const rank = (p: SpanPart) =>
+    p.kind === "surface" ? -1 : (TASK_RANK[p.element] ?? 0) + (wild.has(p.element) ? 1 : 0) + (sections.some((s) => samePart(s.element, p.element) && s.required) ? 0.5 : 0);
   const taskPart = parts.reduce((best, p) => (rank(p) > rank(best) ? p : best), parts[0]!);
   return { parts, task: taskSentence(input.brief, taskPart), keep: keepLine(input.mustKeep, input.protect) };
 }
