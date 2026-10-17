@@ -76,17 +76,23 @@ const PLACE_ELEMENTS: Array<[RegExp, readonly string[]]> = [
   [/\b(card|panel|tile|patch|patches|plate|face|sash|badge|shape|strip|band)\b/, ["card", "paywall-plan", "list-row", "total", "hero"]],
 ];
 
-/** The page part a place phrase lands on: the part its words name, else the task part, else the first. */
-export function placePart(place: string, parts: readonly SpecPart[], taskLabel: string | null): SpecPart | null {
+/**
+ * The page part a place phrase lands on: the part its words name, else the task part, else the first.
+ * With `avoid` (a borrowed texture), the part the main task runs through is skipped while another
+ * part is left: the lead's own material lives there, and two materials on one part read as a clash.
+ */
+export function placePart(place: string, parts: readonly SpecPart[], taskLabel: string | null, avoid = false): SpecPart | null {
   if (parts.length === 0) return null;
+  const pool = avoid && parts.length > 1 ? parts.filter((p) => p.label !== taskLabel) : parts;
   const words = place.toLowerCase();
   for (const [re, els] of PLACE_ELEMENTS) {
     if (!re.test(words)) continue;
     for (const el of els) {
-      const hit = parts.find((p) => p.element === el);
+      const hit = pool.find((p) => p.element === el);
       if (hit) return hit;
     }
   }
+  if (avoid) return pool.find((p) => p.element === "hero") ?? pool[0]!;
   return parts.find((p) => p.label === taskLabel) ?? parts[0]!;
 }
 
@@ -95,9 +101,9 @@ export function placePart(place: string, parts: readonly SpecPart[], taskLabel: 
  * points at, later places of the card's world are dropped ("sitting on a fine twill weave on the sash
  * card" keeps the weave, not the sash). Returns the text and the part, or null when nothing named a place.
  */
-export function placeTexture(texture: string, parts: readonly SpecPart[], taskLabel: string | null): { text: string; part: SpecPart | null } {
+export function placeTexture(texture: string, parts: readonly SpecPart[], taskLabel: string | null, avoid = false): { text: string; part: SpecPart | null } {
   let part: SpecPart | null = null;
-  const take = (place: string) => (part ??= placePart(place, parts, taskLabel));
+  const take = (place: string) => (part ??= placePart(place, parts, taskLabel, avoid));
   let first = true;
   let text = texture.trim();
   if (parts.length === 0) return { text, part: null };
@@ -138,15 +144,21 @@ export function placeTexture(texture: string, parts: readonly SpecPart[], taskLa
   return { text, part };
 }
 
+const MOVE_WORDS = /\b(motion|moves?|moving|slides?|sliding|snaps?|settl\w*|turns?|rolls?|spins?|tilts?|press\w*|reveals?|opens?|rotat\w*|swings?|bounc\w*|folds?|flips?|pours?|unroll\w*|rises?|falls?|strikes?|drifts?|glides?|peels?|wraps?|binds?)\b/i;
+
 /**
  * Why the second card is there, in this page's words: the sentence of its surprise that says what it
  * gives a UI ("Small hollows carved in rows into rock become a tactile dot system for steps, counts
  * and ratings"), with "the UI" made this page. The draft judge read a bare "(from X)" as a line left
  * over from another direction; the twist sentence says it is this direction's second card, and why.
  */
-export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLabel?: string): string {
+export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLabel?: string, kind: "texture" | "motion" = "texture"): string {
   const sentences = (card.surprise || card.idea).split(/(?<=[.!?])\s+/).map(trimEnd).filter(Boolean);
-  const pick = sentences.find((x) => /\b(UI|interface|screen|app|page)\b/.test(x)) ?? sentences[sentences.length - 1] ?? "";
+  // A motion twist is explained only by a sentence about movement (honey's "two-grade system" is about color).
+  const pick =
+    kind === "motion"
+      ? (sentences.find((x) => MOVE_WORDS.test(x)) ?? "")
+      : (sentences.find((x) => /\b(UI|interface|screen|app|page)\b/.test(x)) ?? sentences[sentences.length - 1] ?? "");
   const page = pageLabel ? `the ${pageLabel}` : "the page";
   return pick.replace(/\bthe (UI|interface|app|screen)\b/i, page);
 }
@@ -155,12 +167,12 @@ export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLa
 export function textureLine(ctx: SpecContext): { line: string; surface: string } {
   const card = ctx.adds === "texture" && ctx.second ? ctx.second : ctx.lead;
   const task = parseTask(ctx.task);
-  const { text, part } = placeTexture(card.texture, ctx.parts, task?.label ?? null);
-  const body = trimEnd(text);
   const borrowed = card !== ctx.lead;
+  const { text, part } = placeTexture(card.texture, ctx.parts, task?.label ?? null, borrowed);
+  const body = trimEnd(text);
   if (!borrowed) return { line: `${body}; text sits on solid panels, never on the texture.`, surface: `${body}.` };
-  // A borrowed texture that named no place of its own still lands on one part of this page.
-  const target = part ?? (ctx.parts.length ? ctx.parts.find((p) => p.label === task?.label) ?? ctx.parts[0]! : null);
+  // A borrowed texture that named no place of its own still lands on one part of this page (not the task part).
+  const target = part ?? placePart("", ctx.parts, task?.label ?? null, true);
   const placed = target && !part ? `On the ${target.label} only: ${lowerFirst(body)}` : body;
   const why = twistWhy(card, ctx.pageLabel);
   return {
@@ -200,7 +212,7 @@ export function motionLine(ctx: SpecContext): string {
   const part = ctx.parts.find((p) => p.label === task?.label) ?? ctx.parts[0];
   if (!part) return `${upperFirst(trimEnd(verb))} in ${ms}ms (from ${card.name}); with reduced motion on, ${lowerFirst(trimEnd(reduced))}.`;
   const when = task ? `, each time the main task moves on (${task.phrase})` : "";
-  const why = twistWhy(card, ctx.pageLabel);
+  const why = twistWhy(card, ctx.pageLabel, "motion");
   return `The twist, the motion of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(trimEnd(verb))} in ${ms}ms on the ${part.label}${when}; with reduced motion on, ${reducedOnPart(reduced)}.`;
 }
 
@@ -221,6 +233,11 @@ export const COLOR_WORDS: Record<string, string> = {
 export const SAME_COLOR = 0.09;
 const COLOR_RE = new RegExp(`(?:\\b[a-z]+-)?\\b(${Object.keys(COLOR_WORDS).join("|")})\\b`, "gi");
 const HEX_RE = /#[0-9a-f]{6}\b/gi;
+/** A color word with up to two plain modifiers before it ("low sun amber"), never a function word or a number. */
+const NAMED_RE = new RegExp(
+  `\\b((?:(?!(?:with|in|a|an|the|and|of|on|to|at|as|by|from|its|or|into|for|one|two|three|only|is|are|then|while|when|over|under|behind)\\b)[a-z]+\\s+){0,2})(?:[a-z]+-)?(${Object.keys(COLOR_WORDS).join("|")})\\b`,
+  "gi",
+);
 
 type Swatch = { name: string; hex: string; lab: [number, number, number] };
 const swatches = (palette: IngredientCard["palette"]): Swatch[] =>
@@ -252,10 +269,15 @@ export function paletteColors(text: string, palette: IngredientCard["palette"], 
   for (const s of [...sw].sort((a, b) => b.name.length - a.name.length)) {
     out = out.replace(new RegExp(`\\b${escapeRe(s.name)}\\b`, "gi"), (m) => `\u0001${masks.push(m) - 1}\u0002`);
   }
+  // A color a palette name holds ("amber" in "canopy amber") becomes that name, with the card's own
+  // modifiers ("low sun amber"), so the reader finds it in the color line.
+  out = out.replace(NAMED_RE, (m, _mods: string, word: string) => {
+    const w = word.toLowerCase().replace("grey", "gray");
+    const hit = sw.find((s) => new RegExp(`\\b${w === "gray" ? "gr[ae]y" : w}\\b`, "i").test(s.name));
+    return hit ? `\u0003\u0001${masks.push(hit.name) - 1}\u0002` : m;
+  });
   out = out.replace(COLOR_RE, (m, word: string) => {
     const w = word.toLowerCase().replace("grey", "gray");
-    const named = sw.some((s) => new RegExp(`\\b${w === "gray" ? "gr[ae]y" : w}\\b`, "i").test(s.name));
-    if (named) return m;
     const lab = hexToOklab(COLOR_WORDS[w]!);
     const near = nearest(lab, sw);
     if (oklabDistance(lab, near.lab) <= SAME_COLOR) return m;
@@ -270,9 +292,9 @@ export function paletteColors(text: string, palette: IngredientCard["palette"], 
     }
   });
   return out
+    .replace(/\u0001(\d+)\u0002/g, (_m, i: string) => masks[Number(i)]!)
     .replace(/\b([Aa]) \u0003(?=[aeiou])/g, "$1n ")
-    .replace(/\u0003/g, "")
-    .replace(/\u0001(\d+)\u0002/g, (_m, i: string) => masks[Number(i)]!);
+    .replace(/\u0003/g, "");
 }
 
 /**

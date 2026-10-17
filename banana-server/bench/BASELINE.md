@@ -819,3 +819,103 @@ After the fix the spec is the weakest part (12 of 20): the second card's texture
 their own world ("a honey fill level", "a high score card"), colors named in the text are missing from the palette,
 and a dense card read "Dense; ... generous spacing". The last one is fixed (`cardSpec` says "tight spacing" for a
 dense card); the borrowed lines are the next fix (a text rewrite, so a J job or card edits, not a ranking change).
+
+## Refinement R9: the draft spec agrees with itself and says where to start (2026-10-17)
+
+Branch `next/refine-r9` (from `next/phase-1`, 694da37). Local Atlas copied from the R7 build (manifest
+`77a33509b67a`); the dry bend `r9-0` matches `r7-5` except the R7 density fix. Not uploaded. Budget r9: $5.57 of $16
+(drafts `r9-drafts` $2.20, spec judge `r9-dirs` $3.38). No Serper. Craftwork, Best Designs on X and x.com items were
+never model inputs.
+
+### Measure
+
+`scripts/r9-drafts.ts` writes 30 drafts: the 20 R7 drafts (before is R7's rated text, rebuilt byte for byte from the
+r5a directions, so the reproduction is exact) and 10 R6 weak-domain briefs (telecom sign-up, bill payment, fiber
+plans; food home, order tracking, menu; villa developer, rental search, apartment detail, property portal), each
+one's first direction with a second card, from the dry bends `r9-w0` (before) and `r9-w1` (after). The weak briefs
+were never searched, so their Frankenstein parts are stand-ins (UI references of the r5a Bench brief in the same
+domain); both versions share them. `atlas-build/jobs/r9-drafts.ts` is the R7 draft judge, word for word, with two
+votes per draft.
+
+Reproduction: R7's 20 after drafts rated 3.50 in R7 and **3.48** now (two votes), so the judge is stable.
+
+### Fixes (`lib/atlas/spec-coherence.ts`, called once in `bendBriefAtlas` after the page span; deterministic)
+
+1. The second card's lines act on this page. Its texture's own place ("on one progress or stats card only", "the
+   parts list card carries", "on the top band of the card") moves onto the R4 page part its words name, never the part
+   the main task runs through (the lead's own material lives there); later places of the card's world become
+   "there". Its motion verb runs on the task part, timed to the main task, and the reduced-motion subject ("The fill
+   level", "The rod") becomes "it". Each borrowed line opens with "The twist, the surface (motion) of X:" and the
+   sentence of the card's surprise that says what it gives a UI, with "the UI" made this page (a motion twist only
+   takes a sentence about movement). The lead's own texture place is moved too. Nothing is dropped or softened.
+2. Colors: the color line lists every palette color with its name (R7 showed one per role, by hex, so "mustard" and
+   "cobalt" looked missing when they were the second support color). A color word in the texture, motion, layout,
+   signature, pattern, whyItFits, steal and mechanic lines becomes the palette name that holds it ("low sun amber" to
+   "canopy amber"), or the nearest palette color in OKLab when no name holds it; a hex not in the palette becomes the
+   nearest palette hex. Card names, imagery and avoid lines are never touched.
+3. Density: spacing words agree with the card (dense: tight spacing, several facts per screen, packed sections; airy:
+   generous, open, roomy; balanced keeps the platform words without "dense" or "airy"), in the density and layout lines.
+4. The pattern line names the mechanic only when the signature is that mechanic's line; otherwise the name was a
+   second, unexplained interaction ("a draining button countdown", "a fanned type deck").
+5. Draft text (`lib/stitch/bend-lines.ts` `taskSteps`): the Bend it lines end with "Build first: the <task part>"
+   and, for each step the brief lists that no bent part carries ("book installation", "call the rider"), a line to
+   give it its own slot after the task part, built from the same idea.
+
+Tested in `tests/atlas-r9-spec.test.ts` (16 tests: places, motion, twist sentence, palette keep and swap, card
+names kept, imagery and avoid untouched, density on every platform, build order and steps).
+
+### Results
+
+| Drafts (2 votes each) | Expand mean | Expand 4+ (draft mean) | Original mean |
+| --- | --- | --- | --- |
+| R7 20, before | 3.48 | 6 | 3.45 |
+| R7 20, after | **3.80** | **13** | 3.23 |
+| Weak 10, before | 2.70 | 0 | 3.00 |
+| Weak 10, after | 2.95 | 2 | 3.30 |
+| All 30, before | 3.22 | 6 | 3.30 |
+| **All 30, after** | **3.52** | **15** | 3.25 |
+
+Steps, all 30 (expand; original): fixes 1 to 3 without the twist sentence, 3.22; 3.37 ("spec" named weakest 29 to 21
+votes); with the twist sentence, 3.23; 3.23; with the build order and step lines, 3.53; 3.35; with the texture kept
+off the task part, the motion sentence rule and fix 4, 3.52; 3.25. Original on all 30 stays within about 0.1 of
+before in every round; on the R7 20 it is 3.23 to 3.48 across rounds, so the 0.22 drop there is at the edge of the
+noise and is the number to watch.
+
+The target of 3.8 is met on the R7 drafts but not on all 30: the weak drafts are held back by "where the idea goes"
+(13 of 20 votes), which is page span and mechanic choice (the sign-up task on name and password fields, food home
+browsing through a progress bar, rental search through a no-results message, an apartment page through plan cards),
+R8's lane, and by the stand-in parts.
+
+Spec-only judge (`atlas-build/jobs/r9-judge-dirs.ts`, the R7 job with r9 ids; reads layout, color, typography,
+texture, signature, whyItFits):
+
+| Bend | On brief | Wow 4+ (vote a) | Wow mean |
+| --- | --- | --- | --- |
+| r9-0 (Bench, before) | 30 of 30 | 20 of 30 | 3.67 |
+| **r9-1 (Bench, after)** | **30 of 30** | **22 of 30** | **3.70** |
+| r9-w0 (weak, before) | 24 of 36 | 11 of 36 | 3.14 |
+| r9-w1 (weak, after) | 23 of 36 | 13 of 36 | 3.17 |
+
+The one weak flip (Envelopes on bill payment, 4 to 3) gives the same reason both times (the mechanic sits on a
+divider stripe): a borderline call, not the spec change.
+
+Before and after (Hand-Painted Souq Shop Sign with the motion of Asiri Mountain Honey, Ramadan offers):
+- motion before: "Settles in 480ms (from Asiri Mountain Honey); with reduced motion on, The fill level swaps instantly
+  to its new height with no tilt."
+- motion after: "The twist, the motion of Asiri Mountain Honey: honey named by its flower gives the seasonal offers
+  page a built-in two-grade system, dark for the base and amber for the one thing that matters, plus a heavy, settling
+  motion. Settles in 480ms on the deal cards with old and new price, each time the main task moves on (scanning and
+  picking); with reduced motion on, it swaps instantly to its new height with no tilt."
+
+Gas Station Price Sign with the texture of Qatari Al Jassasiya Rock Carvings, eSIM plan picker:
+- texture before: "Pecked cup marks ... on one progress or stats card only. The current mark fills with low sun
+  amber. (from Qatari Al Jassasiya Rock Carvings); text sits on solid panels, never on the texture."
+- texture after: "The twist, the surface of Qatari Al Jassasiya Rock Carvings: small hollows carved in rows into rock
+  become a tactile dot system for steps, counts and ratings, which reads like a record left by hand rather than a
+  chart. Pecked cup marks ... on the networks, speed and plan details only. The current mark fills with canopy amber;
+  text sits on solid panels, never on the texture."
+
+Open: the judge still calls two materials on one page a clash in about a third of the twisted drafts (felt and
+sticker sheen, walnut and aluminum); that is the second card pick, kept as the strangeness the direction is built
+on. An atlas-build rewrite of the card lines was not run: the deterministic version measured the gain at no cost,
+and a model rewrite would only reach production after an upload.

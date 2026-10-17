@@ -8,6 +8,7 @@ import { coherentMechanic, coherentSpec, colorLine, densityLine, densityWords, m
 import type { IngredientCard } from "@/lib/atlas/types";
 import type { VisualSpec } from "@/lib/direction-detail";
 import { PLATFORM_PROFILES } from "@/lib/platform";
+import { taskSteps } from "@/lib/stitch/bend-lines";
 import { CARDS } from "./fixtures/atlas";
 
 const SOUQ: IngredientCard["palette"] = [
@@ -39,12 +40,20 @@ describe("R9 second card lines act on this page", () => {
     expect(line).toContain("on the savings meter only");
     expect(line).not.toContain("progress or stats card");
     expect(line).toContain("Pecked cup marks");
-    expect(line).toContain("(from Qatari Al Jassasiya Rock Carvings)");
+    expect(line).toMatch(/^The twist, the surface of Qatari Al Jassasiya Rock Carvings: /);
   });
 
-  it("lands a borrowed texture that names no place on the part the main task runs through", () => {
+  it("says why the twist is there, in this page's words", () => {
+    const why = { ...rock, surprise: "Small hollows carved in rows become a tactile dot system for the UI. They read like a record left by hand." };
+    expect(textureLine({ lead, second: why, adds: "texture", platform: "mobile", parts, task, pageLabel: "offers page" }).line).toMatch(/^The twist, the surface of Qatari Al Jassasiya Rock Carvings: small hollows carved in rows become a tactile dot system for the offers page\. /);
+  });
+
+  it("lands a borrowed texture that names no place on a part other than the task part", () => {
     const glow: IngredientCard = { ...rock, name: "City Lights at Night", texture: "A soft 12 px glow, nothing else glows." };
-    expect(textureLine({ lead, second: glow, adds: "texture", platform: "mobile", parts, task }).line).toMatch(/^On the deal cards only: a soft 12 px glow/);
+    expect(textureLine({ lead, second: glow, adds: "texture", platform: "mobile", parts, task }).line).toMatch(/\. On the season banner only: a soft 12 px glow/);
+    // A borrowed texture whose own place is the task part moves off it (the lead's material lives there).
+    const deal: IngredientCard = { ...rock, texture: "Grain on one feature card only." };
+    expect(textureLine({ lead, second: deal, adds: "texture", platform: "mobile", parts, task }).line).toContain("on the season banner only");
   });
 
   it("keeps the last word of a place as its noun and drops later places of the card's world", () => {
@@ -56,7 +65,9 @@ describe("R9 second card lines act on this page", () => {
 
   it("puts the borrowed motion's verb on the task part, timed to the main task, with the card's objects gone", () => {
     const line = motionLine({ lead, second: honey, adds: "motion", platform: "mobile", parts, task });
-    expect(line).toBe("Settles in 480ms on the deal cards (the move of Asiri Mountain Honey), each time the main task moves on (pick a deal and order); with reduced motion on, it swaps instantly to its new height with no tilt.");
+    expect(line).toBe("The twist, the motion of Asiri Mountain Honey. Settles in 480ms on the deal cards, each time the main task moves on (pick a deal and order); with reduced motion on, it swaps instantly to its new height with no tilt.");
+    const slow = { ...honey, surprise: "Honey gives the UI a two-grade color system. It pours with a heavy, settling motion." };
+    expect(motionLine({ lead, second: slow, adds: "motion", platform: "mobile", parts, task })).toMatch(/^The twist, the motion of Asiri Mountain Honey: it pours with a heavy, settling motion\. Settles/);
     expect(line).not.toMatch(/fill level/);
   });
 
@@ -69,8 +80,10 @@ describe("R9 second card lines act on this page", () => {
 
 describe("R9 colors come from the palette", () => {
   it("keeps colors the palette names or holds, and lists every palette color by name", () => {
-    expect(paletteColors("A hard offset shadow in cobalt, mustard trim and red", SOUQ)).toBe("A hard offset shadow in cobalt, mustard trim and red");
-    expect(paletteColors("Big price in white on black", SOUQ)).toBe("Big price in white on black");
+    expect(paletteColors("A hard offset shadow in cobalt, and red", SOUQ)).toBe("A hard offset shadow in cobalt shadow blue, and shopfront red");
+    expect(paletteColors("Big price in white on black", SOUQ)).toBe("Big price in sign board enamel white on sign painter black");
+    expect(paletteColors("The mark fills with low sun yellow", SOUQ)).toBe("The mark fills with mustard trim yellow");
+    expect(paletteColors("Edges in shopfront red", SOUQ)).toBe("Edges in shopfront red");
     expect(colorLine({ name: "Souq", palette: SOUQ, shipPairs: [] })).toContain("support cobalt shadow blue #1F4FA3, support mustard trim yellow #E3B023");
   });
 
@@ -99,6 +112,29 @@ describe("R9 colors come from the palette", () => {
   });
 });
 
+describe("R9 Bend it lines give the build order and the brief's uncovered steps", () => {
+  it("names the task part first and adds a slot line for a listed step no part carries", () => {
+    const mechanic = {
+      element: "plan",
+      how: "Two plans sit in brass pans",
+      parts: [
+        { element: "paywall-plan", label: "plan column headers", how: "Two plans sit in brass pans" },
+        { element: "list-row", label: "feature comparison rows", how: "Rows are teak strips" },
+      ],
+      task: "The main task, compare speeds and prices, book installation, now runs through the plan column headers: two plans sit in brass pans.",
+    };
+    const lines = taskSteps(mechanic, mechanic.parts, "");
+    expect(lines[0]).toBe("- Build first: the plan column headers, where the main task runs; then the other bent parts; the plain slots last.");
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toMatch(/^- book installation: no bent part carries this step yet; give it its own slot right after the plan column headers/);
+  });
+
+  it("adds nothing for a task phrase the brief does not list", () => {
+    expect(taskSteps({ element: "hero", how: "x", task: "The main task, the first impression, now runs through the hero: x." }, [], "")).toHaveLength(1);
+    expect(taskSteps({ element: "hero", how: "x" }, [], "")).toEqual([]);
+  });
+});
+
 describe("R9 density words agree with the card", () => {
   it("a dense card never reads generous, airy or comfortable", () => {
     for (const p of Object.keys(PLATFORM_PROFILES) as Array<keyof typeof PLATFORM_PROFILES>) {
@@ -106,7 +142,7 @@ describe("R9 density words agree with the card", () => {
       expect(line, p).toMatch(/^Dense; /);
       expect(line, p).not.toMatch(/generous|airy|comfortable|one message per screen height/i);
     }
-    expect(densityLine("dense", "mobile")).toBe("Dense; one idea per screen, 44pt tap targets, tight spacing on an 8pt rhythm.");
+    expect(densityLine("dense", "mobile")).toBe("Dense; several facts per screen, 44pt tap targets, tight spacing on an 8pt rhythm.");
   });
 
   it("an airy card never reads dense, compact or tight", () => {

@@ -1,0 +1,32 @@
+[
+ {
+  "tag": "w0",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "telecom-bill-payment",
+  "directionId": "bd-5n36cuc8",
+  "title": "Punch Card bill payment",
+  "relevance": 4,
+  "reason": "Punch card bills were a real billing object, and mono line rows with hole status read this month's bill line by line, so the idea fits the page even though the progress card texture and SIM rationale are off notes."
+ },
+ {
+  "tag": "w0",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "property-portal-home",
+  "directionId": "bd-tn2dhukp",
+  "title": "Nubian House Painting buyers",
+  "relevance": 4,
+  "reason": "A painted Nubian doorway framing the home search ties the world to houses and acts on the hero this page really has, and the stray plan preview is a coherence slip, not a page miss."
+ },
+ {
+  "tag": "w0",
+  "pass": "adj",
+  "vote": "adj",
+  "briefId": "property-portal-home",
+  "directionId": "bd-sxbr94k9",
+  "title": "Polished Marble buyers property",
+  "relevance": 4,
+  "reason": "Black marble feature cards that carry search, new listings and valuation, plus a brass call to action, give a London property home page a dark, one-accent voice that fits homes and the taste bar; the unseen Scandinavian 1955 motion is a coherence issue, not a relevance one."
+ }
+]
