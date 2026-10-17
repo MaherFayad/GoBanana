@@ -3,7 +3,7 @@ import type { DirectionSummary, KitModel } from "./model";
 import { dimText, directionRefs } from "./model";
 import { pairingSource } from "./design-md";
 import { globsText, pagesText, scopeBlock } from "./scope";
-import { SPEC_AXES, bullets, exploreLine, focusSources, fontsLine, kitTitle, refLine, shipLine, statusText } from "./scoped";
+import { SPEC_AXES, bullets, mechanicLine, exploreLine, focusSources, fontsLine, kitTitle, refLine, shipLine, statusText } from "./scoped";
 import { stitchSection } from "./stitch-md";
 import { mdText, wildnessLabel } from "./util";
 
@@ -13,6 +13,7 @@ function directionBlock(m: KitModel, d: DirectionSummary, i: number): string[] {
   const facts = [
     `Move: ${mdText(d.direction.move)}. Status: ${statusText(d)}.`,
     ...(det?.twist ? [`Twist: ${mdText(det.twist, 300)}`] : []),
+    ...(det?.mechanic ? [mechanicLine(det.mechanic)] : []),
     ...(det?.pages?.length ? [`Pages saved with it: ${det.pages.map((p) => mdText(p, 80)).join(", ")}.`] : []),
     ...(det?.wildness ? [`Wildness: ${wildnessLabel(det.wildness)}.`] : []),
     `Search used: "${mdText(d.direction.searchQuery)}".`,

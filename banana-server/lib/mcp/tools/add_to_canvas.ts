@@ -20,6 +20,7 @@ import {
 } from "@/lib/canvas/store";
 import type { ReferenceRecord } from "@/lib/db/types";
 import type { Zone } from "@/lib/direction-detail";
+import { MAX_CLUSTER } from "@/lib/layout";
 import { hexToOklch, normalizeHex } from "@/lib/palette";
 import { checkMobbinScreen, MAX_MOBBIN_IMAGE_URL, MAX_MOBBIN_SOURCE_URL, MOBBIN_SITE } from "@/lib/sources/mobbin";
 import { parseHttpUrl } from "@/lib/sources/url";
@@ -51,14 +52,32 @@ const BUILD_GAP = 48;
 
 export const TOOL_DESCRIPTION =
   "Place items on a canvas: references from search_references (by referenceId), Mobbin screens (screen: imageUrl and sourceUrl from the user's Mobbin connector), notes, swatches and sections. " +
-  "Direction results go to that direction's section, art above UI. Per direction: 6 to 8 UI, 2 to 4 art. " +
-  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal.`;
+  "Direction results go to that direction's section, art above UI. " +
+  `A reference or screen can carry a note (up to ${MAX_NOTE} characters) on what to steal, and a cluster (layout, component: nav, type...) for by_cluster.`;
+
+/** Optional cluster label on image items: what to take from it. */
+const cluster = z.string().trim().min(1).max(MAX_CLUSTER).optional();
+const CLUSTER_MESSAGE = `cluster must be 1 to ${MAX_CLUSTER} characters, for example "layout", "component: nav" or "color".`;
+
+/** A plain message when an item's cluster is empty or too long, else null. */
+function clusterProblem(raw: unknown): string | null {
+  const items = (raw as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) return null;
+  for (let i = 0; i < items.length; i++) {
+    const c = (items[i] as { cluster?: unknown } | null)?.cluster;
+    if (c === undefined) continue;
+    const len = typeof c === "string" ? c.trim().length : -1;
+    if (len < 1 || len > MAX_CLUSTER) return `Item ${i + 1}: ${CLUSTER_MESSAGE}${len > MAX_CLUSTER ? ` This one has ${len}.` : ""}`;
+  }
+  return null;
+}
 
 const item = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("reference"),
     referenceId: z.string().min(1).max(100),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+    cluster,
   }),
   z.object({
     type: z.literal("screen"),
@@ -70,6 +89,7 @@ const item = z.discriminatedUnion("type", [
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
     directionId: z.string().min(1).max(100).optional(),
     screenId: z.string().trim().min(1).max(100).optional(),
+    cluster,
   }),
   z.object({
     type: z.literal("build"),
@@ -78,6 +98,7 @@ const item = z.discriminatedUnion("type", [
     stitchId: z.string().min(1).max(120),
     title: z.string().trim().min(1).max(200).optional(),
     note: z.string().trim().min(1).max(MAX_NOTE).optional(),
+    cluster,
   }),
   z.object({ type: z.literal("note"), text: z.string().trim().min(1).max(2000) }),
   z.object({
@@ -108,7 +129,7 @@ export const inputSchema = z.object({
 
 const MESSAGES: Record<string, string> = {
   canvasId: "Pass the canvasId from open_canvas.",
-  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note? } (note up to ${MAX_NOTE} characters), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
+  items: `items must be a list of 1 to ${MAX_ITEMS_PER_CALL} items. Each is { type: "reference", referenceId, note?, cluster? } (note up to ${MAX_NOTE} characters, cluster up to ${MAX_CLUSTER}), { type: "screen", imageUrl, sourceUrl, title?, app?, platform? ("ios" or "web"), note?, directionId?, cluster? } (a Mobbin screen: image_url and mobbin_url from the Mobbin connector; screenId refreshes one already placed), { type: "build", imageUrl, url, stitchId, title?, note?, cluster? } (an https screenshot link of the user's build, next to its Frankenstein page), { type: "note", text }, { type: "swatch", hex, role? } or { type: "section", title }.`,
   sectionId: "sectionId must be the id of a section on this canvas.",
 };
 
@@ -163,7 +184,7 @@ function referenceNode(ref: {
   title?: string | null;
   width?: number | null;
   height?: number | null;
-}, extra: { note?: string; zone: Zone }): NewNode {
+}, extra: { note?: string; zone: Zone; cluster?: string }): NewNode {
   const size = referenceSize(ref.width, ref.height);
   return {
     type: "image",
@@ -178,6 +199,7 @@ function referenceNode(ref: {
       note: extra.note ?? null,
       tag: null,
       ...(extra.zone === "art" ? { zone: "art" as const } : {}),
+      ...(extra.cluster ? { cluster: extra.cluster } : {}),
       width: ref.width ?? null,
       height: ref.height ?? null,
     },
@@ -196,6 +218,8 @@ function text(out: AddToCanvasOutput, title: string): string {
 export function createAddToCanvasTool(deps: CanvasToolDeps) {
   return async function addToCanvas(raw: unknown, userId: string | undefined): Promise<ToolResult> {
     if (!userId) return toolMessage("You are not signed in. Reconnect to sign in again.");
+    const badCluster = clusterProblem(raw);
+    if (badCluster) return toolMessage(badCluster);
     const parsed = parseArgs(inputSchema, raw, MESSAGES, MESSAGES.items!);
     if (!parsed.ok) return toolMessage(parsed.message);
     const input = parsed.data;
@@ -230,7 +254,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               // Zone: the tray's tag from the search, else the saved row's lane ("art" lane is art direction).
               const zone = fromTray?.zone ?? (row?.lane === "art" ? "art" : "ui");
               return {
-                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}) }),
+                node: referenceNode(ref, { zone, ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) }),
                 ...(fromTray?.directionId ? { directionId: fromTray.directionId } : {}),
               };
             }
@@ -241,7 +265,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               const title = it.app && it.title ? `${it.app}: ${it.title}` : (it.title ?? it.app ?? "Mobbin screen");
               const node = referenceNode(
                 { imageUrl: it.imageUrl, sourceUrl: it.sourceUrl, sourceSite: MOBBIN_SITE, title },
-                { zone: "ui", ...(it.note ? { note: it.note } : {}) },
+                { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) },
               );
               if (node.type === "image") Object.assign(node.data, { placedAt, ...(it.screenId ? { mobbinId: it.screenId } : {}) });
               // The same screen already on the board: refresh its image link in place (Mobbin links expire).
@@ -268,7 +292,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
               }
               const ref = { imageUrl: image.toString(), sourceUrl: link.toString() };
               if (matcher.isReferenceBlocked(ref)) return { skip: "that link was removed after a takedown request." };
-              const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}) });
+              const node = referenceNode({ ...ref, title: it.title ?? "Build" }, { zone: "ui", ...(it.note ? { note: it.note } : {}), ...(it.cluster ? { cluster: it.cluster } : {}) });
               if (node.type === "image") Object.assign(node.data, { kind: "build" as const, stitchId: it.stitchId, placedAt });
               return { node, stitchId: it.stitchId };
             }
@@ -300,6 +324,7 @@ export function createAddToCanvasTool(deps: CanvasToolDeps) {
                 ...(fresh.placedAt ? { placedAt: fresh.placedAt } : {}),
                 ...(fresh.mobbinId ? { mobbinId: fresh.mobbinId } : {}),
                 ...(fresh.note ? { note: fresh.note } : {}),
+                ...(fresh.cluster ? { cluster: fresh.cluster } : {}),
               };
               const abs = absolute(base.nodes, n);
               updated.push({ id: n.id, type: n.type, x: abs.x, y: abs.y, sectionId: n.parentId ?? null, ...imageOut({ ...n, data }) });

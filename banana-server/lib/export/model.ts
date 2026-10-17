@@ -464,6 +464,12 @@ export function cleanDetail(raw: unknown): DirectionDetail | null {
   const language = parseLanguage(r.language);
   if (language) d.language = language;
   if (isDirectionSource(r.source)) d.source = r.source;
+  const mech = r.mechanic as Record<string, unknown> | null | undefined;
+  if (mech && typeof mech === "object" && typeof mech.element === "string" && typeof mech.how === "string") {
+    const element = oneLine(mech.element, 40);
+    const how = oneLine(mech.how, 400);
+    if (element && how) d.mechanic = { element, how };
+  }
   const rec = parseReconciled(r.reconciled);
   if (rec) d.reconciled = rec;
   return d;

@@ -3,7 +3,7 @@
 import { useStore, type NodeProps } from "@xyflow/react";
 import { useCanvasActions } from "../context";
 import { ChevronDownIcon, ChevronEndIcon } from "../icons";
-import { ZONE_LABEL_SPACE } from "@/lib/layout";
+import { clusterOf, ZONE_LABEL_SPACE } from "@/lib/layout";
 import { ZONE_LABELS } from "../labels";
 import { LAYOUT_LABELS, LAYOUTS } from "../layout-adapter";
 import { SECTION_HEADER_HEIGHT } from "../state";
@@ -40,6 +40,39 @@ export function zoneLabelKey(nodes: readonly Kid[], sectionId: string): string {
   return `${artTop}|${uiTop}`;
 }
 
+/**
+ * Row labels for a section arranged by cluster, as JSON [[top, label], ...], or "" when no child
+ * has a cluster or the rows are not laid out as clean bands with room for a label above each
+ * (after by_direction or a drag), so the zone labels show instead. Stitch frames are left out.
+ */
+export function clusterLabelKey(nodes: readonly Kid[], sectionId: string): string {
+  const bands = new Map<string, { label: string; top: number; bottom: number }>();
+  let clustered = false;
+  for (const n of nodes) {
+    if (n.parentId !== sectionId || n.type === "stitch") continue;
+    const d = (n.data ?? {}) as { cluster?: unknown; zone?: unknown };
+    const cluster = typeof d.cluster === "string" ? d.cluster : undefined;
+    if (cluster?.trim()) clustered = true;
+    const label = clusterOf({ cluster, zone: n.type === "image" && d.zone === "art" ? "art" : undefined });
+    const key = label.toLowerCase();
+    const y = n.position.y;
+    const bottom = y + (n.height ?? n.measured?.height ?? 0);
+    const band = bands.get(key);
+    if (band) {
+      band.top = Math.min(band.top, y);
+      band.bottom = Math.max(band.bottom, bottom);
+    } else bands.set(key, { label, top: y, bottom });
+  }
+  if (!clustered) return "";
+  const sorted = [...bands.values()].sort((a, b) => a.top - b.top);
+  let floor = SECTION_HEADER_HEIGHT;
+  for (const b of sorted) {
+    if (b.top - ZONE_LABEL_SPACE < floor) return "";
+    floor = b.bottom;
+  }
+  return JSON.stringify(sorted.map((b) => [b.top - ZONE_LABEL_SPACE, b.label]));
+}
+
 /** Titled frame (React Flow group) for one direction. */
 export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) {
   const actions = useCanvasActions();
@@ -47,7 +80,10 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
   // Zone labels: when the section holds art direction items, "Art direction" sits above the art
   // block and "UI references" above the rest, where arrange and placement leave room (lib/layout).
   const zones = useStore((s) => zoneLabelKey(s.nodes, id));
-  const [artTop, uiTop] = zones ? zones.split("|").map(Number) : [];
+  // by_cluster: one label per cluster row ("layout", "component: nav", "Other"), in place of the zone labels.
+  const clusterKey = useStore((s) => clusterLabelKey(s.nodes, id));
+  const clusters = clusterKey ? (JSON.parse(clusterKey) as [number, string][]) : [];
+  const [artTop, uiTop] = zones && clusters.length === 0 ? zones.split("|").map(Number) : [];
   const editing = actions.editingId === id;
   const collapsed = Boolean(data.collapsed);
 
@@ -114,6 +150,12 @@ export function SectionNode({ id, data, selected }: NodeProps<SectionFlowNode>) 
             {ZONE_LABELS.ui}
           </p>
         )}
+        {!collapsed &&
+          clusters.map(([top, label]) => (
+            <p key={`${top}-${label}`} className="bn-zone-label" style={{ insetBlockStart: top }}>
+              {label}
+            </p>
+          ))}
       </div>
     </>
   );

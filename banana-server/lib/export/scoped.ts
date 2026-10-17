@@ -19,6 +19,12 @@ export const SPEC_AXES: [keyof VisualSpec, string][] = [
   ["pattern", "Pattern"],
 ];
 
+/** The mechanic as one line: the working part of the page where the wild idea lives. */
+export function mechanicLine(mechanic: { element: string; how: string }): string {
+  const how = mdText(mechanic.how, 400);
+  return `Mechanic: build it around the ${mdText(mechanic.element, 40)}. ${/[.!?]$/.test(how) ? how : `${how}.`}`;
+}
+
 export function statusText(d: DirectionSummary): string {
   if (d.status === "dropped") return "dropped";
   if (d.status === "kept") return d.detail?.verdict === "keep" ? "kept" : "kept (has references, not rated yet)";

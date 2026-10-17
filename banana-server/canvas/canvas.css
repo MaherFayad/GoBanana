@@ -2213,6 +2213,10 @@ button.bn-light[data-light="min"]::before {
   line-height: 28px;
   text-transform: uppercase;
   pointer-events: none;
+  max-inline-size: calc(100% - 2 * var(--st-space-l));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bn-section:lang(ar) .bn-zone-label {

@@ -12,10 +12,15 @@
  * Zones (wild directions v2): inside a section, art direction items (`zone: "art"`) sit in their
  * own block on top and UI items below, each block under a ZONE_LABEL_SPACE strip where the canvas
  * draws its label ("Art direction", "UI references"). Sections without art items look as before.
+ *
+ * - by_cluster (V4.2): inside each section, one labelled row per cluster (what to take from the
+ *   references: layout, component: <part>, type, color, motion, art, then other labels in first
+ *   seen order, then "Other" for items with none). Rows wrap after CLUSTER_COLUMNS items. Items
+ *   keep input order inside a row. Sections sit side by side in the order given, as in by_direction.
  */
 
-export type LayoutKind = "by_direction" | "masonry" | "grid" | "hero";
-export const LAYOUTS: readonly LayoutKind[] = ["by_direction", "masonry", "grid", "hero"];
+export type LayoutKind = "by_direction" | "by_cluster" | "masonry" | "grid" | "hero";
+export const LAYOUTS: readonly LayoutKind[] = ["by_direction", "by_cluster", "masonry", "grid", "hero"];
 
 export interface LayoutItem {
   id: string;
@@ -26,6 +31,8 @@ export interface LayoutItem {
   sectionId?: string;
   /** "art" for art direction items. Missing means a UI item. */
   zone?: "ui" | "art";
+  /** by_cluster row label ("layout", "component: nav"). Missing means "Other" ("art" for art items). */
+  cluster?: string | null;
 }
 
 export interface LayoutSection {
@@ -40,10 +47,21 @@ export interface Rect {
   h: number;
 }
 
+/** A by_cluster row label: drawn in the ZONE_LABEL_SPACE strip whose top-left is (x, y). */
+export interface ClusterLabel {
+  label: string;
+  x: number;
+  y: number;
+  /** Section the row is in; null for loose items. */
+  sectionId: string | null;
+}
+
 export interface LayoutResult {
   items: Rect[];
-  /** Section frames (by_direction only). Empty for other layouts. */
+  /** Section frames (by_direction and by_cluster). Empty for other layouts. */
   sections: Rect[];
+  /** Row labels (by_cluster only). */
+  labels?: ClusterLabel[];
 }
 
 export interface LayoutOptions {
@@ -68,6 +86,12 @@ export const SECTION_HEADER = 48;
 export const SECTION_PADDING = 16;
 /** Room above a zone block for its label, when a section has art direction items. */
 export const ZONE_LABEL_SPACE = 28;
+/** by_cluster: items per line before a cluster row wraps. */
+export const CLUSTER_COLUMNS = 6;
+/** Longest cluster label. */
+export const MAX_CLUSTER = 40;
+/** Label of the row for items with no cluster. */
+export const OTHER_CLUSTER = "Other";
 
 /** Art items first, then UI items, each keeping input order. */
 export function splitZones<T extends { zone?: "ui" | "art" }>(items: readonly T[]): { art: T[]; ui: T[] } {
@@ -212,10 +236,129 @@ export function hero(items: readonly LayoutItem[], opts: LayoutOptions = {}): La
   return { items: out, sections: [] };
 }
 
+// ---------------------------------------------------------------------------
+// Clusters (by_cluster)
+
+/** The cluster an item goes in: its label, "art" for an art item without one, else "Other". */
+export function clusterOf(item: { cluster?: string | null; zone?: string | null }): string {
+  const label = typeof item.cluster === "string" ? item.cluster.trim().slice(0, MAX_CLUSTER) : "";
+  if (label) return label;
+  return item.zone === "art" ? "art" : OTHER_CLUSTER;
+}
+
+const FIXED_RANK: Record<string, number> = { layout: 0, type: 2, color: 3, motion: 4, art: 5 };
+
+/** Sort rank: layout, component*, type, color, motion, art, other labels, then Other. */
+function clusterRank(key: string): number {
+  if (key === OTHER_CLUSTER.toLowerCase()) return 7;
+  if (key in FIXED_RANK) return FIXED_RANK[key]!;
+  if (/^component(?:$|[\s:])/.test(key)) return 1;
+  return 6;
+}
+
+/**
+ * Items grouped by cluster, groups in by_cluster order, items in input order. Labels match
+ * without case ("Layout" and "layout" are one row); a row shows its first seen spelling.
+ */
+export function clusterGroups<T extends { cluster?: string | null; zone?: string | null }>(items: readonly T[]): { label: string; items: T[] }[] {
+  const groups = new Map<string, { label: string; items: T[]; seen: number }>();
+  for (const it of items) {
+    const label = clusterOf(it);
+    const key = label.toLowerCase();
+    const g = groups.get(key);
+    if (g) g.items.push(it);
+    else groups.set(key, { label: clusterRank(key) === 7 ? OTHER_CLUSTER : label, items: [it], seen: groups.size });
+  }
+  return [...groups.entries()]
+    .sort(([ka, a], [kb, b]) => {
+      const ra = clusterRank(ka);
+      const rb = clusterRank(kb);
+      if (ra !== rb) return ra - rb;
+      if (ra === 1 && ka !== kb) return ka < kb ? -1 : 1;
+      return a.seen - b.seen;
+    })
+    .map(([, g]) => ({ label: g.label, items: g.items }));
+}
+
+/**
+ * Cluster rows for one block (a section's contents or loose items) from (ox, oy): per cluster a
+ * label strip, then its items left to right, wrapping after `columns`. Returns the content size.
+ */
+export function clusterRows(
+  items: readonly LayoutItem[],
+  opts: LayoutOptions & { sectionId?: string | null } = {},
+): { items: Rect[]; labels: ClusterLabel[]; width: number; height: number } {
+  const { ox, oy, col, gap } = settings(opts);
+  const perRow = positive(opts.columns) ? Math.floor(opts.columns) : CLUSTER_COLUMNS;
+  const out: Rect[] = [];
+  const labels: ClusterLabel[] = [];
+  let y = oy;
+  let width = 0;
+  clusterGroups(items).forEach((group, g) => {
+    if (g > 0) y += gap;
+    labels.push({ label: group.label, x: ox, y, sectionId: opts.sectionId ?? null });
+    y += ZONE_LABEL_SPACE;
+    for (let i = 0; i < group.items.length; i += perRow) {
+      if (i > 0) y += gap;
+      const line = group.items.slice(i, i + perRow);
+      let rowH = 0;
+      line.forEach((it, k) => {
+        const h = heightFor(it, col);
+        out.push({ id: it.id, x: ox + k * (col + gap), y, w: col, h });
+        rowH = Math.max(rowH, h);
+      });
+      width = Math.max(width, line.length * col + (line.length - 1) * gap);
+      y += rowH;
+    }
+  });
+  return { items: out, labels, width, height: y - oy };
+}
+
+/**
+ * by_cluster: sections side by side in `sections` order (as by_direction), each holding one
+ * labelled row per cluster. Items with no known section go in a last block without a frame.
+ */
+export function byCluster(items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
+  const { ox, oy, col, gap } = settings(opts);
+  const sectionIds: string[] = [];
+  const add = (id: string) => {
+    if (!sectionIds.includes(id)) sectionIds.push(id);
+  };
+  for (const s of opts.sections ?? []) add(s.id);
+  if (!opts.sections) for (const it of items) if (it.sectionId) add(it.sectionId);
+  const known = new Set(sectionIds);
+  const blocks: { sectionId: string | null; items: LayoutItem[] }[] = sectionIds.map((id) => ({
+    sectionId: id,
+    items: items.filter((it) => it.sectionId === id),
+  }));
+  const loose = items.filter((it) => !it.sectionId || !known.has(it.sectionId));
+  if (loose.length > 0) blocks.push({ sectionId: null, items: loose });
+
+  const outItems: Rect[] = [];
+  const outSections: Rect[] = [];
+  const labels: ClusterLabel[] = [];
+  let x = ox;
+  for (const block of blocks) {
+    const top = oy + (block.sectionId ? SECTION_HEADER : 0);
+    const rowsOut = clusterRows(block.items, { ...opts, origin: { x, y: top }, sectionId: block.sectionId });
+    outItems.push(...rowsOut.items);
+    labels.push(...rowsOut.labels);
+    const w = Math.max(rowsOut.width, col);
+    if (block.sectionId) {
+      const bottom = top + rowsOut.height + SECTION_PADDING;
+      outSections.push({ id: block.sectionId, x, y: oy, w, h: bottom - oy });
+    }
+    x += w + gap;
+  }
+  return { items: outItems, sections: outSections, labels };
+}
+
 export function arrange(layout: LayoutKind, items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
   switch (layout) {
     case "by_direction":
       return byDirection(items, opts);
+    case "by_cluster":
+      return byCluster(items, opts);
     case "masonry":
       return masonry(items, opts);
     case "grid":
@@ -228,9 +371,14 @@ export function arrange(layout: LayoutKind, items: readonly LayoutItem[], opts: 
 /**
  * Arrange the contents of one section with zones: when any item is art direction, the art items
  * are laid out first under a label strip, and the UI items below them under a second strip.
- * Without art items this is `arrange` unchanged.
+ * Without art items this is `arrange` unchanged. by_cluster has no zone blocks: art items sit in
+ * their cluster row (the "art" row when they have no label), as one block from the origin.
  */
 export function arrangeZoned(layout: LayoutKind, items: readonly LayoutItem[], opts: LayoutOptions = {}): LayoutResult {
+  if (layout === "by_cluster") {
+    const rowsOut = clusterRows(items, opts);
+    return { items: rowsOut.items, sections: [], labels: rowsOut.labels };
+  }
   const { art, ui } = splitZones(items);
   if (art.length === 0) return arrange(layout, items, opts);
   const { ox, oy, gap } = settings(opts);

@@ -5,8 +5,8 @@
  * - With `sectionId`: arranges that section's contents inside it and resizes the frame.
  * - `by_direction` on the whole canvas: one column per section (sections ordered left
  *   to right), loose items in a last column.
- * - Other layouts on the whole canvas: each section's contents are arranged inside it,
- *   sections sit in a row, loose items are arranged below them.
+ * - Other layouts on the whole canvas (by_cluster too): each section's contents are arranged
+ *   inside it, sections sit in a row in the same order as by_direction, loose items below them.
  */
 import { arrange, arrangeZoned, byDirection, COLUMN_WIDTH, GAP, type LayoutItem, type LayoutKind, type Rect } from "@/lib/layout";
 import { nodeSize } from "./geometry";
@@ -24,6 +24,7 @@ export const BLOCK_GAP = 48;
 
 export const LAYOUT_LABELS: Record<LayoutKind, string> = {
   by_direction: "By direction",
+  by_cluster: "By cluster",
   masonry: "Masonry",
   grid: "Grid",
   hero: "Hero",
@@ -42,6 +43,7 @@ function toLayoutItem(n: CanvasFlowNode): LayoutItem {
   }
   if (n.parentId) item.sectionId = n.parentId;
   if (n.type === "image" && n.data.zone === "art") item.zone = "art";
+  if ((n.type === "image" || n.type === "upload") && n.data.cluster) item.cluster = n.data.cluster;
   return item;
 }
 
@@ -84,7 +86,8 @@ function arrangeInside(
   if (children.length === 0) return { patches, size: current };
   const kind = layout === "by_direction" ? "masonry" : layout;
   const columns = layout === "by_direction" ? 1 : undefined;
-  // Art direction items get their own labelled block above the UI references.
+  // Art direction items get their own labelled block above the UI references
+  // (by_cluster: one labelled row per cluster instead).
   const result = arrangeZoned(kind, children.map(toLayoutItem), {
     origin: { x: SECTION_PAD, y: SECTION_HEADER_HEIGHT },
     ...(columns ? { columns } : {}),

@@ -51,7 +51,7 @@ export { emptyState, parseState } from "@/canvas/state";
 /** Largest `canvases.state` we accept, in bytes of JSON. */
 export const MAX_STATE_BYTES = 1_000_000;
 /** Most search results kept in a canvas tray; the oldest drop off first. */
-export const MAX_TRAY = 200;
+export const MAX_TRAY = 400;
 export const MAX_NODES = 2000;
 /** Inner padding of a section frame and the room for its title (same as the canvas UI). */
 export const SECTION_PAD = 16;

@@ -66,6 +66,12 @@ export interface ImageItem extends ItemBase {
   tag?: Tag | null;
   /** Board zone: "art" (art direction, the wild idea as images) or "ui". Missing means "ui". */
   zone?: Zone;
+  /**
+   * What to take from it, 1 to 40 characters ("layout", "component: nav", "type", "color", "motion",
+   * "art"; in the Space section "category", "adjacent", "outliers"). arrange_canvas by_cluster gives
+   * each cluster its own labelled row. Missing means "Other".
+   */
+  cluster?: string;
   /** Mobbin screen id from the user's Mobbin connector (screens only), so a refresh finds the same tile. */
   mobbinId?: string;
   /** When the image link was placed or last refreshed (ISO date). Mobbin image links expire after about 30 days. */

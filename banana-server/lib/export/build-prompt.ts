@@ -2,7 +2,7 @@
 import type { KitModel } from "./model";
 import { directionRefs } from "./model";
 import { globsText, pagesText, scopeBlock } from "./scope";
-import { SPEC_AXES, bullets, exploreLine, fontsLine, kitTitle, refLine, shipLine, typeScaleText } from "./scoped";
+import { SPEC_AXES, bullets, mechanicLine, exploreLine, fontsLine, kitTitle, refLine, shipLine, typeScaleText } from "./scoped";
 import { STITCH_MD_FILE, stitchSection } from "./stitch-md";
 import { mdAutolink, mdText } from "./util";
 
@@ -51,6 +51,7 @@ export function buildPromptMd(m: KitModel): string {
   if (m.focus.length === 0) out.push("No bend directions were run. Take the mood from the references below.", "");
   for (const d of m.focus) {
     out.push(`**${mdText(d.direction.title)}**${d.detail?.twist ? `: ${mdText(d.detail.twist, 300)}` : ""}`, "");
+    if (d.detail?.mechanic) out.push(mechanicLine(d.detail.mechanic), "");
     const spec = d.detail?.spec;
     if (spec) {
       const lines = SPEC_AXES.filter(([k]) => typeof spec[k] === "string" && spec[k]).map(([k, label]) => `${label}: ${mdText(spec[k] as string, 300)}`);
