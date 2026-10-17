@@ -288,7 +288,7 @@ export const ar: Dict = {
         { dim: "ألوان", bright: "تجتاز الاختبار", body: "تباين مفحوص، جاهزة للإطلاق." },
         { dim: "صدر", bright: "حزمة", body: "ملفات يقرؤها وكيل البرمجة." },
       ],
-      add: { dim: "أضف {app}", bright: "إلى وكيلك", lead: "يعمل مع Claude وChatGPT وCursor.", guide: "دليل الإعداد" },
+      add: { dim: "أضف {app}", bright: "إلى Claude", lead: "بنقرة واحدة يفتح Claude نموذج الموصل جاهزًا. سجّل الدخول عندما يطلب Claude ذلك.", button: "أضف إلى Claude", guide: "طرق أخرى للإضافة" },
       notes: {
         canvases: { title: "للوحات بيت جديد", body: "كل لوحاتك في صفحة واحدة.", when: "الآن" },
         beta: { title: "Pro مجاني في التجربة", body: "دون بطاقة دفع.", when: "تجريبي" },

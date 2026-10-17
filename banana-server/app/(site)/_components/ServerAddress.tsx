@@ -11,9 +11,9 @@ import { CopyIcon, PlugIcon } from "@/components/studio/icons";
 import { pushToast } from "@/components/studio/Toast";
 import type { CopyLabels } from "./CodeBlock";
 
-type Props = { url: string; label: string; hint: string; copyLabel: string; labels: CopyLabels };
+type Props = { url: string; label: string; hint: string; copyLabel: string; labels: CopyLabels; copyVariant?: "primary" | "secondary" };
 
-export function ServerAddress({ url, label, hint, copyLabel, labels }: Props) {
+export function ServerAddress({ url, label, hint, copyLabel, labels, copyVariant = "primary" }: Props) {
   const labelId = useId();
 
   async function copy() {
@@ -42,7 +42,7 @@ export function ServerAddress({ url, label, hint, copyLabel, labels }: Props) {
         </p>
         <p className="server-address-hint">{hint}</p>
       </div>
-      <button type="button" className="st-btn server-address-copy" data-variant="primary" data-size="lg" aria-describedby={labelId} onClick={copy}>
+      <button type="button" className="st-btn server-address-copy" data-variant={copyVariant} data-size="lg" aria-describedby={labelId} onClick={copy}>
         <CopyIcon size={16} />
         {copyLabel}
       </button>

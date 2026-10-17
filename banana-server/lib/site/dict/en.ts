@@ -289,7 +289,7 @@ export const en = {
         { dim: "Palettes", bright: "that pass", body: "Contrast checked, ready to ship." },
         { dim: "Export", bright: "a kit", body: "Files your coding agent can read." },
       ],
-      add: { dim: "Add {app}", bright: "to your agent", lead: "Works with Claude, ChatGPT and Cursor.", guide: "Setup guide" },
+      add: { dim: "Add {app}", bright: "to Claude", lead: "One click opens Claude with the connector filled in. Sign in when Claude asks.", button: "Add to Claude", guide: "Other ways to add it" },
       notes: {
         canvases: { title: "Canvases have a home", body: "Every board, on one page.", when: "now" },
         beta: { title: "Pro is free in beta", body: "No card needed.", when: "beta" },

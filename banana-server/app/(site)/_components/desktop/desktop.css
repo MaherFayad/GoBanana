@@ -1656,3 +1656,10 @@ button.dwin-light {
     text-align: end;
   }
 }
+
+/* The card's main action: Add to Claude opens the connector form; copying the address is secondary. */
+.site .add-window .add-claude {
+  inline-size: 100%;
+  justify-content: center;
+  border-radius: var(--st-radius-field);
+}

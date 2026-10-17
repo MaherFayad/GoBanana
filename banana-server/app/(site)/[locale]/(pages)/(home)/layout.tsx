@@ -34,6 +34,7 @@ import { FOUNDING_CAP } from "@/lib/billing/paddle";
 import { PLAN_ORDER } from "@/lib/billing/plans";
 import { APP_NAME, getConfig } from "@/lib/config";
 import { betaPlan, PLAN_LIMITS, type Plan } from "@/lib/quota";
+import { addToClaudeUrl } from "@/lib/site/add-to-claude";
 import { getDict, type Dict } from "@/lib/site/dict";
 import kitPreview from "@/lib/site/kit-preview.json";
 import { fmt, href, isLocale, type Locale } from "@/lib/site/i18n";
@@ -140,8 +141,11 @@ function AddBody({ t, locale, url, level }: AddProps) {
         </span>
         <Lines as={level} className="is-window" lines={[bt(s.dim), bidi(s.bright)]} reveal={false} />
         <p className="add-lead">{bidi(s.lead)}</p>
-        <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} />
-        <a className="add-guide" href={docsHref(locale, "setup/overview/")}>
+        <a className="st-btn add-claude" data-variant="primary" data-size="lg" href={addToClaudeUrl(APP_NAME, url)} target="_blank" rel="noopener noreferrer" data-testid="add-card-claude">
+          {s.button}
+        </a>
+        <ServerAddress url={url} label={t.serverUrlLabel} hint={t.serverUrlHint} copyLabel={t.copy.address} labels={copyLabels} copyVariant="secondary" />
+        <a className="add-guide" href={href(locale, "install")}>
           {s.guide}
           <ArrowEndIcon size={16} />
         </a>
