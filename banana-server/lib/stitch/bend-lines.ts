@@ -80,5 +80,37 @@ export function bendLines(mechanic: BendMechanic | undefined, rows: readonly Sti
     }
   }
   if (mechanic.task) lines.push(`${indent}- ${clip(plain(mechanic.task), 260)}.`);
+  lines.push(...taskSteps(mechanic, parts, indent));
   return lines;
+}
+
+const STOP = new Set(["with", "from", "your", "their", "this", "that", "into", "then", "each", "every", "page", "screen", "main", "task", "what", "they", "more"]);
+const stems = (s: string) =>
+  s
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 3 && !STOP.has(w))
+    .map((w) => w.slice(0, 5));
+
+/**
+ * R9: the build order, and the brief's own task steps that no bent part carries. The R7 draft judge's
+ * most named gap after the spec was "where the idea goes": a step of the brief ("book installation",
+ * "call the rider") with no part and no slot, so the designer had to invent the core of the page.
+ * Each such step gets a line: add a slot for it next to the part the task runs through, built from
+ * the same idea. Only steps the brief lists ("...: compare speeds and prices, book installation").
+ */
+export function taskSteps(mechanic: BendMechanic, parts: ReadonlyArray<{ label: string; how: string }>, indent = "    "): string[] {
+  const m = /^The main task, (.+?), now runs through the (.+?):/.exec(mechanic.task ?? "");
+  if (!m) return [];
+  const [, phrase, label] = m as unknown as [string, string, string];
+  const out = [`${indent}- Build first: the ${label}, where the main task runs; then the other bent parts; the plain slots last.`];
+  const steps = phrase.split(/,\s*(?:and\s+)?/).map((s) => s.trim()).filter((s) => s.split(/\s+/).length >= 2);
+  if (steps.length < 2) return out;
+  const covered = new Set(parts.flatMap((p) => stems(`${p.label} ${p.how}`)));
+  // The first step is what the task part was picked for, so it counts as carried.
+  for (const step of steps.slice(1)) {
+    if (stems(step).some((w) => covered.has(w))) continue;
+    out.push(`${indent}- ${step}: no bent part carries this step yet; give it its own slot right after the ${label}, built from the same idea, so the task reads end to end.`);
+  }
+  return out;
 }

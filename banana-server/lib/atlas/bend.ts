@@ -1031,7 +1031,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     }
     // R9: texture and motion act on this page's parts, colors come from the palette, spacing agrees with the card.
     {
-      const sctx = { lead, second, adds: pick.adds, platform, parts: drawn.dm.parts ?? [], task: drawn.dm.task };
+      const sctx = { lead, second, adds: pick.adds, platform, parts: drawn.dm.parts ?? [], task: drawn.dm.task, pageLabel };
       drawn.spec = coherentSpec(drawn.spec, sctx);
       drawn.dm = coherentMechanic(drawn.dm, sctx);
     }

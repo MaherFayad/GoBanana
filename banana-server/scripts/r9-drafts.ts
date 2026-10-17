@@ -26,7 +26,7 @@ import type { Mechanic as DirectionMechanic } from "@/lib/bend/mechanic";
 import type { StitchRowSnapshot } from "@/lib/canvas/types";
 import type { VisualSpec } from "@/lib/direction-detail";
 import type { Platform } from "@/lib/platform";
-import { bendLines } from "@/lib/stitch/bend-lines";
+import { bendLines, taskSteps } from "@/lib/stitch/bend-lines";
 import { skeletonLines } from "@/lib/stitch/skeleton";
 import type { PartRole } from "@/lib/stitch/types";
 
@@ -75,14 +75,16 @@ function rowsFor(platform: string, ui: readonly Ref[]): StitchRowSnapshot[] | nu
 }
 
 /** The draft text, built exactly as R7's samples (scripts/r7-drafts.ts). */
-function draftText(b: Pick<Brief, "brief" | "platform">, d: Dir, rows: StitchRowSnapshot[]): string {
+function draftText(b: Pick<Brief, "brief" | "platform">, d: Dir, rows: StitchRowSnapshot[], r9 = true): string {
   const spec = Object.entries(d.spec ?? {})
     .filter(([, v]) => typeof v === "string")
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
   const head = [`Brief: ${b.brief} (${b.platform})`, `Direction: ${d.title}`, `Direction spec:\n${spec}`, "", `frankenstein_page answered:`, `- ${d.title} page (st-1, ${b.platform}, collage)`];
   const tail = ["Show each slot's source link next to it. Take the structure, not the pixels."];
-  return [...head, ...skeletonLines(rows, "    "), ...bendLines(d.mechanic, rows), ...tail].join("\n");
+  // Before (R7 code) leaves out the R9 build order and task step lines.
+  const steps = new Set(r9 || !d.mechanic ? [] : taskSteps(d.mechanic, d.mechanic.parts ?? [], "    "));
+  return [...head, ...skeletonLines(rows, "    "), ...bendLines(d.mechanic, rows).filter((l) => !steps.has(l)), ...tail].join("\n");
 }
 
 /** The lead and second card of a direction, read back from its spec (the lead names the palette, the second is "from"). */
@@ -90,7 +92,7 @@ function picksOf(d: Dir): { lead: IngredientCard; second: IngredientCard | null;
   const leadName = /^Palette from (.+?): /.exec(d.spec!.color)?.[1];
   const lead = leadName ? cards.get(leadName) : undefined;
   if (!lead) throw new Error(`no lead card for ${d.title} (${leadName})`);
-  const from = (s: string) => /\(from (.+?)\)/.exec(s)?.[1];
+  const from = (s: string) => /\(from (.+?)\)/.exec(s)?.[1] ?? /^The twist, the (?:surface|motion) of (.+?)[:.]/.exec(s)?.[1];
   const rule = /One rule from (.+?): /.exec(d.spec!.layout)?.[1];
   const tex = from(d.spec!.texture);
   const mot = from(d.spec!.motion);
@@ -103,7 +105,8 @@ function picksOf(d: Dir): { lead: IngredientCard; second: IngredientCard | null;
 /** An r5a direction with the R9 spec and mechanic lines. */
 function withR9(b: Brief, d: Dir): Dir {
   const { lead, second, adds } = picksOf(d);
-  const ctx = { lead, second, adds, platform: b.platform as Platform, parts: d.mechanic?.parts ?? [], task: d.mechanic?.task };
+  const pageLabel = /runs the (.+?) across /.exec(d.spec!.layout)?.[1];
+  const ctx = { lead, second, adds, platform: b.platform as Platform, parts: d.mechanic?.parts ?? [], task: d.mechanic?.task, ...(pageLabel ? { pageLabel } : {}) };
   const spec = coherentSpec({ ...d.spec!, color: `${colorLine(lead)}.` }, ctx);
   return { ...d, spec, ...(d.mechanic ? { mechanic: coherentMechanic(d.mechanic, ctx) } : {}) };
 }
@@ -119,7 +122,7 @@ for (const s of r7.samples) {
   const d = b.directions.find((x) => x.id === s.directionId)!;
   const rows = rowsFor(b.platform, (d.search?.references ?? []).filter((r) => r.zone === "ui"))!;
   // The reproduction: R7's text must come back from the same direction, so the after text differs only by R9.
-  if (draftText(b, d, rows) !== s.after) throw new Error(`R7 draft ${s.briefId}/${s.directionId} does not rebuild`);
+  if (draftText(b, d, rows, false) !== s.after) throw new Error(`R7 draft ${s.briefId}/${s.directionId} does not rebuild`);
   samples.push({ group: "r7", briefId: s.briefId, directionId: s.directionId, title: s.title, before: s.after, after: draftText(b, withR9(b, d), rows) });
 }
 
@@ -147,7 +150,7 @@ for (const [briefId, donor, k] of WEAK) {
   const ui = r5a.briefs.find((x) => x.id === donor)!.directions.flatMap((d) => (d.search?.references ?? []).filter((r) => r.zone === "ui")).slice(k * 4);
   const rows = rowsFor(b0.platform, ui);
   if (!rows) throw new Error(`not enough stand-in parts for ${briefId}`);
-  samples.push({ group: "weak", briefId, directionId: d0.id, title: d0.title, before: draftText(b0, d0, rows), after: draftText(b1, d1, rows) });
+  samples.push({ group: "weak", briefId, directionId: d0.id, title: d0.title, before: draftText(b0, d0, rows, false), after: draftText(b1, d1, rows) });
 }
 
 const out = join(RUNS, "r9-drafts");

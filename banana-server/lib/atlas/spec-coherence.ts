@@ -33,6 +33,8 @@ export interface SpecContext {
   parts: readonly SpecPart[];
   /** The R4 task sentence ("The main task, pick a plan, buy, now runs through the plan cards: ..."). */
   task?: string;
+  /** The page's name ("eSIM plan picker"), for the twist sentence. */
+  pageLabel?: string;
 }
 
 const lowerFirst = (s: string) => (/^[A-Z](?![A-Z0-9])/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
@@ -136,6 +138,19 @@ export function placeTexture(texture: string, parts: readonly SpecPart[], taskLa
   return { text, part };
 }
 
+/**
+ * Why the second card is there, in this page's words: the sentence of its surprise that says what it
+ * gives a UI ("Small hollows carved in rows into rock become a tactile dot system for steps, counts
+ * and ratings"), with "the UI" made this page. The draft judge read a bare "(from X)" as a line left
+ * over from another direction; the twist sentence says it is this direction's second card, and why.
+ */
+export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLabel?: string): string {
+  const sentences = (card.surprise || card.idea).split(/(?<=[.!?])\s+/).map(trimEnd).filter(Boolean);
+  const pick = sentences.find((x) => /\b(UI|interface|screen|app|page)\b/.test(x)) ?? sentences[sentences.length - 1] ?? "";
+  const page = pageLabel ? `the ${pageLabel}` : "the page";
+  return pick.replace(/\bthe (UI|interface|app|screen)\b/i, page);
+}
+
 /** The texture line: the card's surface on one page part, where the card said where it goes. */
 export function textureLine(ctx: SpecContext): { line: string; surface: string } {
   const card = ctx.adds === "texture" && ctx.second ? ctx.second : ctx.lead;
@@ -147,8 +162,9 @@ export function textureLine(ctx: SpecContext): { line: string; surface: string }
   // A borrowed texture that named no place of its own still lands on one part of this page.
   const target = part ?? (ctx.parts.length ? ctx.parts.find((p) => p.label === task?.label) ?? ctx.parts[0]! : null);
   const placed = target && !part ? `On the ${target.label} only: ${lowerFirst(body)}` : body;
+  const why = twistWhy(card, ctx.pageLabel);
   return {
-    line: `${placed} (from ${card.name}); text sits on solid panels, never on the texture.`,
+    line: `The twist, the surface of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(placed)}; text sits on solid panels, never on the texture.`,
     surface: `${placed}.`,
   };
 }
@@ -184,7 +200,8 @@ export function motionLine(ctx: SpecContext): string {
   const part = ctx.parts.find((p) => p.label === task?.label) ?? ctx.parts[0];
   if (!part) return `${upperFirst(trimEnd(verb))} in ${ms}ms (from ${card.name}); with reduced motion on, ${lowerFirst(trimEnd(reduced))}.`;
   const when = task ? `, each time the main task moves on (${task.phrase})` : "";
-  return `${upperFirst(trimEnd(verb))} in ${ms}ms on the ${part.label} (the move of ${card.name})${when}; with reduced motion on, ${reducedOnPart(reduced)}.`;
+  const why = twistWhy(card, ctx.pageLabel);
+  return `The twist, the motion of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(trimEnd(verb))} in ${ms}ms on the ${part.label}${when}; with reduced motion on, ${reducedOnPart(reduced)}.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,6 +300,7 @@ const DENSE_SWAPS: Array<[RegExp, string]> = [
   [/\bcomfortable spacing\b/gi, "close spacing"],
   [/\bairy sections\b/gi, "packed sections"],
   [/\bone message per screen height\b/gi, "several blocks per screen height"],
+  [/\bone idea per screen\b/gi, "several facts per screen"],
   [/\b(?:plenty of|lots of|generous) (?:white ?space|room)\b/gi, "little white space"],
   [/\bbreathing room\b/gi, "tight gaps"],
   [/\b(?:spacious|roomy)\b/gi, "compact"],
@@ -317,6 +335,17 @@ export function densityLine(density: IngredientCard["density"], platform: Platfo
 
 // ---------------------------------------------------------------------------
 
+/**
+ * The pattern line names the mechanic only when the signature is that mechanic's line ("Lead: how").
+ * When the signature is the lead card's own line, the mechanic's name was an extra, unexplained
+ * interaction ("a draining button countdown", "a fanned type deck") that the draft judge read as a
+ * second idea fighting the first, so the pattern names the lead on its part.
+ */
+export function patternLine(spec: Pick<VisualSpec, "pattern" | "signature">, leadName: string): string {
+  if (spec.signature.startsWith(`${leadName}:`)) return spec.pattern;
+  return spec.pattern.replace(/^(.+? on the [^:]+): .*$/, "$1.");
+}
+
 /** The spec with the R9 checks: texture and motion on this page's parts, palette colors, density words. */
 export function coherentSpec(spec: VisualSpec, ctx: SpecContext): VisualSpec {
   const keep = [ctx.lead.name, ...(ctx.second ? [ctx.second.name] : [])];
@@ -330,7 +359,7 @@ export function coherentSpec(spec: VisualSpec, ctx: SpecContext): VisualSpec {
     texture: pal(texture.line),
     density: densityLine(ctx.lead.density, ctx.platform),
     signature: pal(spec.signature),
-    pattern: pal(spec.pattern),
+    pattern: pal(patternLine(spec, ctx.lead.name)),
     whyItFits: pal(spec.whyItFits),
     steal: spec.steal.map((s) => pal(/^The surface: /.test(s) ? `The surface: ${texture.surface}` : s)),
   };
