@@ -337,6 +337,15 @@ Claude Code only. It runs the drafting pipeline, then carries on like a design t
 | 11 | Review | A fresh-context critique per page against SPEC.md, WIREFRAMES.md and the direction; then axe and contrast numbers; fixes in one batch; two rounds at most | `gb-reviewer` (fresh, no transcript) |
 | 12 | Hand-off | README section, DESIGN.md from the built system, CLAUDE.md or AGENTS.md section, screenshots on the board | main thread |
 
+### Build rules
+
+Every `gb-builder` and every draft follows [build-rules.md](build-rules.md). In short:
+- **The component ladder:** the project's own components, then `shadcn add`, then `shadcn init`, and never a second UI library.
+- **The shadcn base:** React Aria for Arabic-first products, Base UI otherwise, Radix kept where it already runs.
+- **The direction picks the closest shadcn style.** Tokens carry the rest: scoped in Drafts, system-wide only after Gate 2.
+- **Arabic and English with equal care:** Arabic is the default for GCC briefs; logical properties and RTL caveats apply.
+- **Never** download or copy reference images.
+
 ### File structure
 
 Follow the framework's own conventions first, found in the repo. When the folder is empty, use this (Next.js App Router shown; the plan stays framework-neutral):
