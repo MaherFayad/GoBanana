@@ -12,6 +12,8 @@
  *   taste        "{style} {domain} {component} ui design {UI_NEG}"  dribbble.com/shots
  *   component    "{core} {page} {component} {surface} {UI_NEG}"  dribbble.com/shots, up to 2 from the brief and pages
  *   hero         "{style} {coreDomain} app single screen"  dribbble.com/shots (app surface only)
+ *   art          a ladder per art query (lib/sources/art-ladder.ts): "{ingredient} identity system"
+ *                on behance.net/gallery, then graphic, pattern and raw rungs on pinterest.com/pin
  *
  * One source per request, path-scoped. At most SERPER_MAX_REQUESTS (8) requests per tool call;
  * what the base plan leaves is spent on page 2 and fallbacks (fidelity retried with the core noun).
@@ -20,17 +22,31 @@
  * it already names a UI, else as "{q} app ui" and "{q} ui design", at most 4 requests.
  */
 import type { Platform } from "../direction-detail";
+import { buildArtLadder } from "./art-ladder";
 import { hasUiWord, lensNegatives } from "./quality";
 import { cleanQuery } from "./query";
 import { sourceEntry } from "./registry";
-import { SOURCE_SITES, isGallery, laneZone, type LaneName, type Mix, type Reference, type SearchLane, type SourceSite, type Zone, type ZoneInput } from "./types";
+import {
+  ART_LANES,
+  SOURCE_SITES,
+  isGallery,
+  laneZone,
+  type ArtLane,
+  type LaneName,
+  type Mix,
+  type Reference,
+  type SearchLane,
+  type SourceSite,
+  type Zone,
+  type ZoneInput,
+} from "./types";
 
 /** Negatives for UI lanes: they cut template, kit and wireframe sales sheets. */
 export const UI_NEG = "-template -kit -free -wireframe";
 /** Negatives for the art lane: shop listings (unmeasured live; the junk gate is the real filter). */
 export const ART_NEG = "-etsy -amazon -aliexpress -sale -buy";
 
-/** Sites the art lane searches: the raw ingredient on pins and galleries (round 7: most reliable). */
+/** Sites the art lane searches: Behance galleries for systems, Pinterest pins for the rest (round 7). */
 export const ART_SITES: readonly SourceSite[] = ["pinterest", "behance"];
 /** Most art queries a direction plans (bend gives 1 to 3). */
 export const MAX_ART_QUERIES = 3;
@@ -78,8 +94,10 @@ export type LaneTexts = {
    */
   avoid?: string[];
   /**
-   * Art zone: the direction's raw ingredients (its `artQueries`, else its idea), searched as is on
-   * Pinterest pins and Behance galleries with the art junk gate. 1 to 3.
+   * Art zone: the direction's art queries (its `artQueries`, else its idea), 1 to 3. Each is
+   * searched as a ladder (lib/sources/art-ladder.ts): identity or signage system on Behance, then
+   * graphic design or poster, pattern or typography, and the raw words on Pinterest, with the art
+   * junk gate.
    */
   art?: string[];
 };
@@ -127,6 +145,12 @@ export type PlannedRequest = {
   avoidWords?: string[];
   /** Art lane: the idea's head word; titles that name it rank higher (never a hard filter). */
   ideaWord?: string;
+  /**
+   * Art lane: the rest of this ingredient's ladder (lib/sources/art-ladder.ts), in order. The next
+   * rung is sent only when this one keeps fewer than ART_RUNG_MIN usable results and the art zone
+   * is still short of its quota (lib/sources/web-search.ts runPlan).
+   */
+  next?: PlannedRequest[];
 };
 
 /** Zone of a planned request's results. */
@@ -262,27 +286,61 @@ function uiRequests(lanes: LaneTexts, head: string | null): PlannedRequest[] {
   return out;
 }
 
+/** Negatives of one art request: the lens's look-alike tradition ("talli" adds -tulle -assiut -egyptian), then shop words. */
+const artNeg = (q: string) => [lensNegatives(q), ART_NEG].filter(Boolean).join(" ");
+
 /**
- * Art requests: the first art query on Pinterest pins, then on Behance galleries, then on a
- * matched art gallery (its fixed words or the art query); later art queries on Pinterest and
- * Behance. Galleries go after Behance: live, a niche idea on an art gallery found nothing
- * ("synthwave 1984" on typo/graphic posters, "holographic foil" on Cosmos), while Behance gave 2
- * to 7 good results. In a both-zones search the cut usually leaves them out; art-only searches
- * reach them.
+ * Art requests, one ladder per art query (lib/sources/art-ladder.ts): each ingredient's first
+ * rung ("{ingredient} identity system" on Behance; a lens keeps its own words), carrying the
+ * rest of its ladder in `next`, in ingredient order; then the matched art galleries for the
+ * first ingredient (their fixed words or the ingredient), as graphic rung requests. Galleries go
+ * last: live, a niche idea on an art gallery found nothing ("synthwave 1984" on typo/graphic
+ * posters), while Behance gave 2 to 7 good results.
  */
 export function artRequests(queries: readonly string[] | undefined, galleries: readonly SourceSite[] = []): PlannedRequest[] {
   const out: PlannedRequest[] = [];
   const list = (queries ?? []).map(artWords).filter(Boolean).slice(0, MAX_ART_QUERIES);
-  list.forEach((q, i) => {
-    const ideaWord = bridgeHead(q) ?? undefined;
+  list.forEach((q) => {
+    const ladder = buildArtLadder(q);
+    const ideaWord = bridgeHead(ladder.ingredient) ?? bridgeHead(q) ?? undefined;
     const idea = ideaWord ? { ideaWord } : {};
-    // A lens query also cuts the look-alike tradition ("talli" adds -tulle -assiut -egyptian).
-    const neg = [lensNegatives(q), ART_NEG].filter(Boolean).join(" ");
-    out.push({ lane: "art", query: `${q} ${neg}`, site: "pinterest", ...idea });
-    out.push({ lane: "art", query: `${q} ${neg}`, site: "behance", ...idea });
-    if (i === 0) for (const site of galleries) out.push({ lane: "art", query: galleryWords(site, q), site, ...idea });
+    const rungs: PlannedRequest[] = ladder.rungs.map((step) => ({
+      lane: `art:${step.rung}` as ArtLane,
+      query: `${step.query} ${artNeg(step.query)}`,
+      site: step.site,
+      ...idea,
+    }));
+    const [first, ...rest] = rungs;
+    if (first) out.push(rest.length > 0 ? { ...first, next: rest } : first);
   });
+  const lead = list[0];
+  if (lead) {
+    const ideaWord = bridgeHead(buildArtLadder(lead).ingredient) ?? undefined;
+    for (const site of galleries) out.push({ lane: "art:graphic", query: galleryWords(site, lead), site, ...(ideaWord ? { ideaWord } : {}) });
+  }
   return out;
+}
+
+/**
+ * Raw art requests: the words as is on Pinterest pins, then Behance galleries, then the matched
+ * art galleries. A lane re-search with the agent's words (lane "art:retry") and the plain art
+ * query path use these: the agent's words are its choice, never laddered.
+ */
+export function rawArtRequests(text: string, galleries: readonly SourceSite[] = [], lane: SearchLane = "art:retry"): PlannedRequest[] {
+  const q = artWords(text);
+  if (!q) return [];
+  const ideaWord = bridgeHead(q) ?? undefined;
+  const idea = ideaWord ? { ideaWord } : {};
+  return [
+    { lane, query: `${q} ${artNeg(q)}`, site: "pinterest", ...idea },
+    { lane, query: `${q} ${artNeg(q)}`, site: "behance", ...idea },
+    ...galleries.map((site) => ({ lane, query: galleryWords(site, q), site, ...idea })),
+  ];
+}
+
+/** A lane re-search of the art lane: the agent's words raw, lane "art:retry", on the picked art sites. */
+export function artRetryPlan(text: string, sources?: readonly SourceSite[], galleries: readonly SourceSite[] = []): PlannedRequest[] {
+  return artOnSources(rawArtRequests(text, galleries), sources).slice(0, BASE_MAX_REQUESTS);
 }
 
 /** An art query's plain words: no site operators, no negatives, at most 8 words. */
@@ -300,7 +358,7 @@ export function artWords(raw: string): string {
  * 4. the first component lane, 5. fidelity on Pinterest (locale "arabic {core} {surface}" for
  * Arabic briefs, its titles filtered by the subject like the bridge lane's; website briefs search
  * Awwwards with the `web` words instead), 6. a gallery, 7. the second component lane, 8. hero.
- * Art: each art query on Pinterest, then Behance.
+ * Art: each art query's first ladder rung (lib/sources/art-ladder.ts), its later rungs in `next`.
  * Both zones: UI and art alternate for the first two of each (fidelity, art, fidelity, art), then
  * the rest of UI, then the rest of art, cut to BASE_MAX_REQUESTS so one request is left for page 2
  * or a fallback (lib/sources/web-search.ts runPlan).
@@ -344,21 +402,27 @@ function onSources<T extends { query: string; site: SourceSite; page?: number; f
 
 /**
  * Art requests stay on the picked art sites (Pinterest, Behance, art galleries); a request on an
- * unpicked site moves to the first picked art site; none picked, no art requests.
+ * unpicked site moves to the first picked art site; none picked, no art requests. Each ladder's
+ * later rungs move the same way.
  */
 function artOnSources(reqs: PlannedRequest[], sources?: readonly SourceSite[]): PlannedRequest[] {
   if (!sources || sources.length === 0) return reqs;
   const picked = SOURCE_SITES.filter((s) => sources.includes(s) && (ART_SITES.includes(s) || sourceEntry(s).zone === "art"));
   if (picked.length === 0) return [];
   const seen = new Set<string>();
-  return reqs
-    .map((r) => (picked.includes(r.site) ? r : { ...r, site: picked[0]! }))
-    .filter((r) => {
-      const key = `${r.query}|${r.site}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+  const move = (r: PlannedRequest): PlannedRequest => (picked.includes(r.site) ? r : { ...r, site: picked[0]! });
+  const fresh = (r: PlannedRequest) => {
+    const key = `${r.query}|${r.site}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  };
+  return reqs.map(move).filter(fresh).map((r) => {
+    if (!r.next) return r;
+    const next = r.next.map(move).filter(fresh);
+    const { next: _old, ...rest } = r;
+    return next.length > 0 ? { ...rest, next } : rest;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -402,7 +466,7 @@ export function plainQueryPlan(query: string, sources: readonly SourceSite[]): P
 
 /** A plain query in the art zone: the words as is, on the picked art sites (Pinterest, Behance). */
 export function artQueryPlan(query: string, sources: readonly SourceSite[]): PlainRequest[] {
-  return artOnSources(artRequests([query]), sources.length > 0 ? sources : ART_SITES).map((r) => ({ query: r.query, site: r.site }));
+  return artOnSources(rawArtRequests(query), sources.length > 0 ? sources : ART_SITES).map((r) => ({ query: r.query, site: r.site }));
 }
 
 /** Words dropped from the short form of a plain query: filler and UI words. */
@@ -464,18 +528,28 @@ export function artQuota(count: number): number {
   return Math.min(count, Math.max(3, Math.round(count / 3)));
 }
 
+/** Art lanes best rung first: "art" and "art:system", then graphic, pattern, raw, retry. */
+export const artLaneRank = (lane: SearchLane) => (lane === "art" ? -1 : (ART_LANES as readonly string[]).indexOf(lane));
+
 /**
- * Quotas when the art lane is present: art gets artQuota(count), the UI lanes share the rest
- * evenly (laneQuotas). Only art: all of it. No art: laneQuotas.
+ * Quotas when an art lane is present: art gets artQuota(count), the UI lanes share the rest
+ * evenly (laneQuotas). Only art: all of it. No art: laneQuotas. The art share goes to the best
+ * rung lane present ("art:system" before "art:raw"); mergeLanes gives what it leaves to the other
+ * art lanes.
  */
 export function zoneQuotas(count: number, lanes: readonly SearchLane[]): Map<SearchLane, number> {
-  const ui = lanes.filter((l) => l !== "art");
-  if (!lanes.includes("art")) return laneQuotas(count, lanes);
-  if (ui.length === 0) return new Map([["art", count]]);
-  const art = artQuota(count);
-  const quotas = laneQuotas(count - art, ui);
-  quotas.set("art", art);
+  const ui = lanes.filter((l) => laneZone(l) !== "art");
+  const art = lanes.filter((l) => laneZone(l) === "art").sort((a, b) => artLaneRank(a) - artLaneRank(b));
+  if (art.length === 0) return laneQuotas(count, lanes);
+  const share = ui.length === 0 ? count : artQuota(count);
+  const quotas = ui.length === 0 ? new Map<SearchLane, number>() : laneQuotas(count - share, ui);
+  art.forEach((lane, i) => quotas.set(lane, i === 0 ? share : 0));
   return quotas;
+}
+
+/** The art quota of a plan with these lanes: artQuota(count) next to UI lanes, all of count alone. */
+export function artNeed(count: number, lanes: readonly SearchLane[]): number {
+  return lanes.some((l) => laneZone(l) !== "art") ? artQuota(count) : count;
 }
 
 /** At most this many results by one creator or studio per search (owner, 2026-10-12). */

@@ -58,8 +58,27 @@ export const UI_LANES: readonly LaneName[] = ["fidelity", "taste", "component", 
  */
 export const SWEEP_LANES = ["sweep-fidelity", "sweep-component", "sweep-adjacent"] as const;
 export type SweepLane = (typeof SWEEP_LANES)[number];
-/** Any lane a planned request or a result can carry: a direction lane or a sweep lane. */
-export type SearchLane = LaneName | SweepLane;
+/**
+ * Rungs of the art ladder (lib/sources/art-ladder.ts), tried in this order per ingredient:
+ * a graphic system on Behance, graphic design or a poster on Pinterest, a pattern or typography on
+ * Pinterest, then the raw ingredient.
+ */
+export const ART_RUNGS = ["system", "graphic", "pattern", "raw"] as const;
+export type ArtRung = (typeof ART_RUNGS)[number];
+/**
+ * The lane an art result carries: the rung that found it ("art:system"), or "art:retry" for a
+ * lane re-search with the agent's own words. Planned under the direction lane "art".
+ */
+export const ART_LANES = ["art:system", "art:graphic", "art:pattern", "art:raw", "art:retry"] as const;
+export type ArtLane = (typeof ART_LANES)[number];
+
+/** True for an art rung lane ("art:system", ..., "art:retry"). */
+export function isArtLane(lane: unknown): lane is ArtLane {
+  return typeof lane === "string" && (ART_LANES as readonly string[]).includes(lane);
+}
+
+/** Any lane a planned request or a result can carry: a direction lane, an art rung lane or a sweep lane. */
+export type SearchLane = LaneName | ArtLane | SweepLane;
 
 /** True for a direction lane (one a lane re-search, the learner and term keys know). */
 export function isLaneName(lane: unknown): lane is LaneName {
@@ -68,7 +87,13 @@ export function isLaneName(lane: unknown): lane is LaneName {
 
 /** The zone a lane's results go to. */
 export function laneZone(lane: SearchLane | undefined): Zone {
-  return lane === "art" ? "art" : "ui";
+  return lane === "art" || isArtLane(lane) ? "art" : "ui";
+}
+
+/** The direction lane a search lane belongs to: "art" for every art rung lane, else the lane itself. */
+export function baseLane(lane: SearchLane | undefined): LaneName | undefined {
+  if (isArtLane(lane)) return "art";
+  return isLaneName(lane) ? lane : undefined;
 }
 
 /** Which zones a search fills: `both` (default for direction searches) or one of them. */

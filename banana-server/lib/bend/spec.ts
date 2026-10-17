@@ -5,6 +5,7 @@
  */
 import type { ColorStrategy, DesignLanguage, Density, Ground, Material, Motion, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { PlatformProfile } from "@/lib/platform";
+import { buildArtLadder, type ArtLadder } from "@/lib/sources/art-ladder";
 import { article, capitalize } from "./templates";
 import type { Domain } from "./tone";
 import { ARABIC_FACE } from "./market";
@@ -492,10 +493,20 @@ export function artQueries(
   lead: MoveId,
   mood: ListEntry,
 ): string[] {
+  return artQueryItems(moves, entries, lead, mood).map((i) => i.query);
+}
+
+/** Each art query with the move it came from (null for the mood palette fallback). */
+function artQueryItems(
+  moves: readonly MoveId[],
+  entries: Readonly<Partial<Record<MoveId, ListEntry>>>,
+  lead: MoveId,
+  mood: ListEntry,
+): { query: string; move: MoveId | null }[] {
   // Constraints are rules, not things: they only make an art query when nothing else does.
   const order: MoveId[] = [lead, ...moves.filter((m) => m !== lead)].filter((m) => m !== "constraint");
   if (order.length === 0) order.push("constraint");
-  const out: string[] = [];
+  const out: { query: string; move: MoveId | null }[] = [];
   for (const m of order) {
     const e = entries[m];
     if (!e) continue;
@@ -504,10 +515,25 @@ export function artQueries(
     const q = words(tail && !skip.test(base) && words(base).length < 4 ? `${base} ${tail}` : base)
       .slice(0, 6)
       .join(" ");
-    if (UI_WORDS.test(q) || out.some((o) => o.toLowerCase() === q.toLowerCase())) continue;
-    out.push(q);
+    if (UI_WORDS.test(q) || out.some((o) => o.query.toLowerCase() === q.toLowerCase())) continue;
+    out.push({ query: q, move: m });
     if (out.length >= 3) break;
   }
-  if (out.length === 0) out.push(`${mood.query} color palette`);
+  if (out.length === 0) out.push({ query: `${mood.query} color palette`, move: null });
   return out;
+}
+
+/**
+ * The art lane's ladder for each art query (lib/sources/art-ladder.ts), in artQueries order:
+ * "{ingredient} identity system" (or signage system) on Behance, then graphic design or poster,
+ * pattern or typography, and the raw query on Pinterest. A lens move keeps its tested lens words
+ * as its system rung. search_references rebuilds the same ladders from the saved artQueries.
+ */
+export function artLadder(
+  moves: readonly MoveId[],
+  entries: Readonly<Partial<Record<MoveId, ListEntry>>>,
+  lead: MoveId,
+  mood: ListEntry,
+): ArtLadder[] {
+  return artQueryItems(moves, entries, lead, mood).map((i) => buildArtLadder(i.query, i.move === "lens" ? { lens: true } : {}));
 }

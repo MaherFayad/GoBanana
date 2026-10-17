@@ -1,7 +1,7 @@
 /** Regressions from live boards (2026-10-11): wrong domain on long briefs, raw ideas (suzani jackets) on boards, repeated ideas. */
 import { describe, expect, it } from "vitest";
 import { fidelityQuery, laneTexts } from "@/lib/bend/queries";
-import { planRequests } from "@/lib/sources/plan";
+import { planRequests, requestZone } from "@/lib/sources/plan";
 import { hasUiWord } from "@/lib/sources/quality";
 import { createBendBriefTool } from "@/lib/mcp/tools/bend_brief";
 
@@ -33,10 +33,13 @@ describe("wild ideas never become raw searches", () => {
       const withIdea = ui.filter((r) => r.query.toLowerCase().includes(idea.split(" ")[0]!.toLowerCase()));
       expect(withIdea.every((r) => r.lane === "bridge" && r.titleWord)).toBe(true);
       // With art queries, the idea is searched raw in its own zone (owner, 2026-10-12).
+      // V4.3: as a ladder, a graphic system on Behance first and the raw words last, on Pinterest.
       const both = planRequests({ ...lanes, art: [idea] });
-      const art = both.filter((r) => r.lane === "art");
-      expect(art.map((r) => r.site)).toEqual(["pinterest", "behance"]);
-      expect(both.filter((r) => r.lane !== "art").every((r) => !r.query.toLowerCase().startsWith(idea.toLowerCase()) || r.lane === "bridge")).toBe(true);
+      const art = both.filter((r) => requestZone(r) === "art");
+      expect(art.map((r) => r.site)).toEqual(["behance"]);
+      expect(art[0]!.next!.at(-1)).toMatchObject({ lane: "art:raw", site: "pinterest" });
+      expect(art[0]!.next!.at(-1)!.query.toLowerCase().startsWith(idea.toLowerCase())).toBe(true);
+      expect(both.filter((r) => requestZone(r) !== "art").every((r) => !r.query.toLowerCase().startsWith(idea.toLowerCase()) || r.lane === "bridge")).toBe(true);
     }
   });
 });

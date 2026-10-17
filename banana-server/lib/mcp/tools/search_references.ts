@@ -26,7 +26,7 @@ import {
 import { preferredCreators, type CreatorRating } from "@/lib/learning/creator";
 import { queryWords, termKey } from "@/lib/learning/terms";
 import { pickGalleries } from "@/lib/sources/registry";
-import { ART_SITES, artQuota, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
+import { ART_SITES, artQuota, artRetryPlan, artWords, bridgeHead, forceUi, hasUiLanes, laneValue, planRequests, type LaneTexts } from "@/lib/sources/plan";
 import { buildSourceQuery, cleanQuery } from "@/lib/sources/query";
 import { planSweep, type SweepTexts } from "@/lib/sources/sweep";
 import {
@@ -35,7 +35,8 @@ import {
   MIXES,
   SOURCE_SITES,
   ZONE_INPUTS,
-  isLaneName,
+  baseLane,
+  laneZone,
   sourceZoneOk,
   type LaneName,
   type Mix,
@@ -546,7 +547,11 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         if (input.lane) {
           // Only this lane, with the agent's words; they become an arm of the lane's term.
           arms = { [input.lane]: agentArm(laneUiWords!) };
-          plan = planLane(input.lane, queryWords(laneUiWords!), picked, lanes.idea, lanes);
+          // An art re-search takes the agent's words raw (never laddered); its results are lane "art:retry".
+          plan =
+            input.lane === "art"
+              ? artRetryPlan(queryWords(laneUiWords!), picked, lanes.artGalleries)
+              : planLane(input.lane, queryWords(laneUiWords!), picked, lanes.idea, lanes);
         } else {
           arms = await pickArms(deps, userId, lanes, termKeys, variants, deps.now?.() ?? new Date());
           learned = Object.entries(arms).some(([lane, arm]) => arm !== defaultArm(lane as LaneName));
@@ -609,7 +614,7 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
       if (result.ok) await deps.usage.addSearches(userId, quota.period, 1);
 
       // Every result carries its zone ("art" for the art lane, "ui" otherwise).
-      const references = result.references.map((r) => ({ ...r, zone: r.zone ?? (r.lane === "art" ? "art" : "ui") }) as Reference);
+      const references = result.references.map((r) => ({ ...r, zone: r.zone ?? laneZone(r.lane) }) as Reference);
       const zones: Record<Zone, number> = {
         ui: references.filter((r) => r.zone !== "art").length,
         art: references.filter((r) => r.zone === "art").length,
@@ -644,7 +649,8 @@ export function createSearchReferencesTool(deps: SearchReferencesDeps) {
         out.canvasId = input.canvasId;
         // Saved with how they were found (zone included), so rate_references can credit the lane wording.
         const saved: SavedReference[] = references.map((r) => {
-          const lane = isLaneName(r.lane) ? r.lane : undefined;
+          // Art rung lanes ("art:system", "art:retry") credit the art lane's term and arm.
+          const lane = baseLane(r.lane);
           const tk = lane ? searched.termKeys?.[lane] : undefined;
           const arm = lane ? searched.arms?.[lane] ?? defaultArm(lane) : undefined;
           return {

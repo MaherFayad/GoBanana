@@ -167,7 +167,10 @@ describe("P6 lens library", () => {
     expect(isArtJunk("Assiut tulle bi telli shawl", "talli embroidery")).toBe(false); // the lens rule is its own reason
     const [pin] = artRequests(["talli gold braid"]);
     expect(pin!.query).toMatch(/^talli gold braid -tulle -assiut -asyut -egyptian -egypt -telli -etsy/);
-    expect(artRequests(["crushed velvet"])[0]!.query).toBe("crushed velvet -etsy -amazon -aliexpress -sale -buy");
+    // The art ladder (V4.3): a graphic system first, the raw words last; every rung keeps the shop negatives.
+    const [velvet] = artRequests(["crushed velvet"]);
+    expect(velvet!.query).toBe("crushed velvet identity system -etsy -amazon -aliexpress -sale -buy");
+    expect(velvet!.next!.at(-1)!.query).toBe("crushed velvet -etsy -amazon -aliexpress -sale -buy");
   });
 
   it("counts lens drops in both zones", () => {

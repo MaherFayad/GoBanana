@@ -7,7 +7,8 @@ import { allowedOn, PLATFORM_PROFILES, resolvePlatform, type Platform } from "@/
 import { weightedOrder } from "@/lib/learning/directions";
 import { directionTermKey } from "@/lib/learning/terms";
 import { briefComponents, inspirationQuery, laneTexts } from "./queries";
-import { applyLanguage, artQueries, buildSpec, fixCase, sentence, type SpecInput } from "./spec";
+import { applyLanguage, artLadder, artQueries, buildSpec, fixCase, sentence, type SpecInput } from "./spec";
+import { siteLabel } from "@/lib/sources/art-ladder";
 import { assignLanguages, diversityOf, isOperatePage, languageLine, languagePlan, type LanguagePlan } from "./language";
 import { CLASH_FROM_WILDNESS, detectDomain, MAX_WEIRD, moodClashes, moodFits, noClash, type Domain } from "./tone";
 import wildSpotsJson from "./wild-spots.json";
@@ -790,6 +791,7 @@ export function bendBrief(raw: BendInput, options: BendOptions = {}): BendResult
       pages: [...pages],
       spec,
       artQueries: artQueries(promptMoves, byMove, lead, mood),
+      artLadder: artLadder(promptMoves, byMove, lead, mood),
       mechanic,
       },
     });
@@ -863,7 +865,8 @@ export function formatDirections(result: BendResult): string {
     lines.push(
       `   Signature: ${bare(sp.signature)}. Pattern: ${bare(sp.pattern)}. Steal: ${sp.steal.map(bare).join("; ")}. Avoid: ${sp.avoid.map(bare).join("; ")}. Style words: ${sp.styleWords.join(", ")}. Why: ${bare(sp.whyItFits)}.`,
     );
-    lines.push(`   Art queries: ${d.artQueries.join("; ")}`);
+    const firstRungs = d.artLadder.flatMap((l) => (l.rungs[0] ? [`"${l.rungs[0].query}" on ${siteLabel(l.rungs[0].site)}`] : []));
+    lines.push(`   Art searches (first rung per ingredient; a thin rung falls back to the next, ending with the raw words): ${firstRungs.join("; ")}`);
     lines.push(`   Source: ${d.source}. Language: ${languageLine(d.language)}.`);
   });
   if (result.directions.length > 1) {

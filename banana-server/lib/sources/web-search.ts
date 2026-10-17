@@ -31,11 +31,14 @@
 import { isAllowedImageUrl, allowlistFromEnv, type ImageHostAllowlist } from "./allowlist";
 import { isItemPage } from "./item-page";
 import { artDropReason, bigEnough, isJunk, isKitTitle, isUiResult, lensExcludeWords, rankReferences, sizeRuleApplies, titleHasAny, upgradeImage } from "./quality";
+import { ART_RUNG_MIN } from "./art-ladder";
 import {
   CREATOR_CAP,
   FALLBACK_MIN_GOOD,
   PLAIN_MAX_REQUESTS,
   PLAIN_MIN_GOOD,
+  artLaneRank,
+  artNeed,
   artQueryPlan,
   bridgeHead,
   byZone,
@@ -692,6 +695,8 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       /** Last page fetched of the request's own query, and whether it came back full. */
       page: number;
       lastFull: boolean;
+      /** Art ladder: the next rung of this ingredient was sent. */
+      climbed?: true;
     };
     // References already on the canvas, or blocked by the user, are skipped, so sections that share
     // lanes get fresh results instead of the same shots (and a later search never pulls a kept
@@ -726,9 +731,7 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     // Good results one request keeps over its pages (page 2 and 3 add to page 1).
     const SLOT_CAP = SERPER_PAGE_SIZE * SERPER_MAX_PAGES;
     let requests = base.length;
-    const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, (r) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), r.page ?? 1));
-    const slots: Slot[] = base.map((req, i) => {
-      const out = outcomes[i]!;
+    const toSlot = (req: PlannedRequest, out: PageOutcome): Slot => {
       if (!out.ok) return { req, refs: [], dropped: 0, ok: false, status: out.status, full: false, before: 0, page: req.page ?? 1, lastFull: false };
       const mapped = mapPage(req, req.query, out.images);
       return {
@@ -743,18 +746,36 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         page: req.page ?? 1,
         lastFull: out.images.length >= SERPER_PAGE_SIZE,
       };
-    });
+    };
+    const fetchReq = (r: PlannedRequest) => fetchPage(apiKey, buildSourceQuery(r.query, r.site), r.page ?? 1);
+    const outcomes = await mapLimit(base, SERPER_MAX_IN_FLIGHT, fetchReq);
+    const slots: Slot[] = base.map((req, i) => toSlot(req, outcomes[i]!));
     if (!slots.some((s) => s.ok)) {
       const limited = slots.some((s) => s.status === 429);
       return { ...failure(limited ? NOTES.rateLimited : NOTES.unavailable), requests };
     }
 
+    // Art ladder (lib/sources/art-ladder.ts): an ingredient whose rung kept fewer than
+    // ART_RUNG_MIN usable results moves to its next rung, while the art zone is short of its
+    // quota. A failed request does not fall through (that would only add load).
+    const needArt = artNeed(count, base.map((r) => r.lane));
+    const artHave = () => new Set(slots.filter((s) => requestZone(s.req) === "art").flatMap((s) => s.refs.map((r) => itemKey(r.sourceUrl)))).size;
+    const climbers = () =>
+      artHave() >= needArt ? [] : slots.filter((s) => s.ok && !s.climbed && s.req.next?.length && s.refs.length < ART_RUNG_MIN);
+    const nextRung = (slot: Slot): PlannedRequest => {
+      slot.climbed = true;
+      const [n, ...rest] = slot.req.next!;
+      return rest.length > 0 ? { ...n!, next: rest } : n!;
+    };
+
     // Second round, within the budget, in priority order:
     // 1. Page 2 of a request whose page 1 was full and good but mostly already on the canvas or
     //    blocked (exhausted by the exclude filter, not a thin answer).
     // 2. The fallback query (core noun) of a thin answer.
+    // Art ladder steps alternate with these, a ladder step first.
     // A failed request (429, timeout) is not retried: that would only add load.
     const planned = new Set(base.map((r) => `${r.query}|${r.site}|${r.page ?? 1}`));
+    const climbing = climbers();
     const exhausted = slots.filter(
       (s) =>
         s.ok &&
@@ -762,21 +783,34 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
         s.full &&
         s.before >= FALLBACK_MIN_GOOD &&
         s.refs.length < FALLBACK_MIN_GOOD &&
+        !climbing.includes(s) &&
         !planned.has(`${s.req.query}|${s.req.site}|2`),
     );
     const thin = slots.filter((s) => s.ok && s.req.fallback && s.refs.length < FALLBACK_MIN_GOOD && !exhausted.includes(s));
-    const jobs = [
-      ...exhausted.map((slot) => ({ slot, page2: true })),
-      ...thin.map((slot) => ({ slot, page2: false })),
-    ].slice(0, Math.max(0, SERPER_MAX_REQUESTS - requests));
-    requests += jobs.length;
-    const second = await mapLimit(jobs, SERPER_MAX_IN_FLIGHT, (j) =>
-      j.page2
-        ? fetchPage(apiKey, buildSourceQuery(j.slot.req.query, j.slot.req.site), 2)
-        : fetchPage(apiKey, buildSourceQuery(j.slot.req.fallback!, j.slot.req.site), 1),
+    type Job = { slot: Slot; kind: "page2" | "fallback" | "climb" };
+    const uiJobs: Job[] = [...exhausted.map((slot) => ({ slot, kind: "page2" as const })), ...thin.map((slot) => ({ slot, kind: "fallback" as const }))];
+    const climbJobs: Job[] = climbing.map((slot) => ({ slot, kind: "climb" as const }));
+    const alternated: Job[] = [];
+    for (let i = 0; i < Math.max(uiJobs.length, climbJobs.length); i++) {
+      if (climbJobs[i]) alternated.push(climbJobs[i]!);
+      if (uiJobs[i]) alternated.push(uiJobs[i]!);
+    }
+    const allJobs = alternated.slice(0, Math.max(0, SERPER_MAX_REQUESTS - requests));
+    const sent: { job: Job; req?: PlannedRequest }[] = allJobs.map((j) => (j.kind === "climb" ? { job: j, req: nextRung(j.slot) } : { job: j }));
+    requests += allJobs.length;
+    // One batch, so ladder steps and the other second round requests share the in-flight cap.
+    const answers = await mapLimit(sent, SERPER_MAX_IN_FLIGHT, ({ job, req }) =>
+      req
+        ? fetchReq(req)
+        : job.kind === "page2"
+          ? fetchPage(apiKey, buildSourceQuery(job.slot.req.query, job.slot.req.site), 2)
+          : fetchPage(apiKey, buildSourceQuery(job.slot.req.fallback!, job.slot.req.site), 1),
     );
-    jobs.forEach(({ slot, page2 }, i) => {
-      const out = second[i]!;
+    sent.forEach(({ req }, i) => {
+      if (req) slots.push(toSlot(req, answers[i]!));
+    });
+    const jobs = sent.flatMap(({ job, req }, i) => (req ? [] : [{ slot: job.slot, page2: job.kind === "page2", out: answers[i]! }]));
+    jobs.forEach(({ slot, page2, out }) => {
       if (page2) slot.page2 = true;
       else slot.retried = slot.req.fallback;
       if (page2) {
@@ -793,6 +827,14 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
       const why = sumWhy([slot.why, mapped.why]);
       if (why) slot.why = why;
     });
+
+    // Later rungs: one round per rung, while the budget lasts and the art zone is short.
+    for (let steps = climbers(); steps.length > 0 && requests < SERPER_MAX_REQUESTS; steps = climbers()) {
+      const due = steps.slice(0, SERPER_MAX_REQUESTS - requests).map(nextRung);
+      requests += due.length;
+      const outs = await mapLimit(due, SERPER_MAX_IN_FLIGHT, fetchReq);
+      due.forEach((req, i) => slots.push(toSlot(req, outs[i]!)));
+    }
 
     // Large counts (above DEEP_COUNT): what the budget leaves goes to the next page of the
     // strongest requests (most good results, last page full), up to SERPER_MAX_PAGES, while the
@@ -830,7 +872,15 @@ export function createWebSearchAdapter(config: WebSearchConfig): WebSearchAdapte
     }
     const prefer = opts.preferCreators ?? [];
     const lists = new Map<SearchLane, Reference[]>();
-    for (const [lane, list] of byLane) lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
+    // Art rung lanes keep their places among the lanes but go best rung first ("art:system" before "art:raw").
+    const order = [...byLane.keys()];
+    const artOrder = order.filter((l) => requestZone({ lane: l }) === "art").sort((a, b) => artLaneRank(a) - artLaneRank(b));
+    let nextArt = 0;
+    for (const key of order) {
+      const lane = requestZone({ lane: key }) === "art" ? artOrder[nextArt++]! : key;
+      const list = byLane.get(lane)!;
+      lists.set(lane, prefer.length > 0 ? nudgeByCreator(list, prefer) : list);
+    }
     // Art zone about a third (at least 3), UI lanes share the rest; at most 2 per creator or studio;
     // UI references first, then art (the agent places them in their own rows).
     const quotas = zoneQuotas(count, [...lists.keys()]);

@@ -23,6 +23,7 @@ import {
   parseAllowlist,
   plainQueryPlan,
   planRequests,
+  requestZone,
   rankReferences,
   recencyScore,
   zoneQuotas,
@@ -134,19 +135,23 @@ describe("no default taste for direction searches", () => {
 });
 
 describe("art zone", () => {
-  it("plans art queries raw on Pinterest pins and Behance galleries, about a third of the results", () => {
+  it("plans each art query as a ladder (V4.3), about a third of the results", () => {
     const lanes = { ...laneTexts(IPHONE, "Korean bojagi", [], "k"), art: ["korean bojagi", "bojagi patchwork"] };
     const both = planRequests(lanes);
     expect(both.length).toBeLessThanOrEqual(7);
-    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art"]);
-    expect(both.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
-    expect(both.find((r) => r.lane === "art")!.query).toBe("korean bojagi -etsy -amazon -aliexpress -sale -buy");
-    const art = planRequests(lanes, undefined, { zone: "art" });
-    expect(art.every((r) => r.lane === "art")).toBe(true);
-    expect(art.map((r) => r.query.split(" -")[0])).toEqual(["korean bojagi", "korean bojagi", "bojagi patchwork", "bojagi patchwork"]);
-    expect(planRequests(lanes, undefined, { zone: "ui" }).some((r) => r.lane === "art")).toBe(false);
+    expect(both.slice(0, 4).map((r) => r.lane)).toEqual(["fidelity", "art:system", "bridge", "art:system"]);
+    // A tradition keeps its own words on Behance first, then raw on Pinterest; other ingredients climb from a system.
+    const art = both.filter((r) => requestZone(r) === "art");
+    expect(art.map((r) => r.site)).toEqual(["behance", "behance"]);
+    expect(art[0]!.query).toBe("korean bojagi -etsy -amazon -aliexpress -sale -buy");
+    expect(art[0]!.next!.map((r) => `${r.lane} ${r.site}`)).toEqual(["art:raw pinterest"]);
+    expect(art[1]!.query.split(" -")[0]).toBe("bojagi patchwork identity system");
+    const only = planRequests(lanes, undefined, { zone: "art" });
+    expect(only.every((r) => requestZone(r) === "art")).toBe(true);
+    expect(only.map((r) => r.query.split(" -")[0])).toEqual(["korean bojagi", "bojagi patchwork identity system"]);
+    expect(planRequests(lanes, undefined, { zone: "ui" }).some((r) => requestZone(r) === "art")).toBe(false);
     // No art site picked: no art requests.
-    expect(planRequests(lanes, ["dribbble"]).some((r) => r.lane === "art")).toBe(false);
+    expect(planRequests(lanes, ["dribbble"]).some((r) => requestZone(r) === "art")).toBe(false);
     expect([8, 12, 16, 24].map(artQuota)).toEqual([3, 4, 5, 8]);
   });
 

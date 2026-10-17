@@ -105,7 +105,8 @@ describe("search plan", () => {
     // Both zones: the bridge survives the cut, so each direction gets UI of its own idea
     // (field report, 2026-10-12: placed last, it was cut and every direction got the same shots).
     const both = planRequests({ ...FULL, art: ["vending machine"] });
-    expect(both.map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art", "taste", "component", "fidelity"]);
+    // V4.3: one art request per art query (its ladder's first rung), so UI keeps one more place.
+    expect(both.map((r) => r.lane)).toEqual(["fidelity", "art:system", "bridge", "taste", "component", "fidelity", "component"]);
     // At most 2 component lanes.
     expect(planRequests({ ...FULL, component: ["a ui", "b ui", "c ui"] }).filter((r) => r.lane === "component")).toHaveLength(2);
     // No head word, no bridge request.

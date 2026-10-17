@@ -9,3 +9,4 @@ export * from "./plan";
 export * from "./registry";
 export { pinterestOwnAdapter } from "./pinterest-own";
 export { arenaAdapter } from "./arena";
+export * from "./art-ladder";

@@ -342,7 +342,8 @@ describe("bend_brief tool output", () => {
     expect(text).toContain("one wild page or two");
     for (const s of r.wildSpots) expect(text).toContain(`- ${s.page}: ${s.why}`);
     for (const d of r.directions) {
-      expect(text).toContain(`Art queries: ${d.artQueries.join("; ")}`);
+      // V4.3: the text shows each ingredient's first ladder rung, not the raw art query.
+      expect(text).toContain(`Art searches (first rung per ingredient; a thin rung falls back to the next, ending with the raw words): ${d.artLadder.map((l) => `"${l.rungs[0]!.query}" on ${l.rungs[0]!.site === "behance" ? "Behance" : "Pinterest"}`).join("; ")}`);
       expect(text).toContain(`type ${d.spec.typeVoice}:`);
     }
     expect(text).not.toContain(String.fromCharCode(0x2014));

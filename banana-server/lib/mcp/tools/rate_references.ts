@@ -78,7 +78,11 @@ export type RateReferencesOutput = {
   canvasId?: string;
 };
 
-const asLane = (lane: string | null): LaneName | null => (LANE_NAMES as readonly string[]).includes(lane ?? "") ? (lane as LaneName) : null;
+/** Lane for hints and learning; every art rung ("art:system", "art:retry" ...) counts as the art lane. */
+const asLane = (lane: string | null): LaneName | null => {
+  const name = lane?.startsWith("art:") ? "art" : (lane ?? "");
+  return (LANE_NAMES as readonly string[]).includes(name) ? (name as LaneName) : null;
+};
 
 function text(out: RateReferencesOutput): string {
   const lines: string[] = [];

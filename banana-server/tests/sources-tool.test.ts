@@ -139,19 +139,20 @@ describe("search_references tool", () => {
     expect(plan.length).toBeLessThanOrEqual(8);
     // Both zones: UI and art alternate at the top, then the rest of UI, cut to 7 (one spare request).
     // The bridge (the direction's own idea as UI) comes right after fidelity, so the cut keeps it.
-    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art", "bridge", "art", "component", "locale", "gallery"]);
+    // V4.3: one art ladder per art query; its first rung is planned, the later rungs ride in next.
+    expect(plan.map((r) => r.lane)).toEqual(["fidelity", "art:system", "bridge", "component", "locale", "gallery", "component"]);
     // No taste given and no style words stored: no taste lane (never the owner's default taste).
     expect(plan.some((r) => r.lane === "taste")).toBe(false);
     // The raw idea only goes to the art lane (Pinterest pins, Behance galleries); in UI it is only
     // the bridge lane's UI form ("crushed velvet ui design").
-    expect(plan.filter((r) => r.lane !== "art" && r.lane !== "bridge").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
+    expect(plan.filter((r) => !r.lane.startsWith("art") && r.lane !== "bridge").some((r) => r.site === "behance" || r.query.startsWith("crushed velvet"))).toBe(false);
     expect(plan.find((r) => r.lane === "bridge")!.query).toMatch(/^crushed velvet ui design -template/);
-    expect(plan.filter((r) => r.lane === "art").map((r) => r.site)).toEqual(["pinterest", "behance"]);
-    expect(plan.find((r) => r.lane === "art")!.query).toMatch(/^crushed velvet -etsy/);
+    expect(plan.filter((r) => r.lane.startsWith("art")).map((r) => r.site)).toEqual(["behance"]);
+    expect(plan.find((r) => r.lane === "art:system")!.query).toMatch(/^crushed velvet identity system -etsy/);
     const ui = await tool({ directionId: "bd-8dti7s7c", canvasId: "c1", zone: "ui" }, "u1");
     expect(ui.structuredContent).toMatchObject({ zone: "ui" });
     const [uiPlan] = runPlan.mock.calls[1]! as unknown as [{ lane: string; query: string; site: string }[]];
-    expect(uiPlan.some((r) => r.lane === "art")).toBe(false);
+    expect(uiPlan.some((r) => r.lane.startsWith("art"))).toBe(false);
     expect(uiPlan.find((r) => r.lane === "bridge")).toMatchObject({
       query: "crushed velvet ui design -template -kit -free -wireframe",
       site: "dribbble",
@@ -172,7 +173,7 @@ describe("search_references tool", () => {
     expect(out.lanes.art).toEqual(["crushed velvet"]);
     expect(out.queries[0]).toBe("flight checkout app ui -template -kit -free -wireframe site:dribbble.com/shots");
     expect(out.queries[2]).toBe("crushed velvet ui design -template -kit -free -wireframe site:dribbble.com/shots");
-    expect(out.queries[5]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
+    expect(out.queries[4]).toBe("arabic flight app ui -template -kit -free -wireframe site:pinterest.com/pin");
     expect(text(res)).toContain("UI references:");
     expect(text(res)).not.toContain("inspiration");
     expect((await usage.get("u1", currentPeriod(NOW))).searches).toBe(2);
@@ -200,7 +201,8 @@ describe("search_references tool", () => {
     const res = await tool({ directionId: "bd-8dti7s7c", lane: "inspiration", query: "crushed velvet" } as unknown as SearchReferencesInput, "u1");
     expect(res.isError).toBeFalsy();
     const [plan] = runPlan.mock.calls[0]! as unknown as [{ lane: string; query: string; site: string }[]];
-    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["art:pinterest", "art:behance"]);
+    // A re-search keeps the agent's raw words, never laddered; its results are lane "art:retry".
+    expect(plan.map((r) => `${r.lane}:${r.site}`)).toEqual(["art:retry:pinterest", "art:retry:behance"]);
     expect(plan[0]!.query).toBe("crushed velvet -etsy -amazon -aliexpress -sale -buy");
     expect(res.structuredContent).toMatchObject({ lane: "art", zone: "art", arms: { art: "agent:crushed velvet" } });
   });

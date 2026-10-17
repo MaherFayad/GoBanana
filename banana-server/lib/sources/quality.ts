@@ -273,9 +273,13 @@ export function isKitTitle(title: string | undefined): boolean {
 // gets its own filter for what made the round 11 board 60% junk: seed packets, jackets, a car air
 // freshener. Metadata only, like every other filter.
 
-/** Shop and listing signals: always junk, whatever the idea. */
+/**
+ * Shop and listing signals: always junk, whatever the idea. Obvious single product photos say so
+ * in their titles ("for sale", "listing", "in stock", "product photo"); title words only, the
+ * server never looks at the pixels.
+ */
 const SHOP_WORDS = wordsRe(
-  "price|prices|buy|buying|shop|shopping|store|sale|for sale|on sale|sold|etsy|amazon|aliexpress|alibaba|ebay|walmart|temu|shein|free shipping|in stock|add to cart|discount|coupon|wholesale|sku|order now|dropship",
+  "price|prices|buy|buying|buy now|shop|shopping|shop now|store|sale|for sale|on sale|sold|listing|listings|product photos?|product shots?|etsy|amazon|aliexpress|alibaba|ebay|walmart|temu|shein|free shipping|in stock|add to cart|discount|coupon|wholesale|sku|order now|dropship",
 );
 /** "$12.99", "12,50 €", "£40", "US $5". */
 const PRICE = /(?:[$€£¥₹]\s?\d|\d\s?(?:[$€£¥₹]|usd|eur|gbp|aed|sar)(?![\p{L}]))/iu;

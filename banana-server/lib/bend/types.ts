@@ -1,5 +1,6 @@
 import type { DesignLanguage, DirectionSource, Platform, TypeVoice, VisualSpec } from "@/lib/direction-detail";
 import type { Mechanic } from "./mechanic";
+import type { ArtLadder } from "@/lib/sources/art-ladder";
 
 export type { DesignLanguage, DirectionSource, Platform, VisualSpec } from "@/lib/direction-detail";
 
@@ -135,6 +136,12 @@ export interface Direction {
   spec: VisualSpec;
   /** 1 to 3 image queries of the ingredients for the art zone (subject, medium, composition), no UI words. */
   artQueries: string[];
+  /**
+   * The art lane's plan, one ladder per art query, in the order search_references tries it
+   * (lib/sources/art-ladder.ts): identity or signage system on Behance, graphic design or poster,
+   * pattern or typography, then the raw query on Pinterest. A thin rung falls through to the next.
+   */
+  artLadder: ArtLadder[];
   /** The working UI part the wild idea becomes (lib/bend/mechanic.ts): build the direction around it. */
   mechanic: Mechanic;
   /** "candidate" (led by an agent candidate), "challenger" (word lists, next to candidates) or "lists" (no candidates given). */

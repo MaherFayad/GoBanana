@@ -220,7 +220,8 @@ describe("no-storage: web_search never fetches or writes image bytes", () => {
     expect(queries.every((q) => / site:[a-z0-9.-]+\.[a-z]+(\/\S*)?$/.test(q))).toBe(true);
     // The raw idea is searched only in the art zone (with shop negatives), never in a UI lane.
     expect(queries.some((q) => q.startsWith("melted chrome site:"))).toBe(false);
-    expect(queries.some((q) => q.startsWith("melted chrome -etsy"))).toBe(true);
+    // The art lane starts its ladder with a graphic system (V4.3), with the shop negatives.
+    expect(queries.some((q) => q.startsWith("melted chrome identity system -etsy"))).toBe(true);
     // Both zones: the art lane takes the bridge lane's place in the 7-request base plan.
     expect(queries.some((q) => q.startsWith("arabic flight app ui"))).toBe(true);
     expect((await usage.get("u1", currentPeriod())).searches).toBe(1);
