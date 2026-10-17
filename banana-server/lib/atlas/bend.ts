@@ -429,6 +429,32 @@ export function expectedPenalty(c: Pick<IngredientCard, "family" | "styles" | "r
 }
 
 /**
+ * R10: lead relevance a domain cliche loses (a card whose look is what apps of this domain already
+ * ship, `FitScore.cliche` from atlas-build r10-cliche): 0.5 at wildness 1 rising 0.06 a step (0.74 at
+ * wildness 5), about two fit steps, and on top of the R7 penalty when the card is also expected. A
+ * second card loses the same: a ring gauge texture on a telecom page is the same cliche. The card
+ * keeps its place in every other domain (rings may be wild on a recipe app).
+ */
+export const CLICHE_BASE = 0.5;
+export const CLICHE_STEP = 0.06;
+
+/** R10: the lead relevance a card loses in a domain where its look is a cliche (0 when it is not one). */
+export function clichePenalty(fit: Pick<FitScore, "cliche"> | undefined, wildness: number): number {
+  return fit?.cliche ? CLICHE_BASE + CLICHE_STEP * (Math.max(1, Math.min(5, wildness)) - 1) : 0;
+}
+
+/**
+ * R10: true when two cards come from the same world (`IngredientCard.worlds`, atlas-build
+ * r10-worlds): the main world of one is a world of the other. Wool Felt with the texture of
+ * embroidered Badges is two fabrics, one idea twice, though their families differ. Cards without
+ * worlds are never near.
+ */
+export function sameWorld(a: Pick<IngredientCard, "worlds">, b: Pick<IngredientCard, "worlds">): boolean {
+  const [wa, wb] = [a.worlds ?? [], b.worlds ?? []];
+  return (wa[0] !== undefined && wb.includes(wa[0])) || (wb[0] !== undefined && wa.includes(wb[0]));
+}
+
+/**
  * How much less a card counts when the domain's page fit (J4b) did not judge it on this page. Two: a
  * fit 3 card outside the judged top cards ranks with a page 1, so a Gulf bonus alone never lifts an
  * unjudged card over the cards judged for the page (the first round 2 dry run led Dubai listings
@@ -551,17 +577,19 @@ export function secondRegionOk(card: Pick<IngredientCard, "name" | "region" | "i
  * "Sticker Sheet" under one lead while "Stickers" leads the next), then the best `score` (the lead's own brief, page and region
  * relevance), the seeded jitter and the id last, so the same brief gives the same pick.
  */
-export function rankSeconds<T extends Pick<IngredientCard, "id" | "name" | "family" | "kind" | "region" | "idea" | "surprise" | "culturalNotes">>(
-  lead: Pick<IngredientCard, "name" | "family" | "kind">,
+export function rankSeconds<T extends Pick<IngredientCard, "id" | "name" | "family" | "kind" | "region" | "idea" | "surprise" | "culturalNotes" | "worlds">>(
+  lead: Pick<IngredientCard, "name" | "family" | "kind" | "worlds">,
   pool: readonly T[],
   opts: { brief: string; market: "gulf" | "mena" | null; score: (c: T) => number; used: ReadonlySet<string>; seed: string; others?: ReadonlyArray<Pick<IngredientCard, "name">> },
 ): T[] {
   const otherWords = new Set((opts.others ?? []).flatMap((o) => contentWords(o.name)));
   const repeats = (c: T) => Number(contentWords(c.name).some((w) => otherWords.has(w)));
+  // R10: a card from the lead's own world comes after every card from another world.
+  const near = (c: T) => Number(sameWorld(lead, c));
   return pool
     .filter((c) => similarity(lead, c) < 1 && secondRegionOk(c, opts.brief, opts.market))
     .map((c) => ({ c, s: opts.score(c) }))
-    .sort((a, b) => Number(opts.used.has(a.c.id)) - Number(opts.used.has(b.c.id)) || repeats(a.c) - repeats(b.c) || b.s - a.s || jitter(opts.seed, a.c.id) - jitter(opts.seed, b.c.id) || a.c.id.localeCompare(b.c.id))
+    .sort((a, b) => near(a.c) - near(b.c) || Number(opts.used.has(a.c.id)) - Number(opts.used.has(b.c.id)) || repeats(a.c) - repeats(b.c) || b.s - a.s || jitter(opts.seed, a.c.id) - jitter(opts.seed, b.c.id) || a.c.id.localeCompare(b.c.id))
     .map((x) => x.c);
 }
 
@@ -876,7 +904,9 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     const weight = (options.ingredientWeights?.get(directionTermKey(c.name.toLowerCase())) ?? 1) * idWeight(learning, atlasTermKey("card", c.id));
     // R7: a lead that is the expected move on a screen gives way to a wilder card of near fit.
     const expected = asLead && !(lens && isLensCard(c)) ? expectedPenalty(c, wildness) : 0;
-    return (base + gulf + styleFit(c.styles, asked) - expected) * weight;
+    // R10: a card whose look this domain's apps already ship gives way, as a lead and as a second card.
+    const cliche = lens && isLensCard(c) ? 0 : clichePenalty(fitOf.get(c.id), wildness);
+    return (base + gulf + styleFit(c.styles, asked) - expected - cliche) * weight;
   };
   const mmr = (pool: IngredientCard[], n: number, chosen: IngredientCard[] = []): IngredientCard[] => {
     const left = [...pool];
@@ -908,7 +938,8 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
   const drawn = [...leadsLens, ...mmr(nonLens, GENERATED - leadsLens.length, leadsLens)].slice(0, GENERATED);
   // No style asked and no lens: the first directions take different main styles (R2).
   // R7: on a wild brief (wildness 3 or more) an expected lead never takes a place for its style alone.
-  const demote = (c: IngredientCard) => wildness >= EXPECTED_DEMOTE_FROM && isExpectedCard(c);
+  // R10: a domain cliche never takes a place for its style alone, at any wildness.
+  const demote = (c: IngredientCard) => (wildness >= EXPECTED_DEMOTE_FROM && isExpectedCard(c)) || Boolean(fitOf.get(c.id)?.cliche);
   const leads = asked.length === 0 && !lens ? spreadByStyle(drawn, input.count, demote) : drawn;
   if (leads.length < Math.min(input.count, MIN_LEADS)) return null;
 
@@ -1062,7 +1093,7 @@ export async function bendBriefAtlas(raw: BendInput, source: AtlasSource, option
     }
     // R9: texture and motion act on this page's parts, colors come from the palette, spacing agrees with the card.
     {
-      const sctx = { lead, second, adds: pick.adds, platform, parts: drawn.dm.parts ?? [], task: drawn.dm.task, pageLabel };
+      const sctx = { lead, second, adds: pick.adds, platform, parts: drawn.dm.parts ?? [], task: drawn.dm.task, pageLabel, brief: input.brief };
       drawn.spec = coherentSpec(drawn.spec, sctx);
       drawn.dm = coherentMechanic(drawn.dm, sctx);
     }

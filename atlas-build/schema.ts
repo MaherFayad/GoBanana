@@ -81,9 +81,11 @@ export interface IngredientCard {
   artQueries: string[];
   culturalNotes?: string;                       // required for kind "tradition"
   styles?: string[];                            // R2: style ids (docs/styles/INDEX.md), main style first, at most 2. Optional.
+  worlds?: string[];                            // R10: the card's material or object world (CARD_WORLDS), main first, at most 2. Optional, laid over from card-worlds.
 }
 
-export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string }
+// R10: cliche, the look apps of this domain already ship that the card is (laid over from domain-cliches). Optional.
+export interface FitScore { cardId: string; domainId: string; score: 0 | 1 | 2 | 3; reason: string; cliche?: string }
 
 // Added for Gate 2 round 2 (J4b, not in section 6.2): fit per card, domain and page. reason only for 2 and 3.
 export interface PageFitScore { cardId: string; domainId: string; pageId: string; score: 0 | 1 | 2 | 3; reason?: string }
@@ -280,6 +282,7 @@ export const IngredientCardSchema = z
     artQueries: z.array(text).min(1),
     culturalNotes: text.optional(),
     styles: styleTags.optional(),
+    worlds: z.array(text).max(2).optional(),
   })
   .refine((c) => c.kind !== "tradition" || !!c.culturalNotes, { message: "culturalNotes is required for kind tradition", path: ["culturalNotes"] });
 
@@ -288,6 +291,7 @@ export const FitScoreSchema = z.object({
   domainId: id,
   score: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
   reason: text,
+  cliche: text.optional(),
 });
 
 export const PageFitScoreSchema = z.object({

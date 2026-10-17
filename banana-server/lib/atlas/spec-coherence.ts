@@ -35,6 +35,8 @@ export interface SpecContext {
   task?: string;
   /** The page's name ("eSIM plan picker"), for the twist sentence. */
   pageLabel?: string;
+  /** R10: the brief, so a line can tell which flows and parts the page has. */
+  brief?: string;
 }
 
 const lowerFirst = (s: string) => (/^[A-Z](?![A-Z0-9])/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s);
@@ -144,6 +146,45 @@ export function placeTexture(texture: string, parts: readonly SpecPart[], taskLa
   return { text, part };
 }
 
+// ---------------------------------------------------------------------------
+// R10: off-page parts. A card's sentences name the flows it was written for ("turns onboarding and
+// checkout into calm assembly steps", "the new initials appear at once"); on a page without them the
+// line reads as left over from another direction.
+
+/** Flow and part names a card's lines can borrow from other pages. */
+const FLOW = "onboarding|check-?outs?|sign-?ups?|log-?ins?|paywalls?|pricing pages?|receipts?|profile (?:cards?|pages?)|profiles?|carts?|leaderboards?|scoreboards?|high score (?:tables?|cards?|lists?)|dashboards?|search results|filters?|carousels?";
+const FLOW_LIST = new RegExp(`\\b(?:(?:the|a|an|your)\\s+)?(?:${FLOW})(?:(?:,\\s*|,?\\s+(?:and|or)\\s+)(?:(?:the|a|an|your)\\s+)?(?:${FLOW}))*\\b`, "gi");
+const FLOW_ONE = new RegExp(`^(?:(?:the|a|an|your)\\s+)?(${FLOW})$`, "i");
+
+const stem = (w: string) => w.toLowerCase().replace(/-/g, "").replace(/(?:es|s)$/, "");
+/** The words of the page: the brief, the page name, the span parts (labels and lines) and the task. */
+export function pageText(ctx: Pick<SpecContext, "brief" | "pageLabel" | "parts" | "task">): string {
+  return [ctx.brief ?? "", ctx.pageLabel ?? "", ...ctx.parts.flatMap((p) => [p.label, p.how]), ctx.task ?? ""].join(" ").toLowerCase().replace(/-/g, "");
+}
+/** A one word flow is on the page when a page word has its stem; a longer one ("profile cards") only as a whole. */
+const onPage = (phrase: string, text: string) =>
+  /\s/.test(phrase.trim()) ? text.includes(phrase.toLowerCase().replace(/-/g, "").replace(/s$/, "")) : text.split(/[^a-z0-9]+/).some((w) => w && stem(w) === stem(phrase));
+
+/**
+ * `line` with every flow or part this page does not have made the page: "turns onboarding and
+ * checkout into calm assembly steps" on a fitness empty state reads "turns the fitness app empty
+ * state into calm assembly steps"; in a list, the flows the page has stay ("receipts and profile
+ * cards" on a receipt page keeps "receipts").
+ */
+export function onPageFlows(line: string, ctx: Pick<SpecContext, "brief" | "pageLabel" | "parts" | "task">): string {
+  const text = pageText(ctx);
+  const page = ctx.pageLabel ? `the ${ctx.pageLabel}` : "this page";
+  return line.replace(FLOW_LIST, (m) => {
+    const items = m.split(/,\s*(?:and\s+|or\s+)?|\s+(?:and|or)\s+/).map((x) => x.trim()).filter(Boolean);
+    const kept = items.filter((x) => {
+      const f = FLOW_ONE.exec(x);
+      return !f || onPage(f[1]!, text);
+    });
+    if (kept.length === items.length) return m;
+    return kept.length > 0 ? kept.join(" and ") : page;
+  });
+}
+
 const MOVE_WORDS = /\b(motion|moves?|moving|slides?|sliding|snaps?|settl\w*|turns?|rolls?|spins?|tilts?|press\w*|reveals?|opens?|rotat\w*|swings?|bounc\w*|folds?|flips?|pours?|unroll\w*|rises?|falls?|strikes?|drifts?|glides?|peels?|wraps?|binds?)\b/i;
 
 /**
@@ -152,7 +193,7 @@ const MOVE_WORDS = /\b(motion|moves?|moving|slides?|sliding|snaps?|settl\w*|turn
  * and ratings"), with "the UI" made this page. The draft judge read a bare "(from X)" as a line left
  * over from another direction; the twist sentence says it is this direction's second card, and why.
  */
-export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLabel?: string, kind: "texture" | "motion" = "texture"): string {
+export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLabel?: string, kind: "texture" | "motion" = "texture", ctx?: Pick<SpecContext, "brief" | "pageLabel" | "parts" | "task">): string {
   const sentences = (card.surprise || card.idea).split(/(?<=[.!?])\s+/).map(trimEnd).filter(Boolean);
   // A motion twist is explained only by a sentence about movement (honey's "two-grade system" is about color).
   const pick =
@@ -160,7 +201,8 @@ export function twistWhy(card: Pick<IngredientCard, "surprise" | "idea">, pageLa
       ? (sentences.find((x) => MOVE_WORDS.test(x)) ?? "")
       : (sentences.find((x) => /\b(UI|interface|screen|app|page)\b/.test(x)) ?? sentences[sentences.length - 1] ?? "");
   const page = pageLabel ? `the ${pageLabel}` : "the page";
-  return pick.replace(/\bthe (UI|interface|app|screen)\b/i, page);
+  const why = pick.replace(/\bthe (UI|interface|app|screen)\b/i, page);
+  return ctx ? onPageFlows(why, ctx) : why;
 }
 
 /** The texture line: the card's surface on one page part, where the card said where it goes. */
@@ -174,7 +216,7 @@ export function textureLine(ctx: SpecContext): { line: string; surface: string }
   // A borrowed texture that named no place of its own still lands on one part of this page (not the task part).
   const target = part ?? placePart("", ctx.parts, task?.label ?? null, true);
   const placed = target && !part ? `On the ${target.label} only: ${lowerFirst(body)}` : body;
-  const why = twistWhy(card, ctx.pageLabel);
+  const why = twistWhy(card, ctx.pageLabel, "texture", ctx);
   return {
     line: `The twist, the surface of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(placed)}; text sits on solid panels, never on the texture.`,
     surface: `${placed}.`,
@@ -202,18 +244,37 @@ export function reducedOnPart(reduced: string): string {
   return lowerFirst(`${r.slice(0, m.index)}${m[1]}it ${v}${r.slice(m.index + m[0].length)}`);
 }
 
+/**
+ * R10: the lead's reduced motion text on this page. Its subject is the card's own object ("the new
+ * initials appear at once" from an arcade high score table): when the page's parts never name it,
+ * it becomes "it" (as for a borrowed motion), and flows the page does not have become the page.
+ */
+/** Subjects any page has (a value, a number, the mark, the highlight): a reduced line keeps them. */
+const GENERIC_SUBJECT = /^(?:value|values|number|numbers|figure|total|price|amount|count|digit|digits|state|mark|label|text|step|item|card|row|button|highlight|color|colour|edge|line|bar|icon|panel|tile|print|stamp|page|screen|view|result|change|content|element|part)$/i;
+
+export function leadReduced(reduced: string, ctx: SpecContext): string {
+  const r = lowerFirst(trimEnd(reduced));
+  if (ctx.parts.length === 0) return onPageFlows(r, ctx);
+  const m = SUBJECT.exec(trimEnd(reduced));
+  const head = m?.[2]?.trim().split(/\s+/).pop() ?? "";
+  const named = !m || /^(instant|no|short|a short|static)\b/i.test(m[2]!) || GENERIC_SUBJECT.test(head) || onPage(head, pageText(ctx));
+  // "it appears at once ... and stay that way": the second verb agrees with "it" too.
+  const it = reducedOnPart(reduced).replace(/\band (stay|hold|remain|keep|fade|settle)\b/g, "and $1s");
+  return onPageFlows(named ? r : it, ctx);
+}
+
 /** The motion line: the lead's own, or the second card's verb on the task part, timed to the main task. */
 export function motionLine(ctx: SpecContext): string {
   const borrowed = ctx.adds === "motion" && ctx.second ? ctx.second : null;
   const card = borrowed ?? ctx.lead;
   const { verb, ms, reduced } = card.motion;
-  if (!borrowed) return `${upperFirst(trimEnd(verb))} in ${ms}ms; with reduced motion on, ${lowerFirst(trimEnd(reduced))}.`;
+  if (!borrowed) return `${upperFirst(trimEnd(verb))} in ${ms}ms; with reduced motion on, ${leadReduced(reduced, ctx)}.`;
   const task = parseTask(ctx.task);
   const part = ctx.parts.find((p) => p.label === task?.label) ?? ctx.parts[0];
   if (!part) return `${upperFirst(trimEnd(verb))} in ${ms}ms (from ${card.name}); with reduced motion on, ${lowerFirst(trimEnd(reduced))}.`;
   const when = task ? `, each time the main task moves on (${task.phrase})` : "";
-  const why = twistWhy(card, ctx.pageLabel, "motion");
-  return `The twist, the motion of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(trimEnd(verb))} in ${ms}ms on the ${part.label}${when}; with reduced motion on, ${reducedOnPart(reduced)}.`;
+  const why = twistWhy(card, ctx.pageLabel, "motion", ctx);
+  return `The twist, the motion of ${card.name}${why ? `: ${lowerFirst(why)}` : ""}. ${upperFirst(trimEnd(verb))} in ${ms}ms on the ${part.label}${when}; with reduced motion on, ${onPageFlows(reducedOnPart(reduced), ctx)}.`;
 }
 
 // ---------------------------------------------------------------------------
